@@ -3,6 +3,9 @@ name = "tree-sitter-formatter"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+# For the prototype we just load the json tree-sitter, eventually we will want
+# to dynamically load the parser libraries, like helix.
+tree-sitter-json = "0.19"
+tree-sitter = "0.20"
+pretty = "0.11"
