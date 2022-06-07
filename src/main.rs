@@ -9,7 +9,7 @@ static QUERY_FILE: &str = "languages/queries/json.scm";
 /// A Node from tree-sitter is turned into into a list of atoms
 #[derive(Debug)]
 enum Atom {
-    Leaf { content: String, range: Range },
+    Leaf { content: String, id: usize },
     Softline,
     Hardline,
     IndentStart,
@@ -21,7 +21,7 @@ fn collect_leafs<'a>(node: Node, atoms: &mut Vec<Atom>, source: &'a [u8]) {
     if node.child_count() == 0 {
         atoms.push(Atom::Leaf {
             content: String::from(node.utf8_text(source).unwrap()),
-            range: node.range(),
+            id: node.id(),
         });
     } else {
         for child in node.children(&mut node.walk()) {
