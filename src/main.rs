@@ -1,5 +1,5 @@
 use pretty::RcDoc;
-use std::{error::Error, fs};
+use std::{error::Error, fs, io};
 use tree_sitter::{Node, Parser, Query, QueryCursor};
 use tree_sitter_json::language;
 
@@ -57,13 +57,13 @@ fn find_node(wanted_id: usize, atoms: &mut Vec<Atom>) -> usize {
         match node {
             Atom::Leaf { id, .. } => {
                 if *id == wanted_id {
-                    return i
+                    return i;
                 }
-            },
+            }
             _ => continue,
         }
     }
-    return 0;
+    unreachable!()
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -85,7 +85,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let source = content.as_bytes();
     let query = Query::new(json, query_str).expect("Error parsing query file");
 
-    // The Flattening
+    // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
     let mut atoms: Vec<Atom> = Vec::new();
     collect_leafs(root, &mut atoms, source);
 
@@ -101,24 +101,40 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    // Printing
-    atoms_print(atoms);
+    // Convert our list of atoms to a Doc
+    println!("atoms = {:#?}", atoms);
+    let doc = atoms_to_doc(&mut 0, &atoms);
+    let mut out = io::stdout();
+    doc.render(200, &mut out)?;
 
     Ok(())
 }
 
-fn atoms_print(atoms: Vec<Atom>) {
-    for a in atoms {
-        match a {
-            Atom::Leaf { content, .. } => print!("{}", content),
-            Atom::Literal(s) => print!("{}", s),
-            Atom::Hardline => print!("\n"),
-            Atom::IndentEnd => todo!(),
-            Atom::IndentStart => todo!(),
-            Atom::Softline => print!("\n"),
-            Atom::Space => print!(" "),
+fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a Vec<Atom>) -> RcDoc<'a, ()> {
+    let mut doc = RcDoc::nil();
+    println!("start = {:#?}", i);
+    while *i < atoms.len() {
+        println!("i = {:#?}", i);
+        let atom = &atoms[*i];
+        if let Atom::IndentEnd = atom {
+            return doc;
+        } else {
+            doc = doc.append(match atom {
+                Atom::Leaf { content, .. } => RcDoc::text(content),
+                Atom::Literal(s) => RcDoc::text(s),
+                Atom::Hardline => RcDoc::hardline(),
+                Atom::IndentEnd => unreachable!(),
+                Atom::IndentStart => {
+                    *i = *i + 1;
+                    atoms_to_doc(i, atoms).nest(1)
+                }
+                Atom::Softline => RcDoc::softline(),
+                Atom::Space => RcDoc::space(),
+            });
         }
+        *i = *i + 1;
     }
+    return doc;
 }
 
 fn resolve_capture(name: String, atoms: &mut Vec<Atom>, node: Node) -> () {
@@ -126,9 +142,9 @@ fn resolve_capture(name: String, atoms: &mut Vec<Atom>, node: Node) -> () {
         "append_hardline" => atoms_append(Atom::Hardline, node, atoms),
         "append_space" => atoms_append(Atom::Space, node, atoms),
         "indented" => {
-            atoms_append(Atom::IndentStart, node, atoms);
+            atoms_prepend(Atom::IndentStart, node, atoms);
             atoms_append(Atom::IndentEnd, node, atoms);
-        },
+        }
         "append_comma" => atoms_append(Atom::Literal(",".to_string()), node, atoms),
         _ => return,
     }
@@ -143,5 +159,9 @@ fn atoms_prepend(atom: Atom, node: Node, atoms: &mut Vec<Atom>) {
 fn atoms_append(atom: Atom, node: Node, atoms: &mut Vec<Atom>) {
     let id = last_leaf_id(node);
     let index = find_node(id, atoms);
-    atoms.insert(index + 1, atom);
+    if index == atoms.len() {
+        atoms.push(atom);
+    } else {
+        atoms.insert(index + 1, atom);
+    }
 }
