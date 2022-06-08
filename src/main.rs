@@ -1,6 +1,6 @@
 use pretty::RcDoc;
-use std::{error::Error, fs, io};
-use tree_sitter::{Node, Parser, Query, QueryCursor, Range};
+use std::{error::Error, fs};
+use tree_sitter::{Node, Parser, Query, QueryCursor};
 use tree_sitter_json::language;
 
 static TEST_FILE: &str = "tests/json.json";
@@ -10,6 +10,7 @@ static QUERY_FILE: &str = "languages/queries/json.scm";
 #[derive(Debug)]
 enum Atom {
     Leaf { content: String, id: usize },
+    Literal(String),
     Hardline,
     IndentEnd,
     IndentStart,
@@ -110,6 +111,7 @@ fn atoms_print(atoms: Vec<Atom>) {
     for a in atoms {
         match a {
             Atom::Leaf { content, .. } => print!("{}", content),
+            Atom::Literal(s) => print!("{}", s),
             Atom::Hardline => print!("\n"),
             Atom::IndentEnd => todo!(),
             Atom::IndentStart => todo!(),
@@ -123,11 +125,19 @@ fn resolve_capture(name: String, atoms: &mut Vec<Atom>, node: Node) -> () {
     match name.as_ref() {
         "append_hardline" => atoms_append(Atom::Hardline, node, atoms),
         "append_space" => atoms_append(Atom::Space, node, atoms),
-        //TODO
-        "append_comma" =>return,
-        "indented" => return,
+        "indented" => {
+            atoms_append(Atom::IndentStart, node, atoms);
+            atoms_append(Atom::IndentEnd, node, atoms);
+        },
+        "append_comma" => atoms_append(Atom::Literal(",".to_string()), node, atoms),
         _ => return,
     }
+}
+
+fn atoms_prepend(atom: Atom, node: Node, atoms: &mut Vec<Atom>) {
+    let id = first_leaf_id(node);
+    let index = find_node(id, atoms);
+    atoms.insert(index, atom);
 }
 
 fn atoms_append(atom: Atom, node: Node, atoms: &mut Vec<Atom>) {
