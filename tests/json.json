@@ -18,7 +18,7 @@
 			"question": "What is the type of the function \"f = uncurry . const\"",
 			"options": [
 				"f :: (b -> c) -> (a, b) -> c",
-				"f :: (a -> b1 -> c) -> b2 -> (a, b1) -> c",
+				"f :: (a -> b1 -> c) -> b2 -> (a, b1) -> c"
 			],
 			"answer": "f :: (b -> c) -> (a, b) -> c"
 		},
@@ -30,8 +30,7 @@
 				"An Unsolvable Problem of Elementary Number Theory",
 				"Computing Machinery and Intelligence",
 				"On computable numbers, with an application to the Entscheidungsproblem",
-				"Finite automata and their decision problems",
-
+				"Finite automata and their decision problems"
 			],
 			"answer": "On computable numbers, with an application to the Entscheidungsproblem"
 		}
