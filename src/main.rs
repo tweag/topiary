@@ -10,10 +10,11 @@ static QUERY_FILE: &str = "languages/queries/json.scm";
 #[derive(Debug)]
 enum Atom {
     Leaf { content: String, id: usize },
-    Softline,
     Hardline,
-    IndentStart,
     IndentEnd,
+    IndentStart,
+    Softline,
+    Space,
 }
 
 /// Given a node, returns the id of the first leaf in the subtree.
@@ -48,6 +49,22 @@ fn collect_leafs<'a>(node: Node, atoms: &mut Vec<Atom>, source: &'a [u8]) {
     }
 }
 
+/// Finds the matching node in the atoms and returns the index
+/// TODO: Error
+fn find_node(wanted_id: usize, atoms: &mut Vec<Atom>) -> usize {
+    for (i, node) in atoms.iter().enumerate() {
+        match node {
+            Atom::Leaf { id, .. } => {
+                if *id == wanted_id {
+                    return i
+                }
+            },
+            _ => continue,
+        }
+    }
+    return 0;
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     // Read file
     let content = &fs::read_to_string(TEST_FILE)?;
@@ -76,8 +93,45 @@ fn main() -> Result<(), Box<dyn Error>> {
     let matches = cursor.matches(&query, root, source);
 
     // Formatting
+    for m in matches {
+        for c in m.captures {
+            let name = query.capture_names()[c.index as usize].clone();
+            resolve_capture(name, &mut atoms, c.node);
+        }
+    }
 
     // Printing
+    atoms_print(atoms);
 
     Ok(())
+}
+
+fn atoms_print(atoms: Vec<Atom>) {
+    for a in atoms {
+        match a {
+            Atom::Leaf { content, .. } => print!("{}", content),
+            Atom::Hardline => print!("\n"),
+            Atom::IndentEnd => todo!(),
+            Atom::IndentStart => todo!(),
+            Atom::Softline => print!("\n"),
+            Atom::Space => print!(" "),
+        }
+    }
+}
+
+fn resolve_capture(name: String, atoms: &mut Vec<Atom>, node: Node) -> () {
+    match name.as_ref() {
+        "append_hardline" => atoms_append(Atom::Hardline, node, atoms),
+        "append_space" => atoms_append(Atom::Space, node, atoms),
+        //TODO
+        "append_comma" =>return,
+        "indented" => return,
+        _ => return,
+    }
+}
+
+fn atoms_append(atom: Atom, node: Node, atoms: &mut Vec<Atom>) {
+    let id = last_leaf_id(node);
+    let index = find_node(id, atoms);
+    atoms.insert(index + 1, atom);
 }
