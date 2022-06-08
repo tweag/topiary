@@ -13,10 +13,9 @@
 ; pair of an object.
 ((pair) . ",") @append_hardline
 
-; Pairs without a trailing comma are last pair of an object. The
-; "." indicates it is the last node.
+; Pairs without a trailing comma are last pair of an object.
 (object
-  (pair) @append_hardline .
+  ((pair) @append_hardline . "}")
 )
 
 ; Items in an array must have a newline after. See also the pairs above.
@@ -25,7 +24,7 @@
 )
 
 (array
-  (_) @append_hardline
+  ((_) @append_hardline . "]")
 )
 
 ; Children of arrays/objects should be indented
