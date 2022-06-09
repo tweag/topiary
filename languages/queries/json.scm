@@ -1,3 +1,8 @@
+; Sometimes we want to indicate that certain parts of our source text should
+; not be formated, but taken as is. We use the leaf capture name to inform the
+; tool of this.
+(string) @leaf
+
 ; We want every object and array to have the { start a newline. So we match on
 ; the named object/array followed by the first anonymous node { or [.
 (object
