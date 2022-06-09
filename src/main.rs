@@ -102,7 +102,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     // Convert our list of atoms to a Doc
-    println!("atoms = {:#?}", atoms);
     let doc = atoms_to_doc(&mut 0, &atoms);
     let mut out = io::stdout();
     doc.render(200, &mut out)?;
@@ -112,9 +111,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a Vec<Atom>) -> RcDoc<'a, ()> {
     let mut doc = RcDoc::nil();
-    println!("start = {:#?}", i);
     while *i < atoms.len() {
-        println!("i = {:#?}", i);
         let atom = &atoms[*i];
         if let Atom::IndentEnd = atom {
             return doc;
@@ -137,7 +134,7 @@ fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a Vec<Atom>) -> RcDoc<'a, ()> {
     return doc;
 }
 
-fn resolve_capture(name: String, atoms: &mut Vec<Atom>, node: Node) -> () {
+fn resolve_capture(name: String, atoms: &mut Vec<Atom>, node: Node) {
     match name.as_ref() {
         "append_hardline" => atoms_append(Atom::Hardline, node, atoms),
         "append_space" => atoms_append(Atom::Space, node, atoms),
@@ -159,7 +156,7 @@ fn atoms_prepend(atom: Atom, node: Node, atoms: &mut Vec<Atom>) {
 fn atoms_append(atom: Atom, node: Node, atoms: &mut Vec<Atom>) {
     let id = last_leaf_id(node);
     let index = find_node(id, atoms);
-    if index == atoms.len() {
+    if index > atoms.len() {
         atoms.push(atom);
     } else {
         atoms.insert(index + 1, atom);

@@ -11,7 +11,9 @@
 ; Pairs should always end with a newline. Pairs come in two kinds, ones with a
 ; trailing comma, and those without. Those without are the last
 ; pair of an object.
-((pair) . ",") @append_hardline
+(object
+  (",") @append_hardline
+)
 
 ; Pairs without a trailing comma are last pair of an object.
 (object
@@ -20,7 +22,7 @@
 
 ; Items in an array must have a newline after. See also the pairs above.
 (array
-  ((_) . ",") @append_hardline
+  (",") @append_hardline
 )
 
 (array
