@@ -1,7 +1,7 @@
 use pretty::RcDoc;
 use std::collections::BTreeSet;
 use std::{error::Error, fs, io};
-use tree_sitter::{Node, Parser, Query, QueryCursor, QueryMatches};
+use tree_sitter::{Node, Parser, Query, QueryCursor, QueryMatch};
 use tree_sitter_json::language;
 
 static TEST_FILE: &str = "tests/json.json";
@@ -156,7 +156,7 @@ fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a Vec<Atom>) -> RcDoc<'a, ()> {
                 Atom::IndentEnd => unreachable!(),
                 Atom::IndentStart => {
                     *i = *i + 1;
-                    atoms_to_doc(i, atoms).nest(1)
+                    atoms_to_doc(i, atoms).nest(4)
                 }
                 Atom::Softline => RcDoc::softline(),
                 Atom::Space => RcDoc::space(),
@@ -171,11 +171,24 @@ fn resolve_capture(name: String, atoms: &mut Vec<Atom>, node: Node) {
     match name.as_ref() {
         "append_hardline" => atoms_append(Atom::Hardline, node, atoms),
         "append_space" => atoms_append(Atom::Space, node, atoms),
+        "append_indent_start" => {
+            atoms_append(Atom::IndentStart, node, atoms)
+        }
+        "prepend_indent_end" => {
+            atoms_prepend(Atom::IndentEnd, node, atoms)
+        }
+        "prepend_indent_start" => {
+            atoms_prepend(Atom::IndentStart, node, atoms)
+        }
+        "append_indent_end" => {
+            atoms_append(Atom::IndentEnd, node, atoms)
+        }
         "indented" => {
             atoms_prepend(Atom::IndentStart, node, atoms);
             atoms_append(Atom::IndentEnd, node, atoms);
         }
         "append_comma" => atoms_append(Atom::Literal(",".to_string()), node, atoms),
+        // Skip over leafs
         _ => return,
     }
 }

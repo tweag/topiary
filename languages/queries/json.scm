@@ -22,7 +22,8 @@
 
 ; Pairs without a trailing comma are last pair of an object.
 (object
-  ((pair) @append_hardline . "}")
+  (pair) @append_hardline
+  .
 )
 
 ; Items in an array must have a newline after. See also the pairs above.
@@ -31,16 +32,27 @@
 )
 
 (array
-  ((_) @append_hardline . "]")
+  (_) @append_hardline
+  .
 )
 
 ; Children of arrays/objects should be indented
-(array
-  _* @indented
+(object
+  "{" @append_indent_start
 )
 
 (object
-  _* @indented
+  (_) @append_indent_end
+  .
+)
+
+(array
+  "[" @append_indent_start
+)
+
+(array
+  (_) @append_indent_end
+  .
 )
 
 ; By default our tool produces no spaces. We wish to add a space between the ":" and the following value.
