@@ -1,5 +1,6 @@
 [package]
 name = "tree-sitter-formatter"
+description = "Takes a source file from stdin and outputs a version to stdout that is formatted according to the specified language."
 version = "0.1.0"
 edition = "2021"
 
@@ -9,3 +10,4 @@ edition = "2021"
 tree-sitter-json = "0.19"
 tree-sitter = "0.20"
 pretty = "0.11"
+clap = { version = "3.2.17", features = ["derive"]}

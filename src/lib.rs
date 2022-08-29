@@ -1,3 +1,4 @@
+use clap::ArgEnum;
 use pretty::RcDoc;
 use std::collections::BTreeSet;
 use std::error::Error;
@@ -5,19 +6,27 @@ use std::fs;
 use std::io;
 use std::path::Path;
 use tree_sitter::{Node, Parser, Query, QueryCursor};
-use tree_sitter_json::language;
+
+static QUERY_FILE: &str = "languages/queries/json.scm";
+
+#[derive(ArgEnum, Clone, Debug)]
+pub enum Language {
+    Json,
+}
 
 pub fn formatter(
-    input_file: &Path,
-    query_file: &Path,
-    out: &mut dyn io::Write,
+    input: &mut dyn io::Read,
+    output: &mut dyn io::Write,
+    language: Language,
 ) -> Result<(), Box<dyn Error>> {
-    // Read file
-    let content = &fs::read_to_string(input_file)?;
+    // Read input
+    let mut content = String::new();
+    input.read_to_string(&mut content)?;
+    let query_file = Path::new(QUERY_FILE);
     let query_str = &fs::read_to_string(query_file)?;
 
     // Parsing
-    let json = language();
+    let json = tree_sitter_json::language();
 
     let mut parser = Parser::new();
     parser
@@ -52,7 +61,7 @@ pub fn formatter(
 
     // Convert our list of atoms to a Doc
     let doc = atoms_to_doc(&mut 0, &atoms);
-    doc.render(200, out)?;
+    doc.render(200, output)?;
 
     Ok(())
 }
