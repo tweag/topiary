@@ -1,6 +1,3 @@
-static TEST_FILE: &str = "tests/json.json";
-static QUERY_FILE: &str = "languages/queries/json.scm";
-
 use clap::Parser;
 use std::error::Error;
 use std::io;

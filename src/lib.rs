@@ -7,8 +7,6 @@ use std::io;
 use std::path::Path;
 use tree_sitter::{Node, Parser, Query, QueryCursor};
 
-static QUERY_FILE: &str = "languages/queries/json.scm";
-
 #[derive(ArgEnum, Clone, Debug)]
 pub enum Language {
     Json,
@@ -19,11 +17,12 @@ pub fn formatter(
     output: &mut dyn io::Write,
     language: Language,
 ) -> Result<(), Box<dyn Error>> {
-    // Read input
+    // Read input and query
     let mut content = String::new();
     input.read_to_string(&mut content)?;
-    let query_file = Path::new(QUERY_FILE);
-    let query_str = &fs::read_to_string(query_file)?;
+    let query_str = &fs::read_to_string(Path::new(
+        &(format!("languages/queries/{:?}.scm", language)),
+    ))?;
 
     // Parsing
     let json = tree_sitter_json::language();
