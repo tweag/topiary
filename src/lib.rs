@@ -10,6 +10,7 @@ use tree_sitter::{Node, Parser, Query, QueryCursor};
 #[derive(ArgEnum, Clone, Debug)]
 pub enum Language {
     Json,
+    Rust,
 }
 
 pub fn formatter(
@@ -25,18 +26,17 @@ pub fn formatter(
     ))?;
 
     // Parsing
-    let json = tree_sitter_json::language();
+    let grammar = match language {
+        Language::Json => tree_sitter_json::language(),
+        Language::Rust => tree_sitter_rust::language(),
+    };
 
     let mut parser = Parser::new();
-    parser
-        .set_language(json)
-        .expect("Error loading json grammar");
-    let parsed = parser
-        .parse(&content, None)
-        .expect("Could not parse json file");
+    parser.set_language(grammar).expect("Error loading grammar");
+    let parsed = parser.parse(&content, None).expect("Could not parse input");
     let root = parsed.root_node();
     let source = content.as_bytes();
-    let query = Query::new(json, query_str).expect("Error parsing query file");
+    let query = Query::new(grammar, query_str).expect("Error parsing query file");
 
     // Find the ids of all tree-sitter nodes that were identified as a leaf
     // We want to avoid recursing into them in the collect_leafs function.

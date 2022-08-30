@@ -5,9 +5,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-# For the prototype we just load the json tree-sitter, eventually we will want
-# to dynamically load the parser libraries, like helix.
-tree-sitter-json = "0.19"
-tree-sitter = "0.20"
-pretty = "0.11"
+# For now we just load the tree-sitter language parsers statically. 
+# Eventually we will want to dynamically load them, like Helix does.
 clap = { version = "3.2.17", features = ["derive"]}
+pretty = "0.11"
+tree-sitter = "0.20"
+tree-sitter-json = "0.19"
+tree-sitter-rust = "0.20.1"
