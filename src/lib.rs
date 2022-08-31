@@ -21,9 +21,9 @@ pub fn formatter(
     // Read input and query
     let mut content = String::new();
     input.read_to_string(&mut content)?;
-    let query_str = &fs::read_to_string(Path::new(
-        &(format!("languages/queries/{:?}.scm", language)),
-    ))?;
+    let query_str = &fs::read_to_string(Path::new(&str::to_lowercase(
+        format!("languages/queries/{:?}.scm", language).as_str(),
+    )))?;
 
     // Parsing
     let grammar = match language {
