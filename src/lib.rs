@@ -180,6 +180,7 @@ fn resolve_capture(name: String, atoms: &mut Vec<Atom>, node: Node) {
     match name.as_ref() {
         "append_hardline" => atoms_append(Atom::Hardline, node, atoms),
         "append_space" => atoms_append(Atom::Space, node, atoms),
+        "prepend_space" => atoms_prepend(Atom::Space, node, atoms),
         "append_indent_start" => atoms_append(Atom::IndentStart, node, atoms),
         "prepend_indent_end" => atoms_prepend(Atom::IndentEnd, node, atoms),
         "prepend_indent_start" => atoms_prepend(Atom::IndentStart, node, atoms),
