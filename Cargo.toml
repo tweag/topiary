@@ -11,6 +11,7 @@ clap = { version = "3.2.17", features = ["derive"]}
 env_logger = "0.9.0"
 log = "0.4.17"
 pretty = "0.11"
+test-log = "0.2.11"
 tree-sitter = "0.20"
 tree-sitter-json = "0.19"
 tree-sitter-rust = "0.20.1"

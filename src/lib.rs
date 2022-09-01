@@ -1,10 +1,13 @@
 use clap::ArgEnum;
 use pretty::RcDoc;
 use std::collections::BTreeSet;
+use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
 use std::io;
 use std::path::Path;
+use test_log::test;
+use tree_sitter::Tree;
 use tree_sitter::{Node, Parser, Query, QueryCursor};
 
 #[derive(ArgEnum, Clone, Debug)]
@@ -25,21 +28,15 @@ pub fn formatter(
         format!("languages/queries/{:?}.scm", language).as_str(),
     )))?;
 
-    // Parsing
-    let grammar = match language {
-        Language::Json => tree_sitter_json::language(),
-        Language::Rust => tree_sitter_rust::language(),
-    };
-
-    let mut parser = Parser::new();
-    parser.set_language(grammar).expect("Error loading grammar");
-    let parsed = parser.parse(&content, None).expect("Could not parse input");
-    let root = parsed.root_node();
+    let grammar = grammar(language);
+    let tree = parse(&content, grammar);
+    let root = tree.root_node();
     let source = content.as_bytes();
     let query = Query::new(grammar, query_str).expect("Error parsing query file");
 
     // Find the ids of all tree-sitter nodes that were identified as a leaf
     // We want to avoid recursing into them in the collect_leafs function.
+    // TODO: Doesn't need to be ordered, can be just a HashSet.
     let specified_leaf_nodes: BTreeSet<usize> = collect_leaf_ids(&query, root, source);
 
     // Match queries
@@ -78,6 +75,20 @@ enum Atom {
     IndentEnd,
     IndentStart,
     Space,
+}
+
+fn grammar(language: Language) -> tree_sitter::Language {
+    match language {
+        Language::Json => tree_sitter_json::language(),
+        Language::Rust => tree_sitter_rust::language(),
+    }
+}
+
+fn parse(content: &str, grammar: tree_sitter::Language) -> Tree {
+    let mut parser = Parser::new();
+    parser.set_language(grammar).expect("Error loading grammar");
+    let parsed = parser.parse(&content, None).expect("Could not parse input");
+    parsed
 }
 
 /// Given a node, returns the id of the first leaf in the subtree.
@@ -224,4 +235,52 @@ fn atoms_append(atom: Atom, node: Node, atoms: &mut Vec<Atom>) {
     } else {
         atoms.insert(index + 1, atom);
     }
+}
+
+fn detect_multi_line_nodes(node: Node) -> HashSet<usize> {
+    let mut ids = HashSet::new();
+
+    for child in node.children(&mut node.walk()) {
+        ids.extend(detect_multi_line_nodes(child));
+    }
+
+    let start_line = node.start_position().row;
+    let end_line = node.end_position().row;
+    if end_line > start_line {
+        let id = node.id();
+        ids.insert(id);
+        log::debug!("Multi-line node {}: {:?}", id, node,);
+    }
+
+    ids
+}
+
+#[test]
+fn detect_multi_line_nodes_single_line() {
+    let input = "enum OneLine { Leaf { content: String, id: usize, size: usize, }, Hardline { content: String, id: usize, }, Space, }";
+    let grammar = grammar(Language::Rust);
+    let tree = parse(input, grammar);
+    let root = tree.root_node();
+    let multi_line_nodes = detect_multi_line_nodes(root);
+    assert!(multi_line_nodes.is_empty());
+}
+
+#[test]
+fn detect_multi_line_nodes_expand_one_level() {
+    let input = "enum OneLine { Leaf { content: String, id: usize, size: usize, },\nHardline { content: String, id: usize, }, Space, }";
+    let grammar = grammar(Language::Rust);
+    let tree = parse(input, grammar);
+    let root = tree.root_node();
+    let multi_line_nodes = detect_multi_line_nodes(root);
+    assert_eq!(3, multi_line_nodes.len());
+}
+
+#[test]
+fn detect_multi_line_nodes_expand_two_levels() {
+    let input = "enum OneLine { Leaf { content: String,\nid: usize, size: usize, }, Hardline { content: String, id: usize, }, Space, }";
+    let grammar = grammar(Language::Rust);
+    let tree = parse(input, grammar);
+    let root = tree.root_node();
+    let multi_line_nodes = detect_multi_line_nodes(root);
+    assert_eq!(5, multi_line_nodes.len());
 }
