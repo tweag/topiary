@@ -48,7 +48,9 @@ pub fn formatter(
 
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
     let mut atoms: Vec<Atom> = Vec::new();
-    collect_leafs(root, &mut atoms, source, &specified_leaf_nodes);
+    collect_leafs(root, &mut atoms, source, &specified_leaf_nodes, 0);
+
+    log::debug!("List of atoms before formatting: {atoms:?}");
 
     // Formatting
     for m in matches {
@@ -57,6 +59,8 @@ pub fn formatter(
             resolve_capture(name, &mut atoms, c.node);
         }
     }
+
+    log::debug!("Final list of atoms: {atoms:?}");
 
     // Convert our list of atoms to a Doc
     let doc = atoms_to_doc(&mut 0, &atoms);
@@ -100,7 +104,15 @@ fn collect_leafs<'a>(
     atoms: &mut Vec<Atom>,
     source: &'a [u8],
     specified_leaf_nodes: &BTreeSet<usize>,
+    level: usize,
 ) {
+    log::debug!(
+        "CST node: {}{:?} - Named: {}",
+        "  ".repeat(level),
+        node,
+        node.is_named()
+    );
+
     if node.child_count() == 0 || specified_leaf_nodes.contains(&node.id()) {
         atoms.push(Atom::Leaf {
             content: String::from(node.utf8_text(source).expect("Source file not valid utf8")),
@@ -108,7 +120,10 @@ fn collect_leafs<'a>(
         });
     } else {
         for child in node.children(&mut node.walk()) {
-            collect_leafs(child, atoms, source, &specified_leaf_nodes)
+            collect_leafs(child, atoms, source, &specified_leaf_nodes, level + 1);
+
+            // Only if multiline
+            atoms.push(Atom::Hardline);
         }
     }
 }

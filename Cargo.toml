@@ -8,6 +8,8 @@ edition = "2021"
 # For now we just load the tree-sitter language parsers statically. 
 # Eventually we will want to dynamically load them, like Helix does.
 clap = { version = "3.2.17", features = ["derive"]}
+env_logger = "0.9.0"
+log = "0.4.17"
 pretty = "0.11"
 tree-sitter = "0.20"
 tree-sitter-json = "0.19"
