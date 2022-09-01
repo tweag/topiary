@@ -37,6 +37,19 @@
   (type_identifier) @append_space
 )
 
+(enum_variant_list
+  (",") @append_softline
+  (enum_variant)
+)
+
+(enum_variant_list
+  ("{") @append_softline
+)
+
+(enum_variant_list
+  ("}") @prepend_softline
+)
+
 ; fn
 (function_item
   (identifier) @prepend_space

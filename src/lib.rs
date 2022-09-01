@@ -1,10 +1,13 @@
 use clap::ArgEnum;
 use pretty::RcDoc;
 use std::collections::BTreeSet;
+use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
 use std::io;
 use std::path::Path;
+use test_log::test;
+use tree_sitter::Tree;
 use tree_sitter::{Node, Parser, Query, QueryCursor};
 
 #[derive(ArgEnum, Clone, Debug)]
@@ -25,21 +28,15 @@ pub fn formatter(
         format!("languages/queries/{:?}.scm", language).as_str(),
     )))?;
 
-    // Parsing
-    let grammar = match language {
-        Language::Json => tree_sitter_json::language(),
-        Language::Rust => tree_sitter_rust::language(),
-    };
-
-    let mut parser = Parser::new();
-    parser.set_language(grammar).expect("Error loading grammar");
-    let parsed = parser.parse(&content, None).expect("Could not parse input");
-    let root = parsed.root_node();
+    let grammar = grammar(language);
+    let tree = parse(&content, grammar);
+    let root = tree.root_node();
     let source = content.as_bytes();
     let query = Query::new(grammar, query_str).expect("Error parsing query file");
 
     // Find the ids of all tree-sitter nodes that were identified as a leaf
     // We want to avoid recursing into them in the collect_leafs function.
+    // TODO: Doesn't need to be ordered, can be just a HashSet.
     let specified_leaf_nodes: BTreeSet<usize> = collect_leaf_ids(&query, root, source);
 
     // Match queries
@@ -52,11 +49,13 @@ pub fn formatter(
 
     log::debug!("List of atoms before formatting: {atoms:?}");
 
+    let multi_line_nodes = detect_multi_line_nodes(root);
+
     // Formatting
     for m in matches {
         for c in m.captures {
             let name = query.capture_names()[c.index as usize].clone();
-            resolve_capture(name, &mut atoms, c.node);
+            resolve_capture(name, &mut atoms, c.node, &multi_line_nodes);
         }
     }
 
@@ -72,12 +71,27 @@ pub fn formatter(
 /// A Node from tree-sitter is turned into into a list of atoms
 #[derive(Debug)]
 enum Atom {
+    Hardline,
+    IndentStart,
+    IndentEnd,
     Leaf { content: String, id: usize },
     Literal(String),
-    Hardline,
-    IndentEnd,
-    IndentStart,
+    Softline,
     Space,
+}
+
+fn grammar(language: Language) -> tree_sitter::Language {
+    match language {
+        Language::Json => tree_sitter_json::language(),
+        Language::Rust => tree_sitter_rust::language(),
+    }
+}
+
+fn parse(content: &str, grammar: tree_sitter::Language) -> Tree {
+    let mut parser = Parser::new();
+    parser.set_language(grammar).expect("Error loading grammar");
+    let parsed = parser.parse(&content, None).expect("Could not parse input");
+    parsed
 }
 
 /// Given a node, returns the id of the first leaf in the subtree.
@@ -121,9 +135,6 @@ fn collect_leafs<'a>(
     } else {
         for child in node.children(&mut node.walk()) {
             collect_leafs(child, atoms, source, &specified_leaf_nodes, level + 1);
-
-            // Only if multiline
-            atoms.push(Atom::Hardline);
         }
     }
 }
@@ -183,6 +194,7 @@ fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a Vec<Atom>) -> RcDoc<'a, ()> {
                     *i = *i + 1;
                     atoms_to_doc(i, atoms).nest(4)
                 }
+                Atom::Softline => unreachable!(),
                 Atom::Space => RcDoc::space(),
             });
         }
@@ -191,32 +203,46 @@ fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a Vec<Atom>) -> RcDoc<'a, ()> {
     return doc;
 }
 
-fn resolve_capture(name: String, atoms: &mut Vec<Atom>, node: Node) {
+fn resolve_capture(
+    name: String,
+    atoms: &mut Vec<Atom>,
+    node: Node,
+    multi_line_nodes: &HashSet<usize>,
+) {
     match name.as_ref() {
-        "append_hardline" => atoms_append(Atom::Hardline, node, atoms),
-        "append_space" => atoms_append(Atom::Space, node, atoms),
-        "prepend_space" => atoms_prepend(Atom::Space, node, atoms),
-        "append_indent_start" => atoms_append(Atom::IndentStart, node, atoms),
-        "prepend_indent_end" => atoms_prepend(Atom::IndentEnd, node, atoms),
-        "prepend_indent_start" => atoms_prepend(Atom::IndentStart, node, atoms),
-        "append_indent_end" => atoms_append(Atom::IndentEnd, node, atoms),
+        "append_comma" => atoms_append(
+            Atom::Literal(",".to_string()),
+            node,
+            atoms,
+            multi_line_nodes,
+        ),
+        "append_hardline" => atoms_append(Atom::Hardline, node, atoms, multi_line_nodes),
+        "append_indent_start" => atoms_append(Atom::IndentStart, node, atoms, multi_line_nodes),
+        "append_indent_end" => atoms_append(Atom::IndentEnd, node, atoms, multi_line_nodes),
+        "append_softline" => atoms_append(Atom::Softline, node, atoms, multi_line_nodes),
+        "append_space" => atoms_append(Atom::Space, node, atoms, multi_line_nodes),
         "indented" => {
-            atoms_prepend(Atom::IndentStart, node, atoms);
-            atoms_append(Atom::IndentEnd, node, atoms);
+            atoms_prepend(Atom::IndentStart, node, atoms, multi_line_nodes);
+            atoms_append(Atom::IndentEnd, node, atoms, multi_line_nodes);
         }
-        "append_comma" => atoms_append(Atom::Literal(",".to_string()), node, atoms),
+        "prepend_indent_start" => atoms_prepend(Atom::IndentStart, node, atoms, multi_line_nodes),
+        "prepend_indent_end" => atoms_prepend(Atom::IndentEnd, node, atoms, multi_line_nodes),
+        "prepend_softline" => atoms_prepend(Atom::Softline, node, atoms, multi_line_nodes),
+        "prepend_space" => atoms_prepend(Atom::Space, node, atoms, multi_line_nodes),
         // Skip over leafs
         _ => return,
     }
 }
 
-fn atoms_prepend(atom: Atom, node: Node, atoms: &mut Vec<Atom>) {
+fn atoms_prepend(atom: Atom, node: Node, atoms: &mut Vec<Atom>, multi_line_nodes: &HashSet<usize>) {
+    let atom = expand_softline(atom, node, multi_line_nodes);
     let target_node = first_leaf(node);
     let index = find_node(target_node, atoms);
     atoms.insert(index, atom);
 }
 
-fn atoms_append(atom: Atom, node: Node, atoms: &mut Vec<Atom>) {
+fn atoms_append(atom: Atom, node: Node, atoms: &mut Vec<Atom>, multi_line_nodes: &HashSet<usize>) {
+    let atom = expand_softline(atom, node, multi_line_nodes);
     let target_node = last_leaf(node);
     let index = find_node(target_node, atoms);
     if index > atoms.len() {
@@ -224,4 +250,79 @@ fn atoms_append(atom: Atom, node: Node, atoms: &mut Vec<Atom>) {
     } else {
         atoms.insert(index + 1, atom);
     }
+}
+
+fn expand_softline(atom: Atom, node: Node, multi_line_nodes: &HashSet<usize>) -> Atom {
+    if let Atom::Softline = atom {
+        let parent = node.parent();
+        let parent_id = parent.expect("Parent node not found").id();
+
+        if multi_line_nodes.contains(&parent_id) {
+            log::debug!(
+                "Expanding softline to hardline in node {:?} with parent {}: {:?}",
+                node,
+                parent_id,
+                parent
+            );
+            Atom::Hardline
+        } else {
+            log::debug!(
+                "Expanding softline to space in node {:?} with parent {}: {:?}",
+                node,
+                parent_id,
+                parent
+            );
+            Atom::Space
+        }
+    } else {
+        atom
+    }
+}
+
+fn detect_multi_line_nodes(node: Node) -> HashSet<usize> {
+    let mut ids = HashSet::new();
+
+    for child in node.children(&mut node.walk()) {
+        ids.extend(detect_multi_line_nodes(child));
+    }
+
+    let start_line = node.start_position().row;
+    let end_line = node.end_position().row;
+    if end_line > start_line {
+        let id = node.id();
+        ids.insert(id);
+        log::debug!("Multi-line node {}: {:?}", id, node,);
+    }
+
+    ids
+}
+
+#[test]
+fn detect_multi_line_nodes_single_line() {
+    let input = "enum OneLine { Leaf { content: String, id: usize, size: usize, }, Hardline { content: String, id: usize, }, Space, }";
+    let grammar = grammar(Language::Rust);
+    let tree = parse(input, grammar);
+    let root = tree.root_node();
+    let multi_line_nodes = detect_multi_line_nodes(root);
+    assert!(multi_line_nodes.is_empty());
+}
+
+#[test]
+fn detect_multi_line_nodes_expand_one_level() {
+    let input = "enum OneLine { Leaf { content: String, id: usize, size: usize, },\nHardline { content: String, id: usize, }, Space, }";
+    let grammar = grammar(Language::Rust);
+    let tree = parse(input, grammar);
+    let root = tree.root_node();
+    let multi_line_nodes = detect_multi_line_nodes(root);
+    assert_eq!(3, multi_line_nodes.len());
+}
+
+#[test]
+fn detect_multi_line_nodes_expand_two_levels() {
+    let input = "enum OneLine { Leaf { content: String,\nid: usize, size: usize, }, Hardline { content: String, id: usize, }, Space, }";
+    let grammar = grammar(Language::Rust);
+    let tree = parse(input, grammar);
+    let root = tree.root_node();
+    let multi_line_nodes = detect_multi_line_nodes(root);
+    assert_eq!(5, multi_line_nodes.len());
 }
