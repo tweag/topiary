@@ -10,16 +10,6 @@ enum NoFinalComma {
     Space
 }
 
-enum WithTrailingComma {
-    One,
-    Two,
-} 
-
-enum WithoutTrailingComma {
-    One,
-    Two
-} 
-
 enum ExpandTwoLevels { 
     Leaf { 
         content: String, 
