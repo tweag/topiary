@@ -25,6 +25,8 @@ It will output the following formatted code:
 }
 ```
 
+Insert `FORMATTER_LOG=debug` in front of `tree-sitter-formatter` (or `cargo`) if you want to enable debug logging.
+
 ## Design
 
 Tree-sitter will provide the tool with the concrete syntax tree of
