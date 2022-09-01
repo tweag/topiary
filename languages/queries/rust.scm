@@ -50,6 +50,29 @@
   ("}") @prepend_softline
 )
 
+; field
+
+(field_declaration_list
+  (",") @append_softline
+  (field_declaration)
+)
+
+(field_declaration_list
+  ("{") @prepend_space
+)
+
+(field_declaration_list
+  ("{") @append_softline
+)
+
+(field_declaration_list
+  ("}") @prepend_softline
+)
+
+(field_declaration
+  (":") @append_space
+)
+
 ; fn
 (function_item
   (identifier) @prepend_space
