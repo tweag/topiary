@@ -288,10 +288,48 @@ fn detect_multi_line_nodes(node: Node) -> HashSet<usize> {
 
     let start_line = node.start_position().row;
     let end_line = node.end_position().row;
+
     if end_line > start_line {
         let id = node.id();
         ids.insert(id);
         log::debug!("Multi-line node {}: {:?}", id, node,);
+    }
+
+    ids
+}
+
+fn detect_blank_lines_before(node: Node) -> HashSet<usize> {
+    detect_blank_lines_before_inner(node, &mut None)
+}
+
+fn detect_blank_lines_before_inner<'a>(
+    node: Node<'a>,
+    previous_node: &mut Option<Node<'a>>,
+) -> HashSet<usize> {
+    let mut ids = HashSet::new();
+
+    if let Some(previous_node) = previous_node {
+        // If two consequent nodes don't start immediately after each other,
+        // there are blank lines between them, because no leaf nodes are
+        // themselves multi-line.
+        let previous_start = previous_node.start_position().row;
+        let current_start = node.start_position().row;
+
+        if current_start - previous_start > 1 {
+            let id = node.id();
+            ids.insert(id);
+            log::debug!(
+                "There are blank lines between {:?} and {:?}",
+                previous_node,
+                node
+            );
+        }
+    }
+
+    *previous_node = Some(node);
+
+    for child in node.children(&mut node.walk()) {
+        ids.extend(detect_blank_lines_before_inner(child, previous_node));
     }
 
     ids
@@ -309,7 +347,7 @@ fn detect_multi_line_nodes_single_line() {
 
 #[test]
 fn detect_multi_line_nodes_expand_one_level() {
-    let input = "enum OneLine { Leaf { content: String, id: usize, size: usize, },\nHardline { content: String, id: usize, }, Space, }";
+    let input = "enum ExpandOneLevel { Leaf { content: String, id: usize, size: usize, },\nHardline { content: String, id: usize, }, Space, }";
     let grammar = grammar(Language::Rust);
     let tree = parse(input, grammar);
     let root = tree.root_node();
@@ -319,10 +357,30 @@ fn detect_multi_line_nodes_expand_one_level() {
 
 #[test]
 fn detect_multi_line_nodes_expand_two_levels() {
-    let input = "enum OneLine { Leaf { content: String,\nid: usize, size: usize, }, Hardline { content: String, id: usize, }, Space, }";
+    let input = "enum ExpandTwoLevels { Leaf { content: String,\nid: usize, size: usize, }, Hardline { content: String, id: usize, }, Space, }";
     let grammar = grammar(Language::Rust);
     let tree = parse(input, grammar);
     let root = tree.root_node();
     let multi_line_nodes = detect_multi_line_nodes(root);
     assert_eq!(5, multi_line_nodes.len());
+}
+
+#[test]
+fn detect_blank_lines_before_none() {
+    let input = "enum OneLine { \nLeaf { \ncontent: String, \nid: usize, \nsize: usize, }, \nHardline { \ncontent: String, \nid: usize, }, \nSpace, \n}";
+    let grammar = grammar(Language::Rust);
+    let tree = parse(input, grammar);
+    let root = tree.root_node();
+    let blank_lines_before_nodes = detect_blank_lines_before(root);
+    assert!(blank_lines_before_nodes.is_empty());
+}
+
+#[test]
+fn detect_blank_lines_before_some() {
+    let input = "enum OneLine { \nLeaf { \ncontent: String, \n\n\n\n\nid: usize, \nsize: usize, }, \n\nHardline { \ncontent: String, \nid: usize, }, \nSpace, \n}";
+    let grammar = grammar(Language::Rust);
+    let tree = parse(input, grammar);
+    let root = tree.root_node();
+    let blank_lines_before_nodes = detect_blank_lines_before(root);
+    assert_eq!(2, blank_lines_before_nodes.len());
 }
