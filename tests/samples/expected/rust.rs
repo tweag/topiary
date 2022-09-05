@@ -25,7 +25,7 @@ enum ExpandTwoLevels {
     id: usize,
     
     size: usize,
-  }, 
+  },
   Hardline { content: String, id: usize },
    
   // comment between enum items

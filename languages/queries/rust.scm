@@ -36,10 +36,17 @@
   (scoped_use_list)
 ] @prepend_space
 
-; block comment
+; comments
 (
-  "," @append_space 
-  (block_comment)
+  [
+    (enum_item)
+    ","
+  ] @append_space
+  .
+  [
+    (block_comment)
+    (line_comment)
+  ]
 )
 
 ; dyn
@@ -54,12 +61,6 @@
 
 (enum_item
   (type_identifier) @append_space
-)
-
-(
-  (enum_item) @append_space
-  .
-  (line_comment)
 )
 
 (enum_variant_list
@@ -113,10 +114,6 @@
   .
 )
 
-;(field_declaration_list
-;  "," @append_space
-;)
-
 (field_declaration
   ":" @append_space
 )
@@ -168,12 +165,6 @@
 
 (let_declaration
   (mutable_specifier) @prepend_space
-)
-
-; line comment
-(
-  "," @append_space
-  (line_comment)
 )
 
 ; match
