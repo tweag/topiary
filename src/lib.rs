@@ -64,7 +64,13 @@ pub fn formatter(
     for m in matches {
         for c in m.captures {
             let name = query.capture_names()[c.index as usize].clone();
-            resolve_capture(name, &mut atoms, c.node, &multi_line_nodes);
+            resolve_capture(
+                name,
+                &mut atoms,
+                c.node,
+                &multi_line_nodes,
+                &blank_lines_before,
+            );
         }
     }
 
@@ -138,10 +144,6 @@ fn collect_leafs<'a>(
         node,
         node.is_named()
     );
-
-    if blank_lines_before.contains(&id) {
-        atoms.push(Atom::Hardline);
-    }
 
     if node.child_count() == 0 || specified_leaf_nodes.contains(&node.id()) {
         atoms.push(Atom::Leaf {
@@ -231,8 +233,14 @@ fn resolve_capture(
     atoms: &mut Vec<Atom>,
     node: Node,
     multi_line_nodes: &HashSet<usize>,
+    blank_lines_before: &HashSet<usize>,
 ) {
     match name.as_ref() {
+        "allow_blank_line_before" => {
+            if blank_lines_before.contains(&node.id()) {
+                atoms_prepend(Atom::Hardline, node, atoms, multi_line_nodes);
+            }
+        }
         "append_comma" => atoms_append(
             Atom::Literal(",".to_string()),
             node,
@@ -257,13 +265,6 @@ fn resolve_capture(
     }
 }
 
-fn atoms_prepend(atom: Atom, node: Node, atoms: &mut Vec<Atom>, multi_line_nodes: &HashSet<usize>) {
-    let atom = expand_softline(atom, node, multi_line_nodes);
-    let target_node = first_leaf(node);
-    let index = find_node(target_node, atoms);
-    atoms.insert(index, atom);
-}
-
 fn atoms_append(atom: Atom, node: Node, atoms: &mut Vec<Atom>, multi_line_nodes: &HashSet<usize>) {
     let atom = expand_softline(atom, node, multi_line_nodes);
     let target_node = last_leaf(node);
@@ -273,6 +274,13 @@ fn atoms_append(atom: Atom, node: Node, atoms: &mut Vec<Atom>, multi_line_nodes:
     } else {
         atoms.insert(index + 1, atom);
     }
+}
+
+fn atoms_prepend(atom: Atom, node: Node, atoms: &mut Vec<Atom>, multi_line_nodes: &HashSet<usize>) {
+    let atom = expand_softline(atom, node, multi_line_nodes);
+    let target_node = first_leaf(node);
+    let index = find_node(target_node, atoms);
+    atoms.insert(index, atom);
 }
 
 fn expand_softline(atom: Atom, node: Node, multi_line_nodes: &HashSet<usize>) -> Atom {

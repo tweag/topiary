@@ -13,6 +13,18 @@
   (use_declaration)
 ] @append_hardline
 
+; Allow blank line before
+[
+  (attribute_item)
+  (enum_item)
+  (enum_variant)
+  (field_declaration)
+  (function_item)
+  (line_comment)
+  (struct_item)
+  (use_declaration)
+] @allow_blank_line_before
+
 ; Append spaces
 [
   (visibility_modifier)
