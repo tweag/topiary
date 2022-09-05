@@ -27,6 +27,7 @@
 
 ; Append spaces
 [
+  (block_comment)
   (visibility_modifier)
 ] @append_space
 
@@ -34,6 +35,12 @@
 [
   (scoped_use_list)
 ] @prepend_space
+
+; block comment
+(
+  "," @append_space 
+  (block_comment)
+)
 
 ; dyn
 (dynamic_type
@@ -75,6 +82,7 @@
 
 (field_declaration_list
   "," @append_softline
+  .
   (field_declaration)
 )
 
@@ -98,6 +106,10 @@
   (_) @append_indent_end
   .
 )
+
+;(field_declaration_list
+;  "," @append_space
+;)
 
 (field_declaration
   ":" @append_space
@@ -150,6 +162,12 @@
 
 (let_declaration
   (mutable_specifier) @prepend_space
+)
+
+; line comment
+(
+  "," @append_space
+  (line_comment)
 )
 
 ; match
