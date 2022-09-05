@@ -6,7 +6,7 @@
 ; Append line breaks
 [
   (attribute_item)
-  (enum_item)
+  ((enum_item) @append_hardline . (line_comment)? @append_hardline)
   (function_item)
   (line_comment)
   (struct_item)
@@ -27,6 +27,7 @@
 
 ; Append spaces
 [
+  (block_comment)
   (visibility_modifier)
 ] @append_space
 
@@ -34,6 +35,19 @@
 [
   (scoped_use_list)
 ] @prepend_space
+
+; comments
+(
+  [
+    (enum_item)
+    ","
+  ] @append_space
+  .
+  [
+    (block_comment)
+    (line_comment)
+  ]
+)
 
 ; dyn
 (dynamic_type
@@ -75,6 +89,7 @@
 
 (field_declaration_list
   "," @append_softline
+  .
   (field_declaration)
 )
 
