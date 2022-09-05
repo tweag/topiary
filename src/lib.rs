@@ -43,13 +43,22 @@ pub fn formatter(
     let mut cursor = QueryCursor::new();
     let matches = cursor.matches(&query, root, source);
 
+    // Detect user specified line breaks
+    let multi_line_nodes = detect_multi_line_nodes(root);
+    let blank_lines_before = detect_blank_lines_before(root);
+
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
     let mut atoms: Vec<Atom> = Vec::new();
-    collect_leafs(root, &mut atoms, source, &specified_leaf_nodes, 0);
+    collect_leafs(
+        root,
+        &mut atoms,
+        source,
+        &specified_leaf_nodes,
+        &blank_lines_before,
+        0,
+    );
 
     log::debug!("List of atoms before formatting: {atoms:?}");
-
-    let multi_line_nodes = detect_multi_line_nodes(root);
 
     // Formatting
     for m in matches {
@@ -118,8 +127,11 @@ fn collect_leafs<'a>(
     atoms: &mut Vec<Atom>,
     source: &'a [u8],
     specified_leaf_nodes: &BTreeSet<usize>,
+    blank_lines_before: &HashSet<usize>,
     level: usize,
 ) {
+    let id = node.id();
+
     log::debug!(
         "CST node: {}{:?} - Named: {}",
         "  ".repeat(level),
@@ -127,14 +139,25 @@ fn collect_leafs<'a>(
         node.is_named()
     );
 
+    if blank_lines_before.contains(&id) {
+        atoms.push(Atom::Hardline);
+    }
+
     if node.child_count() == 0 || specified_leaf_nodes.contains(&node.id()) {
         atoms.push(Atom::Leaf {
             content: String::from(node.utf8_text(source).expect("Source file not valid utf8")),
-            id: node.id(),
+            id,
         });
     } else {
         for child in node.children(&mut node.walk()) {
-            collect_leafs(child, atoms, source, &specified_leaf_nodes, level + 1);
+            collect_leafs(
+                child,
+                atoms,
+                source,
+                &specified_leaf_nodes,
+                blank_lines_before,
+                level + 1,
+            );
         }
     }
 }
