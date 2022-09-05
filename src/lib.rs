@@ -43,19 +43,34 @@ pub fn formatter(
     let mut cursor = QueryCursor::new();
     let matches = cursor.matches(&query, root, source);
 
+    // Detect user specified line breaks
+    let multi_line_nodes = detect_multi_line_nodes(root);
+    let blank_lines_before = detect_blank_lines_before(root);
+
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
     let mut atoms: Vec<Atom> = Vec::new();
-    collect_leafs(root, &mut atoms, source, &specified_leaf_nodes, 0);
+    collect_leafs(
+        root,
+        &mut atoms,
+        source,
+        &specified_leaf_nodes,
+        &blank_lines_before,
+        0,
+    );
 
     log::debug!("List of atoms before formatting: {atoms:?}");
-
-    let multi_line_nodes = detect_multi_line_nodes(root);
 
     // Formatting
     for m in matches {
         for c in m.captures {
             let name = query.capture_names()[c.index as usize].clone();
-            resolve_capture(name, &mut atoms, c.node, &multi_line_nodes);
+            resolve_capture(
+                name,
+                &mut atoms,
+                c.node,
+                &multi_line_nodes,
+                &blank_lines_before,
+            );
         }
     }
 
@@ -118,8 +133,11 @@ fn collect_leafs<'a>(
     atoms: &mut Vec<Atom>,
     source: &'a [u8],
     specified_leaf_nodes: &BTreeSet<usize>,
+    blank_lines_before: &HashSet<usize>,
     level: usize,
 ) {
+    let id = node.id();
+
     log::debug!(
         "CST node: {}{:?} - Named: {}",
         "  ".repeat(level),
@@ -130,11 +148,18 @@ fn collect_leafs<'a>(
     if node.child_count() == 0 || specified_leaf_nodes.contains(&node.id()) {
         atoms.push(Atom::Leaf {
             content: String::from(node.utf8_text(source).expect("Source file not valid utf8")),
-            id: node.id(),
+            id,
         });
     } else {
         for child in node.children(&mut node.walk()) {
-            collect_leafs(child, atoms, source, &specified_leaf_nodes, level + 1);
+            collect_leafs(
+                child,
+                atoms,
+                source,
+                &specified_leaf_nodes,
+                blank_lines_before,
+                level + 1,
+            );
         }
     }
 }
@@ -208,8 +233,14 @@ fn resolve_capture(
     atoms: &mut Vec<Atom>,
     node: Node,
     multi_line_nodes: &HashSet<usize>,
+    blank_lines_before: &HashSet<usize>,
 ) {
     match name.as_ref() {
+        "allow_blank_line_before" => {
+            if blank_lines_before.contains(&node.id()) {
+                atoms_prepend(Atom::Hardline, node, atoms, multi_line_nodes);
+            }
+        }
         "append_comma" => atoms_append(
             Atom::Literal(",".to_string()),
             node,
@@ -234,13 +265,6 @@ fn resolve_capture(
     }
 }
 
-fn atoms_prepend(atom: Atom, node: Node, atoms: &mut Vec<Atom>, multi_line_nodes: &HashSet<usize>) {
-    let atom = expand_softline(atom, node, multi_line_nodes);
-    let target_node = first_leaf(node);
-    let index = find_node(target_node, atoms);
-    atoms.insert(index, atom);
-}
-
 fn atoms_append(atom: Atom, node: Node, atoms: &mut Vec<Atom>, multi_line_nodes: &HashSet<usize>) {
     let atom = expand_softline(atom, node, multi_line_nodes);
     let target_node = last_leaf(node);
@@ -250,6 +274,13 @@ fn atoms_append(atom: Atom, node: Node, atoms: &mut Vec<Atom>, multi_line_nodes:
     } else {
         atoms.insert(index + 1, atom);
     }
+}
+
+fn atoms_prepend(atom: Atom, node: Node, atoms: &mut Vec<Atom>, multi_line_nodes: &HashSet<usize>) {
+    let atom = expand_softline(atom, node, multi_line_nodes);
+    let target_node = first_leaf(node);
+    let index = find_node(target_node, atoms);
+    atoms.insert(index, atom);
 }
 
 fn expand_softline(atom: Atom, node: Node, multi_line_nodes: &HashSet<usize>) -> Atom {
@@ -288,10 +319,48 @@ fn detect_multi_line_nodes(node: Node) -> HashSet<usize> {
 
     let start_line = node.start_position().row;
     let end_line = node.end_position().row;
+
     if end_line > start_line {
         let id = node.id();
         ids.insert(id);
         log::debug!("Multi-line node {}: {:?}", id, node,);
+    }
+
+    ids
+}
+
+fn detect_blank_lines_before(node: Node) -> HashSet<usize> {
+    detect_blank_lines_before_inner(node, &mut None)
+}
+
+fn detect_blank_lines_before_inner<'a>(
+    node: Node<'a>,
+    previous_node: &mut Option<Node<'a>>,
+) -> HashSet<usize> {
+    let mut ids = HashSet::new();
+
+    if let Some(previous_node) = previous_node {
+        // If two consequent nodes don't start immediately after each other,
+        // there are blank lines between them, because no leaf nodes are
+        // themselves multi-line.
+        let previous_start = previous_node.start_position().row;
+        let current_start = node.start_position().row;
+
+        if current_start - previous_start > 1 {
+            let id = node.id();
+            ids.insert(id);
+            log::debug!(
+                "There are blank lines between {:?} and {:?}",
+                previous_node,
+                node
+            );
+        }
+    }
+
+    *previous_node = Some(node);
+
+    for child in node.children(&mut node.walk()) {
+        ids.extend(detect_blank_lines_before_inner(child, previous_node));
     }
 
     ids
@@ -309,7 +378,7 @@ fn detect_multi_line_nodes_single_line() {
 
 #[test]
 fn detect_multi_line_nodes_expand_one_level() {
-    let input = "enum OneLine { Leaf { content: String, id: usize, size: usize, },\nHardline { content: String, id: usize, }, Space, }";
+    let input = "enum ExpandOneLevel { Leaf { content: String, id: usize, size: usize, },\nHardline { content: String, id: usize, }, Space, }";
     let grammar = grammar(Language::Rust);
     let tree = parse(input, grammar);
     let root = tree.root_node();
@@ -319,10 +388,30 @@ fn detect_multi_line_nodes_expand_one_level() {
 
 #[test]
 fn detect_multi_line_nodes_expand_two_levels() {
-    let input = "enum OneLine { Leaf { content: String,\nid: usize, size: usize, }, Hardline { content: String, id: usize, }, Space, }";
+    let input = "enum ExpandTwoLevels { Leaf { content: String,\nid: usize, size: usize, }, Hardline { content: String, id: usize, }, Space, }";
     let grammar = grammar(Language::Rust);
     let tree = parse(input, grammar);
     let root = tree.root_node();
     let multi_line_nodes = detect_multi_line_nodes(root);
     assert_eq!(5, multi_line_nodes.len());
+}
+
+#[test]
+fn detect_blank_lines_before_none() {
+    let input = "enum OneLine { \nLeaf { \ncontent: String, \nid: usize, \nsize: usize, }, \nHardline { \ncontent: String, \nid: usize, }, \nSpace, \n}";
+    let grammar = grammar(Language::Rust);
+    let tree = parse(input, grammar);
+    let root = tree.root_node();
+    let blank_lines_before_nodes = detect_blank_lines_before(root);
+    assert!(blank_lines_before_nodes.is_empty());
+}
+
+#[test]
+fn detect_blank_lines_before_some() {
+    let input = "enum OneLine { \nLeaf { \ncontent: String, \n\n\n\n\nid: usize, \nsize: usize, }, \n\nHardline { \ncontent: String, \nid: usize, }, \nSpace, \n}";
+    let grammar = grammar(Language::Rust);
+    let tree = parse(input, grammar);
+    let root = tree.root_node();
+    let blank_lines_before_nodes = detect_blank_lines_before(root);
+    assert_eq!(2, blank_lines_before_nodes.len());
 }
