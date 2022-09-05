@@ -3,6 +3,11 @@
 ; tool of this.
 (string) @leaf
 
+; Append line breaks
+[
+  (document)
+] @append_hardline
+
 ; We want every object and array to have the { start a newline. So we match on
 ; the named object/array followed by the first anonymous node { or [.
 (object

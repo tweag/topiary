@@ -1,16 +1,22 @@
+use pretty_assertions::assert_eq;
 use std::fs;
+use std::io::BufReader;
 use std::io::BufWriter;
+use std::path::Path;
 use test_log::test;
 use tree_sitter_formatter::formatter;
 use tree_sitter_formatter::Language;
 
 #[test]
 fn sample_tester() {
-    let dir = fs::read_dir("tests/samples").unwrap();
+    let input_dir = fs::read_dir("tests/samples/input").unwrap();
+    let expected_dir = Path::new("tests/samples/expected");
 
-    for file in dir {
-        let path = file.unwrap().path();
-        let extension = path.extension().unwrap().to_str().unwrap();
+    for file in input_dir {
+        let file = file.unwrap();
+        let input_path = file.path();
+        let expected_path = expected_dir.join(file.file_name());
+        let extension = input_path.extension().unwrap().to_str().unwrap();
 
         let language = match extension {
             "json" => Language::Json,
@@ -18,14 +24,14 @@ fn sample_tester() {
             _ => panic!("File extension {} not supported.", extension),
         };
 
-        let sample = fs::read_to_string(path).unwrap();
-        let mut input = sample.as_bytes();
+        let expected = fs::read_to_string(expected_path).unwrap();
+        let mut input = BufReader::new(fs::File::open(input_path).unwrap());
         let mut output = BufWriter::new(Vec::new());
-        formatter(&mut input, &mut output, language);
+        formatter(&mut input, &mut output, language).unwrap();
         let bytes = output.into_inner().unwrap();
         let formatted = String::from_utf8(bytes).unwrap();
         log::debug!("{}", formatted);
 
-        assert_eq!(sample, formatted);
+        assert_eq!(expected, formatted);
     }
 }

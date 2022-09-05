@@ -50,39 +50,57 @@
 )
 
 (enum_variant_list
-  (",") @append_softline
+  "," @append_softline
   (enum_variant)
 )
 
 (enum_variant_list
-  ("{") @append_softline
+  "{" @append_softline
 )
 
 (enum_variant_list
-  ("}") @prepend_softline
+  "}" @prepend_softline
+)
+
+(enum_variant_list
+  "{" @append_indent_start
+)
+
+(enum_variant_list
+  (_) @append_indent_end
+  .
 )
 
 ; field
 
 (field_declaration_list
-  (",") @append_softline
+  "," @append_softline
   (field_declaration)
 )
 
 (field_declaration_list
-  ("{") @prepend_space
+  "{" @prepend_space
 )
 
 (field_declaration_list
-  ("{") @append_softline
+  "{" @append_softline
 )
 
 (field_declaration_list
-  ("}") @prepend_softline
+  "}" @prepend_softline
+)
+
+(field_declaration_list
+  "{" @append_indent_start
+)
+
+(field_declaration_list
+  (_) @append_indent_end
+  .
 )
 
 (field_declaration
-  (":") @append_space
+  ":" @append_space
 )
 
 ; fn

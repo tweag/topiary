@@ -217,7 +217,7 @@ fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a Vec<Atom>) -> RcDoc<'a, ()> {
                 Atom::IndentEnd => unreachable!(),
                 Atom::IndentStart => {
                     *i = *i + 1;
-                    atoms_to_doc(i, atoms).nest(4)
+                    atoms_to_doc(i, atoms).nest(2)
                 }
                 Atom::Softline => unreachable!(),
                 Atom::Space => RcDoc::space(),
@@ -252,12 +252,6 @@ fn resolve_capture(
         "append_indent_end" => atoms_append(Atom::IndentEnd, node, atoms, multi_line_nodes),
         "append_softline" => atoms_append(Atom::Softline, node, atoms, multi_line_nodes),
         "append_space" => atoms_append(Atom::Space, node, atoms, multi_line_nodes),
-        "indented" => {
-            atoms_prepend(Atom::IndentStart, node, atoms, multi_line_nodes);
-            atoms_append(Atom::IndentEnd, node, atoms, multi_line_nodes);
-        }
-        "prepend_indent_start" => atoms_prepend(Atom::IndentStart, node, atoms, multi_line_nodes),
-        "prepend_indent_end" => atoms_prepend(Atom::IndentEnd, node, atoms, multi_line_nodes),
         "prepend_softline" => atoms_prepend(Atom::Softline, node, atoms, multi_line_nodes),
         "prepend_space" => atoms_prepend(Atom::Space, node, atoms, multi_line_nodes),
         // Skip over leafs
