@@ -6,7 +6,7 @@
 ; Append line breaks
 [
   (attribute_item)
-  (enum_item)
+  ((enum_item) @append_hardline . (line_comment)? @append_hardline)
   (function_item)
   (line_comment)
   (struct_item)
@@ -54,6 +54,12 @@
 
 (enum_item
   (type_identifier) @append_space
+)
+
+(
+  (enum_item) @append_space
+  .
+  (line_comment)
 )
 
 (enum_variant_list

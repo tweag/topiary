@@ -60,10 +60,16 @@ pub fn formatter(
 
     log::debug!("List of atoms before formatting: {atoms:?}");
 
-    // Formatting
+    // Formatting. If there are more than one capture per match, it generally
+    // means that we want to use the last capture. For example
+    // ((enum_item) @append_hardline . (line_comment)? @append_hardline)
+    // means we want to append a hardline at the end, but we don't know if we get
+    // a line_comment capture or not.
+
     for m in matches {
-        for c in m.captures {
+        if let Some(c) = m.captures.last() {
             let name = query.capture_names()[c.index as usize].clone();
+
             resolve_capture(
                 name,
                 &mut atoms,
