@@ -19,16 +19,16 @@ enum NoFinalComma {
 }
 
 enum ExpandTwoLevels {
-  
+
   Leaf {
     content: String, //   Comment after field declaration in enum variant.
     id: usize,
-    
+
     size: usize,
   },
   Hardline { content: String, id: usize },
-   
+
   // comment between enum items
-  
+
   Space,
 }

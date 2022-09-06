@@ -9,6 +9,7 @@ edition = "2021"
 # Eventually we will want to dynamically load them, like Helix does.
 clap = { version = "3.2.17", features = ["derive"]}
 env_logger = "0.9.0"
+itertools = "0.10.3"
 log = "0.4.17"
 pretty = "0.11"
 test-log = "0.2.11"

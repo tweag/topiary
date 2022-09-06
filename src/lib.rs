@@ -1,4 +1,5 @@
 use clap::ArgEnum;
+use itertools::Itertools;
 use pretty::RcDoc;
 use std::collections::BTreeSet;
 use std::collections::HashSet;
@@ -84,7 +85,14 @@ pub fn formatter(
 
     // Convert our list of atoms to a Doc
     let doc = atoms_to_doc(&mut 0, &atoms);
-    doc.render(200, output)?;
+    let mut rendered = String::new();
+    doc.render_fmt(usize::max_value(), &mut rendered)?;
+
+    // Remove trailing spaces from lines
+    let trimmed: String =
+        Itertools::intersperse(rendered.split('\n').map(|line| line.trim_end()), "\n").collect();
+
+    write!(output, "{trimmed}")?;
 
     Ok(())
 }
