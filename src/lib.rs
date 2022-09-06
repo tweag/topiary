@@ -388,11 +388,8 @@ fn detect_line_start_columns_inner(node: Node, line_start_columns: &mut HashMap<
     let row = position.row;
     let column = position.column;
 
-    if line_start_columns.contains_key(&row) {
-        line_start_columns.insert(row.clone(), cmp::min(line_start_columns[&row], column));
-    } else {
-        line_start_columns.insert(row.clone(), column);
-    }
+    let stored_column = line_start_columns.entry(row).or_insert(usize::max_value());
+    *stored_column = cmp::min(*stored_column, column);
 
     for child in node.children(&mut node.walk()) {
         detect_line_start_columns_inner(child, line_start_columns);
