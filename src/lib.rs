@@ -1,13 +1,16 @@
 use clap::ArgEnum;
 use itertools::Itertools;
 use pretty::RcDoc;
+use std::cmp;
 use std::collections::BTreeSet;
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
 use std::io;
 use std::path::Path;
 use test_log::test;
+use tree_sitter::Point;
 use tree_sitter::Tree;
 use tree_sitter::{Node, Parser, Query, QueryCursor};
 
@@ -48,16 +51,12 @@ pub fn formatter(
     let multi_line_nodes = detect_multi_line_nodes(root);
     let blank_lines_before = detect_blank_lines_before(root);
 
+    // Detect first node on each line
+    let line_start_columns = detect_line_start_columns(root);
+
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
     let mut atoms: Vec<Atom> = Vec::new();
-    collect_leafs(
-        root,
-        &mut atoms,
-        source,
-        &specified_leaf_nodes,
-        &blank_lines_before,
-        0,
-    );
+    collect_leafs(root, &mut atoms, source, &specified_leaf_nodes, 0);
 
     log::debug!("List of atoms before formatting: {atoms:?}");
 
@@ -77,6 +76,7 @@ pub fn formatter(
                 c.node,
                 &multi_line_nodes,
                 &blank_lines_before,
+                &line_start_columns,
             );
         }
     }
@@ -147,7 +147,6 @@ fn collect_leafs<'a>(
     atoms: &mut Vec<Atom>,
     source: &'a [u8],
     specified_leaf_nodes: &BTreeSet<usize>,
-    blank_lines_before: &HashSet<usize>,
     level: usize,
 ) {
     let id = node.id();
@@ -166,14 +165,7 @@ fn collect_leafs<'a>(
         });
     } else {
         for child in node.children(&mut node.walk()) {
-            collect_leafs(
-                child,
-                atoms,
-                source,
-                &specified_leaf_nodes,
-                blank_lines_before,
-                level + 1,
-            );
+            collect_leafs(child, atoms, source, &specified_leaf_nodes, level + 1);
         }
     }
 }
@@ -248,6 +240,7 @@ fn resolve_capture(
     node: Node,
     multi_line_nodes: &HashSet<usize>,
     blank_lines_before: &HashSet<usize>,
+    line_start_columns: &HashSet<Point>,
 ) {
     match name.as_ref() {
         "allow_blank_line_before" => {
@@ -268,6 +261,11 @@ fn resolve_capture(
         "append_space" => atoms_append(Atom::Space, node, atoms, multi_line_nodes),
         "prepend_softline" => atoms_prepend(Atom::Softline, node, atoms, multi_line_nodes),
         "prepend_space" => atoms_prepend(Atom::Space, node, atoms, multi_line_nodes),
+        "prepend_space_unless_first_on_line" => {
+            if !line_start_columns.contains(&node.start_position()) {
+                atoms_prepend(Atom::Space, node, atoms, multi_line_nodes)
+            }
+        }
         // Skip over leafs
         _ => return,
     }
@@ -372,6 +370,33 @@ fn detect_blank_lines_before_inner<'a>(
     }
 
     ids
+}
+
+fn detect_line_start_columns(node: Node) -> HashSet<Point> {
+    let mut line_start_columns = HashMap::new();
+
+    detect_line_start_columns_inner(node, &mut line_start_columns);
+
+    line_start_columns
+        .into_iter()
+        .map(|kv| Point::new(kv.0, kv.1))
+        .collect()
+}
+
+fn detect_line_start_columns_inner(node: Node, line_start_columns: &mut HashMap<usize, usize>) {
+    let position = node.start_position();
+    let row = position.row;
+    let column = position.column;
+
+    if line_start_columns.contains_key(&row) {
+        line_start_columns.insert(row.clone(), cmp::min(line_start_columns[&row], column));
+    } else {
+        line_start_columns.insert(row.clone(), column);
+    }
+
+    for child in node.children(&mut node.walk()) {
+        detect_line_start_columns_inner(child, line_start_columns);
+    }
 }
 
 #[test]

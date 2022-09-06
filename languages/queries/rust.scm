@@ -33,21 +33,10 @@
 
 ; Prepend spaces
 [
+  (block_comment)
+  (line_comment)
   (scoped_use_list)
-] @prepend_space
-
-; comments
-(
-  [
-    (enum_item)
-    ","
-  ] @append_space
-  .
-  [
-    (block_comment)
-    (line_comment)
-  ]
-)
+] @prepend_space_unless_first_on_line
 
 ; dyn
 (dynamic_type
