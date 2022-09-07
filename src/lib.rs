@@ -276,6 +276,8 @@ fn resolve_capture(
             atoms,
             multi_line_nodes,
         ),
+        "prepend_indent_start" => atoms_prepend(Atom::IndentStart, node, atoms, multi_line_nodes),
+        "prepend_indent_end" => atoms_prepend(Atom::IndentEnd, node, atoms, multi_line_nodes),
         "prepend_space" => atoms_prepend(Atom::Space, node, atoms, multi_line_nodes),
         "prepend_space_unless_first_on_line" => {
             if !line_start_columns.contains(&node.start_position()) {

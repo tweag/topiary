@@ -38,9 +38,11 @@
   ("as")
   (block_comment)
   ("const")
+  ("for")
   (mutable_specifier)
   ("struct")
   ("type")
+  ("unsafe")
   (visibility_modifier)
   ("=")
   ("==")
@@ -52,6 +54,7 @@
 [
   ("as")
   (block_comment)
+  ("for")
   (line_comment)
   (scoped_use_list)
   ("=")
@@ -80,26 +83,46 @@
   (type_identifier) @prepend_space
 )
 
+; The following five patterns are duplicated for all nodes that can contain curly braces.
+; Hoping to be able to generalise them like this:
+; (enum_variant_list
+;   .
+;   "{" @prepend_space
+;   (#for! block declaration_list enum_variant_list field_declaration_list)
+; )
+; Perhaps even the built in #match! can do this
+
 (enum_variant_list
+  .
   "{" @prepend_space
 )
 
 (enum_variant_list
-  "{" @append_spaced_softline
-)
-
-(enum_variant_list
-  "{" @append_indent_start
-)
-
-(enum_variant_list
-  (_) @append_indent_end
   .
+  "{" @append_spaced_softline
+  _
   "}"
 )
 
 (enum_variant_list
+  .
+  "{" @append_indent_start
+  _ 
+  "}"
+)
+
+(enum_variant_list
+  "{"
+  _
+  "}" @prepend_indent_end
+  .
+)
+
+(enum_variant_list
+  "{"
+  _
   "}" @prepend_spaced_softline
+  .
 )
 
 ; extern
@@ -113,25 +136,36 @@
 
 ; field
 (field_declaration_list
+  .
   "{" @prepend_space
 )
 
 (field_declaration_list
-  "{" @append_spaced_softline
-)
-
-(field_declaration_list
-  "{" @append_indent_start
-)
-
-(field_declaration_list
-  (_) @append_indent_end
   .
+  "{" @append_spaced_softline
+  _
   "}"
 )
 
 (field_declaration_list
+  .
+  "{" @append_indent_start
+  _ 
+  "}"
+)
+
+(field_declaration_list
+  "{"
+  _
+  "}" @prepend_indent_end
+  .
+)
+
+(field_declaration_list
+  "{"
+  _
   "}" @prepend_spaced_softline
+  .
 )
 
 ; fn
@@ -140,25 +174,36 @@
 )
 
 (block
+  .
   "{" @prepend_space
 )
 
 (block
-  "{" @append_spaced_softline
-)
-
-(block
-  "{" @append_indent_start
-)
-
-(block
-  (_) @append_indent_end
   .
+  "{" @append_spaced_softline
+  _
   "}"
 )
 
 (block
+  .
+  "{" @append_indent_start
+  _ 
+  "}"
+)
+
+(block
+  "{"
+  _
+  "}" @prepend_indent_end
+  .
+)
+
+(block
+  "{"
+  _
   "}" @prepend_spaced_softline
+  .
 )
 
 ; for
@@ -197,26 +242,37 @@
   (type_identifier) @prepend_space
 )
 
-(declaration_list
+(declaration_list  
+  .
   "{" @prepend_space
 )
 
 (declaration_list
-  "{" @append_spaced_softline
-)
-
-(declaration_list
-  "{" @append_indent_start
-)
-
-(declaration_list
-  (_) @append_indent_end
   .
+  "{" @append_spaced_softline
+  _
   "}"
 )
 
 (declaration_list
+  .
+  "{" @append_indent_start
+  _ 
+  "}"
+)
+
+(declaration_list
+  "{"
+  _
+  "}" @prepend_indent_end
+  .
+)
+
+(declaration_list
+  "{"
+  _
   "}" @prepend_spaced_softline
+  .
 )
 
 ; let
