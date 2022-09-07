@@ -10,6 +10,7 @@
   (extern_crate_declaration)
   (function_item)
   (impl_item)
+  (let_declaration)
   (line_comment)
   (mod_item)
   (struct_item)
@@ -21,11 +22,13 @@
 [
   (attribute_item)
   (block_comment)
+  (call_expression)
   (enum_item)
   (enum_variant)
   (field_declaration)
   (function_item)
   (impl_item)
+  (let_declaration)
   (line_comment)
   (mod_item)
   (struct_item)
@@ -38,6 +41,9 @@
   ("as")
   (block_comment)
   ("const")
+  ("else")
+  ("extern")
+  ("fn")
   ("for")
   (mutable_specifier)
   ("struct")
@@ -46,6 +52,8 @@
   (visibility_modifier)
   ("=")
   ("==")
+  ("-")
+  ("+")
   ("->")
   (":")
 ] @append_space
@@ -54,11 +62,16 @@
 [
   ("as")
   (block_comment)
+  ("else")
+  ("extern")
+  ("fn")
   ("for")
   (line_comment)
   (scoped_use_list)
   ("=")
   ("==")
+  ("-")
+  ("+")
   ("->")
 ] @prepend_space_unless_first_on_line
 
@@ -67,6 +80,15 @@
   (",") @append_spaced_softline
   (_)
 )
+
+; Append softlines
+[
+  (";")
+] @append_spaced_softline
+
+[
+  (call_expression)
+] @append_empty_softline
 
 ; Prepend softlines before dots
 (_
