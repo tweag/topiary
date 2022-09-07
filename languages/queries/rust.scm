@@ -7,36 +7,68 @@
 [
   (attribute_item)
   ((enum_item) @append_hardline . (line_comment)? @append_hardline)
+  (extern_crate_declaration)
   (function_item)
+  (impl_item)
   (line_comment)
+  (mod_item)
   (struct_item)
+  (type_item)
   (use_declaration)
 ] @append_hardline
 
 ; Allow blank line before
 [
   (attribute_item)
+  (block_comment)
   (enum_item)
   (enum_variant)
   (field_declaration)
   (function_item)
+  (impl_item)
   (line_comment)
+  (mod_item)
   (struct_item)
+  (type_item)
   (use_declaration)
 ] @allow_blank_line_before
 
 ; Append spaces
 [
+  ("as")
   (block_comment)
+  ("const")
+  (mutable_specifier)
+  ("struct")
+  ("type")
   (visibility_modifier)
+  ("=")
+  ("==")
+  ("->")
+  (":")
 ] @append_space
 
 ; Prepend spaces
 [
+  ("as")
   (block_comment)
   (line_comment)
   (scoped_use_list)
+  ("=")
+  ("==")
+  ("->")
 ] @prepend_space_unless_first_on_line
+
+; Append softlines after commas
+(
+  (",") @append_spaced_softline
+  (_)
+)
+
+; Prepend softlines before dots
+(_
+  (".") @prepend_empty_softline
+)
 
 ; dyn
 (dynamic_type
@@ -48,21 +80,12 @@
   (type_identifier) @prepend_space
 )
 
-(enum_item
-  (type_identifier) @append_space
+(enum_variant_list
+  "{" @prepend_space
 )
 
 (enum_variant_list
-  "," @append_softline
-  (enum_variant)
-)
-
-(enum_variant_list
-  "{" @append_softline
-)
-
-(enum_variant_list
-  "}" @prepend_softline
+  "{" @append_spaced_softline
 )
 
 (enum_variant_list
@@ -72,26 +95,29 @@
 (enum_variant_list
   (_) @append_indent_end
   .
+  "}"
+)
+
+(enum_variant_list
+  "}" @prepend_spaced_softline
+)
+
+; extern
+(extern_crate_declaration
+  (crate) @prepend_space
+)
+
+(extern_crate_declaration
+  (identifier) @prepend_space
 )
 
 ; field
-
-(field_declaration_list
-  "," @append_softline
-  .
-  (field_declaration)
-)
-
 (field_declaration_list
   "{" @prepend_space
 )
 
 (field_declaration_list
-  "{" @append_softline
-)
-
-(field_declaration_list
-  "}" @prepend_softline
+  "{" @append_spaced_softline
 )
 
 (field_declaration_list
@@ -101,10 +127,11 @@
 (field_declaration_list
   (_) @append_indent_end
   .
+  "}"
 )
 
-(field_declaration
-  ":" @append_space
+(field_declaration_list
+  "}" @prepend_spaced_softline
 )
 
 ; fn
@@ -112,8 +139,26 @@
   (identifier) @prepend_space
 )
 
-(function_item
-  (identifier) @append_space
+(block
+  "{" @prepend_space
+)
+
+(block
+  "{" @append_spaced_softline
+)
+
+(block
+  "{" @append_indent_start
+)
+
+(block
+  (_) @append_indent_end
+  .
+  "}"
+)
+
+(block
+  "}" @prepend_spaced_softline
 )
 
 ; for
@@ -147,6 +192,33 @@
   (identifier) @prepend_space
 )
 
+; impl
+(impl_item
+  (type_identifier) @prepend_space
+)
+
+(declaration_list
+  "{" @prepend_space
+)
+
+(declaration_list
+  "{" @append_spaced_softline
+)
+
+(declaration_list
+  "{" @append_indent_start
+)
+
+(declaration_list
+  (_) @append_indent_end
+  .
+  "}"
+)
+
+(declaration_list
+  "}" @prepend_spaced_softline
+)
+
 ; let
 (let_declaration
   (identifier) @prepend_space
@@ -169,25 +241,36 @@
   (identifier) @prepend_space
 )
 
-; mut
-(
-  (mutable_specifier) @append_space
-  .
-  (dynamic_type)
+; mod
+(mod_item
+  (identifier) @prepend_space
 )
+
+; mut
+;(
+;  (mutable_specifier) @append_space
+;  .
+;  (dynamic_type)
+;)
 
 ; return
 (return_expression
   (identifier) @prepend_space
 )
 
-; struct
-(struct_item
-  (type_identifier) @prepend_space
+; type
+(bounded_type
+  "+" @prepend_space
 )
 
-(struct_item
-  (type_identifier) @append_space
+(bounded_type
+  "+" @append_space
+)
+
+; PhantomData<&'a ()>
+(_
+  (lifetime) @append_space
+  [(array_type) (generic_type) (primitive_type) (unit_type)]
 )
 
 ; use

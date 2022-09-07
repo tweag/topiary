@@ -105,7 +105,7 @@ enum Atom {
     IndentEnd,
     Leaf { content: String, id: usize },
     Literal(String),
-    Softline,
+    Softline { spaced: bool },
     Space,
 }
 
@@ -223,9 +223,9 @@ fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a Vec<Atom>) -> RcDoc<'a, ()> {
                 Atom::IndentEnd => unreachable!(),
                 Atom::IndentStart => {
                     *i = *i + 1;
-                    atoms_to_doc(i, atoms).nest(2)
+                    atoms_to_doc(i, atoms).nest(4)
                 }
-                Atom::Softline => unreachable!(),
+                Atom::Softline { .. } => unreachable!(),
                 Atom::Space => RcDoc::space(),
             });
         }
@@ -254,43 +254,67 @@ fn resolve_capture(
             atoms,
             multi_line_nodes,
         ),
+        "append_empty_softline" => atoms_append(
+            Atom::Softline { spaced: false },
+            node,
+            atoms,
+            multi_line_nodes,
+        ),
         "append_hardline" => atoms_append(Atom::Hardline, node, atoms, multi_line_nodes),
         "append_indent_start" => atoms_append(Atom::IndentStart, node, atoms, multi_line_nodes),
         "append_indent_end" => atoms_append(Atom::IndentEnd, node, atoms, multi_line_nodes),
-        "append_softline" => atoms_append(Atom::Softline, node, atoms, multi_line_nodes),
         "append_space" => atoms_append(Atom::Space, node, atoms, multi_line_nodes),
-        "prepend_softline" => atoms_prepend(Atom::Softline, node, atoms, multi_line_nodes),
+        "append_spaced_softline" => atoms_append(
+            Atom::Softline { spaced: true },
+            node,
+            atoms,
+            multi_line_nodes,
+        ),
+        "prepend_empty_softline" => atoms_prepend(
+            Atom::Softline { spaced: false },
+            node,
+            atoms,
+            multi_line_nodes,
+        ),
         "prepend_space" => atoms_prepend(Atom::Space, node, atoms, multi_line_nodes),
         "prepend_space_unless_first_on_line" => {
             if !line_start_columns.contains(&node.start_position()) {
                 atoms_prepend(Atom::Space, node, atoms, multi_line_nodes)
             }
         }
+        "prepend_spaced_softline" => atoms_prepend(
+            Atom::Softline { spaced: true },
+            node,
+            atoms,
+            multi_line_nodes,
+        ),
         // Skip over leafs
         _ => return,
     }
 }
 
 fn atoms_append(atom: Atom, node: Node, atoms: &mut Vec<Atom>, multi_line_nodes: &HashSet<usize>) {
-    let atom = expand_softline(atom, node, multi_line_nodes);
-    let target_node = last_leaf(node);
-    let index = find_node(target_node, atoms);
-    if index > atoms.len() {
-        atoms.push(atom);
-    } else {
-        atoms.insert(index + 1, atom);
+    if let Some(atom) = expand_softline(atom, node, multi_line_nodes) {
+        let target_node = last_leaf(node);
+        let index = find_node(target_node, atoms);
+        if index > atoms.len() {
+            atoms.push(atom);
+        } else {
+            atoms.insert(index + 1, atom);
+        }
     }
 }
 
 fn atoms_prepend(atom: Atom, node: Node, atoms: &mut Vec<Atom>, multi_line_nodes: &HashSet<usize>) {
-    let atom = expand_softline(atom, node, multi_line_nodes);
-    let target_node = first_leaf(node);
-    let index = find_node(target_node, atoms);
-    atoms.insert(index, atom);
+    if let Some(atom) = expand_softline(atom, node, multi_line_nodes) {
+        let target_node = first_leaf(node);
+        let index = find_node(target_node, atoms);
+        atoms.insert(index, atom);
+    }
 }
 
-fn expand_softline(atom: Atom, node: Node, multi_line_nodes: &HashSet<usize>) -> Atom {
-    if let Atom::Softline = atom {
+fn expand_softline(atom: Atom, node: Node, multi_line_nodes: &HashSet<usize>) -> Option<Atom> {
+    if let Atom::Softline { spaced } = atom {
         let parent = node.parent();
         let parent_id = parent.expect("Parent node not found").id();
 
@@ -301,18 +325,20 @@ fn expand_softline(atom: Atom, node: Node, multi_line_nodes: &HashSet<usize>) ->
                 parent_id,
                 parent
             );
-            Atom::Hardline
-        } else {
+            Some(Atom::Hardline)
+        } else if spaced {
             log::debug!(
                 "Expanding softline to space in node {:?} with parent {}: {:?}",
                 node,
                 parent_id,
                 parent
             );
-            Atom::Space
+            Some(Atom::Space)
+        } else {
+            None
         }
     } else {
-        atom
+        Some(atom)
     }
 }
 
