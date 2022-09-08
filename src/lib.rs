@@ -17,6 +17,7 @@ use tree_sitter::{Node, Parser, Query, QueryCursor};
 #[derive(ArgEnum, Clone, Debug)]
 pub enum Language {
     Json,
+    Ocaml,
     Rust,
 }
 
@@ -114,6 +115,7 @@ enum Atom {
 fn grammar(language: Language) -> tree_sitter::Language {
     match language {
         Language::Json => tree_sitter_json::language(),
+        Language::Ocaml => tree_sitter_ocaml::language_ocaml(),
         Language::Rust => tree_sitter_rust::language(),
     }
 }
@@ -225,7 +227,7 @@ fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a Vec<Atom>) -> RcDoc<'a, ()> {
                 Atom::IndentEnd => unreachable!(),
                 Atom::IndentStart => {
                     *i = *i + 1;
-                    atoms_to_doc(i, atoms).nest(4)
+                    atoms_to_doc(i, atoms).nest(2)
                 }
                 Atom::Softline { .. } => unreachable!(),
                 Atom::Space => RcDoc::space(),
