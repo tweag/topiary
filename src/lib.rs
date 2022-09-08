@@ -17,7 +17,7 @@ use tree_sitter::{Node, Parser, Query, QueryCursor};
 #[derive(ArgEnum, Clone, Debug)]
 pub enum Language {
     Json,
-    OCaml,
+    Ocaml,
     Rust,
 }
 
@@ -115,7 +115,7 @@ enum Atom {
 fn grammar(language: Language) -> tree_sitter::Language {
     match language {
         Language::Json => tree_sitter_json::language(),
-        Language::OCaml => tree_sitter_ocaml::language_ocaml(),
+        Language::Ocaml => tree_sitter_ocaml::language_ocaml(),
         Language::Rust => tree_sitter_rust::language(),
     }
 }
