@@ -81,6 +81,8 @@ pub fn formatter(
         }
     }
 
+    let atoms = clean_up_consecutive_spaces(&mut atoms);
+
     log::debug!("Final list of atoms: {atoms:?}");
 
     // Convert our list of atoms to a Doc
@@ -98,7 +100,7 @@ pub fn formatter(
 }
 
 /// A Node from tree-sitter is turned into into a list of atoms
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq)]
 enum Atom {
     Hardline,
     IndentStart,
@@ -422,6 +424,17 @@ fn detect_line_start_columns_inner(node: Node, line_start_columns: &mut HashMap<
     for child in node.children(&mut node.walk()) {
         detect_line_start_columns_inner(child, line_start_columns);
     }
+}
+
+fn clean_up_consecutive_spaces(atoms: &Vec<Atom>) -> Vec<Atom> {
+    let filtered = atoms
+        .split(|a| *a == Atom::Space)
+        .filter(|chain| chain.len() > 0);
+
+    Itertools::intersperse(filtered, &[Atom::Space])
+        .flatten()
+        .map(|a| a.clone())
+        .collect_vec()
 }
 
 #[test]

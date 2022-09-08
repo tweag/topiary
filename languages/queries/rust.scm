@@ -45,6 +45,8 @@
   ("extern")
   ("fn")
   ("for")
+  ("if")
+  ("let")
   (mutable_specifier)
   ("struct")
   ("type")
@@ -66,8 +68,11 @@
   ("extern")
   ("fn")
   ("for")
+  ("if")
+  ("let")
   (line_comment)
   (scoped_use_list)
+  ("unsafe")
   ("=")
   ("==")
   ("-")
@@ -85,10 +90,6 @@
 [
   (";")
 ] @append_spaced_softline
-
-[
-  (call_expression)
-] @append_empty_softline
 
 ; Prepend softlines before dots
 (_
