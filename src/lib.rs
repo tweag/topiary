@@ -227,7 +227,7 @@ fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a Vec<Atom>) -> RcDoc<'a, ()> {
                 Atom::IndentEnd => unreachable!(),
                 Atom::IndentStart => {
                     *i = *i + 1;
-                    atoms_to_doc(i, atoms).nest(4)
+                    atoms_to_doc(i, atoms).nest(2)
                 }
                 Atom::Softline { .. } => unreachable!(),
                 Atom::Space => RcDoc::space(),

@@ -8,9 +8,19 @@
   "}" @prepend_indent_end
 )
 
+(else_clause
+  _ @append_indent_end
+  .
+)
+
+(_
+  "="
+  _ @append_indent_end
+  .
+)
+
 ; Append line breaks
 [
-  (comment)
   (external)
   (type_definition)
 ] @append_hardline
@@ -30,10 +40,19 @@
 
 ; Softlines
 [
+  (comment)
+  ("else")
+  (else_clause)
+  ("then")
   (";")
   ("->")
   ("{")
 ] @append_spaced_softline
+
+(
+  "," @append_space
+  (_)
+)
 
 (
   [
@@ -51,8 +70,8 @@
 )
 
 [
+  (comment)
   (else_clause)
-  (then_clause)
   ("|")
   ("}")
 ] @prepend_spaced_softline
@@ -61,24 +80,18 @@
 [
   ("as")
   ("begin")
-  ("else")
+  (constructor_path)
   ("end")
   ("external")
   ("if")
-  ("in")
   (infix_operator)
   ("let")
   ("match")
   ("mutable")
-  (number)
-  ("raise")
   ("rec")
-  (string)
-  ("then")
   ("type")
   ("when")
   ("with")
-  ("=")
   ("|")
   ("||")
   ("<-")
@@ -99,14 +112,10 @@
   ("let")
   ("match")
   ("mutable")
-  (number)
   (parameter)
-  ("raise")
   ("rec")
-  (string)
   ("then")
   ("type")
-  (value_path)
   ("when")
   ("with")
   ("=")
@@ -117,7 +126,17 @@
   ("{")
 ] @prepend_space_unless_first_on_line
 
-; This needs to come after line break patterns.
-(
-  "{" @append_indent_start
+(application_expression
+  (_) @append_space
+  (_)
 )
+
+; This needs to come after line break patterns.
+[
+  "else"
+  "{"
+] @append_indent_start
+
+[
+  "="
+] @prepend_indent_start
