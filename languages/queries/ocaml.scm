@@ -13,8 +13,16 @@
   .
 )
 
+(then_clause
+  _ @append_indent_end
+  .
+)
+
 (_
-  "="
+  [
+    "->"
+    "="
+  ]
   _ @append_indent_end
   .
 )
@@ -57,11 +65,13 @@
 (
   [
     ("in")
+    ("with")
     ("=")
   ] @append_spaced_softline
   .
   [
     (application_expression)
+    (comment)
     (if_expression)
     (let_expression)
     (record_expression)
@@ -70,7 +80,7 @@
 )
 
 [
-  (comment)
+  ;(comment)
   (else_clause)
   ("|")
   ("}")
@@ -81,17 +91,22 @@
   ("as")
   ("begin")
   (constructor_path)
+  ("done")
   ("end")
   ("external")
+  ("false")
   ("if")
   (infix_operator)
   ("let")
   ("match")
   ("mutable")
   ("rec")
+  ("true")
   ("type")
   ("when")
+  ("while")
   ("with")
+  ("=")
   ("|")
   ("||")
   ("<-")
@@ -103,9 +118,11 @@
 [
   ("as")
   ("begin")
+  ("done")
   ("else")
   ("end")
   ("external")
+  ("false")
   ("if")
   ("in")
   (infix_operator)
@@ -115,8 +132,10 @@
   (parameter)
   ("rec")
   ("then")
+  ("true")
   ("type")
   ("when")
+  ("while")
   ("with")
   ("=")
   ("||")
@@ -134,6 +153,8 @@
 ; This needs to come after line break patterns.
 [
   "else"
+  "then"
+  "->"
   "{"
 ] @append_indent_start
 
