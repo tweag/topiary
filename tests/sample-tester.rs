@@ -20,7 +20,7 @@ fn sample_tester() {
 
         let language = match extension {
             "json" => Language::Json,
-            "ml" => Language::OCaml,
+            "ml" => Language::Ocaml,
             "rs" => Language::Rust,
             _ => panic!("File extension {} not supported.", extension),
         };
