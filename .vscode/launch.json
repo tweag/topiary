@@ -1,0 +1,86 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'tree-sitter-formatter'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=tree-sitter-formatter"
+                ],
+                "filter": {
+                    "name": "tree-sitter-formatter",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'tree-sitter-formatter'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=tree-sitter-formatter",
+                    "--package=tree-sitter-formatter"
+                ],
+                "filter": {
+                    "name": "tree-sitter-formatter",
+                    "kind": "bin"
+                }
+            },
+            "args": [
+                "<", "tests/samples/input/rust.rs",
+                "-l", "rust"
+            ],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'tree-sitter-formatter'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=tree-sitter-formatter",
+                    "--package=tree-sitter-formatter"
+                ],
+                "filter": {
+                    "name": "tree-sitter-formatter",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'sample-tester'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=sample-tester",
+                    "--package=tree-sitter-formatter"
+                ],
+                "filter": {
+                    "name": "sample-tester",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
