@@ -82,8 +82,9 @@ pub fn formatter(
         }
     }
 
-    indent_ends_before_hardlines(&mut atoms);
-    let atoms = clean_up_consecutive_spaces(&mut atoms);
+    put_indent_ends_before_hardlines(&mut atoms);
+    let atoms = clean_up_consecutive_spaces(&atoms);
+    let atoms = trim_spaces_after_hardlines(&atoms);
 
     log::debug!("Final list of atoms: {atoms:?}");
 
@@ -440,7 +441,21 @@ fn clean_up_consecutive_spaces(atoms: &Vec<Atom>) -> Vec<Atom> {
         .collect_vec()
 }
 
-fn indent_ends_before_hardlines(atoms: &mut Vec<Atom>) {
+fn trim_spaces_after_hardlines(atoms: &Vec<Atom>) -> Vec<Atom> {
+    let trimmed = atoms.split(|a| *a == Atom::Hardline).map(|slice| {
+        slice
+            .into_iter()
+            .skip_while(|a| **a == Atom::Space)
+            .collect::<Vec<_>>()
+    });
+
+    Itertools::intersperse(trimmed, vec![&Atom::Hardline])
+        .flatten()
+        .map(|a| a.clone())
+        .collect_vec()
+}
+
+fn put_indent_ends_before_hardlines(atoms: &mut Vec<Atom>) {
     for i in 1..atoms.len() - 1 {
         if atoms[i] == Atom::Hardline && atoms[i + 1] == Atom::IndentEnd {
             atoms[i] = Atom::IndentEnd;
