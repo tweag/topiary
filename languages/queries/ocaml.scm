@@ -106,6 +106,7 @@
     (product_expression)
     (record_expression)
     (sequence_expression)
+    (value_path)
   ]
 )
 

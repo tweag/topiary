@@ -386,3 +386,31 @@ let add_uint8 = add_int8
 let add_uint16_ne = add_int16_ne
 let add_uint16_le = add_int16_le
 let add_uint16_be = add_int16_be
+
+(* 1 *)
+let foo =
+if u then let x = v1 in v2
+else let y = w1 in w2
+
+(* 2 *)
+let foo =
+if u then let x = v1 in v2
+else
+  let y = w1 in
+  w2
+
+(* 3 *)
+let foo =
+if u then
+  let x = v1 in
+  v2
+else let y = w1 in w2
+
+(* 4 *)
+let foo =
+if u then
+  let x = v1 in
+  v2
+else
+  let y = w1 in
+  w2
