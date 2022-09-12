@@ -1,11 +1,19 @@
 ; Sometimes we want to indicate that certain parts of our source text should
 ; not be formated, but taken as is. We use the leaf capture name to inform the
 ; tool of this.
-(string) @leaf
+(
+  [
+    (character)
+    (string)
+  ]
+) @leaf
 
 ; This needs to come before line break patterns.
 (
-  "}" @prepend_indent_end
+  [
+    "end"
+    "}"
+  ] @prepend_indent_end
 )
 
 (else_clause
@@ -18,13 +26,25 @@
   .
 )
 
+(let_binding
+  ("=")
+  _ @append_indent_end
+  .
+)
+
 (_
   [
     "->"
-    "="
   ]
   _ @append_indent_end
   .
+)
+
+(if_expression
+  (infix_expression
+    (_) @append_indent_end
+    .
+  )
 )
 
 ; Append line breaks
@@ -32,11 +52,6 @@
   (external)
   (type_definition)
 ] @append_hardline
-
-; Root level definitions should have line breaks
-(compilation_unit
-  (value_definition) @append_hardline
-)
 
 ; Allow blank line before
 [
@@ -48,14 +63,28 @@
 
 ; Softlines
 [
+  ("begin")
   (comment)
   ("else")
-  (else_clause)
   ("then")
   (";")
   ("->")
   ("{")
 ] @append_spaced_softline
+
+(
+  (value_definition
+    (_) @append_spaced_softline
+    .
+  )
+  .
+  "in"
+)
+
+(
+  (value_definition) @append_hardline
+  (value_definition)
+)
 
 (
   "," @append_space
@@ -74,14 +103,16 @@
     (comment)
     (if_expression)
     (let_expression)
+    (product_expression)
     (record_expression)
     (sequence_expression)
   ]
 )
 
 [
-  ;(comment)
+  ("end")
   (else_clause)
+  (infix_operator)
   ("|")
   ("}")
 ] @prepend_spaced_softline
@@ -89,10 +120,8 @@
 ; Append spaces
 [
   ("as")
-  ("begin")
-  (constructor_path)
-  ("done")
-  ("end")
+  ("assert")
+  ("do")
   ("external")
   ("false")
   ("if")
@@ -118,13 +147,11 @@
 [
   ("as")
   ("begin")
+  ("do")
   ("done")
   ("else")
-  ("end")
   ("external")
   ("false")
-  ("if")
-  ("in")
   (infix_operator)
   ("let")
   ("match")
@@ -143,7 +170,7 @@
   ("<-")
   (":")
   ("{")
-] @prepend_space_unless_first_on_line
+] @prepend_space
 
 (application_expression
   (_) @append_space
@@ -152,12 +179,20 @@
 
 ; This needs to come after line break patterns.
 [
+  "begin"
   "else"
   "then"
   "->"
   "{"
 ] @append_indent_start
 
-[
-  "="
-] @prepend_indent_start
+(let_binding
+  "=" @prepend_indent_start
+)
+
+(if_expression
+  (infix_expression
+    .
+    (_) @append_indent_start
+  )
+)
