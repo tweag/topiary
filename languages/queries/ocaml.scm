@@ -1,11 +1,19 @@
 ; Sometimes we want to indicate that certain parts of our source text should
 ; not be formated, but taken as is. We use the leaf capture name to inform the
 ; tool of this.
-(string) @leaf
+(
+  [
+    (character)
+    (string)
+  ]
+) @leaf
 
 ; This needs to come before line break patterns.
 (
-  "}" @prepend_indent_end
+  [
+    "end"
+    "}"
+  ] @prepend_indent_end
 )
 
 (else_clause
@@ -13,10 +21,30 @@
   .
 )
 
-(_
-  "="
+(then_clause
   _ @append_indent_end
   .
+)
+
+(let_binding
+  ("=")
+  _ @append_indent_end
+  .
+)
+
+(_
+  [
+    "->"
+  ]
+  _ @append_indent_end
+  .
+)
+
+(if_expression
+  (infix_expression
+    (_) @append_indent_end
+    .
+  )
 )
 
 ; Append line breaks
@@ -24,11 +52,6 @@
   (external)
   (type_definition)
 ] @append_hardline
-
-; Root level definitions should have line breaks
-(compilation_unit
-  (value_definition) @append_hardline
-)
 
 ; Allow blank line before
 [
@@ -40,14 +63,28 @@
 
 ; Softlines
 [
+  ("begin")
   (comment)
   ("else")
-  (else_clause)
   ("then")
   (";")
   ("->")
   ("{")
 ] @append_spaced_softline
+
+(
+  (value_definition
+    (_) @append_spaced_softline
+    .
+  )
+  .
+  "in"
+)
+
+(
+  (value_definition) @append_hardline
+  (value_definition)
+)
 
 (
   "," @append_space
@@ -57,21 +94,25 @@
 (
   [
     ("in")
+    ("with")
     ("=")
   ] @append_spaced_softline
   .
   [
     (application_expression)
+    (comment)
     (if_expression)
     (let_expression)
+    (product_expression)
     (record_expression)
     (sequence_expression)
   ]
 )
 
 [
-  (comment)
+  ("end")
   (else_clause)
+  (infix_operator)
   ("|")
   ("}")
 ] @prepend_spaced_softline
@@ -79,19 +120,22 @@
 ; Append spaces
 [
   ("as")
-  ("begin")
-  (constructor_path)
-  ("end")
+  ("assert")
+  ("do")
   ("external")
+  ("false")
   ("if")
   (infix_operator)
   ("let")
   ("match")
   ("mutable")
   ("rec")
+  ("true")
   ("type")
   ("when")
+  ("while")
   ("with")
+  ("=")
   ("|")
   ("||")
   ("<-")
@@ -103,11 +147,11 @@
 [
   ("as")
   ("begin")
+  ("do")
+  ("done")
   ("else")
-  ("end")
   ("external")
-  ("if")
-  ("in")
+  ("false")
   (infix_operator)
   ("let")
   ("match")
@@ -115,8 +159,10 @@
   (parameter)
   ("rec")
   ("then")
+  ("true")
   ("type")
   ("when")
+  ("while")
   ("with")
   ("=")
   ("||")
@@ -124,7 +170,7 @@
   ("<-")
   (":")
   ("{")
-] @prepend_space_unless_first_on_line
+] @prepend_space
 
 (application_expression
   (_) @append_space
@@ -133,10 +179,20 @@
 
 ; This needs to come after line break patterns.
 [
+  "begin"
   "else"
+  "then"
+  "->"
   "{"
 ] @append_indent_start
 
-[
-  "="
-] @prepend_indent_start
+(let_binding
+  "=" @prepend_indent_start
+)
+
+(if_expression
+  (infix_expression
+    .
+    (_) @append_indent_start
+  )
+)

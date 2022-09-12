@@ -83,8 +83,9 @@ pub fn formatter(
     }
 
     put_indent_ends_before_hardlines(&mut atoms);
+    clean_space_between_indent_ends(&mut atoms);
     let atoms = clean_up_consecutive_spaces(&atoms);
-    let atoms = trim_spaces_after_hardlines(&atoms);
+    let atoms = trim_spaces_after(&atoms, Atom::Hardline);
 
     log::debug!("Final list of atoms: {atoms:?}");
 
@@ -105,6 +106,7 @@ pub fn formatter(
 /// A Node from tree-sitter is turned into into a list of atoms
 #[derive(Clone, Debug, PartialEq)]
 enum Atom {
+    Empty,
     Hardline,
     IndentStart,
     IndentEnd,
@@ -223,7 +225,8 @@ fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a Vec<Atom>) -> RcDoc<'a, ()> {
             return doc;
         } else {
             doc = doc.append(match atom {
-                Atom::Leaf { content, .. } => RcDoc::text(content),
+                Atom::Empty => RcDoc::text(""),
+                Atom::Leaf { content, .. } => RcDoc::text(content.trim_end()),
                 Atom::Literal(s) => RcDoc::text(s),
                 Atom::Hardline => RcDoc::hardline(),
                 Atom::IndentEnd => unreachable!(),
@@ -441,15 +444,15 @@ fn clean_up_consecutive_spaces(atoms: &Vec<Atom>) -> Vec<Atom> {
         .collect_vec()
 }
 
-fn trim_spaces_after_hardlines(atoms: &Vec<Atom>) -> Vec<Atom> {
-    let trimmed = atoms.split(|a| *a == Atom::Hardline).map(|slice| {
+fn trim_spaces_after(atoms: &Vec<Atom>, delimiter: Atom) -> Vec<Atom> {
+    let trimmed = atoms.split(|a| *a == delimiter).map(|slice| {
         slice
             .into_iter()
             .skip_while(|a| **a == Atom::Space)
             .collect::<Vec<_>>()
     });
 
-    Itertools::intersperse(trimmed, vec![&Atom::Hardline])
+    Itertools::intersperse(trimmed, vec![&delimiter])
         .flatten()
         .map(|a| a.clone())
         .collect_vec()
@@ -460,6 +463,17 @@ fn put_indent_ends_before_hardlines(atoms: &mut Vec<Atom>) {
         if atoms[i] == Atom::Hardline && atoms[i + 1] == Atom::IndentEnd {
             atoms[i] = Atom::IndentEnd;
             atoms[i + 1] = Atom::Hardline;
+        }
+    }
+}
+
+fn clean_space_between_indent_ends(atoms: &mut Vec<Atom>) {
+    for i in 1..atoms.len() - 2 {
+        if atoms[i] == Atom::IndentEnd
+            && atoms[i + 1] == Atom::Space
+            && atoms[i + 2] == Atom::IndentEnd
+        {
+            atoms[i + 1] = Atom::Empty;
         }
     }
 }

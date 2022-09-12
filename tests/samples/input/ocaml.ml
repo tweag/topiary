@@ -29,10 +29,10 @@ type t =
    before any further addition. *)
 
 let create n =
- let n = if n < 1 then 1 else n in
- let n = if n > Sys.max_string_length then Sys.max_string_length else n in
- let s = Bytes.create n in
- {buffer = s; position = 0; length = n; initial_buffer = s}
+  let n = if n < 1 then 1 else n in
+  let n = if n > Sys.max_string_length then Sys.max_string_length else n in
+  let s = Bytes.create n in
+  {buffer = s; position = 0; length = n; initial_buffer = s}
 
 let contents b = Bytes.sub_string b.buffer 0 b.position
 let to_bytes b = Bytes.sub b.buffer 0 b.position
@@ -46,7 +46,8 @@ let sub b ofs len =
 let blit src srcoff dst dstoff len =
   if len < 0 || srcoff < 0 || srcoff > src.position - len
              || dstoff < 0 || dstoff > (Bytes.length dst) - len
-  then invalid_arg "Buffer.blit"
+  then 
+    invalid_arg "Buffer.blit"
   else
     Bytes.unsafe_blit src.buffer srcoff dst dstoff len
 
