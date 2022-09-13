@@ -73,7 +73,6 @@ let reset b =
    size [more] at [b.position] will always be in-bounds, so that
    (unsafe_{get,set}) may be used for performance.
 *)
-
 let resize b more =
   let old_pos = b.position in
   let old_len = b.length in
@@ -233,7 +232,6 @@ let closing = function
    k: balance of opening and closing chars
    s: the string where we are searching
    start: the index where we start the search. *)
-
 let advance_to_closing opening closing k s start =
   let rec advance k i lim =
     if i >= lim then raise Not_found
@@ -274,7 +272,6 @@ let find_ident s start lim =
 
 (* Substitute $ident, $(ident), or ${ident} in s,
     according to the function mapping f. *)
-
 let add_substitute b f s =
   let lim = String.length s in
   let rec subst previous i =
