@@ -4,6 +4,7 @@
   inputs = {
     crane.url = "github:ipetkov/crane";
     flake-utils.follows = "crane/flake-utils";
+    nix-filter.url = "github:numtide/nix-filter";
     nixpkgs.follows = "crane/nixpkgs";
   };
 
@@ -11,7 +12,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        code = pkgs.callPackage ./. { inherit crane; };
+        code = pkgs.callPackage ./. { inherit crane nix-filter; };
       in {
         packages.default = code.app;
       }
