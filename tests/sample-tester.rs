@@ -1,5 +1,6 @@
 use pretty_assertions::assert_eq;
 use std::fs;
+use std::fs::ReadDir;
 use std::io::BufReader;
 use std::io::BufWriter;
 use std::path::Path;
@@ -8,10 +9,20 @@ use tree_sitter_formatter::formatter;
 use tree_sitter_formatter::Language;
 
 #[test]
-fn sample_tester() {
+fn input_output_tester() {
     let input_dir = fs::read_dir("tests/samples/input").unwrap();
     let expected_dir = Path::new("tests/samples/expected");
+    sample_tester(input_dir, &expected_dir);
+}
 
+#[test]
+fn idempotence_tester() {
+    let input_dir = fs::read_dir("tests/samples/expected").unwrap();
+    let expected_dir = Path::new("tests/samples/expected");
+    sample_tester(input_dir, &expected_dir);
+}
+
+fn sample_tester(input_dir: ReadDir, expected_dir: &Path) {
     for file in input_dir {
         let file = file.unwrap();
         let input_path = file.path();
