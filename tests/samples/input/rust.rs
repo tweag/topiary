@@ -54,7 +54,7 @@ enum NoFinalComma {
 enum ExpandTwoLevels {
     Leaf {
         content: String,
-        //   Comment after field declaration in enum variant.
+         //   Comment after field declaration in enum variant.
         id: usize,
 
         size: usize,

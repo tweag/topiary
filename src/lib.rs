@@ -11,6 +11,8 @@ use std::io;
 use std::path::Path;
 use test_log::test;
 use tree_sitter::Point;
+use tree_sitter::QueryPredicate;
+use tree_sitter::QueryPredicateArg;
 use tree_sitter::Tree;
 use tree_sitter::{Node, Parser, Query, QueryCursor};
 
@@ -67,7 +69,13 @@ pub fn formatter(
     // means we want to append a hardline at the end, but we don't know if we get
     // a line_comment capture or not.
 
+    let mut indent_level = 2;
+
     for m in matches {
+        for p in query.general_predicates(m.pattern_index) {
+            handle_predicate(p, &mut indent_level)?;
+        }
+
         if let Some(c) = m.captures.last() {
             let name = query.capture_names()[c.index as usize].clone();
 
@@ -90,7 +98,7 @@ pub fn formatter(
     log::debug!("Final list of atoms: {atoms:?}");
 
     // Convert our list of atoms to a Doc
-    let doc = atoms_to_doc(&mut 0, &atoms);
+    let doc = atoms_to_doc(&mut 0, &atoms, indent_level);
     let mut rendered = String::new();
     doc.render_fmt(usize::max_value(), &mut rendered)?;
 
@@ -217,7 +225,7 @@ fn collect_leaf_ids<'a>(query: &Query, root: Node, source: &'a [u8]) -> BTreeSet
     ids
 }
 
-fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a Vec<Atom>) -> RcDoc<'a, ()> {
+fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a Vec<Atom>, indent_level: isize) -> RcDoc<'a, ()> {
     let mut doc = RcDoc::nil();
     while *i < atoms.len() {
         let atom = &atoms[*i];
@@ -232,7 +240,7 @@ fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a Vec<Atom>) -> RcDoc<'a, ()> {
                 Atom::IndentEnd => unreachable!(),
                 Atom::IndentStart => {
                     *i = *i + 1;
-                    atoms_to_doc(i, atoms).nest(2)
+                    atoms_to_doc(i, atoms, indent_level).nest(indent_level)
                 }
                 Atom::Softline { .. } => unreachable!(),
                 Atom::Space => RcDoc::space(),
@@ -241,6 +249,31 @@ fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a Vec<Atom>) -> RcDoc<'a, ()> {
         *i = *i + 1;
     }
     return doc;
+}
+
+fn handle_predicate(
+    predicate: &QueryPredicate,
+    indent_level: &mut isize,
+) -> Result<(), Box<dyn Error>> {
+    let operator = &*predicate.operator;
+
+    match operator {
+        "indent-level!" => {
+            let arg = predicate
+                .args
+                .first()
+                .ok_or("indent-level! needs an argument")?;
+
+            match arg {
+                QueryPredicateArg::String(s) => {
+                    *indent_level = s.parse()?;
+                    Ok(())
+                }
+                _ => Err("indent-level! needs the indent level as an argument".into()),
+            }
+        }
+        _ => Err(format!("Unexpected predicate in query file: {operator}").into()),
+    }
 }
 
 fn resolve_capture(
