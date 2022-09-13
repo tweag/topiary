@@ -383,13 +383,10 @@ fn detect_blank_lines_before_inner<'a>(
     let mut ids = HashSet::new();
 
     if let Some(previous_node) = previous_node {
-        // If two consequent nodes don't start immediately after each other,
-        // there are blank lines between them, because no leaf nodes are
-        // themselves multi-line.
-        let previous_start = previous_node.start_position().row;
+        let previous_end = previous_node.end_position().row;
         let current_start = node.start_position().row;
 
-        if current_start - previous_start > 1 {
+        if current_start > previous_end + 1 {
             let id = node.id();
             ids.insert(id);
             log::debug!(
