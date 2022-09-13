@@ -7,25 +7,26 @@ uniform formatter for simple languages using the tree-sitter ecosystem.
 
 The program can be run like this:
 
-```
+```bash
 echo '{"foo":"bar"}' | tree-sitter-formatter --language json
 ```
 
-Or like this:
+Or, if you have Rust or Nix installed, like this:
 
-```
+```bash
 echo '{"foo":"bar"}' | cargo run -- --language json
+echo '{"foo":"bar"}' | nix run . -- --language json
 ```
 
 It will output the following formatted code:
 
-```
+```json
 {
     "foo": "bar"
 }
 ```
 
-Insert `RUST_LOG=debug` in front of `tree-sitter-formatter` (or `cargo`) if you want to enable debug logging.
+Insert `RUST_LOG=debug` in front of `tree-sitter-formatter` (or `cargo` or `nix`) if you want to enable debug logging.
 
 ## Design
 
@@ -39,3 +40,11 @@ for it to inform it how to format the provided CST. The tool will do the followi
 4. Print the flat list.
 
 It might be useful to convert the flat list to a list of documents from the `pretty` crate before outputting, but that can be done later.
+
+## Contributing
+
+Issues and pull requests are welcome! If you have Nix installed, you can start a development shell with Rust like this:
+
+```bash
+nix develop
+```
