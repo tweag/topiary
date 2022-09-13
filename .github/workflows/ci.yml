@@ -1,0 +1,38 @@
+on: push
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2.4.0
+
+            - name: Create Nix store
+              run: |
+                  # Create with liberal rights, otherwise cache action will complain
+                  # about permission errors.
+                  sudo mkdir -p /nix/store
+                  sudo chmod -R 777 /nix
+
+            - name: Cache Nix env
+              uses: actions/cache@v2
+              with:
+                  path: |
+                      # See https://github.com/actions/cache/pull/726
+                      /nix/store/**
+                      /nix/var/nix/*/*
+                      /nix/var/nix/db/*
+                      /nix/var/nix/db/*/**
+                      !/nix/var/nix/daemon-socket/socket
+                      !/nix/var/nix/userpool/*
+                      !/nix/var/nix/gc.lock
+                      !/nix/var/nix/db/big-lock
+                      !/nix/var/nix/db/reserved
+                  key: ${{ runner.os }}-nix-store
+
+            - uses: cachix/install-nix-action@v15
+              with:
+                  nix_path: nixpkgs=channel:nixos-21.11
+
+            - name: Build
+              run: nix build
