@@ -16,3 +16,6 @@ jobs:
 
       - name: Build
         run: nix build
+
+      - name: Benchmark
+        run: nix develop -c cargo bench
