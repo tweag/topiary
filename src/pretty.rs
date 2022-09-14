@@ -17,10 +17,10 @@ fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a [Atom], indent_level: isize) -> Rc
             return doc;
         } else {
             doc = doc.append(match atom {
+                Atom::Blankline | Atom::Hardline => RcDoc::hardline(),
                 Atom::Empty => RcDoc::text(""),
                 Atom::Leaf { content, .. } => RcDoc::text(content.trim_end()),
                 Atom::Literal(s) => RcDoc::text(s),
-                Atom::Hardline => RcDoc::hardline(),
                 Atom::IndentEnd => unreachable!(),
                 Atom::IndentStart => {
                     *i = *i + 1;
