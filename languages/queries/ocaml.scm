@@ -62,15 +62,22 @@
 ] @allow_blank_line_before
 
 ; Softlines
+(comment) @prepend_input_softline
+(comment) @append_input_softline
+
 [
   ("begin")
-  (comment)
   ("else")
   ("then")
-  (";")
   ("->")
   ("{")
 ] @append_spaced_softline
+
+(
+  ";" @append_spaced_softline 
+  . 
+  (comment)* @append_spaced_softline
+)
 
 (
   (value_definition
@@ -141,6 +148,7 @@
   ("||")
   ("<-")
   (":")
+  (";")
   ("}")
 ] @append_space
 

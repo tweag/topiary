@@ -43,6 +43,7 @@ pub fn apply_query(
     // Detect user specified line breaks
     let multi_line_nodes = detect_multi_line_nodes(root);
     let blank_lines_before = detect_blank_lines_before(root);
+    let (line_break_before, line_break_after) = detect_line_break_before_and_after(root);
 
     // Detect first node on each line
     let line_start_columns = detect_line_start_columns(root);
@@ -76,6 +77,8 @@ pub fn apply_query(
                 c.node,
                 &multi_line_nodes,
                 &blank_lines_before,
+                &line_break_before,
+                &line_break_after,
                 &line_start_columns,
             );
         }
@@ -219,12 +222,14 @@ fn resolve_capture(
     node: Node,
     multi_line_nodes: &HashSet<usize>,
     blank_lines_before: &HashSet<usize>,
+    line_break_before: &HashSet<usize>,
+    line_break_after: &HashSet<usize>,
     line_start_columns: &HashSet<Point>,
 ) {
     match name.as_ref() {
         "allow_blank_line_before" => {
             if blank_lines_before.contains(&node.id()) {
-                atoms_prepend(Atom::Hardline, node, atoms, multi_line_nodes);
+                atoms_prepend(Atom::Blankline, node, atoms, multi_line_nodes);
             }
         }
         "append_comma" => atoms_append(
@@ -242,6 +247,15 @@ fn resolve_capture(
         "append_hardline" => atoms_append(Atom::Hardline, node, atoms, multi_line_nodes),
         "append_indent_start" => atoms_append(Atom::IndentStart, node, atoms, multi_line_nodes),
         "append_indent_end" => atoms_append(Atom::IndentEnd, node, atoms, multi_line_nodes),
+        "append_input_softline" => {
+            let space = if line_break_after.contains(&node.id()) {
+                Atom::Hardline
+            } else {
+                Atom::Space
+            };
+
+            atoms_append(space, node, atoms, multi_line_nodes);
+        }
         "append_space" => atoms_append(Atom::Space, node, atoms, multi_line_nodes),
         "append_spaced_softline" => atoms_append(
             Atom::Softline { spaced: true },
@@ -257,6 +271,15 @@ fn resolve_capture(
         ),
         "prepend_indent_start" => atoms_prepend(Atom::IndentStart, node, atoms, multi_line_nodes),
         "prepend_indent_end" => atoms_prepend(Atom::IndentEnd, node, atoms, multi_line_nodes),
+        "prepend_input_softline" => {
+            let space = if line_break_before.contains(&node.id()) {
+                Atom::Hardline
+            } else {
+                Atom::Space
+            };
+
+            atoms_prepend(space, node, atoms, multi_line_nodes);
+        }
         "prepend_space" => atoms_prepend(Atom::Space, node, atoms, multi_line_nodes),
         "prepend_space_unless_first_on_line" => {
             if !line_start_columns.contains(&node.start_position()) {
@@ -343,24 +366,32 @@ fn detect_multi_line_nodes(node: Node) -> HashSet<usize> {
 }
 
 fn detect_blank_lines_before(node: Node) -> HashSet<usize> {
-    detect_blank_lines_before_inner(node, &mut None)
+    detect_line_breaks_inner(node, 2, &mut None).0
 }
 
-fn detect_blank_lines_before_inner<'a>(
+fn detect_line_break_before_and_after(node: Node) -> (HashSet<usize>, HashSet<usize>) {
+    detect_line_breaks_inner(node, 1, &mut None)
+}
+
+fn detect_line_breaks_inner<'a>(
     node: Node<'a>,
+    minimum_line_breaks: usize,
     previous_node: &mut Option<Node<'a>>,
-) -> HashSet<usize> {
-    let mut ids = HashSet::new();
+) -> (HashSet<usize>, HashSet<usize>) {
+    let mut nodes_with_breaks_before = HashSet::new();
+    let mut nodes_with_breaks_after = HashSet::new();
 
     if let Some(previous_node) = previous_node {
         let previous_end = previous_node.end_position().row;
         let current_start = node.start_position().row;
 
-        if current_start > previous_end + 1 {
-            let id = node.id();
-            ids.insert(id);
+        if current_start >= previous_end + minimum_line_breaks {
+            nodes_with_breaks_before.insert(node.id());
+            nodes_with_breaks_after.insert(previous_node.id());
+
             log::debug!(
-                "There are blank lines between {:?} and {:?}",
+                "There are at least {} blank lines between {:?} and {:?}",
+                minimum_line_breaks,
                 previous_node,
                 node
             );
@@ -370,10 +401,12 @@ fn detect_blank_lines_before_inner<'a>(
     *previous_node = Some(node);
 
     for child in node.children(&mut node.walk()) {
-        ids.extend(detect_blank_lines_before_inner(child, previous_node));
+        let (before, after) = detect_line_breaks_inner(child, minimum_line_breaks, previous_node);
+        nodes_with_breaks_before.extend(before);
+        nodes_with_breaks_after.extend(after);
     }
 
-    ids
+    (nodes_with_breaks_before, nodes_with_breaks_after)
 }
 
 fn detect_line_start_columns(node: Node) -> HashSet<Point> {

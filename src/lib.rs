@@ -18,6 +18,7 @@ pub enum Language {
 /// A Node from tree-sitter is turned into into a list of atoms
 #[derive(Clone, Debug, PartialEq)]
 pub enum Atom {
+    Blankline,
     Empty,
     Hardline,
     IndentStart,
@@ -41,10 +42,17 @@ pub fn formatter(
     let mut atoms = query_result.atoms;
 
     // Various post-processing of whitespace
+    //
+    // TODO: Make sure these aren't unnecessarily inefficient, in terms of
+    // recreating a vector of atoms over and over.
     put_indent_ends_before_hardlines(&mut atoms);
     clean_space_between_indent_ends(&mut atoms);
-    let atoms = clean_up_consecutive_spaces(&atoms);
-    let atoms = trim_spaces_after(&atoms, Atom::Hardline);
+    let atoms = clean_up_consecutive(&atoms, Atom::Space);
+    let atoms = trim_following(&atoms, Atom::Hardline, Atom::Space);
+    let atoms = trim_following(&atoms, Atom::Blankline, Atom::Space);
+    let atoms = trim_following(&atoms, Atom::Blankline, Atom::Hardline);
+    let mut atoms = clean_up_consecutive(&atoms, Atom::Hardline);
+    ensure_final_hardline(&mut atoms);
     log::debug!("Final list of atoms: {atoms:?}");
 
     // Pretty-print atoms
@@ -68,22 +76,20 @@ fn read_query(language: Language) -> Result<String, Box<dyn Error>> {
     )))?)
 }
 
-fn clean_up_consecutive_spaces(atoms: &Vec<Atom>) -> Vec<Atom> {
-    let filtered = atoms
-        .split(|a| *a == Atom::Space)
-        .filter(|chain| chain.len() > 0);
+fn clean_up_consecutive(atoms: &Vec<Atom>, atom: Atom) -> Vec<Atom> {
+    let filtered = atoms.split(|a| *a == atom).filter(|chain| chain.len() > 0);
 
-    Itertools::intersperse(filtered, &[Atom::Space])
+    Itertools::intersperse(filtered, &[atom.clone()])
         .flatten()
         .map(|a| a.clone())
         .collect_vec()
 }
 
-fn trim_spaces_after(atoms: &Vec<Atom>, delimiter: Atom) -> Vec<Atom> {
+fn trim_following(atoms: &Vec<Atom>, delimiter: Atom, skip: Atom) -> Vec<Atom> {
     let trimmed = atoms.split(|a| *a == delimiter).map(|slice| {
         slice
             .into_iter()
-            .skip_while(|a| **a == Atom::Space)
+            .skip_while(|a| **a == skip)
             .collect::<Vec<_>>()
     });
 
@@ -110,6 +116,13 @@ fn clean_space_between_indent_ends(atoms: &mut Vec<Atom>) {
         {
             atoms[i + 1] = Atom::Empty;
         }
+    }
+}
+
+fn ensure_final_hardline(atoms: &mut Vec<Atom>) {
+    if let Some(Atom::Hardline) = atoms.last() {
+    } else {
+        atoms.push(Atom::Hardline);
     }
 }
 
