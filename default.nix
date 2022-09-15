@@ -16,5 +16,6 @@ in
       ];
     };    
     nativeBuildInputs = [ pkgs.libiconv ];
+    cargoTestCommand = "cargo test --profile release && cargo bench --profile release";
   };
 }

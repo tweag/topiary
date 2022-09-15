@@ -14,8 +14,5 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-21.11
 
-      - name: Build
+      - name: Build, test, and benchmark
         run: nix build
-
-      - name: Benchmark
-        run: nix develop -i -c cargo bench
