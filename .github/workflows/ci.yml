@@ -15,4 +15,4 @@ jobs:
           nix_path: nixpkgs=channel:nixos-21.11
 
       - name: Build, test, and benchmark
-        run: nix build
+        run: nix build -L
