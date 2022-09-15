@@ -85,8 +85,13 @@
 
 ; Softlines
 (block_comment) @prepend_input_softline
-(block_comment) @append_input_softline
 (line_comment) @prepend_input_softline
+
+(
+  (block_comment) @append_input_softline
+  .
+  [ "," ";" ]* @do_nothing
+)
 
 ; Append softlines after commas
 (

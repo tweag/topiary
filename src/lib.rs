@@ -41,13 +41,15 @@ pub fn formatter(
 
     // All the work related to tree-sitter and the query is done here
     let query_result = tree_sitter::apply_query(&content, &query, language)?;
-    let atoms = query_result.atoms;
+    let mut atoms = query_result.atoms;
 
     // Various post-processing of whitespace
     //
-    // TODO: Make sure these aren't unnecessarily inefficient, in terms of
+    // TODO: This needs a cleanup.
+    // And make sure they aren't unnecessarily inefficient, in terms of
     // recreating a vector of atoms over and over.
     log::debug!("Before post-processing: {atoms:?}");
+    put_before(&mut atoms, Atom::IndentEnd, Atom::Space);
     let atoms = clean_up_consecutive(&atoms, Atom::Space);
     let atoms = trim_following(&atoms, Atom::Hardline, Atom::Space);
     let mut atoms = trim_following(&atoms, Atom::Blankline, Atom::Space);
@@ -56,7 +58,9 @@ pub fn formatter(
     put_before(&mut atoms, Atom::IndentEnd, Atom::Hardline);
     let atoms = clean_up_consecutive(&atoms, Atom::Hardline);
     let atoms = trim_following(&atoms, Atom::Blankline, Atom::Hardline);
-    let mut atoms = trim_following(&atoms, Atom::Hardline, Atom::Space);
+    let atoms = trim_following(&atoms, Atom::Hardline, Atom::Space);
+    let atoms = clean_up_consecutive(&atoms, Atom::Space);
+    let mut atoms = clean_up_consecutive(&atoms, Atom::Hardline);
     ensure_final_hardline(&mut atoms);
     log::debug!("Final list of atoms: {atoms:?}");
 
