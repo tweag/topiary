@@ -12,7 +12,7 @@ fn criterion_benchmark(c: &mut Criterion) {
             let mut input = input_content.as_bytes();
             let mut output = io::BufWriter::new(Vec::new());
 
-            formatter(&mut input, &mut output, Language::Ocaml)
+            formatter(&mut input, &mut output, Language::Ocaml, false)
         })
     });
 }

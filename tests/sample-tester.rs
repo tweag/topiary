@@ -1,6 +1,5 @@
 use pretty_assertions::assert_eq;
 use std::fs;
-use std::fs::ReadDir;
 use std::io::BufReader;
 use std::io::BufWriter;
 use std::path::Path;
@@ -12,17 +11,7 @@ use tree_sitter_formatter::Language;
 fn input_output_tester() {
     let input_dir = fs::read_dir("tests/samples/input").unwrap();
     let expected_dir = Path::new("tests/samples/expected");
-    sample_tester(input_dir, &expected_dir);
-}
 
-#[test]
-fn idempotence_tester() {
-    let input_dir = fs::read_dir("tests/samples/expected").unwrap();
-    let expected_dir = Path::new("tests/samples/expected");
-    sample_tester(input_dir, &expected_dir);
-}
-
-fn sample_tester(input_dir: ReadDir, expected_dir: &Path) {
     for file in input_dir {
         let file = file.unwrap();
         let input_path = file.path();
@@ -39,14 +28,11 @@ fn sample_tester(input_dir: ReadDir, expected_dir: &Path) {
         let expected = fs::read_to_string(expected_path).unwrap();
         let mut input = BufReader::new(fs::File::open(input_path).unwrap());
         let mut output = BufWriter::new(Vec::new());
-        formatter(&mut input, &mut output, language).unwrap();
+        formatter(&mut input, &mut output, language, true).unwrap();
         let bytes = output.into_inner().unwrap();
         let formatted = String::from_utf8(bytes).unwrap();
         log::debug!("{}", formatted);
 
-        // This one needs more work :-)
-        if file.file_name() != "tree-sitter.rs" {
-            assert_eq!(expected, formatted);
-        }
+        assert_eq!(expected, formatted);
     }
 }
