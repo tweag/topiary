@@ -45,19 +45,13 @@ pub fn formatter(
 
     // Various post-processing of whitespace
     //
-    // TODO: This needs a cleanup.
-    // And make sure they aren't unnecessarily inefficient, in terms of
+    // TODO: Make sure these aren't unnecessarily inefficient, in terms of
     // recreating a vector of atoms over and over.
     log::debug!("Before post-processing: {atoms:?}");
     put_before(&mut atoms, Atom::IndentEnd, Atom::Space);
-    let atoms = clean_up_consecutive(&atoms, Atom::Space);
-    let atoms = trim_following(&atoms, Atom::Hardline, Atom::Space);
     let mut atoms = trim_following(&atoms, Atom::Blankline, Atom::Space);
-    clean_space_between_indent_ends(&mut atoms);
     put_before(&mut atoms, Atom::Hardline, Atom::Blankline);
     put_before(&mut atoms, Atom::IndentEnd, Atom::Hardline);
-    let atoms = clean_up_consecutive(&atoms, Atom::Hardline);
-    let atoms = trim_following(&atoms, Atom::Blankline, Atom::Hardline);
     let atoms = trim_following(&atoms, Atom::Hardline, Atom::Space);
     let atoms = clean_up_consecutive(&atoms, Atom::Space);
     let mut atoms = clean_up_consecutive(&atoms, Atom::Hardline);
