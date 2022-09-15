@@ -7,6 +7,7 @@ in
     src = nix-filter.lib.filter {  
       root = ./.;
       include = [
+        "benches"
         "Cargo.lock"
         "Cargo.toml"
         "languages"

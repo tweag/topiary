@@ -21,4 +21,9 @@ tree-sitter-rust = "0.20"
 tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml" }
 
 [dev-dependencies]
+criterion = "0.3"
 pretty_assertions = "1.3"
+
+[[bench]]
+name = "benchmark"
+harness = false
