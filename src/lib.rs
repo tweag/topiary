@@ -1,5 +1,6 @@
 use clap::ArgEnum;
 use itertools::Itertools;
+use log::{error, info};
 use std::error::Error;
 use std::fs;
 use std::io;
@@ -33,6 +34,7 @@ pub fn formatter(
     input: &mut dyn io::Read,
     output: &mut dyn io::Write,
     language: Language,
+    check_idempotence: bool,
 ) -> Result<(), Box<dyn Error>> {
     let content = read_input(input)?;
     let query = read_query(language)?;
@@ -58,6 +60,10 @@ pub fn formatter(
     // Pretty-print atoms
     let rendered = pretty::render(&atoms, query_result.indent_level)?;
     let trimmed = trim_trailing_spaces(&rendered);
+
+    if check_idempotence {
+        idempotence_check(&trimmed, language)?
+    }
 
     write!(output, "{trimmed}")?;
 
@@ -128,4 +134,22 @@ fn ensure_final_hardline(atoms: &mut Vec<Atom>) {
 
 fn trim_trailing_spaces(s: &str) -> String {
     Itertools::intersperse(s.split('\n').map(|line| line.trim_end()), "\n").collect::<String>()
+}
+
+fn idempotence_check(content: &str, language: Language) -> Result<(), Box<dyn Error>> {
+    info!("Checking for idempotence ...");
+
+    let mut input = content.as_bytes();
+    let mut output = io::BufWriter::new(Vec::new());
+    formatter(&mut input, &mut output, language, false)?;
+    let reformatted = String::from_utf8(output.into_inner()?)?;
+
+    if content == reformatted {
+        Ok(())
+    } else {
+        error!(
+            "Failed idempotence check. First output: {content} - Reformatted output: {reformatted}"
+        );
+        Err("The formatter is not idempotent on this input. Please log an error.".into())
+    }
 }
