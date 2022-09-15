@@ -41,19 +41,22 @@ pub fn formatter(
 
     // All the work related to tree-sitter and the query is done here
     let query_result = tree_sitter::apply_query(&content, &query, language)?;
-    let mut atoms = query_result.atoms;
+    let atoms = query_result.atoms;
 
     // Various post-processing of whitespace
     //
     // TODO: Make sure these aren't unnecessarily inefficient, in terms of
     // recreating a vector of atoms over and over.
-    put_indent_ends_before_hardlines(&mut atoms);
-    clean_space_between_indent_ends(&mut atoms);
+    log::debug!("Before post-processing: {atoms:?}");
     let atoms = clean_up_consecutive(&atoms, Atom::Space);
     let atoms = trim_following(&atoms, Atom::Hardline, Atom::Space);
-    let atoms = trim_following(&atoms, Atom::Blankline, Atom::Space);
+    let mut atoms = trim_following(&atoms, Atom::Blankline, Atom::Space);
+    clean_space_between_indent_ends(&mut atoms);
+    put_before(&mut atoms, Atom::Hardline, Atom::Blankline);
+    put_before(&mut atoms, Atom::IndentEnd, Atom::Hardline);
+    let atoms = clean_up_consecutive(&atoms, Atom::Hardline);
     let atoms = trim_following(&atoms, Atom::Blankline, Atom::Hardline);
-    let mut atoms = clean_up_consecutive(&atoms, Atom::Hardline);
+    let mut atoms = trim_following(&atoms, Atom::Hardline, Atom::Space);
     ensure_final_hardline(&mut atoms);
     log::debug!("Final list of atoms: {atoms:?}");
 
@@ -105,17 +108,27 @@ fn trim_following(atoms: &Vec<Atom>, delimiter: Atom, skip: Atom) -> Vec<Atom> {
         .collect_vec()
 }
 
-fn put_indent_ends_before_hardlines(atoms: &mut Vec<Atom>) {
-    for i in 1..atoms.len() - 1 {
-        if atoms[i] == Atom::Hardline && atoms[i + 1] == Atom::IndentEnd {
-            atoms[i] = Atom::IndentEnd;
-            atoms[i + 1] = Atom::Hardline;
+fn put_before(atoms: &mut Vec<Atom>, before: Atom, after: Atom) {
+    for i in 0..atoms.len() - 1 {
+        if atoms[i] == after && atoms[i + 1] == before {
+            for j in i + 1..atoms.len() {
+                if atoms[j] != before && atoms[j] != after {
+                    // stop looking
+                    break;
+                }
+                if atoms[j] == before {
+                    // switch
+                    atoms[i] = before.clone();
+                    atoms[j] = after.clone();
+                    break;
+                }
+            }
         }
     }
 }
 
 fn clean_space_between_indent_ends(atoms: &mut Vec<Atom>) {
-    for i in 1..atoms.len() - 2 {
+    for i in 0..atoms.len() - 2 {
         if atoms[i] == Atom::IndentEnd
             && atoms[i + 1] == Atom::Space
             && atoms[i + 2] == Atom::IndentEnd

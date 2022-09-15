@@ -107,7 +107,6 @@
   .
   [
     (application_expression)
-    (comment)
     (if_expression)
     (let_expression)
     (product_expression)

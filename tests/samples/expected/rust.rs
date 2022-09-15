@@ -67,3 +67,45 @@ enum ExpandTwoLevels {
     // comment between enum items
     Space,
 }
+
+enum Mode1 {
+    Open, // open
+    Closed, // closed
+    Either, // just leaving the current mode unchanged
+}
+
+enum Mode2 {
+    Open,
+    Closed,
+    // just leaving the current mode unchanged
+    Either,
+}
+
+enum Mode3 {
+    Open,
+    Closed,
+    Either, /* just leaving the current mode unchanged */
+}
+
+enum Mode4 {
+    Open,
+    Closed,
+    /* just leaving the current mode unchanged */
+    Either,
+}
+
+enum Mode5 {
+    Open,
+    Closed,
+    // just leaving the current
+    // mode unchanged
+    Either,
+}
+
+enum Mode6 {
+    Open,
+    Closed,
+    /* just leaving the current
+       mode unchanged */
+    Either,
+}
