@@ -1,6 +1,7 @@
 unsafe impl Send for Language {}
 unsafe impl Sync for Language {}
 
+/// Sample doc comment
 pub fn node_kind_for_id(&self, id: u16) -> &'static str {
     unsafe { CStr::from_ptr(ffi::ts_language_symbol_name(self.0, id)) }
     .to_str()
@@ -12,39 +13,11 @@ pub fn node_kind_for_id(&self, id: u16) -> &'static str {
 
 // More comments.
 
-enum OneLine {
-    Leaf {
-        content: String,
-        id: usize,
-        size: usize,
-    },
-    Hardline {
-        content: String,
-        id: usize,
-    },
-    Space,
-} // End of line comment
-
-enum Foo {
-    Bar,
-} // Comment
-enum Next {
-    Bar,
-}
-enum Third {
-    Bar,
-}
+enum OneLine { Leaf { content: String, /* comment */ id: usize /* another comment */, size: usize, }, Hardline { content: String, id: usize, }, Space, } // End of line comment
 
 enum ExpandEnum {
-    Leaf {
-        content: String,
-        /* Comment between fields. */ id: usize,
-        size: usize,
-    },
-    Hardline {
-        content: String,
-        id: usize,
-    },
+    Leaf { content: String, /* Comment between fields. */ id: usize, size: usize, },
+    Hardline { content: String, id: usize, },
     Space,
 }
 enum NoFinalComma {
@@ -59,11 +32,52 @@ enum ExpandTwoLevels {
 
         size: usize,
     },
-    Hardline {
-        content: String,
-        id: usize,
-    },
+    Hardline { content: String, id: usize, },
 
     // comment between enum items
     Space,
+}
+
+enum Mode1 {
+    Open, // open
+    Closed, // closed
+    Either, // just leaving the current mode unchanged
+}
+
+enum Mode2 {
+    Open,
+    /// Doc comment
+    /// about Closed.
+    Closed,
+    // just leaving the current mode unchanged
+    Either,
+}
+
+enum Mode3 {
+    Open,
+    Closed,
+    Either, /* just leaving the current mode unchanged */
+}
+
+enum Mode4 {
+    Open,
+    Closed,
+    /* just leaving the current mode unchanged */
+    Either,
+}
+
+enum Mode5 {
+    Open,
+    Closed,
+    // just leaving the current
+    // mode unchanged
+    Either,
+}
+
+enum Mode6 {
+    Open,
+    Closed,
+    /* just leaving the current
+       mode unchanged */
+    Either,
 }

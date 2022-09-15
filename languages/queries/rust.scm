@@ -12,7 +12,7 @@
 ; Append line breaks
 [
   (attribute_item)
-  ((enum_item) @append_hardline . (line_comment)? @append_hardline)
+  ((enum_item) @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
   (extern_crate_declaration)
   (function_item)
   (impl_item)
@@ -45,7 +45,6 @@
 ; Append spaces
 [
   ("as")
-  (block_comment)
   ("const")
   ("else")
   ("extern")
@@ -69,14 +68,12 @@
 ; Prepend spaces
 [
   ("as")
-  (block_comment)
   ("else")
   ("extern")
   ("fn")
   ("for")
   ("if")
   ("let")
-  (line_comment)
   (scoped_use_list)
   ("unsafe")
   ("=")
@@ -86,10 +83,21 @@
   ("->")
 ] @prepend_space_unless_first_on_line
 
+; Softlines
+(block_comment) @prepend_input_softline
+(line_comment) @prepend_input_softline
+
+(
+  (block_comment) @append_input_softline
+  .
+  [ "," ";" ]* @do_nothing
+)
+
 ; Append softlines after commas
 (
   (",") @append_spaced_softline
-  (_)
+  . 
+  [ (block_comment) (line_comment) ]* @do_nothing
 )
 
 ; Append softlines

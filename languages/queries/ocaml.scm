@@ -63,7 +63,12 @@
 
 ; Softlines
 (comment) @prepend_input_softline
-(comment) @append_input_softline
+
+(
+  (comment) @append_input_softline
+  .
+  [ "," ";" ]* @do_nothing
+)
 
 [
   ("begin")
@@ -107,7 +112,6 @@
   .
   [
     (application_expression)
-    (comment)
     (if_expression)
     (let_expression)
     (product_expression)
