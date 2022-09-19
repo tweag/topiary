@@ -1,13 +1,10 @@
 use clap::ArgEnum;
-use error::FormatterError;
-use error::ReadingError;
+use error::{FormatterError, ReadingError, WritingError};
 use itertools::Itertools;
 use log::{error, info};
 use std::fs;
 use std::io;
 use std::path::Path;
-
-use crate::error::WritingError;
 
 mod error;
 mod pretty;

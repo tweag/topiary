@@ -1,20 +1,10 @@
-use crate::error::FormatterError;
-use crate::error::ReadingError;
-use crate::Atom;
-use crate::Language;
-use crate::Result;
+use crate::error::{FormatterError, ReadingError};
+use crate::{Atom, Language, Result};
 use std::cmp;
-use std::collections::BTreeSet;
-use std::collections::HashMap;
-use std::collections::HashSet;
-use tree_sitter::Node;
-use tree_sitter::Parser;
-use tree_sitter::Point;
-use tree_sitter::Query;
-use tree_sitter::QueryCursor;
-use tree_sitter::QueryPredicate;
-use tree_sitter::QueryPredicateArg;
-use tree_sitter::Tree;
+use std::collections::{BTreeSet, HashMap, HashSet};
+use tree_sitter::{
+    Node, Parser, Point, Query, QueryCursor, QueryPredicate, QueryPredicateArg, Tree,
+};
 
 pub struct QueryResult {
     pub atoms: Vec<Atom>,

@@ -1,7 +1,5 @@
-use crate::error::FormatterError;
-use crate::error::WritingError;
-use crate::Atom;
-use crate::Result;
+use crate::error::{FormatterError, WritingError};
+use crate::{Atom, Result};
 use pretty::RcDoc;
 
 pub fn render(atoms: &[Atom], indent_level: isize) -> Result<String> {
