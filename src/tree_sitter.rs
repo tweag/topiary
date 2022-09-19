@@ -1,18 +1,10 @@
-use crate::Atom;
-use crate::Language;
+use crate::error::{FormatterError, ReadingError};
+use crate::{Atom, Language, Result};
 use std::cmp;
-use std::collections::BTreeSet;
-use std::collections::HashMap;
-use std::collections::HashSet;
-use std::error::Error;
-use tree_sitter::Node;
-use tree_sitter::Parser;
-use tree_sitter::Point;
-use tree_sitter::Query;
-use tree_sitter::QueryCursor;
-use tree_sitter::QueryPredicate;
-use tree_sitter::QueryPredicateArg;
-use tree_sitter::Tree;
+use std::collections::{BTreeSet, HashMap, HashSet};
+use tree_sitter::{
+    Node, Parser, Point, Query, QueryCursor, QueryPredicate, QueryPredicateArg, Tree,
+};
 
 pub struct QueryResult {
     pub atoms: Vec<Atom>,
@@ -23,12 +15,13 @@ pub fn apply_query(
     input_content: &str,
     query_content: &str,
     language: Language,
-) -> Result<QueryResult, Box<dyn Error>> {
+) -> Result<QueryResult> {
     let grammar = grammar(language);
-    let tree = parse(&input_content, grammar);
+    let tree = parse(&input_content, grammar)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
-    let query = Query::new(grammar, &query_content)?;
+    let query = Query::new(grammar, &query_content)
+        .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
     let mut indent_level = 2;
 
     // Find the ids of all tree-sitter nodes that were identified as a leaf
@@ -50,7 +43,7 @@ pub fn apply_query(
 
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
     let mut atoms: Vec<Atom> = Vec::new();
-    collect_leafs(root, &mut atoms, source, &specified_leaf_nodes, 0);
+    collect_leafs(root, &mut atoms, source, &specified_leaf_nodes, 0)?;
 
     log::debug!("List of atoms before formatting: {atoms:?}");
 
@@ -98,11 +91,16 @@ fn grammar(language: Language) -> tree_sitter::Language {
     }
 }
 
-fn parse(content: &str, grammar: tree_sitter::Language) -> Tree {
+fn parse(content: &str, grammar: tree_sitter::Language) -> Result<Tree> {
     let mut parser = Parser::new();
-    parser.set_language(grammar).expect("Error loading grammar");
-    let parsed = parser.parse(&content, None).expect("Could not parse input");
-    parsed
+    parser.set_language(grammar).map_err(|_| {
+        FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
+    })?;
+
+    parser.parse(&content, None).ok_or(FormatterError::Internal(
+        "Could not parse input".into(),
+        None,
+    ))
 }
 
 /// Given a node, returns the id of the first leaf in the subtree.
@@ -130,7 +128,7 @@ fn collect_leafs<'a>(
     source: &'a [u8],
     specified_leaf_nodes: &BTreeSet<usize>,
     level: usize,
-) {
+) -> Result<()> {
     let id = node.id();
 
     log::debug!(
@@ -142,14 +140,19 @@ fn collect_leafs<'a>(
 
     if node.child_count() == 0 || specified_leaf_nodes.contains(&node.id()) {
         atoms.push(Atom::Leaf {
-            content: String::from(node.utf8_text(source).expect("Source file not valid utf8")),
+            content: String::from(
+                node.utf8_text(source)
+                    .map_err(|e| FormatterError::Reading(ReadingError::Utf8(e)))?,
+            ),
             id,
         });
     } else {
         for child in node.children(&mut node.walk()) {
-            collect_leafs(child, atoms, source, &specified_leaf_nodes, level + 1);
+            collect_leafs(child, atoms, source, &specified_leaf_nodes, level + 1)?;
         }
     }
+
+    Ok(())
 }
 
 /// Finds the matching node in the atoms and returns the index
@@ -191,28 +194,36 @@ fn collect_leaf_ids<'a>(query: &Query, root: Node, source: &'a [u8]) -> BTreeSet
     ids
 }
 
-fn handle_predicate(
-    predicate: &QueryPredicate,
-    indent_level: &mut isize,
-) -> Result<(), Box<dyn Error>> {
+fn handle_predicate(predicate: &QueryPredicate, indent_level: &mut isize) -> Result<()> {
     let operator = &*predicate.operator;
 
     match operator {
         "indent-level!" => {
-            let arg = predicate
-                .args
-                .first()
-                .ok_or("indent-level! needs an argument")?;
+            let arg = predicate.args.first().ok_or(FormatterError::Query(
+                "indent-level! needs an argument".into(),
+                None,
+            ))?;
 
             match arg {
                 QueryPredicateArg::String(s) => {
-                    *indent_level = s.parse()?;
+                    *indent_level = s.parse().map_err(|_| {
+                        FormatterError::Query(
+                            format!("indent-level! needs a numeric argument, but got '{s}'."),
+                            None,
+                        )
+                    })?;
                     Ok(())
                 }
-                _ => Err("indent-level! needs the indent level as an argument".into()),
+                _ => Err(FormatterError::Query(
+                    format!("indent-level! needs a numeric argument, but got {arg:?}."),
+                    None,
+                )),
             }
         }
-        _ => Err(format!("Unexpected predicate in query file: {operator}").into()),
+        _ => Err(FormatterError::Query(
+            format!("Unexpected predicate '{operator}'"),
+            None,
+        )),
     }
 }
 
@@ -319,25 +330,28 @@ fn atoms_prepend(atom: Atom, node: Node, atoms: &mut Vec<Atom>, multi_line_nodes
 
 fn expand_softline(atom: Atom, node: Node, multi_line_nodes: &HashSet<usize>) -> Option<Atom> {
     if let Atom::Softline { spaced } = atom {
-        let parent = node.parent();
-        let parent_id = parent.expect("Parent node not found").id();
+        if let Some(parent) = node.parent() {
+            let parent_id = parent.id();
 
-        if multi_line_nodes.contains(&parent_id) {
-            log::debug!(
-                "Expanding softline to hardline in node {:?} with parent {}: {:?}",
-                node,
-                parent_id,
-                parent
-            );
-            Some(Atom::Hardline)
-        } else if spaced {
-            log::debug!(
-                "Expanding softline to space in node {:?} with parent {}: {:?}",
-                node,
-                parent_id,
-                parent
-            );
-            Some(Atom::Space)
+            if multi_line_nodes.contains(&parent_id) {
+                log::debug!(
+                    "Expanding softline to hardline in node {:?} with parent {}: {:?}",
+                    node,
+                    parent_id,
+                    parent
+                );
+                Some(Atom::Hardline)
+            } else if spaced {
+                log::debug!(
+                    "Expanding softline to space in node {:?} with parent {}: {:?}",
+                    node,
+                    parent_id,
+                    parent
+                );
+                Some(Atom::Space)
+            } else {
+                None
+            }
         } else {
             None
         }
