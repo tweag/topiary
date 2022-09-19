@@ -19,6 +19,7 @@ tree-sitter-rust = "0.20"
 
 # Needs a version > 0.19
 tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml" }
+anyhow = "1.0.65"
 
 [dev-dependencies]
 criterion = "0.3"

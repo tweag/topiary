@@ -1,11 +1,14 @@
 use clap::ArgEnum;
+use error::FormatterError;
 use itertools::Itertools;
 use log::{error, info};
-use std::error::Error;
 use std::fs;
 use std::io;
 use std::path::Path;
 
+use crate::error::WritingError;
+
+mod error;
 mod pretty;
 mod tree_sitter;
 
@@ -30,12 +33,14 @@ pub enum Atom {
     Space,
 }
 
+pub type Result<T> = std::result::Result<T, FormatterError>;
+
 pub fn formatter(
     input: &mut dyn io::Read,
     output: &mut dyn io::Write,
     language: Language,
     check_idempotence: bool,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<()> {
     let content = read_input(input)?;
     let query = read_query(language)?;
 
@@ -66,21 +71,24 @@ pub fn formatter(
         idempotence_check(&trimmed, language)?
     }
 
-    write!(output, "{trimmed}")?;
+    write!(output, "{trimmed}").map_err(|e| FormatterError::Writing(WritingError::Io(e)))?;
 
     Ok(())
 }
 
-fn read_input(input: &mut dyn io::Read) -> Result<String, Box<dyn Error>> {
+fn read_input(input: &mut dyn io::Read) -> Result<String> {
     let mut content = String::new();
-    input.read_to_string(&mut content)?;
+    input
+        .read_to_string(&mut content)
+        .map_err(|e| FormatterError::Reading("Failed to read input content".into(), e))?;
     Ok(content)
 }
 
-fn read_query(language: Language) -> Result<String, Box<dyn Error>> {
-    Ok(fs::read_to_string(Path::new(&str::to_lowercase(
-        format!("languages/queries/{:?}.scm", language).as_str(),
-    )))?)
+fn read_query(language: Language) -> Result<String> {
+    let path = &str::to_lowercase(format!("languages/queries/{:?}.scm", language).as_str());
+    let query = fs::read_to_string(Path::new(path))
+        .map_err(|e| FormatterError::Reading(format!("Failed to read query file at {path}"), e))?;
+    Ok(query)
 }
 
 fn clean_up_consecutive(atoms: &Vec<Atom>, atom: Atom) -> Vec<Atom> {
@@ -147,13 +155,18 @@ fn trim_trailing_spaces(s: &str) -> String {
     Itertools::intersperse(s.split('\n').map(|line| line.trim_end()), "\n").collect::<String>()
 }
 
-fn idempotence_check(content: &str, language: Language) -> Result<(), Box<dyn Error>> {
+fn idempotence_check(content: &str, language: Language) -> Result<()> {
     info!("Checking for idempotence ...");
 
     let mut input = content.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
     formatter(&mut input, &mut output, language, false)?;
-    let reformatted = String::from_utf8(output.into_inner()?)?;
+    let reformatted = String::from_utf8(
+        output
+            .into_inner()
+            .map_err(|e| FormatterError::Writing(WritingError::IntoInner(e)))?,
+    )
+    .map_err(|e| FormatterError::Writing(WritingError::FromUtf8(e)))?;
 
     if content == reformatted {
         Ok(())
@@ -161,6 +174,6 @@ fn idempotence_check(content: &str, language: Language) -> Result<(), Box<dyn Er
         error!(
             "Failed idempotence check. First output: {content} - Reformatted output: {reformatted}"
         );
-        Err("The formatter is not idempotent on this input. Please log an error.".into())
+        Err(FormatterError::Idempotence)
     }
 }

@@ -1,11 +1,14 @@
+use crate::error::FormatterError;
+use crate::error::WritingError;
 use crate::Atom;
+use crate::Result;
 use pretty::RcDoc;
-use std::error::Error;
 
-pub fn render(atoms: &[Atom], indent_level: isize) -> Result<String, Box<dyn Error>> {
+pub fn render(atoms: &[Atom], indent_level: isize) -> Result<String> {
     let doc = atoms_to_doc(&mut 0, &atoms, indent_level);
     let mut rendered = String::new();
-    doc.render_fmt(usize::max_value(), &mut rendered)?;
+    doc.render_fmt(usize::max_value(), &mut rendered)
+        .map_err(|e| FormatterError::Writing(WritingError::Fmt(e)))?;
     Ok(rendered)
 }
 

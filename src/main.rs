@@ -1,5 +1,5 @@
+use anyhow::Result;
 use clap::Parser;
-use std::error::Error;
 use std::io;
 use tree_sitter_formatter::{formatter, Language};
 
@@ -15,7 +15,7 @@ struct Args {
     check_idempotence: bool,
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<()> {
     env_logger::init();
     let args = Args::parse();
     let mut input = io::stdin();
