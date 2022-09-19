@@ -1,9 +1,8 @@
 use std::error::Error;
 use std::fmt;
 use std::io;
-use std::io::BufWriter;
-use std::str::Utf8Error;
-use std::string::FromUtf8Error;
+use std::str;
+use std::string;
 
 #[derive(Debug)]
 pub enum FormatterError {
@@ -17,15 +16,15 @@ pub enum FormatterError {
 #[derive(Debug)]
 pub enum ReadingError {
     Io(String, io::Error),
-    Utf8(Utf8Error),
+    Utf8(str::Utf8Error),
 }
 
 #[derive(Debug)]
 pub enum WritingError {
     Fmt(fmt::Error),
-    IntoInner(io::IntoInnerError<BufWriter<Vec<u8>>>),
+    IntoInner(io::IntoInnerError<io::BufWriter<Vec<u8>>>),
     Io(io::Error),
-    FromUtf8(FromUtf8Error),
+    FromUtf8(string::FromUtf8Error),
 }
 
 impl fmt::Display for FormatterError {
