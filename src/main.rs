@@ -1,7 +1,6 @@
-use anyhow::Result;
 use clap::Parser;
-use std::io;
-use tree_sitter_formatter::{formatter, Language};
+use std::{error::Error, io};
+use tree_sitter_formatter::{formatter, Language, Result};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -15,7 +14,14 @@ struct Args {
     check_idempotence: bool,
 }
 
-fn main() -> Result<()> {
+fn main() {
+    if let Err(e) = run() {
+        print_error(&e);
+        std::process::exit(1);
+    }
+}
+
+fn run() -> Result<()> {
     env_logger::init();
     let args = Args::parse();
     let mut input = io::stdin();
@@ -29,4 +35,11 @@ fn main() -> Result<()> {
     )?;
 
     Ok(())
+}
+
+fn print_error(e: &dyn Error) {
+    eprintln!("Error: {}", e);
+    if let Some(source) = e.source() {
+        eprintln!("  Caused by: {}", source);
+    }
 }
