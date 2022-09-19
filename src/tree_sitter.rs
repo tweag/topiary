@@ -1,4 +1,5 @@
 use crate::error::FormatterError;
+use crate::error::ReadingError;
 use crate::Atom;
 use crate::Language;
 use crate::Result;
@@ -52,7 +53,7 @@ pub fn apply_query(
 
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
     let mut atoms: Vec<Atom> = Vec::new();
-    collect_leafs(root, &mut atoms, source, &specified_leaf_nodes, 0);
+    collect_leafs(root, &mut atoms, source, &specified_leaf_nodes, 0)?;
 
     log::debug!("List of atoms before formatting: {atoms:?}");
 
@@ -137,7 +138,7 @@ fn collect_leafs<'a>(
     source: &'a [u8],
     specified_leaf_nodes: &BTreeSet<usize>,
     level: usize,
-) {
+) -> Result<()> {
     let id = node.id();
 
     log::debug!(
@@ -149,14 +150,19 @@ fn collect_leafs<'a>(
 
     if node.child_count() == 0 || specified_leaf_nodes.contains(&node.id()) {
         atoms.push(Atom::Leaf {
-            content: String::from(node.utf8_text(source).expect("Source file not valid utf8")),
+            content: String::from(
+                node.utf8_text(source)
+                    .map_err(|e| FormatterError::Reading(ReadingError::Utf8(e)))?,
+            ),
             id,
         });
     } else {
         for child in node.children(&mut node.walk()) {
-            collect_leafs(child, atoms, source, &specified_leaf_nodes, level + 1);
+            collect_leafs(child, atoms, source, &specified_leaf_nodes, level + 1)?;
         }
     }
+
+    Ok(())
 }
 
 /// Finds the matching node in the atoms and returns the index
@@ -334,25 +340,28 @@ fn atoms_prepend(atom: Atom, node: Node, atoms: &mut Vec<Atom>, multi_line_nodes
 
 fn expand_softline(atom: Atom, node: Node, multi_line_nodes: &HashSet<usize>) -> Option<Atom> {
     if let Atom::Softline { spaced } = atom {
-        let parent = node.parent();
-        let parent_id = parent.expect("Parent node not found").id();
+        if let Some(parent) = node.parent() {
+            let parent_id = parent.id();
 
-        if multi_line_nodes.contains(&parent_id) {
-            log::debug!(
-                "Expanding softline to hardline in node {:?} with parent {}: {:?}",
-                node,
-                parent_id,
-                parent
-            );
-            Some(Atom::Hardline)
-        } else if spaced {
-            log::debug!(
-                "Expanding softline to space in node {:?} with parent {}: {:?}",
-                node,
-                parent_id,
-                parent
-            );
-            Some(Atom::Space)
+            if multi_line_nodes.contains(&parent_id) {
+                log::debug!(
+                    "Expanding softline to hardline in node {:?} with parent {}: {:?}",
+                    node,
+                    parent_id,
+                    parent
+                );
+                Some(Atom::Hardline)
+            } else if spaced {
+                log::debug!(
+                    "Expanding softline to space in node {:?} with parent {}: {:?}",
+                    node,
+                    parent_id,
+                    parent
+                );
+                Some(Atom::Space)
+            } else {
+                None
+            }
         } else {
             None
         }

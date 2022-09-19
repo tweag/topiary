@@ -1,5 +1,6 @@
 use clap::ArgEnum;
 use error::FormatterError;
+use error::ReadingError;
 use itertools::Itertools;
 use log::{error, info};
 use std::fs;
@@ -78,16 +79,20 @@ pub fn formatter(
 
 fn read_input(input: &mut dyn io::Read) -> Result<String> {
     let mut content = String::new();
-    input
-        .read_to_string(&mut content)
-        .map_err(|e| FormatterError::Reading("Failed to read input content".into(), e))?;
+    input.read_to_string(&mut content).map_err(|e| {
+        FormatterError::Reading(ReadingError::Io("Failed to read input content".into(), e))
+    })?;
     Ok(content)
 }
 
 fn read_query(language: Language) -> Result<String> {
     let path = &str::to_lowercase(format!("languages/queries/{:?}.scm", language).as_str());
-    let query = fs::read_to_string(Path::new(path))
-        .map_err(|e| FormatterError::Reading(format!("Failed to read query file at {path}"), e))?;
+    let query = fs::read_to_string(Path::new(path)).map_err(|e| {
+        FormatterError::Reading(ReadingError::Io(
+            format!("Failed to read query file at {path}"),
+            e,
+        ))
+    })?;
     Ok(query)
 }
 

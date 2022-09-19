@@ -2,6 +2,7 @@ use std::error::Error;
 use std::fmt;
 use std::io;
 use std::io::BufWriter;
+use std::str::Utf8Error;
 use std::string::FromUtf8Error;
 
 #[derive(Debug)]
@@ -9,8 +10,14 @@ pub enum FormatterError {
     Idempotence,
     Internal(String, Option<io::Error>),
     Query(String, Option<tree_sitter::QueryError>),
-    Reading(String, io::Error),
+    Reading(ReadingError),
     Writing(WritingError),
+}
+
+#[derive(Debug)]
+pub enum ReadingError {
+    Io(String, io::Error),
+    Utf8(Utf8Error),
 }
 
 #[derive(Debug)]
@@ -30,10 +37,16 @@ impl fmt::Display for FormatterError {
                     "The formatter is not idempotent on this input. Please log an error."
                 )
             }
+            Self::Reading(ReadingError::Io(message, _)) => {
+                write!(f, "{message}")
+            }
+            Self::Reading(ReadingError::Utf8(_)) => {
+                write!(f, "Input is not UTF8")
+            }
             Self::Writing(_) => {
                 write!(f, "Writing error")
             }
-            Self::Internal(message, _) | Self::Query(message, _) | Self::Reading(message, _) => {
+            Self::Internal(message, _) | Self::Query(message, _) => {
                 write!(f, "{message}")
             }
         }
@@ -46,7 +59,8 @@ impl Error for FormatterError {
             Self::Idempotence => None,
             Self::Internal(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
-            Self::Reading(_, source) => Some(source),
+            Self::Reading(ReadingError::Io(_, source)) => Some(source),
+            Self::Reading(ReadingError::Utf8(source)) => Some(source),
             Self::Writing(WritingError::Fmt(source)) => Some(source),
             Self::Writing(WritingError::FromUtf8(source)) => Some(source),
             Self::Writing(WritingError::IntoInner(source)) => Some(source),
