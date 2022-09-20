@@ -1,5 +1,5 @@
 use clap::ArgEnum;
-use error::{FormatterError, ReadingError, WritingError};
+use error::{FormatterError, ReadingError};
 use itertools::Itertools;
 use log::{error, info};
 use std::fs;

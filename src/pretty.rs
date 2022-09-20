@@ -1,4 +1,3 @@
-use crate::error::{FormatterError, WritingError};
 use crate::{Atom, Result};
 use pretty::RcDoc;
 

@@ -1,4 +1,4 @@
-use crate::error::{FormatterError, ReadingError};
+use crate::error::FormatterError;
 use crate::{Atom, Language, Result};
 use std::cmp;
 use std::collections::{BTreeSet, HashMap, HashSet};
