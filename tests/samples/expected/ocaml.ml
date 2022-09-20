@@ -19,7 +19,7 @@ type t = {
   mutable buffer : bytes;
   mutable position : int; (* End-of-line comment *)
   mutable length : int;
-  initial_buffer : bytes
+  initial_buffer : bytes;
 }
 (* Invariants: all parts of the code preserve the invariants that:
    - [0 <= b.position <= b.length]

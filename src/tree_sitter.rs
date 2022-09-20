@@ -57,8 +57,15 @@ pub fn apply_query(
     // the end, but we don't know if we get a line_comment capture or not.
 
     for m in matches {
+        let mut delimiter: Option<String> = None;
+
         for p in query.general_predicates(m.pattern_index) {
-            handle_predicate(p, &mut indent_level)?;
+            if let Some(d) = handle_delimiter_predicate(p)? {
+                delimiter = Some(d);
+            }
+            if let Some(il) = handle_indent_level_predicate(p)? {
+                indent_level = il;
+            }
         }
 
         if let Some(c) = m.captures.last() {
@@ -73,7 +80,8 @@ pub fn apply_query(
                 &line_break_before,
                 &line_break_after,
                 &line_start_columns,
-            );
+                delimiter.as_deref(),
+            )?;
         }
     }
 
@@ -191,36 +199,52 @@ fn collect_leaf_ids<'a>(query: &Query, root: Node, source: &'a [u8]) -> BTreeSet
     ids
 }
 
-fn handle_predicate(predicate: &QueryPredicate, indent_level: &mut isize) -> Result<()> {
+fn handle_indent_level_predicate(predicate: &QueryPredicate) -> Result<Option<isize>> {
     let operator = &*predicate.operator;
 
-    match operator {
-        "indent-level!" => {
-            let arg = predicate.args.first().ok_or(FormatterError::Query(
-                "indent-level! needs an argument".into(),
-                None,
-            ))?;
-
-            match arg {
-                QueryPredicateArg::String(s) => {
-                    *indent_level = s.parse().map_err(|_| {
-                        FormatterError::Query(
-                            format!("indent-level! needs a numeric argument, but got '{s}'."),
-                            None,
-                        )
-                    })?;
-                    Ok(())
-                }
-                _ => Err(FormatterError::Query(
-                    format!("indent-level! needs a numeric argument, but got {arg:?}."),
-                    None,
-                )),
-            }
-        }
-        _ => Err(FormatterError::Query(
-            format!("Unexpected predicate '{operator}'"),
+    if let "indent-level!" = operator {
+        let arg = predicate.args.first().ok_or(FormatterError::Query(
+            format!("{operator} needs an argument"),
             None,
-        )),
+        ))?;
+
+        if let QueryPredicateArg::String(s) = arg {
+            Ok(Some(s.parse().map_err(|_| {
+                FormatterError::Query(
+                    format!("{operator} needs a numeric argument, but got '{s}'."),
+                    None,
+                )
+            })?))
+        } else {
+            Err(FormatterError::Query(
+                format!("{operator} needs a numeric argument, but got {arg:?}."),
+                None,
+            ))
+        }
+    } else {
+        Ok(None)
+    }
+}
+
+fn handle_delimiter_predicate(predicate: &QueryPredicate) -> Result<Option<String>> {
+    let operator = &*predicate.operator;
+
+    if let "delimiter!" = operator {
+        let arg = predicate.args.first().ok_or(FormatterError::Query(
+            format!("{operator} needs an argument"),
+            None,
+        ))?;
+
+        if let QueryPredicateArg::String(s) = arg {
+            Ok(Some(s.to_string()))
+        } else {
+            Err(FormatterError::Query(
+                format!("{operator} needs a string argument, but got {arg:?}."),
+                None,
+            ))
+        }
+    } else {
+        Ok(None)
     }
 }
 
@@ -233,15 +257,23 @@ fn resolve_capture(
     line_break_before: &HashSet<usize>,
     line_break_after: &HashSet<usize>,
     line_start_columns: &HashSet<Point>,
-) {
+    delimiter: Option<&str>,
+) -> Result<()> {
     match name.as_ref() {
         "allow_blank_line_before" => {
             if blank_lines_before.contains(&node.id()) {
                 atoms_prepend(Atom::Blankline, node, atoms, multi_line_nodes);
             }
         }
-        "append_comma" => atoms_append(
-            Atom::Literal(",".to_string()),
+        "append_delimiter" => atoms_append(
+            Atom::Literal(
+                delimiter
+                    .ok_or(FormatterError::Query(
+                        "@append_delimiter requires a #delimiter! predicate".into(),
+                        None,
+                    ))?
+                    .to_string(),
+            ),
             node,
             atoms,
             multi_line_nodes,
@@ -301,8 +333,10 @@ fn resolve_capture(
             multi_line_nodes,
         ),
         // Skip over leafs
-        _ => return,
+        _ => {}
     }
+
+    Ok(())
 }
 
 fn atoms_append(atom: Atom, node: Node, atoms: &mut Vec<Atom>, multi_line_nodes: &HashSet<usize>) {

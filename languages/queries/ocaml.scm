@@ -190,6 +190,13 @@
   (_)
 )
 
+(
+  (field_declaration) @append_delimiter
+  .
+  ";"* @do_nothing
+  (#delimiter! ";")
+)
+
 ; This needs to come after line break patterns.
 [
   "begin"
