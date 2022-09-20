@@ -135,17 +135,6 @@ fn put_before(atoms: &mut Vec<Atom>, before: Atom, after: Atom) {
     }
 }
 
-fn clean_space_between_indent_ends(atoms: &mut Vec<Atom>) {
-    for i in 0..atoms.len() - 2 {
-        if atoms[i] == Atom::IndentEnd
-            && atoms[i + 1] == Atom::Space
-            && atoms[i + 2] == Atom::IndentEnd
-        {
-            atoms[i + 1] = Atom::Empty;
-        }
-    }
-}
-
 fn ensure_final_hardline(atoms: &mut Vec<Atom>) {
     if let Some(Atom::Hardline) = atoms.last() {
     } else {
