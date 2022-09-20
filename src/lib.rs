@@ -69,7 +69,7 @@ pub fn formatter(
         idempotence_check(&trimmed, language)?
     }
 
-    write!(output, "{trimmed}").map_err(|e| FormatterError::Writing(WritingError::Io(e)))?;
+    write!(output, "{trimmed}")?;
 
     Ok(())
 }
@@ -152,12 +152,7 @@ fn idempotence_check(content: &str, language: Language) -> Result<()> {
     let mut input = content.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
     formatter(&mut input, &mut output, language, false)?;
-    let reformatted = String::from_utf8(
-        output
-            .into_inner()
-            .map_err(|e| FormatterError::Writing(WritingError::IntoInner(e)))?,
-    )
-    .map_err(|e| FormatterError::Writing(WritingError::FromUtf8(e)))?;
+    let reformatted = String::from_utf8(output.into_inner()?)?;
 
     if content == reformatted {
         Ok(())

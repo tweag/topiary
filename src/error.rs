@@ -1,8 +1,4 @@
-use std::error::Error;
-use std::fmt;
-use std::io;
-use std::str;
-use std::string;
+use std::{error::Error, fmt, io, str, string};
 
 #[derive(Debug)]
 pub enum FormatterError {
@@ -65,5 +61,35 @@ impl Error for FormatterError {
             Self::Writing(WritingError::IntoInner(source)) => Some(source),
             Self::Writing(WritingError::Io(source)) => Some(source),
         }
+    }
+}
+
+impl From<str::Utf8Error> for FormatterError {
+    fn from(e: str::Utf8Error) -> Self {
+        FormatterError::Reading(ReadingError::Utf8(e))
+    }
+}
+
+impl From<io::Error> for FormatterError {
+    fn from(e: io::Error) -> Self {
+        FormatterError::Writing(WritingError::Io(e))
+    }
+}
+
+impl From<string::FromUtf8Error> for FormatterError {
+    fn from(e: string::FromUtf8Error) -> Self {
+        FormatterError::Writing(WritingError::FromUtf8(e))
+    }
+}
+
+impl From<io::IntoInnerError<io::BufWriter<Vec<u8>>>> for FormatterError {
+    fn from(e: io::IntoInnerError<io::BufWriter<Vec<u8>>>) -> Self {
+        FormatterError::Writing(WritingError::IntoInner(e))
+    }
+}
+
+impl From<fmt::Error> for FormatterError {
+    fn from(e: fmt::Error) -> Self {
+        FormatterError::Writing(WritingError::Fmt(e))
     }
 }

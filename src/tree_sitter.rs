@@ -140,10 +140,7 @@ fn collect_leafs<'a>(
 
     if node.child_count() == 0 || specified_leaf_nodes.contains(&node.id()) {
         atoms.push(Atom::Leaf {
-            content: String::from(
-                node.utf8_text(source)
-                    .map_err(|e| FormatterError::Reading(ReadingError::Utf8(e)))?,
-            ),
+            content: String::from(node.utf8_text(source)?),
             id,
         });
     } else {
