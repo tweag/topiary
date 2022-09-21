@@ -1,7 +1,7 @@
 use clap::ArgEnum;
 use error::{FormatterError, ReadingError};
 use itertools::Itertools;
-use log::{error, info};
+use pretty_assertions::assert_eq;
 use std::{fs, io, path::Path};
 
 mod error;
@@ -50,10 +50,17 @@ pub fn formatter(
     // TODO: Make sure these aren't unnecessarily inefficient, in terms of
     // recreating a vector of atoms over and over.
     log::debug!("Before post-processing: {atoms:?}");
-    put_before(&mut atoms, Atom::IndentEnd, Atom::Space);
+    put_before(&mut atoms, Atom::IndentEnd, Atom::Space, &[]);
     let mut atoms = trim_following(&atoms, Atom::Blankline, Atom::Space);
-    put_before(&mut atoms, Atom::Hardline, Atom::Blankline);
-    put_before(&mut atoms, Atom::IndentEnd, Atom::Hardline);
+    put_before(&mut atoms, Atom::Hardline, Atom::Blankline, &[Atom::Space]);
+    put_before(&mut atoms, Atom::IndentStart, Atom::Space, &[]);
+    put_before(
+        &mut atoms,
+        Atom::IndentStart,
+        Atom::Hardline,
+        &[Atom::Space],
+    );
+    put_before(&mut atoms, Atom::IndentEnd, Atom::Hardline, &[Atom::Space]);
     let atoms = trim_following(&atoms, Atom::Hardline, Atom::Space);
     let atoms = clean_up_consecutive(&atoms, Atom::Space);
     let mut atoms = clean_up_consecutive(&atoms, Atom::Hardline);
@@ -114,11 +121,11 @@ fn trim_following(atoms: &[Atom], delimiter: Atom, skip: Atom) -> Vec<Atom> {
         .collect_vec()
 }
 
-fn put_before(atoms: &mut Vec<Atom>, before: Atom, after: Atom) {
+fn put_before(atoms: &mut Vec<Atom>, before: Atom, after: Atom, ignoring: &[Atom]) {
     for i in 0..atoms.len() - 1 {
-        if atoms[i] == after && atoms[i + 1] == before {
+        if atoms[i] == after {
             for j in i + 1..atoms.len() {
-                if atoms[j] != before && atoms[j] != after {
+                if atoms[j] != before && atoms[j] != after && !ignoring.contains(&atoms[j]) {
                     // stop looking
                     break;
                 }
@@ -145,7 +152,7 @@ fn trim_trailing_spaces(s: &str) -> String {
 }
 
 fn idempotence_check(content: &str, language: Language) -> Result<()> {
-    info!("Checking for idempotence ...");
+    log::info!("Checking for idempotence ...");
 
     let mut input = content.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
@@ -155,9 +162,26 @@ fn idempotence_check(content: &str, language: Language) -> Result<()> {
     if content == reformatted {
         Ok(())
     } else {
-        error!(
-            "Failed idempotence check. First output: {content} - Reformatted output: {reformatted}"
-        );
+        log::error!("Failed idempotence check");
+        assert_eq!(content, reformatted);
         Err(FormatterError::Idempotence)
     }
+}
+
+#[test]
+fn test_put_indent_ends_before_hardlines() {
+    let mut atoms = vec![Atom::Hardline, Atom::Hardline, Atom::IndentEnd];
+    let expected = vec![Atom::IndentEnd, Atom::Hardline, Atom::Hardline];
+    put_before(&mut atoms, Atom::IndentEnd, Atom::Hardline, &[]);
+    assert_eq!(expected, atoms);
+}
+
+#[test]
+fn test_put_indent_ends_before_hardlines_ignoring_space() {
+    let mut atoms = vec![Atom::Hardline, Atom::Space, Atom::Hardline, Atom::IndentEnd];
+    let expected = vec![Atom::IndentEnd, Atom::Space, Atom::Hardline, Atom::Hardline];
+
+    put_before(&mut atoms, Atom::IndentEnd, Atom::Hardline, &[Atom::Space]);
+
+    assert_eq!(expected, atoms);
 }

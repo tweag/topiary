@@ -211,8 +211,7 @@ let unsafe_add_channel_up_to b ic len =
   n
 
 let add_channel b ic len =
-  if len < 0 || len > Sys.max_string_length then
-    (* PR#5004 *)
+  if len < 0 || len > Sys.max_string_length then (* PR#5004 *)
     invalid_arg "Buffer.add_channel";
   let n = unsafe_add_channel_up_to b ic len in
   (* It is intentional that a consumer catching End_of_file
