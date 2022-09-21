@@ -21,5 +21,8 @@ jobs:
           name: tweag-tree-sitter-formatter
           authToken: "${{ secrets.CACHIX_TWEAG_TREE_SITTER_FORMATTER_AUTH_TOKEN }}"
 
-      - name: Build, test, and benchmark
-        run: nix build -L
+      - name: Clippy, test, and benchmark
+        run: nix -L flake check
+
+      - name: Build and test executable
+        run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- -l json'

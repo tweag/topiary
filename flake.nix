@@ -24,6 +24,9 @@
         code = pkgs.callPackage ./. { inherit crane nix-filter; };
       in {
         packages.default = code.app;
+        checks = with code; {
+          inherit app clippy benchmark;
+        };
       }
     );
 }
