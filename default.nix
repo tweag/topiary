@@ -1,9 +1,8 @@
 { pkgs, crane, nix-filter }:
 let
   craneLib = crane.mkLib pkgs;
-in
-{
-  app = craneLib.buildPackage {
+
+  commonArgs = {
     src = nix-filter.lib.filter {  
       root = ./.;
       include = [
@@ -14,8 +13,25 @@ in
         "src"
         "tests"
       ];
-    };    
+    };
+
     nativeBuildInputs = [ pkgs.libiconv ];
-    cargoTestCommand = "cargo test --profile release && cargo bench --profile release";
   };
+
+  cargoArtifacts = craneLib.buildDepsOnly (commonArgs);
+in
+{
+  clippy = craneLib.cargoClippy (commonArgs // {
+    inherit cargoArtifacts;
+    cargoClippyExtraArgs = "--all-targets -- --deny warnings";
+  });
+
+  benchmark = craneLib.buildPackage (commonArgs // {
+    inherit cargoArtifacts;
+    cargoTestCommand = "cargo bench --profile release";
+  });
+
+  app = craneLib.buildPackage (commonArgs // {
+    inherit cargoArtifacts;
+  });
 }

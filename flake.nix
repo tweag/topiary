@@ -24,6 +24,11 @@
         code = pkgs.callPackage ./. { inherit crane nix-filter; };
       in {
         packages.default = code.app;
+        checks = {
+          app = code.app;
+          clippy = code.clippy;
+          benchmark = code.benchmark;
+        };
       }
     );
 }
