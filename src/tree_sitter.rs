@@ -17,10 +17,10 @@ pub fn apply_query(
     language: Language,
 ) -> Result<QueryResult> {
     let grammar = grammar(language);
-    let tree = parse(&input_content, grammar)?;
+    let tree = parse(input_content, grammar)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
-    let query = Query::new(grammar, &query_content)
+    let query = Query::new(grammar, query_content)
         .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
     let mut indent_level = 2;
 
@@ -105,10 +105,9 @@ fn parse(content: &str, grammar: tree_sitter::Language) -> Result<Tree> {
         FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
     })?;
 
-    parser.parse(&content, None).ok_or(FormatterError::Internal(
-        "Could not parse input".into(),
-        None,
-    ))
+    parser
+        .parse(&content, None)
+        .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))
 }
 
 /// Given a node, returns the id of the first leaf in the subtree.
@@ -153,7 +152,7 @@ fn collect_leafs<'a>(
         });
     } else {
         for child in node.children(&mut node.walk()) {
-            collect_leafs(child, atoms, source, &specified_leaf_nodes, level + 1)?;
+            collect_leafs(child, atoms, source, specified_leaf_nodes, level + 1)?;
         }
     }
 
@@ -162,7 +161,7 @@ fn collect_leafs<'a>(
 
 /// Finds the matching node in the atoms and returns the index
 /// TODO: Error
-fn find_node(node: Node, atoms: &mut Vec<Atom>) -> usize {
+fn find_node(node: Node, atoms: &mut [Atom]) -> usize {
     let mut target_node = node;
     loop {
         for (i, node) in atoms.iter().enumerate() {
@@ -203,10 +202,10 @@ fn handle_indent_level_predicate(predicate: &QueryPredicate) -> Result<Option<is
     let operator = &*predicate.operator;
 
     if let "indent-level!" = operator {
-        let arg = predicate.args.first().ok_or(FormatterError::Query(
-            format!("{operator} needs an argument"),
-            None,
-        ))?;
+        let arg = predicate
+            .args
+            .first()
+            .ok_or_else(|| FormatterError::Query(format!("{operator} needs an argument"), None))?;
 
         if let QueryPredicateArg::String(s) = arg {
             Ok(Some(s.parse().map_err(|_| {
@@ -230,10 +229,10 @@ fn handle_delimiter_predicate(predicate: &QueryPredicate) -> Result<Option<Strin
     let operator = &*predicate.operator;
 
     if let "delimiter!" = operator {
-        let arg = predicate.args.first().ok_or(FormatterError::Query(
-            format!("{operator} needs an argument"),
-            None,
-        ))?;
+        let arg = predicate
+            .args
+            .first()
+            .ok_or_else(|| FormatterError::Query(format!("{operator} needs an argument"), None))?;
 
         if let QueryPredicateArg::String(s) = arg {
             Ok(Some(s.to_string()))
@@ -268,10 +267,12 @@ fn resolve_capture(
         "append_delimiter" => atoms_append(
             Atom::Literal(
                 delimiter
-                    .ok_or(FormatterError::Query(
-                        "@append_delimiter requires a #delimiter! predicate".into(),
-                        None,
-                    ))?
+                    .ok_or_else(|| {
+                        FormatterError::Query(
+                            "@append_delimiter requires a #delimiter! predicate".into(),
+                            None,
+                        )
+                    })?
                     .to_string(),
             ),
             node,

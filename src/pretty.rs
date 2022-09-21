@@ -2,7 +2,7 @@ use crate::{Atom, Result};
 use pretty::RcDoc;
 
 pub fn render(atoms: &[Atom], indent_level: isize) -> Result<String> {
-    let doc = atoms_to_doc(&mut 0, &atoms, indent_level);
+    let doc = atoms_to_doc(&mut 0, atoms, indent_level);
     let mut rendered = String::new();
     doc.render_fmt(usize::max_value(), &mut rendered)?;
     Ok(rendered)
@@ -10,6 +10,7 @@ pub fn render(atoms: &[Atom], indent_level: isize) -> Result<String> {
 
 fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a [Atom], indent_level: isize) -> RcDoc<'a, ()> {
     let mut doc = RcDoc::nil();
+
     while *i < atoms.len() {
         let atom = &atoms[*i];
         if let Atom::IndentEnd = atom {
@@ -22,14 +23,15 @@ fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a [Atom], indent_level: isize) -> Rc
                 Atom::Literal(s) => RcDoc::text(s),
                 Atom::IndentEnd => unreachable!(),
                 Atom::IndentStart => {
-                    *i = *i + 1;
+                    *i += 1;
                     atoms_to_doc(i, atoms, indent_level).nest(indent_level)
                 }
                 Atom::Softline { .. } => unreachable!(),
                 Atom::Space => RcDoc::space(),
             });
         }
-        *i = *i + 1;
+        *i += 1;
     }
-    return doc;
+
+    doc
 }

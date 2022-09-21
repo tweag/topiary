@@ -18,13 +18,13 @@ pub enum Language {
 }
 
 /// A Node from tree-sitter is turned into into a list of atoms
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Atom {
     Blankline,
     Empty,
     Hardline,
-    IndentStart,
     IndentEnd,
+    IndentStart,
     Leaf { content: String, id: usize },
     Literal(String),
     Softline { spaced: bool },
@@ -93,26 +93,25 @@ fn read_query(language: Language) -> Result<String> {
     Ok(query)
 }
 
-fn clean_up_consecutive(atoms: &Vec<Atom>, atom: Atom) -> Vec<Atom> {
-    let filtered = atoms.split(|a| *a == atom).filter(|chain| chain.len() > 0);
+fn clean_up_consecutive(atoms: &[Atom], atom: Atom) -> Vec<Atom> {
+    let filtered = atoms
+        .split(|a| *a == atom)
+        .filter(|chain| !chain.is_empty());
 
     Itertools::intersperse(filtered, &[atom.clone()])
         .flatten()
-        .map(|a| a.clone())
+        .cloned()
         .collect_vec()
 }
 
-fn trim_following(atoms: &Vec<Atom>, delimiter: Atom, skip: Atom) -> Vec<Atom> {
-    let trimmed = atoms.split(|a| *a == delimiter).map(|slice| {
-        slice
-            .into_iter()
-            .skip_while(|a| **a == skip)
-            .collect::<Vec<_>>()
-    });
+fn trim_following(atoms: &[Atom], delimiter: Atom, skip: Atom) -> Vec<Atom> {
+    let trimmed = atoms
+        .split(|a| *a == delimiter)
+        .map(|slice| slice.iter().skip_while(|a| **a == skip).collect::<Vec<_>>());
 
     Itertools::intersperse(trimmed, vec![&delimiter])
         .flatten()
-        .map(|a| a.clone())
+        .cloned()
         .collect_vec()
 }
 
