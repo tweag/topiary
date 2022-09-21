@@ -2,12 +2,11 @@ use clap::ArgEnum;
 use error::{FormatterError, ReadingError};
 use itertools::Itertools;
 use log::{error, info};
-use std::fs;
-use std::io;
-use std::path::Path;
+use std::{fs, io, path::Path};
 
 mod error;
 mod pretty;
+mod syntax_info;
 mod tree_sitter;
 
 #[derive(ArgEnum, Clone, Copy, Debug)]
