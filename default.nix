@@ -1,4 +1,4 @@
-{ pkgs, crane, nix-filter }:
+{ pkgs, advisory-db, crane, nix-filter }:
 let
   craneLib = crane.mkLib pkgs;
 
@@ -26,6 +26,12 @@ in
     cargoClippyExtraArgs = "--all-targets -- --deny warnings";
   });
 
+  fmt = craneLib.cargoFmt (commonArgs);
+
+  audit = craneLib.cargoAudit (commonArgs // {
+    inherit advisory-db;
+  });
+  
   benchmark = craneLib.buildPackage (commonArgs // {
     inherit cargoArtifacts;
     cargoTestCommand = "cargo bench --profile release";

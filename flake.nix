@@ -11,6 +11,10 @@
   };
   
   inputs = {
+    advisory-db = {
+      url = "github:rustsec/advisory-db";
+      flake = false;
+    };
     crane.url = "github:ipetkov/crane";
     flake-utils.follows = "crane/flake-utils";
     nix-filter.url = "github:numtide/nix-filter";
@@ -21,11 +25,11 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        code = pkgs.callPackage ./. { inherit crane nix-filter; };
+        code = pkgs.callPackage ./. { inherit advisory-db crane nix-filter; };
       in {
         packages.default = code.app;
         checks = with code; {
-          inherit app clippy benchmark;
+          inherit app clippy fmt audit benchmark;
         };
       }
     );
