@@ -66,7 +66,7 @@
   "-"
   "+"
   "->"
-] @prepend_space_unless_first_on_line
+] @prepend_space
 
 ; Input softlines before and after all comments. This means that the input
 ; decides if a comment should have line breaks before or after. A line comment
