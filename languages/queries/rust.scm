@@ -5,24 +5,9 @@
 )
 
 ; Sometimes we want to indicate that certain parts of our source text should
-; not be formated, but taken as is. We use the leaf capture name to inform the
+; not be formatted, but taken as is. We use the leaf capture name to inform the
 ; tool of this.
 (string_literal) @leaf
-
-; Append line breaks
-[
-  (attribute_item)
-  ((enum_item) @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
-  (extern_crate_declaration)
-  (function_item)
-  (impl_item)
-  (let_declaration)
-  (line_comment)
-  (mod_item)
-  (struct_item)
-  (type_item)
-  (use_declaration)
-] @append_hardline
 
 ; Allow blank line before
 [
@@ -44,70 +29,89 @@
 
 ; Append spaces
 [
-  ("as")
-  ("const")
-  ("else")
-  ("extern")
-  ("fn")
-  ("for")
-  ("if")
-  ("let")
+  "as"
+  "const"
+  "else"
+  "extern"
+  "fn"
+  "for"
+  "if"
+  "let"
   (mutable_specifier)
-  ("struct")
-  ("type")
-  ("unsafe")
+  "struct"
+  "type"
+  "unsafe"
   (visibility_modifier)
-  ("=")
-  ("==")
-  ("-")
-  ("+")
-  ("->")
-  (":")
+  "="
+  "=="
+  "-"
+  "+"
+  "->"
+  ":"
 ] @append_space
 
 ; Prepend spaces
 [
-  ("as")
-  ("else")
-  ("extern")
-  ("fn")
-  ("for")
-  ("if")
-  ("let")
+  "as"
+  "else"
+  "extern"
+  "fn"
+  "for"
+  "if"
+  "let"
   (scoped_use_list)
-  ("unsafe")
-  ("=")
-  ("==")
-  ("-")
-  ("+")
-  ("->")
+  "unsafe"
+  "="
+  "=="
+  "-"
+  "+"
+  "->"
 ] @prepend_space
 
-; Softlines
+; Input softlines before and after all comments. This means that the input
+; decides if a comment should have line breaks before or after. A line comment
+; always ends with a line break.
 (block_comment) @prepend_input_softline
 (line_comment) @prepend_input_softline
 
+; Input softline after block comments unless followed by comma or semicolon, as
+; they are always put directly after.
 (
   (block_comment) @append_input_softline
   .
   [ "," ";" ]* @do_nothing
 )
 
-; Append softlines after commas
+; Append line breaks. If there is a comment following, we don't add anything,
+; because the input softlines and spaces above will already have sorted out the
+; formatting.
+((attribute_item)           @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
+((enum_item)                @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
+((extern_crate_declaration) @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
+((function_item)            @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
+((impl_item)                @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
+((let_declaration)          @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
+((line_comment)             @append_hardline)
+((mod_item)                 @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
+((struct_item)              @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
+((type_item)                @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
+((use_declaration)          @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
+
+; Append softlines
+[
+  ";"
+] @append_spaced_softline
+
+; Append softlines after commas, unless followed by comments.
 (
-  (",") @append_spaced_softline
+  "," @append_spaced_softline
   . 
   [ (block_comment) (line_comment) ]* @do_nothing
 )
 
-; Append softlines
-[
-  (";")
-] @append_spaced_softline
-
 ; Prepend softlines before dots
 (_
-  (".") @prepend_empty_softline
+  "." @prepend_empty_softline
 )
 
 ; dyn
@@ -338,13 +342,6 @@
 (mod_item
   (identifier) @prepend_space
 )
-
-; mut
-;(
-;  (mutable_specifier) @append_space
-;  .
-;  (dynamic_type)
-;)
 
 ; return
 (return_expression

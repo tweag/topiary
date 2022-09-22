@@ -1,7 +1,6 @@
 use pretty_assertions::assert_eq;
 use std::fs;
 use std::io::BufReader;
-use std::io::BufWriter;
 use std::path::Path;
 use test_log::test;
 use tree_sitter_formatter::formatter;
@@ -27,10 +26,9 @@ fn input_output_tester() {
 
         let expected = fs::read_to_string(expected_path).unwrap();
         let mut input = BufReader::new(fs::File::open(input_path).unwrap());
-        let mut output = BufWriter::new(Vec::new());
+        let mut output = Vec::new();
         formatter(&mut input, &mut output, language, true).unwrap();
-        let bytes = output.into_inner().unwrap();
-        let formatted = String::from_utf8(bytes).unwrap();
+        let formatted = String::from_utf8(output).unwrap();
         log::debug!("{}", formatted);
 
         assert_eq!(expected, formatted);

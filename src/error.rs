@@ -1,20 +1,35 @@
 use std::{error::Error, fmt, io, str, string};
 
+/// The various errors the formatter may return.
 #[derive(Debug)]
 pub enum FormatterError {
+    /// The input produced output that isn't idempotent, i.e. formatting the
+    /// output again made further changes. If this happened using our provided
+    /// query files, it is a bug. Please log an issue.
     Idempotence,
+
+    /// An internal error occurred. This is a bug. Please log an issue.
     Internal(String, Option<io::Error>),
+
+    /// There was an error in the query file. If this happened using our
+    /// provided query files, it is a bug. Please log an issue.
     Query(String, Option<tree_sitter::QueryError>),
+
+    /// Could not read the input.
     Reading(ReadingError),
+
+    /// Could not write the formatted output.
     Writing(WritingError),
 }
 
+/// A subtype of `FormatterError::Reading`.
 #[derive(Debug)]
 pub enum ReadingError {
     Io(String, io::Error),
     Utf8(str::Utf8Error),
 }
 
+/// A subtype of `FormatterError::Writing`.
 #[derive(Debug)]
 pub enum WritingError {
     Fmt(fmt::Error),

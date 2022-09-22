@@ -1,7 +1,19 @@
+//! A general code formatter that relies on
+//! [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) for language
+//! parsing.
+//!
+//! In order for a language to be supported, there must be a [Tree-sitter
+//! grammar](https://tree-sitter.github.io/tree-sitter/#available-parsers)
+//! available, and there must be a query file that dictates how that language is
+//! to be formatted. We include query files for some languages.
+//!
+//! More details can be found on
+//! [GitHub](https://github.com/tweag/tree-sitter-formatter).
+
 use clap::ArgEnum;
-use error::{FormatterError, ReadingError};
+pub use error::{FormatterError, ReadingError, WritingError};
 use itertools::Itertools;
-use log::{error, info};
+use pretty_assertions::assert_eq;
 use std::{fs, io, path::Path};
 
 mod error;
@@ -9,6 +21,7 @@ mod pretty;
 mod syntax_info;
 mod tree_sitter;
 
+/// The languages that we support with query files.
 #[derive(ArgEnum, Clone, Copy, Debug)]
 pub enum Language {
     Json,
@@ -16,22 +29,63 @@ pub enum Language {
     Rust,
 }
 
-/// A Node from tree-sitter is turned into into a list of atoms
+/// An atom represents a small piece of the output. We turn Tree-sitter nodes
+/// into atoms, and we add white-space atoms where appropriate. The final list
+/// of atoms is rendered to the output.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Atom {
+    /// We don't allow consecutive `Hardline`, but if a `Hardline` is followed by
+    /// a `Blankline` we will render two newlines to produce a blank line.
     Blankline,
+    /// A "no-op" atom that will not produce any output.
     Empty,
+    /// Represents a newline.
     Hardline,
+    /// Signals the end of an indentation block.
     IndentEnd,
+    /// Signals the start of an indentation block. Any lines between the
+    /// beginning and the end will be indented. In single-line constructs where
+    /// the beginning and the end occurs on the same line, there will be no
+    /// indentation.
     IndentStart,
+    /// Represents the contents of a named Tree-sitter node. We track the node id here
+    /// as well.
     Leaf { content: String, id: usize },
+    /// Represents a literal string, such as a semicolon.
     Literal(String),
+    /// Represents a softline. It will be turned into a hardline for multi-line
+    /// constructs, and either a space or nothing for single-line constructs.
     Softline { spaced: bool },
+    /// Represents a space. Consecutive spaces are reduced to one before rendering.
     Space,
 }
 
+/// A convenience wrapper around `std::result::Result<T, FormatterError>`.
 pub type Result<T> = std::result::Result<T, FormatterError>;
 
+/// The function that takes an input and formats an output.
+///
+/// # Examples
+///
+/// ```
+/// use tree_sitter_formatter::{formatter, FormatterError, Language};
+///
+/// let code = "[1,2]".to_string();
+/// let mut input = code.as_bytes();
+/// let mut output = Vec::new();
+///
+/// match formatter(&mut input, &mut output, Language::Json, true) {
+///   Ok(()) => {
+///     let formatted = String::from_utf8(output).expect("valid utf-8");
+///   }
+///   Err(FormatterError::Query(message, _)) => {
+///     panic!("Error in query file: {message}");
+///   }
+///   Err(_) => {
+///     panic!("An error occurred");
+///   }
+/// }
+/// ```
 pub fn formatter(
     input: &mut dyn io::Read,
     output: &mut dyn io::Write,
@@ -50,10 +104,17 @@ pub fn formatter(
     // TODO: Make sure these aren't unnecessarily inefficient, in terms of
     // recreating a vector of atoms over and over.
     log::debug!("Before post-processing: {atoms:?}");
-    put_before(&mut atoms, Atom::IndentEnd, Atom::Space);
+    put_before(&mut atoms, Atom::IndentEnd, Atom::Space, &[]);
     let mut atoms = trim_following(&atoms, Atom::Blankline, Atom::Space);
-    put_before(&mut atoms, Atom::Hardline, Atom::Blankline);
-    put_before(&mut atoms, Atom::IndentEnd, Atom::Hardline);
+    put_before(&mut atoms, Atom::Hardline, Atom::Blankline, &[Atom::Space]);
+    put_before(&mut atoms, Atom::IndentStart, Atom::Space, &[]);
+    put_before(
+        &mut atoms,
+        Atom::IndentStart,
+        Atom::Hardline,
+        &[Atom::Space],
+    );
+    put_before(&mut atoms, Atom::IndentEnd, Atom::Hardline, &[Atom::Space]);
     let atoms = trim_following(&atoms, Atom::Hardline, Atom::Space);
     let atoms = clean_up_consecutive(&atoms, Atom::Space);
     let mut atoms = clean_up_consecutive(&atoms, Atom::Hardline);
@@ -114,11 +175,11 @@ fn trim_following(atoms: &[Atom], delimiter: Atom, skip: Atom) -> Vec<Atom> {
         .collect_vec()
 }
 
-fn put_before(atoms: &mut Vec<Atom>, before: Atom, after: Atom) {
+fn put_before(atoms: &mut Vec<Atom>, before: Atom, after: Atom, ignoring: &[Atom]) {
     for i in 0..atoms.len() - 1 {
-        if atoms[i] == after && atoms[i + 1] == before {
+        if atoms[i] == after {
             for j in i + 1..atoms.len() {
-                if atoms[j] != before && atoms[j] != after {
+                if atoms[j] != before && atoms[j] != after && !ignoring.contains(&atoms[j]) {
                     // stop looking
                     break;
                 }
@@ -145,7 +206,7 @@ fn trim_trailing_spaces(s: &str) -> String {
 }
 
 fn idempotence_check(content: &str, language: Language) -> Result<()> {
-    info!("Checking for idempotence ...");
+    log::info!("Checking for idempotence ...");
 
     let mut input = content.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
@@ -155,9 +216,26 @@ fn idempotence_check(content: &str, language: Language) -> Result<()> {
     if content == reformatted {
         Ok(())
     } else {
-        error!(
-            "Failed idempotence check. First output: {content} - Reformatted output: {reformatted}"
-        );
+        log::error!("Failed idempotence check");
+        assert_eq!(content, reformatted);
         Err(FormatterError::Idempotence)
     }
+}
+
+#[test]
+fn test_put_indent_ends_before_hardlines() {
+    let mut atoms = vec![Atom::Hardline, Atom::Hardline, Atom::IndentEnd];
+    let expected = vec![Atom::IndentEnd, Atom::Hardline, Atom::Hardline];
+    put_before(&mut atoms, Atom::IndentEnd, Atom::Hardline, &[]);
+    assert_eq!(expected, atoms);
+}
+
+#[test]
+fn test_put_indent_ends_before_hardlines_ignoring_space() {
+    let mut atoms = vec![Atom::Hardline, Atom::Space, Atom::Hardline, Atom::IndentEnd];
+    let expected = vec![Atom::IndentEnd, Atom::Space, Atom::Hardline, Atom::Hardline];
+
+    put_before(&mut atoms, Atom::IndentEnd, Atom::Hardline, &[Atom::Space]);
+
+    assert_eq!(expected, atoms);
 }

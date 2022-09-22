@@ -31,6 +31,8 @@ impl SyntaxInfo {
         node: Node,
         delimiter: Option<&str>,
     ) -> Result<()> {
+        log::debug!("Resolving {name}");
+
         match name.as_ref() {
             "allow_blank_line_before" => {
                 if self.blank_lines_before.contains(&node.id()) {
@@ -235,8 +237,8 @@ fn last_leaf(node: Node) -> Node {
 fn find_node(node: Node, atoms: &mut [Atom]) -> usize {
     let mut target_node = node;
     loop {
-        for (i, node) in atoms.iter().enumerate() {
-            match node {
+        for (i, n) in atoms.iter().enumerate() {
+            match n {
                 Atom::Leaf { id, .. } => {
                     if *id == target_node.id() {
                         return i;
@@ -245,7 +247,8 @@ fn find_node(node: Node, atoms: &mut [Atom]) -> usize {
                 _ => continue,
             }
         }
-        target_node = match node.parent() {
+
+        target_node = match target_node.parent() {
             Some(p) => p,
             None => unreachable!(),
         }
