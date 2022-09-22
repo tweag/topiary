@@ -50,6 +50,8 @@ pub fn apply_query(
     // the end, but we don't know if we get a line_comment capture or not.
 
     for m in matches {
+        log::debug!("Processing match: {m:?}");
+
         let mut delimiter: Option<String> = None;
 
         for p in query.general_predicates(m.pattern_index) {

@@ -1,5 +1,5 @@
 ; Sometimes we want to indicate that certain parts of our source text should
-; not be formated, but taken as is. We use the leaf capture name to inform the
+; not be formatted, but taken as is. We use the leaf capture name to inform the
 ; tool of this.
 (
   [
@@ -7,51 +7,6 @@
     (string)
   ]
 ) @leaf
-
-; This needs to come before line break patterns.
-(
-  [
-    "end"
-    "}"
-  ] @prepend_indent_end
-)
-
-(else_clause
-  _ @append_indent_end
-  .
-)
-
-(then_clause
-  _ @append_indent_end
-  .
-)
-
-(let_binding
-  ("=")
-  _ @append_indent_end
-  .
-)
-
-(_
-  [
-    "->"
-  ]
-  _ @append_indent_end
-  .
-)
-
-(if_expression
-  (infix_expression
-    (_) @append_indent_end
-    .
-  )
-)
-
-; Append line breaks
-[
-  (external)
-  (type_definition)
-] @append_hardline
 
 ; Allow blank line before
 [
@@ -61,7 +16,93 @@
   (value_definition)
 ] @allow_blank_line_before
 
-; Softlines
+; Append line breaks
+[
+  (external)
+  (type_definition)
+] @append_hardline
+
+; Consecutive definitions must be separated by line breaks
+(
+  (value_definition) @append_hardline
+  .
+  (value_definition)
+)
+
+; Append spaces
+[
+  "as"
+  "assert"
+  "do"
+  "external"
+  "false"
+  "if"
+  (infix_operator)
+  "let"
+  "match"
+  "mutable"
+  "rec"
+  "true"
+  "type"
+  "when"
+  "while"
+  "with"
+  "="
+  "|"
+  "||"
+  "<-"
+  ":"
+  ";"
+  "}"
+] @append_space
+
+; Prepend spaces
+[
+  "as"
+  "begin"
+  "do"
+  "done"
+  "else"
+  "external"
+  "false"
+  (infix_operator)
+  "let"
+  "match"
+  "mutable"
+  (parameter)
+  "rec"
+  "then"
+  "true"
+  "type"
+  "when"
+  "while"
+  "with"
+  "="
+  "||"
+  "->"
+  "<-"
+  ":"
+  "{"
+] @prepend_space
+
+; Put a space after commas, except the last one.
+(
+  "," @append_space
+  .
+  (_)
+)
+
+; Put a space after arguments, except the last one.
+(application_expression
+  (_) @append_space
+  .
+  (_)
+)
+
+; Input softlines before and after all comments. This means that the input
+; decides if a comment should have line breaks before or after. But don't put a
+; softline directly in front of commas or semicolons.
+
 (comment) @prepend_input_softline
 
 (
@@ -70,20 +111,38 @@
   [ "," ";" ]* @do_nothing
 )
 
-[
-  ("begin")
-  ("else")
-  ("then")
-  ("->")
-  ("{")
-] @append_spaced_softline
-
+; Softlines. These become either a space or a newline, depending on whether we
+; format their node as single-line or multi-line. If there is a comment
+; following, we don't add anything, because the input softlines and spaces above
+; will already have sorted out the formatting.
 (
-  ";" @append_spaced_softline 
-  . 
-  (comment)* @append_spaced_softline
+  [
+    "begin"
+    "else"
+    "then"
+    "->"
+    "{"
+    ";"
+  ] @append_spaced_softline
+  .
+  (comment)* @do_nothing
 )
 
+; Always put softlines before these:
+[
+  "end"
+  (else_clause)
+  (infix_operator)
+  "|"
+  "}"
+] @prepend_spaced_softline
+
+; Multi-line definitions must have a linebreak before "in":
+;
+; let a =
+;   expression
+;   in
+;   expression
 (
   (value_definition
     (_) @append_spaced_softline
@@ -93,21 +152,12 @@
   "in"
 )
 
-(
-  (value_definition) @append_hardline
-  (value_definition)
-)
-
-(
-  "," @append_space
-  (_)
-)
-
+; The following are many constructs that need a softline.
 (
   [
-    ("in")
-    ("with")
-    ("=")
+    "in"
+    "with"
+    "="
   ] @append_spaced_softline
   .
   [
@@ -121,75 +171,8 @@
   ]
 )
 
-[
-  ("end")
-  (else_clause)
-  (infix_operator)
-  ("|")
-  ("}")
-] @prepend_spaced_softline
-
-; Append spaces
-[
-  ("as")
-  ("assert")
-  ("do")
-  ("external")
-  ("false")
-  ("if")
-  (infix_operator)
-  ("let")
-  ("match")
-  ("mutable")
-  ("rec")
-  ("true")
-  ("type")
-  ("when")
-  ("while")
-  ("with")
-  ("=")
-  ("|")
-  ("||")
-  ("<-")
-  (":")
-  (";")
-  ("}")
-] @append_space
-
-; Prepend spaces
-[
-  ("as")
-  ("begin")
-  ("do")
-  ("done")
-  ("else")
-  ("external")
-  ("false")
-  (infix_operator)
-  ("let")
-  ("match")
-  ("mutable")
-  (parameter)
-  ("rec")
-  ("then")
-  ("true")
-  ("type")
-  ("when")
-  ("while")
-  ("with")
-  ("=")
-  ("||")
-  ("->")
-  ("<-")
-  (":")
-  ("{")
-] @prepend_space
-
-(application_expression
-  (_) @append_space
-  (_)
-)
-
+; Put a semicolon delimiter after field declarations, unless they already have
+; one, in which case we do nothing. 
 (
   (field_declaration) @append_delimiter
   .
@@ -197,7 +180,9 @@
   (#delimiter! ";")
 )
 
-; This needs to come after line break patterns.
+; Indenting. This will only do anything in multi-line blocks. In single-line blocks they do nothing.
+
+; Start an indented block after these
 [
   "begin"
   "else"
@@ -206,13 +191,55 @@
   "{"
 ] @append_indent_start
 
-(let_binding
-  "=" @prepend_indent_start
+; End the indented block before these
+[
+  "end"
+  "}"
+] @prepend_indent_end
+
+; End the indented block after these
+[
+  (else_clause)
+  (then_clause)
+] @append_indent_end
+
+(_
+  [
+    "->"
+  ]
+  _ @append_indent_end
+  .
 )
 
+; Start an indented block after "=" in let bindings
+(let_binding
+  "=" @append_indent_start
+)
+
+; End the indented block after the last element in the let binding.
+(let_binding
+  "="
+  _ @append_indent_end
+  .
+)
+
+; Start an indented block after the first term in a long if expression
+;
+; if len < 0
+;  || srcoff < 0
+;  || srcoff > src.position - len then
+;
 (if_expression
   (infix_expression
     .
     (_) @append_indent_start
+  )
+)
+
+; End the indent block after the last term
+(if_expression
+  (infix_expression
+    (_) @append_indent_end
+    .
   )
 )
