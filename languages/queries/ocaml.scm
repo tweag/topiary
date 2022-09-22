@@ -25,6 +25,7 @@
 ; Consecutive definitions must be separated by line breaks
 (
   (value_definition) @append_hardline
+  .
   (value_definition)
 )
 
@@ -87,17 +88,20 @@
 ; Put a space after commas, except the last one.
 (
   "," @append_space
+  .
   (_)
 )
 
 ; Put a space after arguments, except the last one.
 (application_expression
   (_) @append_space
+  .
   (_)
 )
 
 ; Input softlines before and after all comments. This means that the input
-; decides if a comment should have line breaks before or after.
+; decides if a comment should have line breaks before or after. But don't put a
+; softline directly in front of commas or semicolons.
 
 (comment) @prepend_input_softline
 
@@ -187,24 +191,17 @@
   "{"
 ] @append_indent_start
 
+; End the indented block before these
+[
+  "end"
+  "}"
+] @prepend_indent_end
+
 ; End the indented block after these
-
-(
-  [
-    "end"
-    "}"
-  ] @prepend_indent_end
-)
-
-(else_clause
-  _ @append_indent_end
-  .
-)
-
-(then_clause
-  _ @append_indent_end
-  .
-)
+[
+  (else_clause)
+  (then_clause)
+] @append_indent_end
 
 (_
   [
