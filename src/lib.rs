@@ -1,5 +1,17 @@
+//! A general code formatter that relies on
+//! [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) for language
+//! parsing.
+//!
+//! In order for a language to be supported, there must be a [Tree-sitter
+//! grammar](https://tree-sitter.github.io/tree-sitter/#available-parsers)
+//! available, and there must be a query file that dictates how that language is
+//! to be formatted. We include query files for some languages.
+//!
+//! More details can be found on
+//! [GitHub](https://github.com/tweag/tree-sitter-formatter).
+
 use clap::ArgEnum;
-use error::{FormatterError, ReadingError};
+pub use error::{FormatterError, ReadingError, WritingError};
 use itertools::Itertools;
 use pretty_assertions::assert_eq;
 use std::{fs, io, path::Path};
@@ -9,6 +21,7 @@ mod pretty;
 mod syntax_info;
 mod tree_sitter;
 
+/// The languages that we support with query files.
 #[derive(ArgEnum, Clone, Copy, Debug)]
 pub enum Language {
     Json,
@@ -16,22 +29,63 @@ pub enum Language {
     Rust,
 }
 
-/// A Node from tree-sitter is turned into into a list of atoms
+/// An atom represents a small piece of the output. We turn Tree-sitter nodes
+/// into atoms, and we add white-space atoms where appropriate. The final list
+/// of atoms is rendered to the output.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Atom {
+    /// We don't allow consecutive `Hardline`, but if a `Hardline` is followed by
+    /// a `Blankline` we will render two newlines to produce a blank line.
     Blankline,
+    /// A "no-op" atom that will not produce any output.
     Empty,
+    /// Represents a newline.
     Hardline,
+    /// Signals the end of an indentation block.
     IndentEnd,
+    /// Signals the start of an indentation block. Any lines between the
+    /// beginning and the end will be indented. In single-line constructs where
+    /// the beginning and the end occurs on the same line, there will be no
+    /// indentation.
     IndentStart,
+    /// Represents the contents of a named Tree-sitter node. We track the node id here
+    /// as well.
     Leaf { content: String, id: usize },
+    /// Represents a literal string, such as a semicolon.
     Literal(String),
+    /// Represents a softline. It will be turned into a hardline for multi-line
+    /// constructs, and either a space or nothing for single-line constructs.
     Softline { spaced: bool },
+    /// Represents a space. Consecutive spaces are reduced to one before rendering.
     Space,
 }
 
+/// A convenience wrapper around `std::result::Result<T, FormatterError>`.
 pub type Result<T> = std::result::Result<T, FormatterError>;
 
+/// The function that takes an input and formats an output.
+///
+/// # Examples
+///
+/// ```
+/// use tree_sitter_formatter::{formatter, FormatterError, Language};
+///
+/// let code = "[1,2]".to_string();
+/// let mut input = code.as_bytes();
+/// let mut output = Vec::new();
+///
+/// match formatter(&mut input, &mut output, Language::Json, true) {
+///   Ok(()) => {
+///     let formatted = String::from_utf8(output).expect("valid utf-8");
+///   }
+///   Err(FormatterError::Query(message, _)) => {
+///     panic!("Error in query file: {message}");
+///   }
+///   Err(_) => {
+///     panic!("An error occurred");
+///   }
+/// }
+/// ```
 pub fn formatter(
     input: &mut dyn io::Read,
     output: &mut dyn io::Write,
