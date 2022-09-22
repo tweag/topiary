@@ -1,16 +1,12 @@
 use crate::{error::FormatterError, Atom, Result};
-use std::{
-    cmp,
-    collections::{HashMap, HashSet},
-};
-use tree_sitter::{Node, Point};
+use std::collections::HashSet;
+use tree_sitter::Node;
 
 pub struct SyntaxInfo {
     pub multi_line_nodes: HashSet<usize>,
     pub blank_lines_before: HashSet<usize>,
     pub line_break_before: HashSet<usize>,
     pub line_break_after: HashSet<usize>,
-    pub line_start_columns: HashSet<Point>,
 }
 
 impl SyntaxInfo {
@@ -20,15 +16,11 @@ impl SyntaxInfo {
         let blank_lines_before = detect_blank_lines_before(root);
         let (line_break_before, line_break_after) = detect_line_break_before_and_after(root);
 
-        // Detect first node on each line
-        let line_start_columns = detect_line_start_columns(root);
-
         SyntaxInfo {
             multi_line_nodes,
             blank_lines_before,
             line_break_before,
             line_break_after,
-            line_start_columns,
         }
     }
 
@@ -93,11 +85,6 @@ impl SyntaxInfo {
                 self.atoms_prepend(space, node, atoms);
             }
             "prepend_space" => self.atoms_prepend(Atom::Space, node, atoms),
-            "prepend_space_unless_first_on_line" => {
-                if !self.line_start_columns.contains(&node.start_position()) {
-                    self.atoms_prepend(Atom::Space, node, atoms)
-                }
-            }
             "prepend_spaced_softline" => {
                 self.atoms_prepend(Atom::Softline { spaced: true }, node, atoms)
             }
@@ -222,30 +209,6 @@ fn detect_line_breaks_inner<'a>(
     }
 
     (nodes_with_breaks_before, nodes_with_breaks_after)
-}
-
-fn detect_line_start_columns(node: Node) -> HashSet<Point> {
-    let mut line_start_columns = HashMap::new();
-
-    detect_line_start_columns_inner(node, &mut line_start_columns);
-
-    line_start_columns
-        .into_iter()
-        .map(|kv| Point::new(kv.0, kv.1))
-        .collect()
-}
-
-fn detect_line_start_columns_inner(node: Node, line_start_columns: &mut HashMap<usize, usize>) {
-    let position = node.start_position();
-    let row = position.row;
-    let column = position.column;
-
-    let stored_column = line_start_columns.entry(row).or_insert(usize::max_value());
-    *stored_column = cmp::min(*stored_column, column);
-
-    for child in node.children(&mut node.walk()) {
-        detect_line_start_columns_inner(child, line_start_columns);
-    }
 }
 
 /// Given a node, returns the id of the first leaf in the subtree.

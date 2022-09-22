@@ -81,7 +81,7 @@
   ("-")
   ("+")
   ("->")
-] @prepend_space_unless_first_on_line
+] @prepend_space
 
 ; Softlines
 (block_comment) @prepend_input_softline
