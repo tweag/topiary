@@ -1,8 +1,6 @@
-; Configure indenting. It doesn't actually matter where this goes, as long as
-; the pattern is matched at least once.
-(source_file
-  (#indent-level! 4)
-)
+; Configuration
+(#language! rust)
+(#indent-level! 4)
 
 ; Sometimes we want to indicate that certain parts of our source text should
 ; not be formatted, but taken as is. We use the leaf capture name to inform the

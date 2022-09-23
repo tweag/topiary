@@ -10,24 +10,19 @@
 //! More details can be found on
 //! [GitHub](https://github.com/tweag/tree-sitter-formatter).
 
-use clap::ArgEnum;
 pub use error::{FormatterError, ReadingError, WritingError};
 use itertools::Itertools;
 use pretty_assertions::assert_eq;
-use std::{fs, io, path::Path};
+use std::io;
 
+use crate::configuration::Configuration;
+
+mod configuration;
 mod error;
+pub mod language;
 mod pretty;
 mod syntax_info;
 mod tree_sitter;
-
-/// The languages that we support with query files.
-#[derive(ArgEnum, Clone, Copy, Debug)]
-pub enum Language {
-    Json,
-    Ocaml,
-    Rust,
-}
 
 /// An atom represents a small piece of the output. We turn Tree-sitter nodes
 /// into atoms, and we add white-space atoms where appropriate. The final list
@@ -61,20 +56,23 @@ pub enum Atom {
 }
 
 /// A convenience wrapper around `std::result::Result<T, FormatterError>`.
-pub type Result<T> = std::result::Result<T, FormatterError>;
+pub type FormatterResult<T> = std::result::Result<T, FormatterError>;
 
 /// The function that takes an input and formats an output.
 ///
 /// # Examples
 ///
 /// ```
-/// use tree_sitter_formatter::{formatter, FormatterError, Language};
+/// use std::fs::File;
+/// use std::io::BufReader;
+/// use tree_sitter_formatter::{formatter, FormatterError};
 ///
-/// let code = "[1,2]".to_string();
-/// let mut input = code.as_bytes();
+/// let input = "[1,2]".to_string();
+/// let mut input = input.as_bytes();
+/// let mut query = BufReader::new(File::open("languages/rust.scm").expect("query file"));
 /// let mut output = Vec::new();
 ///
-/// match formatter(&mut input, &mut output, Language::Json, true) {
+/// match formatter(&mut input, &mut output, &mut query, false) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
@@ -89,14 +87,20 @@ pub type Result<T> = std::result::Result<T, FormatterError>;
 pub fn formatter(
     input: &mut dyn io::Read,
     output: &mut dyn io::Write,
-    language: Language,
-    check_idempotence: bool,
-) -> Result<()> {
-    let content = read_input(input)?;
-    let query = read_query(language)?;
+    query: &mut dyn io::Read,
+    ignore_idempotence: bool,
+) -> FormatterResult<()> {
+    let content = read_input(input).map_err(|e| {
+        FormatterError::Reading(ReadingError::Io("Failed to read input content".into(), e))
+    })?;
+    let query = read_input(query).map_err(|e| {
+        FormatterError::Reading(ReadingError::Io("Failed to read query content".into(), e))
+    })?;
+
+    let configuration = Configuration::parse(&query)?;
 
     // All the work related to tree-sitter and the query is done here
-    let query_result = tree_sitter::apply_query(&content, &query, language)?;
+    let query_result = tree_sitter::apply_query(&content, &query, configuration.language)?;
     let mut atoms = query_result.atoms;
 
     // Various post-processing of whitespace
@@ -125,8 +129,8 @@ pub fn formatter(
     let rendered = pretty::render(&atoms, query_result.indent_level)?;
     let trimmed = trim_trailing_spaces(&rendered);
 
-    if check_idempotence {
-        idempotence_check(&trimmed, language)?
+    if !ignore_idempotence {
+        idempotence_check(&trimmed, &query)?
     }
 
     write!(output, "{trimmed}")?;
@@ -134,23 +138,10 @@ pub fn formatter(
     Ok(())
 }
 
-fn read_input(input: &mut dyn io::Read) -> Result<String> {
+fn read_input(input: &mut dyn io::Read) -> Result<String, io::Error> {
     let mut content = String::new();
-    input.read_to_string(&mut content).map_err(|e| {
-        FormatterError::Reading(ReadingError::Io("Failed to read input content".into(), e))
-    })?;
+    input.read_to_string(&mut content)?;
     Ok(content)
-}
-
-fn read_query(language: Language) -> Result<String> {
-    let path = &str::to_lowercase(format!("languages/{:?}.scm", language).as_str());
-    let query = fs::read_to_string(Path::new(path)).map_err(|e| {
-        FormatterError::Reading(ReadingError::Io(
-            format!("Failed to read query file at {path}"),
-            e,
-        ))
-    })?;
-    Ok(query)
 }
 
 fn clean_up_consecutive(atoms: &[Atom], atom: Atom) -> Vec<Atom> {
@@ -205,12 +196,13 @@ fn trim_trailing_spaces(s: &str) -> String {
     Itertools::intersperse(s.split('\n').map(|line| line.trim_end()), "\n").collect::<String>()
 }
 
-fn idempotence_check(content: &str, language: Language) -> Result<()> {
+fn idempotence_check(content: &str, query: &str) -> FormatterResult<()> {
     log::info!("Checking for idempotence ...");
 
     let mut input = content.as_bytes();
+    let mut query = query.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
-    formatter(&mut input, &mut output, language, false)?;
+    formatter(&mut input, &mut output, &mut query, true)?;
     let reformatted = String::from_utf8(output.into_inner()?)?;
 
     if content == reformatted {

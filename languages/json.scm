@@ -1,3 +1,6 @@
+; Configuration
+(#language! json)
+
 ; Sometimes we want to indicate that certain parts of our source text should
 ; not be formatted, but taken as is. We use the leaf capture name to inform the
 ; tool of this.

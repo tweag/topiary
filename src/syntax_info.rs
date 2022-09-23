@@ -1,4 +1,4 @@
-use crate::{error::FormatterError, Atom, Result};
+use crate::{error::FormatterError, Atom, FormatterResult};
 use std::collections::HashSet;
 use tree_sitter::Node;
 
@@ -30,7 +30,7 @@ impl SyntaxInfo {
         atoms: &mut Vec<Atom>,
         node: Node,
         delimiter: Option<&str>,
-    ) -> Result<()> {
+    ) -> FormatterResult<()> {
         log::debug!("Resolving {name}");
 
         match name.as_ref() {

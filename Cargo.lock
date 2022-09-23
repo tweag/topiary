@@ -662,6 +662,7 @@ dependencies = [
  "log",
  "pretty",
  "pretty_assertions",
+ "regex",
  "test-log",
  "tree-sitter",
  "tree-sitter-json",

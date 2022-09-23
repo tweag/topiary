@@ -4,7 +4,7 @@ use std::io::BufReader;
 use std::path::Path;
 use test_log::test;
 use tree_sitter_formatter::formatter;
-use tree_sitter_formatter::Language;
+use tree_sitter_formatter::language::Language;
 
 #[test]
 fn input_output_tester() {
@@ -27,7 +27,11 @@ fn input_output_tester() {
         let expected = fs::read_to_string(expected_path).unwrap();
         let mut input = BufReader::new(fs::File::open(input_path).unwrap());
         let mut output = Vec::new();
-        formatter(&mut input, &mut output, language, true).unwrap();
+        let query_path = str::to_lowercase(format!("languages/{language:?}.scm").as_str());
+        let query = fs::read_to_string(query_path).unwrap();
+        let mut query = query.as_bytes();
+
+        formatter(&mut input, &mut output, &mut query, true).unwrap();
         let formatted = String::from_utf8(output).unwrap();
         log::debug!("{}", formatted);
 
