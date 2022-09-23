@@ -22,7 +22,7 @@ tree-sitter-rust = "0.20"
 tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml" }
 
 [dev-dependencies]
-criterion = "0.3"
+criterion = "0.4"
 
 [[bench]]
 name = "benchmark"
