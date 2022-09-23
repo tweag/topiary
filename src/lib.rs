@@ -143,7 +143,7 @@ fn read_input(input: &mut dyn io::Read) -> Result<String> {
 }
 
 fn read_query(language: Language) -> Result<String> {
-    let path = &str::to_lowercase(format!("languages/queries/{:?}.scm", language).as_str());
+    let path = &str::to_lowercase(format!("languages/{:?}.scm", language).as_str());
     let query = fs::read_to_string(Path::new(path)).map_err(|e| {
         FormatterError::Reading(ReadingError::Io(
             format!("Failed to read query file at {path}"),
