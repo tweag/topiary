@@ -183,7 +183,8 @@
   (#delimiter! ";")
 )
 
-; Indenting. This will only do anything in multi-line blocks. In single-line blocks they do nothing.
+; Indenting. This will only do anything in multi-line blocks. In single-line
+; blocks they do nothing.
 
 ; Start an indented block after these
 [

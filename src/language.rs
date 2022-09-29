@@ -6,6 +6,7 @@ pub enum Language {
     Json,
     Ocaml,
     Rust,
+    Toml,
 }
 
 impl Language {
@@ -14,6 +15,7 @@ impl Language {
             "json" => Ok(Language::Json),
             "ocaml" => Ok(Language::Ocaml),
             "rust" => Ok(Language::Rust),
+            "toml" => Ok(Language::Toml),
             _ => Err(FormatterError::Query(
                 format!("Unsupported language specified: '{s}'"),
                 None,

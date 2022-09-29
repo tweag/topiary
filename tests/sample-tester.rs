@@ -20,6 +20,7 @@ fn input_output_tester() {
             "json" => Language::Json,
             "ml" => Language::Ocaml,
             "rs" => Language::Rust,
+            "toml" => Language::Toml,
             _ => panic!("File extension {} not supported.", extension),
         };
 

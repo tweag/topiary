@@ -1,0 +1,68 @@
+
+[package]
+
+name="tree-sitter-formatter"
+ description = "Takes a source file from stdin and outputs a version to stdout that is formatted according to the specified language."
+version = "0.1.0"
+edition = "2021"
+
+[ dependencies ]
+# For now we just load the tree-sitter language parsers statically. 
+# Eventually we will want to dynamically load them, like Helix does.
+clap = {version="3.2",features=["derive"]}
+env_logger = "0.9"
+itertools = "0.10"
+log = "0.4"
+pretty = "0.11"
+pretty_assertions = "1.3"
+test-log = "0.2"
+tree-sitter = "0.20"
+tree-sitter-json = "0.19"
+tree-sitter-rust = "0.20"
+
+
+# Needs a version > 0.19
+tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml" }
+
+
+[dev-dependencies]
+criterion = "0.4"
+
+[[ bench ]]
+name = "benchmark"
+harness = false
+
+# This is a TOML document.
+
+title = "TOML Example"
+
+[owner]
+name = "Tom Preston-Werner"
+dob = 1979-05-27T07:32:00-08:00 # First class dates
+
+[database]
+server = "192.168.1.1"
+ports = [ 8001, 8001, 8002 ]
+connection_max = 5000
+enabled = true
+
+[servers]
+
+  # Indentation (tabs and/or spaces) is allowed but not required
+  [servers.alpha]
+  ip = "10.0.0.1"
+  dc = "eqdc10"
+
+  [servers.beta]
+  ip = "10.0.0.2"
+  dc = "eqdc10"
+
+[clients]
+data = [ ["gamma", "delta"], [1, 2] ]
+
+# Line breaks are OK when inside arrays
+hosts = [
+  "alpha",
+  "omega"
+]
+
