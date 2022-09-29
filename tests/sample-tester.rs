@@ -3,8 +3,7 @@ use std::fs;
 use std::io::BufReader;
 use std::path::Path;
 use test_log::test;
-use tree_sitter_formatter::formatter;
-use tree_sitter_formatter::language::Language;
+use tree_sitter_formatter::{formatter, Language};
 
 #[test]
 fn input_output_tester() {

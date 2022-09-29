@@ -10,16 +10,16 @@
 //! More details can be found on
 //! [GitHub](https://github.com/tweag/tree-sitter-formatter).
 
+use configuration::Configuration;
 pub use error::{FormatterError, ReadingError, WritingError};
 use itertools::Itertools;
+pub use language::Language;
 use pretty_assertions::assert_eq;
 use std::io;
 
-use crate::configuration::Configuration;
-
 mod configuration;
 mod error;
-pub mod language;
+mod language;
 mod pretty;
 mod syntax_info;
 mod tree_sitter;
@@ -69,8 +69,8 @@ pub type FormatterResult<T> = std::result::Result<T, FormatterError>;
 ///
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
-/// let mut query = BufReader::new(File::open("languages/rust.scm").expect("query file"));
 /// let mut output = Vec::new();
+/// let mut query = BufReader::new(File::open("languages/rust.scm").expect("query file"));
 ///
 /// match formatter(&mut input, &mut output, &mut query, false) {
 ///   Ok(()) => {
@@ -88,7 +88,7 @@ pub fn formatter(
     input: &mut dyn io::Read,
     output: &mut dyn io::Write,
     query: &mut dyn io::Read,
-    ignore_idempotence: bool,
+    skip_idempotence: bool,
 ) -> FormatterResult<()> {
     let content = read_input(input).map_err(|e| {
         FormatterError::Reading(ReadingError::Io("Failed to read input content".into(), e))
@@ -129,7 +129,7 @@ pub fn formatter(
     let rendered = pretty::render(&atoms, query_result.indent_level)?;
     let trimmed = trim_trailing_spaces(&rendered);
 
-    if !ignore_idempotence {
+    if !skip_idempotence {
         idempotence_check(&trimmed, &query)?
     }
 
