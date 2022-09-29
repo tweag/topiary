@@ -1,18 +1,19 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use std::fs;
 use std::io;
-use tree_sitter_formatter::{formatter, Language};
+use tree_sitter_formatter::formatter;
 
 fn criterion_benchmark(c: &mut Criterion) {
-    let input_path = "tests/samples/input/ocaml.ml";
-    let input_content = fs::read_to_string(input_path).unwrap();
+    let input = fs::read_to_string("tests/samples/input/ocaml.ml").unwrap();
+    let query = fs::read_to_string("languages/ocaml.scm").unwrap();
 
     c.bench_function("format ocaml", |b| {
         b.iter(|| {
-            let mut input = input_content.as_bytes();
+            let mut input = input.as_bytes();
+            let mut query = query.as_bytes();
             let mut output = io::BufWriter::new(Vec::new());
 
-            formatter(&mut input, &mut output, Language::Ocaml, false)
+            formatter(&mut input, &mut output, &mut query, false)
         })
     });
 }

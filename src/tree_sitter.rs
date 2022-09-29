@@ -1,6 +1,7 @@
 use crate::error::FormatterError;
+use crate::language::Language;
 use crate::syntax_info::SyntaxInfo;
-use crate::{Atom, Language, Result};
+use crate::{Atom, FormatterResult};
 use std::collections::BTreeSet;
 use tree_sitter::{Node, Parser, Query, QueryCursor, QueryPredicate, QueryPredicateArg, Tree};
 
@@ -13,7 +14,7 @@ pub fn apply_query(
     input_content: &str,
     query_content: &str,
     language: Language,
-) -> Result<QueryResult> {
+) -> FormatterResult<QueryResult> {
     let grammar = grammar(language);
     let tree = parse(input_content, grammar)?;
     let root = tree.root_node();
@@ -83,7 +84,7 @@ fn grammar(language: Language) -> tree_sitter::Language {
     }
 }
 
-fn parse(content: &str, grammar: tree_sitter::Language) -> Result<Tree> {
+fn parse(content: &str, grammar: tree_sitter::Language) -> FormatterResult<Tree> {
     let mut parser = Parser::new();
     parser.set_language(grammar).map_err(|_| {
         FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
@@ -100,7 +101,7 @@ fn collect_leafs<'a>(
     source: &'a [u8],
     specified_leaf_nodes: &BTreeSet<usize>,
     level: usize,
-) -> Result<()> {
+) -> FormatterResult<()> {
     let id = node.id();
 
     log::debug!(
@@ -141,7 +142,7 @@ fn collect_leaf_ids<'a>(query: &Query, root: Node, source: &'a [u8]) -> BTreeSet
     ids
 }
 
-fn handle_indent_level_predicate(predicate: &QueryPredicate) -> Result<Option<isize>> {
+fn handle_indent_level_predicate(predicate: &QueryPredicate) -> FormatterResult<Option<isize>> {
     let operator = &*predicate.operator;
 
     if let "indent-level!" = operator {
@@ -168,7 +169,7 @@ fn handle_indent_level_predicate(predicate: &QueryPredicate) -> Result<Option<is
     }
 }
 
-fn handle_delimiter_predicate(predicate: &QueryPredicate) -> Result<Option<String>> {
+fn handle_delimiter_predicate(predicate: &QueryPredicate) -> FormatterResult<Option<String>> {
     let operator = &*predicate.operator;
 
     if let "delimiter!" = operator {
