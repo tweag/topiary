@@ -9,6 +9,7 @@ use tree_sitter_formatter::{formatter, FormatterResult};
 #[derive(ArgEnum, Clone, Copy, Debug)]
 enum SupportedLanguage {
     Json,
+    Toml,
     // Any other entries in crate::Language are experimental and won't be
     // exposed in the CLI. They can be accessed using --query language/foo.scm
     // instead.
