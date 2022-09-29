@@ -110,6 +110,24 @@ nothing. We may change this so that we can indeed handle several captures per
 match. That issue is tracked in
 https://github.com/tweag/tree-sitter-formatter/issues/73.
 
+### Configuration
+
+At the top of a query file you can set some configuration options like this:
+
+```scheme
+; Configuration
+(#language! rust)
+(#indent-level! 4)
+```
+
+The `#language!` predicate must be included in any query file and dictates which
+language to parse. The queries themselves will refer to node types that are
+specific to this language.
+
+The `#indent-level!` predicate is optional and controls how many spaces to
+indent a block whenever `@append_indent_start` or `@prepend_indent_start` is
+processed.
+
 ### @allow_blank_line_before
 
 The matched nodes will be allowed to have a blank line before them, if specified
