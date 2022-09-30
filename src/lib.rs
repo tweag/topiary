@@ -70,7 +70,7 @@ pub type FormatterResult<T> = std::result::Result<T, FormatterError>;
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
 /// let mut output = Vec::new();
-/// let mut query = BufReader::new(File::open("languages/rust.scm").expect("query file"));
+/// let mut query = BufReader::new(File::open("languages/json.scm").expect("query file"));
 ///
 /// match formatter(&mut input, &mut output, &mut query, false) {
 ///   Ok(()) => {
@@ -230,4 +230,21 @@ fn test_put_indent_ends_before_hardlines_ignoring_space() {
     put_before(&mut atoms, Atom::IndentEnd, Atom::Hardline, &[Atom::Space]);
 
     assert_eq!(expected, atoms);
+}
+
+#[test]
+fn parse_error_fails_formatting() {
+    let mut input = "[ 1, % ]".as_bytes();
+    let mut output = Vec::new();
+    let mut query = "(#language! json)".as_bytes();
+    match formatter(&mut input, &mut output, &mut query, true) {
+        Err(FormatterError::Parsing {
+            start_line: 1,
+            end_line: 1,
+            ..
+        }) => {}
+        result => {
+            panic!("Expected a parsing error on line 1, but got {result:?}");
+        }
+    }
 }

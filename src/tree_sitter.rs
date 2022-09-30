@@ -23,6 +23,9 @@ pub fn apply_query(
         .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
     let mut indent_level = 2;
 
+    // Fail formatting if we don't get a complete syntax tree.
+    check_for_error_nodes(root)?;
+
     // Find the ids of all tree-sitter nodes that were identified as a leaf
     // We want to avoid recursing into them in the collect_leafs function.
     // TODO: Doesn't need to be ordered, can be just a HashSet.
@@ -94,6 +97,27 @@ fn parse(content: &str, grammar: tree_sitter::Language) -> FormatterResult<Tree>
     parser
         .parse(&content, None)
         .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))
+}
+
+fn check_for_error_nodes(node: Node) -> FormatterResult<()> {
+    if node.kind() == "ERROR" {
+        let start = node.start_position();
+        let end = node.end_position();
+
+        // Report 1-based lines and columns.
+        return Err(FormatterError::Parsing {
+            start_line: start.row + 1,
+            start_column: start.column + 1,
+            end_line: end.row + 1,
+            end_column: end.column + 1,
+        });
+    }
+
+    for child in node.children(&mut node.walk()) {
+        check_for_error_nodes(child)?;
+    }
+
+    Ok(())
 }
 
 fn collect_leafs<'a>(
