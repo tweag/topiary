@@ -11,6 +11,14 @@ pub enum FormatterError {
     /// An internal error occurred. This is a bug. Please log an issue.
     Internal(String, Option<io::Error>),
 
+    /// Tree-sitter could not parse the input without errors.
+    Parsing {
+        start_line: usize,
+        start_column: usize,
+        end_line: usize,
+        end_column: usize,
+    },
+
     /// There was an error in the query file. If this happened using our
     /// provided query files, it is a bug. Please log an issue.
     Query(String, Option<tree_sitter::QueryError>),
@@ -47,6 +55,14 @@ impl fmt::Display for FormatterError {
                     "The formatter is not idempotent on this input. Please log an error."
                 )
             }
+            Self::Parsing {
+                start_line,
+                start_column,
+                end_line,
+                end_column,
+            } => {
+                write!(f, "Parsing error between line {start_line}, column {start_column} and line {end_line}, column {end_column}")
+            }
             Self::Reading(ReadingError::Io(message, _)) => {
                 write!(f, "{message}")
             }
@@ -68,6 +84,7 @@ impl Error for FormatterError {
         match self {
             Self::Idempotence => None,
             Self::Internal(_, source) => source.as_ref().map(|e| e as &dyn Error),
+            Self::Parsing { .. } => None,
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::Reading(ReadingError::Io(_, source)) => Some(source),
             Self::Reading(ReadingError::Utf8(source)) => Some(source),
