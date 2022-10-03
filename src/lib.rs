@@ -100,6 +100,7 @@ pub fn formatter(
     let configuration = Configuration::parse(&query)?;
 
     // All the work related to tree-sitter and the query is done here
+    log::info!("Apply Tree-sitter query");
     let query_result = tree_sitter::apply_query(&content, &query, configuration.language)?;
     let mut atoms = query_result.atoms;
 
@@ -108,6 +109,7 @@ pub fn formatter(
     // TODO: Make sure these aren't unnecessarily inefficient, in terms of
     // recreating a vector of atoms over and over.
     log::debug!("Before post-processing: {atoms:?}");
+    log::info!("Do post-processing");
     put_before(&mut atoms, Atom::IndentEnd, Atom::Space, &[]);
     let mut atoms = trim_following(&atoms, Atom::Blankline, Atom::Space);
     put_before(&mut atoms, Atom::Hardline, Atom::Blankline, &[Atom::Space]);
@@ -126,6 +128,7 @@ pub fn formatter(
     log::debug!("Final list of atoms: {atoms:?}");
 
     // Pretty-print atoms
+    log::info!("Pretty-print output");
     let rendered = pretty::render(&atoms, query_result.indent_level)?;
     let trimmed = trim_trailing_spaces(&rendered);
 
