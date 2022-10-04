@@ -8,8 +8,10 @@ use crate::{Atom, FormatterError, FormatterResult};
 #[derive(Debug)]
 pub struct AtomCollection {
     atoms: Vec<Atom>,
-    node_start_indices: HashMap<usize, usize>,
-    node_end_indices: HashMap<usize, usize>,
+    // node_start_indices: HashMap<usize, usize>,
+    // node_end_indices: HashMap<usize, usize>,
+    prepend: HashMap<usize, Vec<Atom>>,
+    append: HashMap<usize, Vec<Atom>>,
     pub multi_line_nodes: HashSet<usize>,
     pub blank_lines_before: HashSet<usize>,
     pub line_break_before: HashSet<usize>,
@@ -29,8 +31,8 @@ impl AtomCollection {
 
         let mut atoms = AtomCollection {
             atoms: Vec::new(),
-            node_start_indices: HashMap::new(),
-            node_end_indices: HashMap::new(),
+            prepend: HashMap::new(),
+            append: HashMap::new(),
             multi_line_nodes,
             blank_lines_before,
             line_break_before,
@@ -66,10 +68,10 @@ impl AtomCollection {
                 id,
             });
 
-            for node_id in parent_ids {
-                self.update_start_index(node_id, self.atoms.len() - 1);
-                self.update_end_index(node_id, self.atoms.len() - 1);
-            }
+            // for node_id in parent_ids {
+            //     self.update_start_index(node_id, self.atoms.len() - 1);
+            //     self.update_end_index(node_id, self.atoms.len() - 1);
+            // }
         } else {
             for child in node.children(&mut node.walk()) {
                 self.collect_leafs_inner(
@@ -148,6 +150,31 @@ impl AtomCollection {
         Ok(())
     }
 
+    pub fn apply_prepends_and_appends(&mut self) {
+        let mut expanded: Vec<Atom> = Vec::new();
+
+        for atom in self.atoms.iter() {
+            match atom {
+                Atom::Leaf { id, .. } => {
+                    for prepended in self.prepend.entry(*id).or_default() {
+                        expanded.push(prepended.clone());
+                    }
+
+                    expanded.push(atom.clone());
+
+                    for appended in self.append.entry(*id).or_default() {
+                        expanded.push(appended.clone());
+                    }
+                }
+                _ => {
+                    expanded.push(atom.clone());
+                }
+            }
+        }
+
+        self.atoms = expanded;
+    }
+
     pub fn post_process(&mut self) {
         // TODO: Make sure these aren't unnecessarily inefficient, in terms of
         // recreating a vector of atoms over and over.
@@ -166,51 +193,60 @@ impl AtomCollection {
         log::debug!("Final list of atoms: {:?}", self.atoms);
     }
 
-    fn update_start_index(&mut self, node_id: usize, index: usize) {
-        self.node_start_indices
-            .entry(node_id)
-            .and_modify(|i| {
-                if index < *i {
-                    *i = index;
-                }
-            })
-            .or_insert(index);
-    }
+    // fn update_start_index(&mut self, node_id: usize, index: usize) {
+    //     self.node_start_indices
+    //         .entry(node_id)
+    //         .and_modify(|i| {
+    //             if index < *i {
+    //                 *i = index;
+    //             }
+    //         })
+    //         .or_insert(index);
+    // }
 
-    fn update_end_index(&mut self, node_id: usize, index: usize) {
-        self.node_end_indices
-            .entry(node_id)
-            .and_modify(|i| {
-                if index > *i {
-                    *i = index;
-                }
-            })
-            .or_insert(index);
-    }
+    // fn update_end_index(&mut self, node_id: usize, index: usize) {
+    //     self.node_end_indices
+    //         .entry(node_id)
+    //         .and_modify(|i| {
+    //             if index > *i {
+    //                 *i = index;
+    //             }
+    //         })
+    //         .or_insert(index);
+    // }
 
     fn prepend(&mut self, atom: Atom, node: Node) {
         if let Some(atom) = self.expand_softline(atom, node) {
-            // let target_node = first_leaf(node);
+            // TODO: Pre-populate these
+            let target_node = first_leaf(node);
+            self.prepend
+                .entry(target_node.id())
+                .and_modify(|atoms| atoms.push(atom.clone()))
+                .or_insert_with(|| vec![atom]);
             // let index = find_node(target_node, atoms);
-            let index = self.node_start_indices[&node.id()];
-            self.atoms.insert(index, atom);
-            shift_indices(&mut self.node_start_indices, index);
-            shift_indices(&mut self.node_end_indices, index);
+            // let index = self.node_start_indices[&node.id()];
+            // self.atoms.insert(index, atom);
+            // shift_indices(&mut self.node_start_indices, index);
+            // shift_indices(&mut self.node_end_indices, index);
         }
     }
 
     fn append(&mut self, atom: Atom, node: Node) {
         if let Some(atom) = self.expand_softline(atom, node) {
-            // let target_node = last_leaf(node);
+            let target_node = last_leaf(node);
+            self.append
+                .entry(target_node.id())
+                .and_modify(|atoms| atoms.push(atom.clone()))
+                .or_insert_with(|| vec![atom]);
             // let index = find_node(target_node, atoms);
-            let index = self.node_end_indices[&node.id()];
-            if index > self.atoms.len() {
-                self.atoms.push(atom);
-            } else {
-                self.atoms.insert(index + 1, atom);
-                shift_indices(&mut self.node_start_indices, index + 1);
-                shift_indices(&mut self.node_end_indices, index + 1);
-            }
+            // let index = self.node_end_indices[&node.id()];
+            // if index > self.atoms.len() {
+            //     self.atoms.push(atom);
+            // } else {
+            //     self.atoms.insert(index + 1, atom);
+            //     shift_indices(&mut self.node_start_indices, index + 1);
+            //     shift_indices(&mut self.node_end_indices, index + 1);
+            // }
         }
     }
 
@@ -374,10 +410,29 @@ fn detect_line_breaks_inner<'a>(
     (nodes_with_breaks_before, nodes_with_breaks_after)
 }
 
-fn shift_indices(map: &mut HashMap<usize, usize>, shift_point: usize) {
-    for (_, index) in map.iter_mut() {
-        if *index >= shift_point {
-            *index += 1;
-        }
+// fn shift_indices(map: &mut HashMap<usize, usize>, shift_point: usize) {
+//     for (_, index) in map.iter_mut() {
+//         if *index >= shift_point {
+//             *index += 1;
+//         }
+//     }
+// }
+
+/// Given a node, returns the id of the first leaf in the subtree.
+fn first_leaf(node: Node) -> Node {
+    if node.child_count() == 0 {
+        node
+    } else {
+        first_leaf(node.child(0).unwrap())
+    }
+}
+
+/// Given a node, returns the id of the last leaf in the subtree.
+fn last_leaf(node: Node) -> Node {
+    let nr_children = node.child_count();
+    if nr_children == 0 {
+        node
+    } else {
+        last_leaf(node.child(nr_children - 1).unwrap())
     }
 }

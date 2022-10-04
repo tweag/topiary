@@ -58,6 +58,7 @@ pub fn apply_query(
             if let Some(d) = handle_delimiter_predicate(p)? {
                 delimiter = Some(d);
             }
+            // TODO: This is no longer used like this and can be removed.
             if let Some(il) = handle_indent_level_predicate(p)? {
                 indent_level = il;
             }
@@ -68,6 +69,9 @@ pub fn apply_query(
             atoms.resolve_capture(name, c.node, delimiter.as_deref())?;
         }
     }
+
+    // Now apply all atoms in prepend and append to the leaf nodes.
+    atoms.apply_prepends_and_appends();
 
     Ok(QueryResult {
         atoms,
