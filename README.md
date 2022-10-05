@@ -88,28 +88,6 @@ This, on the other hand, will not work:
 @append_space (infix_operator)
 ```
 
-For each match that we process, we only handle the last capture. That enables us
-to do this:
-
-```scheme
-; Put a semicolon delimiter after field declarations, unless they already have
-; one, in which case we do nothing.
-(
-  (field_declaration) @append_delimiter
-  .
-  ";"* @do_nothing
-  (#delimiter! ";")
-)
-```
-
-If there isn't already a semicolon immediately after the field_declaration,
-`@do_nothing` will not be captured, only `@append_delimiter`. Since the last
-capture is `@append_delimiter`, that will be processed. If, on the other hand,
-there already was a semi-colon, `@do_nothing` would be captured, and we would do
-nothing. We may change this so that we can indeed handle several captures per
-match. That issue is tracked in
-https://github.com/tweag/tree-sitter-formatter/issues/73.
-
 ### Configuration
 
 At the top of a query file you can set some configuration options like this:
@@ -293,6 +271,24 @@ single-line nodes.
   ] @append_spaced_softline
   .
   (comment)* @do_nothing
+)
+```
+
+### @do_nothing
+
+If any of the captures in a query match are `@do_nothing`, then the match will
+be ignored.
+
+#### Example
+
+```scheme
+; Put a semicolon delimiter after field declarations, unless they already have
+; one, in which case we do nothing.
+(
+  (field_declaration) @append_delimiter
+  .
+  ";"* @do_nothing
+  (#delimiter! ";")
 )
 ```
 

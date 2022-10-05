@@ -6,16 +6,20 @@
 ; tool of this.
 (string) @leaf
 
-; We want every object and array to have the { start a softline. So we match on
-; the named object/array followed by the first anonymous node { or [.
+; Append space after colons
+":" @append_space
+
+; We want every object and array to have the { start a softline and an indented
+; block. So we match on the named object/array followed by the first anonymous
+; node { or [.
 (object
   . 
-  "{" @append_empty_softline
+  "{" @append_empty_softline @append_indent_start
 )
 
 (array
   . 
-  "[" @append_empty_softline
+  "[" @append_empty_softline @append_indent_start
 )
 
 ; Pairs should always end with a softline. Pairs come in two kinds, ones with a
@@ -41,22 +45,8 @@
   .
 )
 
-; Append space after colons
-(
-  ":" @append_space
-)
-
-; Children of arrays/objects should be indented
-(object
-  "{" @append_indent_start
-)
-
 (object
   "}" @prepend_indent_end
-)
-
-(array
-  "[" @append_indent_start
 )
 
 (array

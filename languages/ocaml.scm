@@ -32,39 +32,12 @@
   (value_definition)
 )
 
-; Append spaces
+; Surround spaces
 [
   "as"
   "assert"
-  "do"
-  "external"
-  "false"
-  "if"
-  (infix_operator)
-  "let"
-  "match"
-  "mutable"
-  "rec"
-  "true"
-  "type"
-  "when"
-  "while"
-  "with"
-  "="
-  "|"
-  "||"
-  "<-"
-  ":"
-  ";"
-  "}"
-] @append_space
-
-; Prepend spaces
-[
-  "as"
   "begin"
   "do"
-  "done"
   "else"
   "external"
   "false"
@@ -81,12 +54,25 @@
   "while"
   "with"
   "="
+  "|"
   "||"
   "->"
   "<-"
   ":"
   "{"
+  "}"
+] @prepend_space @append_space
+
+; Prepend spaces
+[
+  "done"
 ] @prepend_space
+
+; Append spaces
+[
+  "if"
+  ";"
+] @append_space
 
 ; Put a space after commas, except the last one.
 (
@@ -215,19 +201,14 @@
   .
 )
 
-; Start an indented block after "=" in let bindings
+; Make an indented block after "=" in let bindings
 (let_binding
   "=" @append_indent_start
-)
-
-; End the indented block after the last element in the let binding.
-(let_binding
-  "="
   _ @append_indent_end
   .
 )
 
-; Start an indented block after the first term in a long if expression
+; Make an indented block after the first term in a long if expression
 ;
 ; if len < 0
 ;  || srcoff < 0
@@ -237,12 +218,6 @@
   (infix_expression
     .
     (_) @append_indent_start
-  )
-)
-
-; End the indent block after the last term
-(if_expression
-  (infix_expression
     (_) @append_indent_end
     .
   )

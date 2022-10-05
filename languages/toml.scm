@@ -39,19 +39,12 @@
   "]]" @append_hardline
 )
 
-; Append spaces
+; Surround spaces
 [
   "="
   "{"
   "}"
-] @append_space
-
-; Prepend spaces
-[
-  "="
-  "{"
-  "}"
-] @prepend_space
+] @prepend_space @append_space
 
 ; Input softlines before all comments. This means that the input decides if a
 ; comment should have line breaks in front of it.
@@ -63,21 +56,12 @@
   ","
 ] @append_spaced_softline
 
+; Indent arrays. They will only be indented inmulti-line blocks.
+
 (array
-  "[" @append_spaced_softline
+  "[" @append_spaced_softline @append_indent_start
 )
 
 (array
-  "]" @prepend_spaced_softline
-)
-
-; Indenting. This will only do anything in multi-line blocks. In single-line
-; blocks they do nothing.
-
-(array
-  "[" @append_indent_start
-)
-
-(array
-  "]" @prepend_indent_end
+  "]" @prepend_spaced_softline @prepend_indent_end
 )
