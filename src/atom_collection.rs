@@ -18,6 +18,7 @@ pub struct AtomCollection {
 }
 
 impl AtomCollection {
+    /// Use this to create an initial AtomCollection
     pub fn collect_leafs(
         root: Node,
         source: &[u8],
@@ -44,37 +45,7 @@ impl AtomCollection {
         Ok(atoms)
     }
 
-    fn collect_leafs_inner(
-        &mut self,
-        node: Node,
-        source: &[u8],
-        parent_ids: &[usize],
-        level: usize,
-    ) -> FormatterResult<()> {
-        let id = node.id();
-        let parent_ids = [parent_ids, &[id]].concat();
-
-        log::debug!(
-            "CST node: {}{:?} - Named: {}",
-            "  ".repeat(level),
-            node,
-            node.is_named()
-        );
-
-        if node.child_count() == 0 || self.specified_leaf_nodes.contains(&node.id()) {
-            self.atoms.push(Atom::Leaf {
-                content: String::from(node.utf8_text(source)?),
-                id,
-            });
-        } else {
-            for child in node.children(&mut node.walk()) {
-                self.collect_leafs_inner(child, source, &parent_ids, level + 1)?;
-            }
-        }
-
-        Ok(())
-    }
-
+    /// This gets called a lot during query processing, and needs to be efficient.
     pub fn resolve_capture(
         &mut self,
         name: String,
@@ -138,6 +109,7 @@ impl AtomCollection {
         Ok(())
     }
 
+    /// After query processing is done, a flattened/expanded vector of atoms can be created.
     pub fn apply_prepends_and_appends(&mut self) {
         let mut expanded: Vec<Atom> = Vec::new();
 
@@ -181,6 +153,37 @@ impl AtomCollection {
         self.atoms = self.clean_up_consecutive(Atom::Hardline);
         self.ensure_final_hardline();
         log::debug!("Final list of atoms: {:?}", self.atoms);
+    }
+
+    fn collect_leafs_inner(
+        &mut self,
+        node: Node,
+        source: &[u8],
+        parent_ids: &[usize],
+        level: usize,
+    ) -> FormatterResult<()> {
+        let id = node.id();
+        let parent_ids = [parent_ids, &[id]].concat();
+
+        log::debug!(
+            "CST node: {}{:?} - Named: {}",
+            "  ".repeat(level),
+            node,
+            node.is_named()
+        );
+
+        if node.child_count() == 0 || self.specified_leaf_nodes.contains(&node.id()) {
+            self.atoms.push(Atom::Leaf {
+                content: String::from(node.utf8_text(source)?),
+                id,
+            });
+        } else {
+            for child in node.children(&mut node.walk()) {
+                self.collect_leafs_inner(child, source, &parent_ids, level + 1)?;
+            }
+        }
+
+        Ok(())
     }
 
     fn prepend(&mut self, atom: Atom, node: Node) {
@@ -320,17 +323,6 @@ impl AtomCollection {
     }
 }
 
-impl<Idx> std::ops::Index<Idx> for AtomCollection
-where
-    Idx: std::slice::SliceIndex<[Atom]>,
-{
-    type Output = Idx::Output;
-
-    fn index(&self, index: Idx) -> &Self::Output {
-        &self.atoms[index]
-    }
-}
-
 fn detect_multi_line_nodes(node: Node) -> HashSet<usize> {
     let mut ids = HashSet::new();
 
@@ -410,5 +402,17 @@ fn last_leaf(node: Node) -> Node {
         node
     } else {
         last_leaf(node.child(nr_children - 1).unwrap())
+    }
+}
+
+/// So that we can easily extract the atoms using &atom_collection[..]
+impl<Idx> std::ops::Index<Idx> for AtomCollection
+where
+    Idx: std::slice::SliceIndex<[Atom]>,
+{
+    type Output = Idx::Output;
+
+    fn index(&self, index: Idx) -> &Self::Output {
+        &self.atoms[index]
     }
 }
