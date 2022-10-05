@@ -101,15 +101,14 @@ pub fn formatter(
 
     // All the work related to tree-sitter and the query is done here
     log::info!("Apply Tree-sitter query");
-    let query_result = tree_sitter::apply_query(&content, &query, configuration.language)?;
-    let mut atoms = query_result.atoms;
+    let mut atoms = tree_sitter::apply_query(&content, &query, configuration.language)?;
 
     // Various post-processing of whitespace
     atoms.post_process();
 
     // Pretty-print atoms
     log::info!("Pretty-print output");
-    let rendered = pretty::render(&atoms[..], query_result.indent_level)?;
+    let rendered = pretty::render(&atoms[..], configuration.indent_level)?;
     let trimmed = trim_trailing_spaces(&rendered);
 
     if !skip_idempotence {

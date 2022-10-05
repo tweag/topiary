@@ -3,25 +3,21 @@ use crate::error::FormatterError;
 use crate::language::Language;
 use crate::FormatterResult;
 use std::collections::BTreeSet;
-use tree_sitter::{Node, Parser, Query, QueryCursor, QueryPredicate, QueryPredicateArg, Tree};
-
-pub struct QueryResult {
-    pub atoms: AtomCollection,
-    pub indent_level: isize,
-}
+use tree_sitter::{
+    Node, Parser, Query, QueryCapture, QueryCursor, QueryPredicate, QueryPredicateArg, Tree,
+};
 
 pub fn apply_query(
     input_content: &str,
     query_content: &str,
     language: Language,
-) -> FormatterResult<QueryResult> {
+) -> FormatterResult<AtomCollection> {
     let grammar = grammar(language);
     let tree = parse(input_content, grammar)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
     let query = Query::new(grammar, query_content)
         .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
-    let mut indent_level = 2;
 
     // Fail formatting if we don't get a complete syntax tree.
     check_for_error_nodes(root)?;
@@ -58,10 +54,6 @@ pub fn apply_query(
             if let Some(d) = handle_delimiter_predicate(p)? {
                 delimiter = Some(d);
             }
-            // TODO: This is no longer used like this and can be removed.
-            if let Some(il) = handle_indent_level_predicate(p)? {
-                indent_level = il;
-            }
         }
 
         if let Some(c) = m.captures.last() {
@@ -73,10 +65,7 @@ pub fn apply_query(
     // Now apply all atoms in prepend and append to the leaf nodes.
     atoms.apply_prepends_and_appends();
 
-    Ok(QueryResult {
-        atoms,
-        indent_level,
-    })
+    Ok(atoms)
 }
 
 fn grammar(language: Language) -> tree_sitter::Language {
@@ -135,33 +124,6 @@ fn collect_leaf_ids<'a>(query: &Query, root: Node, source: &'a [u8]) -> BTreeSet
         }
     }
     ids
-}
-
-fn handle_indent_level_predicate(predicate: &QueryPredicate) -> FormatterResult<Option<isize>> {
-    let operator = &*predicate.operator;
-
-    if let "indent-level!" = operator {
-        let arg = predicate
-            .args
-            .first()
-            .ok_or_else(|| FormatterError::Query(format!("{operator} needs an argument"), None))?;
-
-        if let QueryPredicateArg::String(s) = arg {
-            Ok(Some(s.parse().map_err(|_| {
-                FormatterError::Query(
-                    format!("{operator} needs a numeric argument, but got '{s}'."),
-                    None,
-                )
-            })?))
-        } else {
-            Err(FormatterError::Query(
-                format!("{operator} needs a numeric argument, but got {arg:?}."),
-                None,
-            ))
-        }
-    } else {
-        Ok(None)
-    }
 }
 
 fn handle_delimiter_predicate(predicate: &QueryPredicate) -> FormatterResult<Option<String>> {

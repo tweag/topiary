@@ -3,13 +3,13 @@ use regex::Regex;
 
 pub struct Configuration {
     pub language: Language,
-    pub indent_level: usize,
+    pub indent_level: isize,
 }
 
 impl Configuration {
     pub fn parse(query: &str) -> FormatterResult<Self> {
         let mut language: Option<Language> = None;
-        let mut indent_level = 2;
+        let mut indent_level: isize = 2;
 
         // Match lines beginning with a predicate like this:
         // (#language! rust)
@@ -43,7 +43,7 @@ impl Configuration {
                 }
                 "indent-level" => {
                     if let Some(arg) = arguments.next() {
-                        indent_level = arg.parse::<usize>().map_err(|_| {
+                        indent_level = arg.parse::<isize>().map_err(|_| {
                             FormatterError::Query(
                                 format!(
                                     "The #indent-level! parameter must be numeric, but got '{arg}'"
