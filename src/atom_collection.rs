@@ -8,8 +8,6 @@ use crate::{Atom, FormatterError, FormatterResult};
 #[derive(Debug)]
 pub struct AtomCollection {
     atoms: Vec<Atom>,
-    // node_start_indices: HashMap<usize, usize>,
-    // node_end_indices: HashMap<usize, usize>,
     prepend: HashMap<usize, Vec<Atom>>,
     append: HashMap<usize, Vec<Atom>>,
     specified_leaf_nodes: BTreeSet<usize>,
@@ -68,11 +66,6 @@ impl AtomCollection {
                 content: String::from(node.utf8_text(source)?),
                 id,
             });
-
-            // for node_id in parent_ids {
-            //     self.update_start_index(node_id, self.atoms.len() - 1);
-            //     self.update_end_index(node_id, self.atoms.len() - 1);
-            // }
         } else {
             for child in node.children(&mut node.walk()) {
                 self.collect_leafs_inner(child, source, &parent_ids, level + 1)?;
@@ -190,41 +183,22 @@ impl AtomCollection {
         log::debug!("Final list of atoms: {:?}", self.atoms);
     }
 
-    // fn update_start_index(&mut self, node_id: usize, index: usize) {
-    //     self.node_start_indices
-    //         .entry(node_id)
-    //         .and_modify(|i| {
-    //             if index < *i {
-    //                 *i = index;
-    //             }
-    //         })
-    //         .or_insert(index);
-    // }
-
-    // fn update_end_index(&mut self, node_id: usize, index: usize) {
-    //     self.node_end_indices
-    //         .entry(node_id)
-    //         .and_modify(|i| {
-    //             if index > *i {
-    //                 *i = index;
-    //             }
-    //         })
-    //         .or_insert(index);
-    // }
-
     fn prepend(&mut self, atom: Atom, node: Node) {
         if let Some(atom) = self.expand_softline(atom, node) {
             // TODO: Pre-populate these
             let target_node = first_leaf(node);
+
+            // If this is a child of a node that we have deemed as a leaf node
+            // (e.g. a character in a string), we need to use that node id
+            // instead.
+            let target_node = self.parent_leaf_node(target_node);
+
+            log::debug!("Prepending {atom:?} to node {:?}", target_node,);
+
             self.prepend
                 .entry(target_node.id())
                 .and_modify(|atoms| atoms.push(atom.clone()))
                 .or_insert_with(|| vec![atom]);
-            // let index = find_node(target_node, atoms);
-            // let index = self.node_start_indices[&node.id()];
-            // self.atoms.insert(index, atom);
-            // shift_indices(&mut self.node_start_indices, index);
-            // shift_indices(&mut self.node_end_indices, index);
         }
     }
 
@@ -237,24 +211,12 @@ impl AtomCollection {
             // instead.
             let target_node = self.parent_leaf_node(target_node);
 
-            log::debug!(
-                "Appending {atom:?} to node {:?}, id {}.",
-                target_node,
-                target_node.id()
-            );
+            log::debug!("Appending {atom:?} to node {:?}", target_node,);
+
             self.append
                 .entry(target_node.id())
                 .and_modify(|atoms| atoms.push(atom.clone()))
                 .or_insert_with(|| vec![atom]);
-            // let index = find_node(target_node, atoms);
-            // let index = self.node_end_indices[&node.id()];
-            // if index > self.atoms.len() {
-            //     self.atoms.push(atom);
-            // } else {
-            //     self.atoms.insert(index + 1, atom);
-            //     shift_indices(&mut self.node_start_indices, index + 1);
-            //     shift_indices(&mut self.node_end_indices, index + 1);
-            // }
         }
     }
 
@@ -431,14 +393,6 @@ fn detect_line_breaks_inner<'a>(
 
     (nodes_with_breaks_before, nodes_with_breaks_after)
 }
-
-// fn shift_indices(map: &mut HashMap<usize, usize>, shift_point: usize) {
-//     for (_, index) in map.iter_mut() {
-//         if *index >= shift_point {
-//             *index += 1;
-//         }
-//     }
-// }
 
 /// Given a node, returns the id of the first leaf in the subtree.
 fn first_leaf(node: Node) -> Node {
