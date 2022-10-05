@@ -48,13 +48,13 @@ impl AtomCollection {
     /// This gets called a lot during query processing, and needs to be efficient.
     pub fn resolve_capture(
         &mut self,
-        name: String,
+        name: &str,
         node: Node,
         delimiter: Option<&str>,
     ) -> FormatterResult<()> {
         log::debug!("Resolving {name}");
 
-        match name.as_ref() {
+        match name {
             "allow_blank_line_before" => {
                 if self.blank_lines_before.contains(&node.id()) {
                     self.prepend(Atom::Blankline, node);

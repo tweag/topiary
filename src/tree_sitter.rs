@@ -56,8 +56,17 @@ pub fn apply_query(
             }
         }
 
-        if let Some(c) = m.captures.last() {
-            let name = query.capture_names()[c.index as usize].clone();
+        // If any capture is a do_nothing, then do nothing.
+        if m.captures
+            .iter()
+            .map(|c| capture_name(&query, c))
+            .any(|name| name == "do_nothing")
+        {
+            continue;
+        }
+
+        for c in m.captures {
+            let name = capture_name(&query, c);
             atoms.resolve_capture(name, c.node, delimiter.as_deref())?;
         }
     }
@@ -66,6 +75,10 @@ pub fn apply_query(
     atoms.apply_prepends_and_appends();
 
     Ok(atoms)
+}
+
+fn capture_name<'a, 'b>(query: &'a Query, capture: &'b QueryCapture) -> &'a str {
+    query.capture_names()[capture.index as usize].as_str()
 }
 
 fn grammar(language: Language) -> tree_sitter::Language {
