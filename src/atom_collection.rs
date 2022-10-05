@@ -12,17 +12,18 @@ pub struct AtomCollection {
     // node_end_indices: HashMap<usize, usize>,
     prepend: HashMap<usize, Vec<Atom>>,
     append: HashMap<usize, Vec<Atom>>,
-    pub multi_line_nodes: HashSet<usize>,
-    pub blank_lines_before: HashSet<usize>,
-    pub line_break_before: HashSet<usize>,
-    pub line_break_after: HashSet<usize>,
+    specified_leaf_nodes: BTreeSet<usize>,
+    multi_line_nodes: HashSet<usize>,
+    blank_lines_before: HashSet<usize>,
+    line_break_before: HashSet<usize>,
+    line_break_after: HashSet<usize>,
 }
 
 impl AtomCollection {
     pub fn collect_leafs(
         root: Node,
         source: &[u8],
-        specified_leaf_nodes: &BTreeSet<usize>,
+        specified_leaf_nodes: BTreeSet<usize>,
     ) -> FormatterResult<AtomCollection> {
         // Detect user specified line breaks
         let multi_line_nodes = detect_multi_line_nodes(root);
@@ -33,13 +34,14 @@ impl AtomCollection {
             atoms: Vec::new(),
             prepend: HashMap::new(),
             append: HashMap::new(),
+            specified_leaf_nodes,
             multi_line_nodes,
             blank_lines_before,
             line_break_before,
             line_break_after,
         };
 
-        atoms.collect_leafs_inner(root, source, specified_leaf_nodes, &Vec::new(), 0)?;
+        atoms.collect_leafs_inner(root, source, &Vec::new(), 0)?;
 
         Ok(atoms)
     }
@@ -48,7 +50,6 @@ impl AtomCollection {
         &mut self,
         node: Node,
         source: &[u8],
-        specified_leaf_nodes: &BTreeSet<usize>,
         parent_ids: &[usize],
         level: usize,
     ) -> FormatterResult<()> {
@@ -62,7 +63,7 @@ impl AtomCollection {
             node.is_named()
         );
 
-        if node.child_count() == 0 || specified_leaf_nodes.contains(&node.id()) {
+        if node.child_count() == 0 || self.specified_leaf_nodes.contains(&node.id()) {
             self.atoms.push(Atom::Leaf {
                 content: String::from(node.utf8_text(source)?),
                 id,
@@ -74,13 +75,7 @@ impl AtomCollection {
             // }
         } else {
             for child in node.children(&mut node.walk()) {
-                self.collect_leafs_inner(
-                    child,
-                    source,
-                    specified_leaf_nodes,
-                    &parent_ids,
-                    level + 1,
-                )?;
+                self.collect_leafs_inner(child, source, &parent_ids, level + 1)?;
             }
         }
 
@@ -163,10 +158,12 @@ impl AtomCollection {
                     expanded.push(atom.clone());
 
                     for appended in self.append.entry(*id).or_default() {
+                        log::debug!("Applying append of {appended:?} to {atom:?}.");
                         expanded.push(appended.clone());
                     }
                 }
                 _ => {
+                    log::debug!("Not a leaf: {atom:?}");
                     expanded.push(atom.clone());
                 }
             }
@@ -234,6 +231,17 @@ impl AtomCollection {
     fn append(&mut self, atom: Atom, node: Node) {
         if let Some(atom) = self.expand_softline(atom, node) {
             let target_node = last_leaf(node);
+
+            // If this is a child of a node that we have deemed as a leaf node
+            // (e.g. a character in a string), we need to use that node id
+            // instead.
+            let target_node = self.parent_leaf_node(target_node);
+
+            log::debug!(
+                "Appending {atom:?} to node {:?}, id {}.",
+                target_node,
+                target_node.id()
+            );
             self.append
                 .entry(target_node.id())
                 .and_modify(|atoms| atoms.push(atom.clone()))
@@ -248,6 +256,20 @@ impl AtomCollection {
             //     shift_indices(&mut self.node_end_indices, index + 1);
             // }
         }
+    }
+
+    fn parent_leaf_node<'a>(&self, node: Node<'a>) -> Node<'a> {
+        let mut n = node;
+
+        while let Some(parent) = n.parent() {
+            n = parent;
+
+            if self.specified_leaf_nodes.contains(&n.id()) {
+                return n;
+            }
+        }
+
+        node
     }
 
     fn expand_softline(&self, atom: Atom, node: Node) -> Option<Atom> {

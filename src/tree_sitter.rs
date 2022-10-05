@@ -36,7 +36,7 @@ pub fn apply_query(
     let matches = cursor.matches(&query, root, source);
 
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
-    let mut atoms = AtomCollection::collect_leafs(root, source, &specified_leaf_nodes)?;
+    let mut atoms = AtomCollection::collect_leafs(root, source, specified_leaf_nodes)?;
 
     log::debug!("List of atoms before formatting: {atoms:?}");
 
