@@ -1,12 +1,12 @@
+use crate::atom_collection::AtomCollection;
 use crate::error::FormatterError;
 use crate::language::Language;
-use crate::syntax_info::SyntaxInfo;
-use crate::{Atom, FormatterResult};
+use crate::FormatterResult;
 use std::collections::BTreeSet;
 use tree_sitter::{Node, Parser, Query, QueryCursor, QueryPredicate, QueryPredicateArg, Tree};
 
 pub struct QueryResult {
-    pub atoms: Vec<Atom>,
+    pub atoms: AtomCollection,
     pub indent_level: isize,
 }
 
@@ -35,12 +35,8 @@ pub fn apply_query(
     let mut cursor = QueryCursor::new();
     let matches = cursor.matches(&query, root, source);
 
-    // Detect important aspects, such as line breaks, from input syntax.
-    let syntax = SyntaxInfo::detect(root);
-
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
-    let mut atoms: Vec<Atom> = Vec::new();
-    collect_leafs(root, &mut atoms, source, &specified_leaf_nodes, 0)?;
+    let mut atoms = AtomCollection::collect_leafs(root, source, specified_leaf_nodes)?;
 
     log::debug!("List of atoms before formatting: {atoms:?}");
 
@@ -62,6 +58,7 @@ pub fn apply_query(
             if let Some(d) = handle_delimiter_predicate(p)? {
                 delimiter = Some(d);
             }
+            // TODO: This is no longer used like this and can be removed.
             if let Some(il) = handle_indent_level_predicate(p)? {
                 indent_level = il;
             }
@@ -69,9 +66,12 @@ pub fn apply_query(
 
         if let Some(c) = m.captures.last() {
             let name = query.capture_names()[c.index as usize].clone();
-            syntax.resolve_capture(name, &mut atoms, c.node, delimiter.as_deref())?;
+            atoms.resolve_capture(name, c.node, delimiter.as_deref())?;
         }
     }
+
+    // Now apply all atoms in prepend and append to the leaf nodes.
+    atoms.apply_prepends_and_appends();
 
     Ok(QueryResult {
         atoms,
@@ -115,36 +115,6 @@ fn check_for_error_nodes(node: Node) -> FormatterResult<()> {
 
     for child in node.children(&mut node.walk()) {
         check_for_error_nodes(child)?;
-    }
-
-    Ok(())
-}
-
-fn collect_leafs<'a>(
-    node: Node,
-    atoms: &mut Vec<Atom>,
-    source: &'a [u8],
-    specified_leaf_nodes: &BTreeSet<usize>,
-    level: usize,
-) -> FormatterResult<()> {
-    let id = node.id();
-
-    log::debug!(
-        "CST node: {}{:?} - Named: {}",
-        "  ".repeat(level),
-        node,
-        node.is_named()
-    );
-
-    if node.child_count() == 0 || specified_leaf_nodes.contains(&node.id()) {
-        atoms.push(Atom::Leaf {
-            content: String::from(node.utf8_text(source)?),
-            id,
-        });
-    } else {
-        for child in node.children(&mut node.walk()) {
-            collect_leafs(child, atoms, source, specified_leaf_nodes, level + 1)?;
-        }
     }
 
     Ok(())

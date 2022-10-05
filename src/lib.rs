@@ -17,11 +17,11 @@ pub use language::Language;
 use pretty_assertions::assert_eq;
 use std::io;
 
+mod atom_collection;
 mod configuration;
 mod error;
 mod language;
 mod pretty;
-mod syntax_info;
 mod tree_sitter;
 
 /// An atom represents a small piece of the output. We turn Tree-sitter nodes
@@ -100,33 +100,16 @@ pub fn formatter(
     let configuration = Configuration::parse(&query)?;
 
     // All the work related to tree-sitter and the query is done here
+    log::info!("Apply Tree-sitter query");
     let query_result = tree_sitter::apply_query(&content, &query, configuration.language)?;
     let mut atoms = query_result.atoms;
 
     // Various post-processing of whitespace
-    //
-    // TODO: Make sure these aren't unnecessarily inefficient, in terms of
-    // recreating a vector of atoms over and over.
-    log::debug!("Before post-processing: {atoms:?}");
-    put_before(&mut atoms, Atom::IndentEnd, Atom::Space, &[]);
-    let mut atoms = trim_following(&atoms, Atom::Blankline, Atom::Space);
-    put_before(&mut atoms, Atom::Hardline, Atom::Blankline, &[Atom::Space]);
-    put_before(&mut atoms, Atom::IndentStart, Atom::Space, &[]);
-    put_before(
-        &mut atoms,
-        Atom::IndentStart,
-        Atom::Hardline,
-        &[Atom::Space],
-    );
-    put_before(&mut atoms, Atom::IndentEnd, Atom::Hardline, &[Atom::Space]);
-    let atoms = trim_following(&atoms, Atom::Hardline, Atom::Space);
-    let atoms = clean_up_consecutive(&atoms, Atom::Space);
-    let mut atoms = clean_up_consecutive(&atoms, Atom::Hardline);
-    ensure_final_hardline(&mut atoms);
-    log::debug!("Final list of atoms: {atoms:?}");
+    atoms.post_process();
 
     // Pretty-print atoms
-    let rendered = pretty::render(&atoms, query_result.indent_level)?;
+    log::info!("Pretty-print output");
+    let rendered = pretty::render(&atoms[..], query_result.indent_level)?;
     let trimmed = trim_trailing_spaces(&rendered);
 
     if !skip_idempotence {
@@ -142,54 +125,6 @@ fn read_input(input: &mut dyn io::Read) -> Result<String, io::Error> {
     let mut content = String::new();
     input.read_to_string(&mut content)?;
     Ok(content)
-}
-
-fn clean_up_consecutive(atoms: &[Atom], atom: Atom) -> Vec<Atom> {
-    let filtered = atoms
-        .split(|a| *a == atom)
-        .filter(|chain| !chain.is_empty());
-
-    Itertools::intersperse(filtered, &[atom.clone()])
-        .flatten()
-        .cloned()
-        .collect_vec()
-}
-
-fn trim_following(atoms: &[Atom], delimiter: Atom, skip: Atom) -> Vec<Atom> {
-    let trimmed = atoms
-        .split(|a| *a == delimiter)
-        .map(|slice| slice.iter().skip_while(|a| **a == skip).collect::<Vec<_>>());
-
-    Itertools::intersperse(trimmed, vec![&delimiter])
-        .flatten()
-        .cloned()
-        .collect_vec()
-}
-
-fn put_before(atoms: &mut Vec<Atom>, before: Atom, after: Atom, ignoring: &[Atom]) {
-    for i in 0..atoms.len() - 1 {
-        if atoms[i] == after {
-            for j in i + 1..atoms.len() {
-                if atoms[j] != before && atoms[j] != after && !ignoring.contains(&atoms[j]) {
-                    // stop looking
-                    break;
-                }
-                if atoms[j] == before {
-                    // switch
-                    atoms[i] = before.clone();
-                    atoms[j] = after.clone();
-                    break;
-                }
-            }
-        }
-    }
-}
-
-fn ensure_final_hardline(atoms: &mut Vec<Atom>) {
-    if let Some(Atom::Hardline) = atoms.last() {
-    } else {
-        atoms.push(Atom::Hardline);
-    }
 }
 
 fn trim_trailing_spaces(s: &str) -> String {
@@ -212,24 +147,6 @@ fn idempotence_check(content: &str, query: &str) -> FormatterResult<()> {
         assert_eq!(content, reformatted);
         Err(FormatterError::Idempotence)
     }
-}
-
-#[test]
-fn test_put_indent_ends_before_hardlines() {
-    let mut atoms = vec![Atom::Hardline, Atom::Hardline, Atom::IndentEnd];
-    let expected = vec![Atom::IndentEnd, Atom::Hardline, Atom::Hardline];
-    put_before(&mut atoms, Atom::IndentEnd, Atom::Hardline, &[]);
-    assert_eq!(expected, atoms);
-}
-
-#[test]
-fn test_put_indent_ends_before_hardlines_ignoring_space() {
-    let mut atoms = vec![Atom::Hardline, Atom::Space, Atom::Hardline, Atom::IndentEnd];
-    let expected = vec![Atom::IndentEnd, Atom::Space, Atom::Hardline, Atom::Hardline];
-
-    put_before(&mut atoms, Atom::IndentEnd, Atom::Hardline, &[Atom::Space]);
-
-    assert_eq!(expected, atoms);
 }
 
 #[test]

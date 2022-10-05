@@ -6,38 +6,38 @@
 ; tool of this.
 (string) @leaf
 
-; We want every object and array to have the { start a newline. So we match on
+; We want every object and array to have the { start a softline. So we match on
 ; the named object/array followed by the first anonymous node { or [.
 (object
   . 
-  "{" @append_hardline
+  "{" @append_empty_softline
 )
 
 (array
   . 
-  "[" @append_hardline
+  "[" @append_empty_softline
 )
 
-; Pairs should always end with a newline. Pairs come in two kinds, ones with a
+; Pairs should always end with a softline. Pairs come in two kinds, ones with a
 ; trailing comma, and those without. Those without are the last
 ; pair of an object.
 (object
-  "," @append_hardline
+  "," @append_spaced_softline
 )
 
 ; Pairs without a trailing comma are last pair of an object.
 (object
-  (pair) @append_hardline
+  (pair) @append_spaced_softline
   .
 )
 
-; Items in an array must have a newline after. See also the pairs above.
+; Items in an array must have a softline after. See also the pairs above.
 (array
-  "," @append_hardline
+  "," @append_spaced_softline
 )
 
 (array
-  (_) @append_hardline
+  (_) @append_spaced_softline
   .
 )
 
@@ -52,8 +52,7 @@
 )
 
 (object
-  (_) @append_indent_end
-  .
+  "}" @prepend_indent_end
 )
 
 (array
@@ -61,6 +60,5 @@
 )
 
 (array
-  (_) @append_indent_end
-  .
+  "]" @prepend_indent_end
 )
