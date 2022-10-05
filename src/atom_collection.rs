@@ -223,6 +223,7 @@ impl AtomCollection {
         }
     }
 
+    // TODO: The frequent lookup of this is inefficient, and needs to be optimized.
     fn parent_leaf_node<'a>(&self, node: Node<'a>) -> Node<'a> {
         let mut n = node;
 
@@ -350,6 +351,8 @@ fn detect_line_break_before_and_after(node: Node) -> (HashSet<usize>, HashSet<us
     detect_line_breaks_inner(node, 1, &mut None)
 }
 
+// TODO: This is taking a bit too much time, and would benefit from an
+// optimization.
 fn detect_line_breaks_inner<'a>(
     node: Node<'a>,
     minimum_line_breaks: usize,
