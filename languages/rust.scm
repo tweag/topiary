@@ -25,7 +25,7 @@
   (use_declaration)
 ] @allow_blank_line_before
 
-; Append spaces
+; Surround spaces
 [
   "as"
   "const"
@@ -36,6 +36,7 @@
   "if"
   "let"
   (mutable_specifier)
+  (scoped_use_list)
   "struct"
   "type"
   "unsafe"
@@ -45,32 +46,20 @@
   "-"
   "+"
   "->"
+] @prepend_space @append_space
+
+; Append spaces
+[
   ":"
 ] @append_space
-
-; Prepend spaces
-[
-  "as"
-  "else"
-  "extern"
-  "fn"
-  "for"
-  "if"
-  "let"
-  (scoped_use_list)
-  "unsafe"
-  "="
-  "=="
-  "-"
-  "+"
-  "->"
-] @prepend_space
 
 ; Input softlines before and after all comments. This means that the input
 ; decides if a comment should have line breaks before or after. A line comment
 ; always ends with a line break.
-(block_comment) @prepend_input_softline
-(line_comment) @prepend_input_softline
+[
+  (block_comment)
+  (line_comment)
+] @prepend_input_softline
 
 ; Input softline after block comments unless followed by comma or semicolon, as
 ; they are always put directly after.
@@ -95,14 +84,12 @@
 ((type_item)                @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
 ((use_declaration)          @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
 
-; Append softlines
-[
-  ";"
-] @append_spaced_softline
-
-; Append softlines after commas, unless followed by comments.
+; Append softlines, unless followed by comments.
 (
-  "," @append_spaced_softline
+  [
+    ","
+    ";"
+  ] @append_spaced_softline
   . 
   [ (block_comment) (line_comment) ]* @do_nothing
 )
@@ -122,9 +109,9 @@
   (type_identifier) @prepend_space
 )
 
-; The following five patterns are duplicated for all nodes that can contain curly braces.
+; This patterns is duplicated for all nodes that can contain curly braces.
 ; Hoping to be able to generalise them like this:
-; (enum_variant_list
+; (_
 ;   .
 ;   "{" @prepend_space
 ;   (#for! block declaration_list enum_variant_list field_declaration_list)
@@ -138,39 +125,18 @@
 
 (enum_variant_list
   .
-  "{" @append_spaced_softline
+  "{" @append_spaced_softline @append_indent_start
   _
-  "}"
-)
-
-(enum_variant_list
-  .
-  "{" @append_indent_start
-  _ 
-  "}"
-)
-
-(enum_variant_list
-  "{"
-  _
-  "}" @prepend_indent_end
-  .
-)
-
-(enum_variant_list
-  "{"
-  _
-  "}" @prepend_spaced_softline
+  "}" @prepend_spaced_softline @prepend_indent_end
   .
 )
 
 ; extern
 (extern_crate_declaration
-  (crate) @prepend_space
-)
-
-(extern_crate_declaration
-  (identifier) @prepend_space
+  [
+    (crate)
+    (identifier)
+  ] @prepend_space
 )
 
 ; field
@@ -181,29 +147,9 @@
 
 (field_declaration_list
   .
-  "{" @append_spaced_softline
+  "{" @append_spaced_softline @append_indent_start
   _
-  "}"
-)
-
-(field_declaration_list
-  .
-  "{" @append_indent_start
-  _ 
-  "}"
-)
-
-(field_declaration_list
-  "{"
-  _
-  "}" @prepend_indent_end
-  .
-)
-
-(field_declaration_list
-  "{"
-  _
-  "}" @prepend_spaced_softline
+  "}" @prepend_spaced_softline @prepend_indent_end
   .
 )
 
@@ -219,47 +165,19 @@
 
 (block
   .
-  "{" @append_spaced_softline
+  "{" @append_spaced_softline @append_indent_start
   _
-  "}"
-)
-
-(block
-  .
-  "{" @append_indent_start
-  _ 
-  "}"
-)
-
-(block
-  "{"
-  _
-  "}" @prepend_indent_end
-  .
-)
-
-(block
-  "{"
-  _
-  "}" @prepend_spaced_softline
+  "}" @prepend_spaced_softline @prepend_indent_end
   .
 )
 
 ; for
 (for_expression
-  (identifier) @prepend_space
-)
-
-(for_expression
-  (identifier) @append_space
-)
-
-(for_expression
-  (call_expression) @prepend_space
-)
-
-(for_expression
-  (field_expression) @prepend_space
+  [
+    (call_expression)
+    (field_expression)
+    (identifier)
+  ] @prepend_space @append_space
 )
 
 ; if
@@ -269,11 +187,10 @@
 
 ; if let
 (if_let_expression
-  "let" @prepend_space
-)
-
-(if_let_expression
-  (identifier) @prepend_space
+  [
+    (identifier)
+    "let"
+  ] @prepend_space
 )
 
 ; impl
@@ -288,52 +205,27 @@
 
 (declaration_list
   .
-  "{" @append_spaced_softline
+  "{" @append_spaced_softline @append_indent_start
   _
-  "}"
-)
-
-(declaration_list
-  .
-  "{" @append_indent_start
-  _ 
-  "}"
-)
-
-(declaration_list
-  "{"
-  _
-  "}" @prepend_indent_end
-  .
-)
-
-(declaration_list
-  "{"
-  _
-  "}" @prepend_spaced_softline
+  "}" @prepend_spaced_softline @prepend_indent_end
   .
 )
 
 ; let
 (let_declaration
-  (identifier) @prepend_space
-)
-
-(let_declaration
-  (mutable_specifier) @prepend_space
+  [
+    (identifier)
+    (mutable_specifier)
+  ] @prepend_space
 )
 
 ; match
 (match_expression
-  (call_expression) @prepend_space
-)
-
-(match_expression
-  (field_expression) @prepend_space
-)
-
-(match_expression
-  (identifier) @prepend_space
+  [
+    (call_expression)
+    (field_expression)
+    (identifier)
+  ] @prepend_space
 )
 
 ; mod
@@ -348,11 +240,7 @@
 
 ; type
 (bounded_type
-  "+" @prepend_space
-)
-
-(bounded_type
-  "+" @append_space
+  "+" @prepend_space @append_space
 )
 
 ; PhantomData<&'a ()>
