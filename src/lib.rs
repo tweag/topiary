@@ -29,8 +29,8 @@ mod tree_sitter;
 /// of atoms is rendered to the output.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Atom {
-    /// We don't allow consecutive `Hardline`, but if a `Hardline` is followed by
-    /// a `Blankline` we will render two newlines to produce a blank line.
+    /// We don't allow consecutive `Hardline`, but a `Blankline` will render two
+    /// newlines to produce a blank line.
     Blankline,
     /// A "no-op" atom that will not produce any output.
     Empty,
