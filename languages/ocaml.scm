@@ -15,6 +15,8 @@
 [
   (comment)
   (external)
+  (module_definition)
+  (open_module)
   (type_definition)
   (value_definition)
 ] @allow_blank_line_before
@@ -22,6 +24,7 @@
 ; Append line breaks
 [
   (external)
+  (open_module)
   (type_definition)
 ] @append_hardline
 
@@ -44,7 +47,10 @@
   (infix_operator)
   "let"
   "match"
+  "module"
   "mutable"
+  "of"
+  "open"
   (parameter)
   "rec"
   "then"
@@ -58,7 +64,6 @@
   "||"
   "->"
   "<-"
-  ":"
   "{"
   "}"
 ] @prepend_space @append_space
@@ -71,6 +76,7 @@
 ; Append spaces
 [
   "if"
+  ":"
   ";"
 ] @append_space
 
@@ -86,6 +92,13 @@
   (_) @append_space
   .
   (_)
+)
+
+; Consecutive type constructors must be separated by spaces.
+(
+  (type_constructor_path) @append_space
+  .
+  (type_constructor_path)
 )
 
 ; Input softlines before and after all comments. This means that the input
@@ -108,6 +121,7 @@
   [
     "begin"
     "else"
+    "struct"
     "then"
     "->"
     "{"
@@ -172,10 +186,13 @@
 ; Indenting. This will only do anything in multi-line blocks. In single-line
 ; blocks they do nothing.
 
+(variant_declaration) @prepend_indent_start @append_indent_end
+
 ; Start an indented block after these
 [
   "begin"
   "else"
+  "struct"
   "then"
   "->"
   "{"
