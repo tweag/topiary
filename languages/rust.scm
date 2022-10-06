@@ -72,17 +72,27 @@
 ; Append line breaks. If there is a comment following, we don't add anything,
 ; because the input softlines and spaces above will already have sorted out the
 ; formatting.
-((attribute_item)           @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
-((enum_item)                @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
-((extern_crate_declaration) @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
-((function_item)            @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
-((impl_item)                @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
-((let_declaration)          @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
-((line_comment)             @append_hardline)
-((mod_item)                 @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
-((struct_item)              @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
-((type_item)                @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
-((use_declaration)          @append_hardline . [ (block_comment) (line_comment) ]* @do_nothing)
+(
+  [
+    (attribute_item)
+    (enum_item)
+    (extern_crate_declaration)
+    (function_item)
+    (impl_item)
+    (let_declaration)
+    (mod_item)
+    (struct_item)
+    (type_item)
+    (use_declaration)
+  ] @append_hardline 
+  . 
+  [
+    (block_comment)
+    (line_comment) 
+  ]* @do_nothing
+)
+
+(line_comment) @append_hardline
 
 ; Append softlines, unless followed by comments.
 (
