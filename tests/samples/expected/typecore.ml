@@ -78,10 +78,10 @@ type wrong_kind_sort =
 
 let wrong_kind_sort_of_constructor (lid : Longident.t) =
   match lid with
-  | Lident "true" | Lident "false" | Ldot(_, "true") | Ldot(_, "false") ->
-      Boolean
-  | Lident "[]" | Lident "::" | Ldot(_, "[]") | Ldot(_, "::") -> List
-  | Lident "()" | Ldot(_, "()") -> Unit
+  | Lident "true" | Lident "false" | Ldot (_, "true") | Ldot (_, "false") ->
+    Boolean
+  | Lident "[]" | Lident "::" | Ldot (_, "[]") | Ldot (_, "::") -> List
+  | Lident "()" | Ldot (_, "()") -> Unit
   | _ -> Constructor
 
 type existential_restriction =
@@ -90,20 +90,23 @@ type existential_restriction =
   | In_rec (** or recursive definition *)
   | With_attributes (** or let[@any_attribute] = ... *)
   | In_class_args (** or in class arguments *)
-  | In_class_def  (** or in [class c = let ... in ...] *)
+  | In_class_def (** or in [class c = let ... in ...] *)
   | In_self_pattern (** or in self pattern *)
 
 type error =
   | Constructor_arity_mismatch of Longident.t * int * int
   | Label_mismatch of Longident.t * Errortrace.unification_error
   | Pattern_type_clash :
-      Errortrace.unification_error * Parsetree.pattern_desc option -> error
+    Errortrace.unification_error
+    * Parsetree.pattern_desc option ->
+      error
   | Or_pattern_type_clash of Ident.t * Errortrace.unification_error
   | Multiply_bound_variable of string
   | Orpat_vars of Ident.t * Ident.t list
   | Expr_type_clash of
-      Errortrace.unification_error * type_forcing_context option
-      * Parsetree.expression_desc option
+    Errortrace.unification_error
+    * type_forcing_context option
+    * Parsetree.expression_desc option
   | Apply_non_function of type_expr
   | Apply_wrong_label of arg_label * type_expr * bool
   | Label_multiply_defined of string
@@ -111,7 +114,10 @@ type error =
   | Label_not_mutable of Longident.t
   | Wrong_name of string * type_expected * wrong_name
   | Name_type_mismatch of
-      Datatype_kind.t * Longident.t * (Path.t * Path.t) * (Path.t * Path.t) list
+    Datatype_kind.t
+    * Longident.t
+    * (Path.t * Path.t)
+    * (Path.t * Path.t) list
   | Invalid_format of string
   | Not_an_object of type_expr * type_forcing_context option
   | Undefined_method of type_expr * string * string list option
@@ -126,15 +132,18 @@ type error =
   | Outside_class
   | Value_multiply_overridden of string
   | Coercion_failure of
-      Errortrace.expanded_type * Errortrace.unification_error * bool
+    Errortrace.expanded_type
+    * Errortrace.unification_error
+    * bool
   | Not_a_function of type_expr * type_forcing_context option
   | Too_many_arguments of type_expr * type_forcing_context option
   | Abstract_wrong_label of
-      { got           : arg_label
-      ; expected      : arg_label
-      ; expected_type : type_expr
-      ; explanation   : type_forcing_context option
-      }
+    {
+      got: arg_label;
+      expected: arg_label;
+      expected_type: type_expr;
+      explanation: type_forcing_context option;
+    }
   | Scoping_let_module of string * type_expr
   | Not_a_polymorphic_variant_type of Longident.t
   | Incoherent_label_order
@@ -173,21 +182,24 @@ exception Error_forward of Location.error
 
 let type_module =
   ref ((fun _env _md -> assert false) :
-       Env.t -> Parsetree.module_expr -> Typedtree.module_expr * Shape.t)
+    Env.t -> Parsetree.module_expr -> Typedtree.module_expr * Shape.t)
 
 (* Forward declaration, to be filled in by Typemod.type_open *)
 
 let type_open :
-  (?used_slot:bool ref -> override_flag -> Env.t -> Location.t ->
-   Longident.t loc -> Path.t * Env.t)
-    ref =
-  ref (fun ?used_slot:_ _ -> assert false)
+  (?used_slot: bool ref ->
+    override_flag ->
+    Env.t ->
+    Location.t ->
+    Longident.t loc -> Path.t * Env.t) ref =
+    ref (fun ?used_slot: _ _ -> assert false)
 
 let type_open_decl :
-  (?used_slot:bool ref -> Env.t -> Parsetree.open_declaration
-   -> open_declaration * Types.signature * Env.t)
-    ref =
-  ref (fun ?used_slot:_ _ -> assert false)
+  (?used_slot: bool ref ->
+    Env.t ->
+    Parsetree.open_declaration ->
+    open_declaration * Types.signature * Env.t) ref =
+    ref (fun ?used_slot: _ _ -> assert false)
 
 (* Forward declaration, to be filled in by Typemod.type_package *)
 
@@ -197,8 +209,10 @@ let type_package =
 (* Forward declaration, to be filled in by Typeclass.class_structure *)
 let type_object =
   ref (fun _env _s -> assert false :
-       Env.t -> Location.t -> Parsetree.class_structure ->
-         Typedtree.class_structure * string list)
+    Env.t ->
+    Location.t ->
+    Parsetree.class_structure ->
+    Typedtree.class_structure * string list)
 
 (*
   Saving and outputting type information.
@@ -218,7 +232,6 @@ let rcp node =
   Cmt_format.add_saved_type (Cmt_format.Partial_pattern (Computation, node));
   node
 
-
 (* Context for inline record arguments; see [type_ident] *)
 
 type recarg =
@@ -226,16 +239,15 @@ type recarg =
   | Required
   | Rejected
 
-
 let mk_expected ?explanation ty = { ty; explanation; }
 
 let case lhs rhs =
-  {c_lhs = lhs; c_guard = None; c_rhs = rhs}
+  { c_lhs = lhs; c_guard = None; c_rhs = rhs }
 
 (* Typing of constants *)
 
 let type_constant = function
-    Const_int _ -> instance Predef.type_int
+  Const_int _ -> instance Predef.type_int
   | Const_char _ -> instance Predef.type_char
   | Const_string _ -> instance Predef.type_string
   | Const_float _ -> instance Predef.type_float
@@ -243,33 +255,33 @@ let type_constant = function
   | Const_int64 _ -> instance Predef.type_int64
   | Const_nativeint _ -> instance Predef.type_nativeint
 
-let constant : Parsetree.constant -> (Asttypes.constant, error) result =
-  function
-  | Pconst_integer (i,None) ->
-     begin
-       try Ok (Const_int (Misc.Int_literal_converter.int i))
-       with Failure _ -> Error (Literal_overflow "int")
-     end
-  | Pconst_integer (i,Some 'l') ->
-     begin
-       try Ok (Const_int32 (Misc.Int_literal_converter.int32 i))
-       with Failure _ -> Error (Literal_overflow "int32")
-     end
-  | Pconst_integer (i,Some 'L') ->
-     begin
-       try Ok (Const_int64 (Misc.Int_literal_converter.int64 i))
-       with Failure _ -> Error (Literal_overflow "int64")
-     end
-  | Pconst_integer (i,Some 'n') ->
-     begin
-       try Ok (Const_nativeint (Misc.Int_literal_converter.nativeint i))
-       with Failure _ -> Error (Literal_overflow "nativeint")
-     end
-  | Pconst_integer (i,Some c) -> Error (Unknown_literal (i, c))
-  | Pconst_char c -> Ok (Const_char c)
-  | Pconst_string (s,loc,d) -> Ok (Const_string (s,loc,d))
-  | Pconst_float (f,None)-> Ok (Const_float f)
-  | Pconst_float (f,Some c) -> Error (Unknown_literal (f, c))
+let constant :
+  Parsetree.constant -> (Asttypes.constant, error) result = function
+    | Pconst_integer (i, None) ->
+      begin
+        try Ok (Const_int (Misc.Int_literal_converter.int i))
+        with Failure _ -> Error (Literal_overflow "int")
+      end
+    | Pconst_integer (i, Some 'l') ->
+      begin
+        try Ok (Const_int32 (Misc.Int_literal_converter.int32 i))
+        with Failure _ -> Error (Literal_overflow "int32")
+      end
+    | Pconst_integer (i, Some 'L') ->
+      begin
+        try Ok (Const_int64 (Misc.Int_literal_converter.int64 i))
+        with Failure _ -> Error (Literal_overflow "int64")
+      end
+    | Pconst_integer (i, Some 'n') ->
+      begin
+        try Ok (Const_nativeint (Misc.Int_literal_converter.nativeint i))
+        with Failure _ -> Error (Literal_overflow "nativeint")
+      end
+    | Pconst_integer (i, Some c) -> Error (Unknown_literal (i, c))
+    | Pconst_char c -> Ok (Const_char c)
+    | Pconst_string (s, loc, d) -> Ok (Const_string (s,loc,d))
+    | Pconst_float (f, None)-> Ok (Const_float f)
+    | Pconst_float (f, Some c) -> Error (Unknown_literal (f, c))
 
 let constant_or_raise env loc cst =
   match constant cst with

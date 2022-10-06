@@ -121,7 +121,7 @@ in the input. For any other nodes, blank lines will be removed.
 ] @allow_blank_line_before
 ```
 
-### @append_delimiter
+### @append_delimiter / @prepend_delimiter
 
 The matched nodes will have a delimiter appended to them. The delimiter must
 be specified using the predicate `#delimiter!`.

@@ -16,10 +16,10 @@
 (* Extensible buffers *)
 
 type t = {
-  mutable buffer : bytes;
-  mutable position : int; (* End-of-line comment *)
-  mutable length : int;
-  initial_buffer : bytes;
+  mutable buffer: bytes;
+  mutable position: int; (* End-of-line comment *)
+  mutable length: int;
+  initial_buffer: bytes;
 }
 (* Invariants: all parts of the code preserve the invariants that:
    - [0 <= b.position <= b.length]
@@ -196,7 +196,7 @@ let really_input_up_to ic buf ofs len =
           end
       end
   in
-  loop ic buf ~already_read : 0 ~ofs ~to_read : len
+  loop ic buf ~already_read: 0 ~ofs ~to_read: len
 
 let unsafe_add_channel_up_to b ic len =
   if b.position + len > b.length then resize b len;
@@ -336,13 +336,13 @@ let of_seq i =
 
 (** {6 Binary encoding of integers} *)
 
-external unsafe_set_int8 : bytes -> int -> int -> unit = "%bytes_unsafe_set"
-external unsafe_set_int16 : bytes -> int -> int -> unit = "%caml_bytes_set16u"
-external unsafe_set_int32 : bytes -> int -> int32 -> unit = "%caml_bytes_set32u"
-external unsafe_set_int64 : bytes -> int -> int64 -> unit = "%caml_bytes_set64u"
-external swap16 : int -> int = "%bswap16"
-external swap32 : int32 -> int32 = "%bswap_int32"
-external swap64 : int64 -> int64 = "%bswap_int64"
+external unsafe_set_int8: bytes -> int -> int -> unit = "%bytes_unsafe_set"
+external unsafe_set_int16: bytes -> int -> int -> unit = "%caml_bytes_set16u"
+external unsafe_set_int32: bytes -> int -> int32 -> unit = "%caml_bytes_set32u"
+external unsafe_set_int64: bytes -> int -> int64 -> unit = "%caml_bytes_set64u"
+external swap16: int -> int = "%bswap16"
+external swap32: int32 -> int32 = "%bswap_int32"
+external swap64: int64 -> int64 = "%bswap_int64"
 
 let add_int8 b x =
   let new_position = b.position + 1 in

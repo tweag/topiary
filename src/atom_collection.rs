@@ -88,6 +88,19 @@ impl AtomCollection {
             }
             "append_space" => self.append(Atom::Space, node),
             "append_spaced_softline" => self.append(Atom::Softline { spaced: true }, node),
+            "prepend_delimiter" => self.prepend(
+                Atom::Literal(
+                    delimiter
+                        .ok_or_else(|| {
+                            FormatterError::Query(
+                                "@prepend_delimiter requires a #delimiter! predicate".into(),
+                                None,
+                            )
+                        })?
+                        .to_string(),
+                ),
+                node,
+            ),
             "prepend_empty_softline" => self.prepend(Atom::Softline { spaced: false }, node),
             "prepend_indent_start" => self.prepend(Atom::IndentStart, node),
             "prepend_indent_end" => self.prepend(Atom::IndentEnd, node),
