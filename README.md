@@ -292,6 +292,55 @@ be ignored.
 )
 ```
 
+## Suggested workflow
+
+In order to work productively on query files, the following is one suggested way to work:
+
+1. Add a sample file to `tests/samples/input`.
+2. Copy the same file to `tests/samples/expected`, and make any changes to how you want the output to be formatted.
+3. If this is a new language, add a Tree-sitter grammar, extend `crate::language::Language` and process it everywhere, then make a mostly empty query file with just the `(#language!)` configuration.
+4. Run `RUST_LOG=debug cargo test`.
+5. Provided it works, it should output a lot of log messages. Copy that output to a text editor. You are particularly interested in the CST output that starts with a line like this: `CST node: {Node compilation_unit (0, 0) - (5942, 0)} - Named: true`.
+6. The test run will output all the differences between the actual output and the expected output, e.g. missing spaces between tokens. Pick a difference you would like to fix, and find the line number and column in the input file.
+7. Keep in mind that the CST output uses 0-based line and column numbers, so if your editor reports line 40, column 37, you probably want line 39, column 36.
+8. In the CST debug output, find the nodes in this region, such as the following:
+
+```
+[DEBUG atom_collection] CST node:   {Node constructed_type (39, 15) - (39, 42)} - Named: true
+[DEBUG atom_collection] CST node:     {Node type_constructor_path (39, 15) - (39, 35)} - Named: true
+[DEBUG atom_collection] CST node:       {Node type_constructor (39, 15) - (39, 35)} - Named: true
+[DEBUG atom_collection] CST node:     {Node type_constructor_path (39, 36) - (39, 42)} - Named: true
+[DEBUG atom_collection] CST node:       {Node type_constructor (39, 36) - (39, 42)} - Named: true
+```
+
+9. This may indicate that you would like spaces after all `type_constructor_path`:
+
+```scheme
+(type_constructor_path) @append_space
+```
+
+10. Or, more likely, you just want spaces between pairs of them:
+
+```scheme
+(
+  (type_constructor_path) @append_space
+  .
+  (type_constructor_path)
+)
+```
+
+11. Or maybe you want spaces between all children of `constructed_type`:
+
+```scheme
+(constructed_type
+  (_) @append_space
+  .
+  (_)
+)
+```
+
+12. Run `cargo test` again, see if the output is better now, and then go back to step 6.
+
 ## Contributing
 
 Issues and pull requests are welcome! If you have Nix installed, you can start a
