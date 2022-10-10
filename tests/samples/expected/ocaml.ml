@@ -336,13 +336,13 @@ let of_seq i =
 
 (** {6 Binary encoding of integers} *)
 
-external unsafe_set_int8: bytes -> int -> int -> unit = "%bytes_unsafe_set"
-external unsafe_set_int16: bytes -> int -> int -> unit = "%caml_bytes_set16u"
-external unsafe_set_int32: bytes -> int -> int32 -> unit = "%caml_bytes_set32u"
-external unsafe_set_int64: bytes -> int -> int64 -> unit = "%caml_bytes_set64u"
-external swap16: int -> int = "%bswap16"
-external swap32: int32 -> int32 = "%bswap_int32"
-external swap64: int64 -> int64 = "%bswap_int64"
+external unsafe_set_int8 : bytes -> int -> int -> unit = "%bytes_unsafe_set"
+external unsafe_set_int16 : bytes -> int -> int -> unit = "%caml_bytes_set16u"
+external unsafe_set_int32 : bytes -> int -> int32 -> unit = "%caml_bytes_set32u"
+external unsafe_set_int64 : bytes -> int -> int64 -> unit = "%caml_bytes_set64u"
+external swap16 : int -> int = "%bswap16"
+external swap32 : int32 -> int32 = "%bswap_int32"
+external swap64 : int64 -> int64 = "%bswap_int64"
 
 let add_int8 b x =
   let new_position = b.position + 1 in

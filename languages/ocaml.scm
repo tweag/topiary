@@ -111,11 +111,15 @@
 ; Certain elements must be separated by spaces.
 (
   [
+    (character)
     (constructed_type) 
     (constructor_path) 
     (field_get_expression)
+    (labeled_argument)
+    (number)
     (parenthesized_expression) 
     (parenthesized_pattern) 
+    (string) 
     (type_constructor_path) 
     (typed_expression) 
     (value_path) 
@@ -124,8 +128,11 @@
   ] @append_space
   .
   [
-    "," ; Commas are handled separately.
-    ")" ; Don't add any space just before a closing paren.
+    ; Don't add any space just before these.
+    ","
+    "."
+    ".."
+    ")"
   ]* @do_nothing
   .
   [
@@ -133,6 +140,7 @@
     (constructed_type) 
     (constructor_path) 
     (field_get_expression)
+    (labeled_argument)
     (number)
     (parenthesized_expression) 
     (parenthesized_pattern) 
@@ -272,13 +280,6 @@
   (else_clause)
   (then_clause)
 ] @append_indent_end
-
-; Make an indented block after "=" in let bindings
-(let_binding
-  "=" @append_indent_start
-  (_) @append_indent_end
-  .
-)
 
 ; Make an indented block after ":" in typed expressions
 ;
