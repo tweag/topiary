@@ -16,10 +16,10 @@
 (* Extensible buffers *)
 
 type t = {
-  mutable buffer : bytes;
-  mutable position : int; (* End-of-line comment *)
-  mutable length : int;
-  initial_buffer : bytes;
+  mutable buffer: bytes;
+  mutable position: int; (* End-of-line comment *)
+  mutable length: int;
+  initial_buffer: bytes;
 }
 (* Invariants: all parts of the code preserve the invariants that:
    - [0 <= b.position <= b.length]
@@ -196,7 +196,7 @@ let really_input_up_to ic buf ofs len =
           end
       end
   in
-  loop ic buf ~already_read : 0 ~ofs ~to_read : len
+  loop ic buf ~already_read: 0 ~ofs ~to_read: len
 
 let unsafe_add_channel_up_to b ic len =
   if b.position + len > b.length then resize b len;

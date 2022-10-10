@@ -88,6 +88,19 @@ impl AtomCollection {
             }
             "append_space" => self.append(Atom::Space, node),
             "append_spaced_softline" => self.append(Atom::Softline { spaced: true }, node),
+            "prepend_delimiter" => self.prepend(
+                Atom::Literal(
+                    delimiter
+                        .ok_or_else(|| {
+                            FormatterError::Query(
+                                "@prepend_delimiter requires a #delimiter! predicate".into(),
+                                None,
+                            )
+                        })?
+                        .to_string(),
+                ),
+                node,
+            ),
             "prepend_empty_softline" => self.prepend(Atom::Softline { spaced: false }, node),
             "prepend_indent_start" => self.prepend(Atom::IndentStart, node),
             "prepend_indent_end" => self.prepend(Atom::IndentEnd, node),
@@ -143,14 +156,15 @@ impl AtomCollection {
         log::debug!("Before post-processing: {:?}", self.atoms);
         log::info!("Do post-processing");
         self.put_before(Atom::IndentEnd, Atom::Space, &[]);
-        self.atoms = self.trim_following(Atom::Blankline, Atom::Space);
         self.put_before(Atom::Hardline, Atom::Blankline, &[Atom::Space]);
         self.put_before(Atom::IndentStart, Atom::Space, &[]);
         self.put_before(Atom::IndentStart, Atom::Hardline, &[Atom::Space]);
         self.put_before(Atom::IndentEnd, Atom::Hardline, &[Atom::Space]);
+        self.atoms = self.clean_up_consecutive(Atom::Space, &[]);
+        self.atoms = self.clean_up_consecutive(Atom::Hardline, &[Atom::Space]);
         self.atoms = self.trim_following(Atom::Hardline, Atom::Space);
-        self.atoms = self.clean_up_consecutive(Atom::Space);
-        self.atoms = self.clean_up_consecutive(Atom::Hardline);
+        self.atoms = self.trim_following(Atom::Blankline, Atom::Space);
+        self.remove_before(Atom::Hardline, Atom::Blankline, &[Atom::Space]);
         self.ensure_final_hardline();
         log::debug!("Final list of atoms: {:?}", self.atoms);
     }
@@ -270,11 +284,12 @@ impl AtomCollection {
         }
     }
 
-    fn clean_up_consecutive(&self, atom: Atom) -> Vec<Atom> {
+    fn clean_up_consecutive(&self, atom: Atom, ignoring: &[Atom]) -> Vec<Atom> {
         let filtered = self
             .atoms
             .split(|a| *a == atom)
-            .filter(|chain| !chain.is_empty());
+            .filter(|chain| !chain.is_empty())
+            .filter(|chain| !only(chain, ignoring));
 
         Itertools::intersperse(filtered, &[atom.clone()])
             .flatten()
@@ -309,6 +324,27 @@ impl AtomCollection {
                         // switch
                         self.atoms[i] = before.clone();
                         self.atoms[j] = after.clone();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    fn remove_before(&mut self, before: Atom, after: Atom, ignoring: &[Atom]) {
+        for i in 0..self.atoms.len() - 1 {
+            if self.atoms[i] == before {
+                for j in i + 1..self.atoms.len() {
+                    if self.atoms[j] != before
+                        && self.atoms[j] != after
+                        && !ignoring.contains(&self.atoms[j])
+                    {
+                        // stop looking
+                        break;
+                    }
+                    if self.atoms[j] == after {
+                        // remove
+                        self.atoms[i] = Atom::Empty;
                         break;
                     }
                 }
@@ -406,6 +442,11 @@ fn last_leaf(node: Node) -> Node {
     } else {
         last_leaf(node.child(nr_children - 1).unwrap())
     }
+}
+
+/// Check if a chain only contains certain Atoms
+fn only(chain: &[Atom], containing: &[Atom]) -> bool {
+    chain.iter().all(|c| containing.contains(c))
 }
 
 /// So that we can easily extract the atoms using &atom_collection[..]
