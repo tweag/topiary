@@ -652,7 +652,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tree-sitter-formatter"
+name = "topiary"
 version = "0.1.0"
 dependencies = [
  "clap",
