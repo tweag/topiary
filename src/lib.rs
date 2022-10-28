@@ -8,7 +8,7 @@
 //! to be formatted. We include query files for some languages.
 //!
 //! More details can be found on
-//! [GitHub](https://github.com/tweag/tree-sitter-formatter).
+//! [GitHub](https://github.com/tweag/topiary).
 
 use configuration::Configuration;
 pub use error::{FormatterError, ReadingError, WritingError};
@@ -65,7 +65,7 @@ pub type FormatterResult<T> = std::result::Result<T, FormatterError>;
 /// ```
 /// use std::fs::File;
 /// use std::io::BufReader;
-/// use tree_sitter_formatter::{formatter, FormatterError};
+/// use topiary::{formatter, FormatterError};
 ///
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();

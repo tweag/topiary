@@ -9,7 +9,7 @@ uniform formatter for simple languages using the
 The program can be run like this:
 
 ```bash
-echo '{"foo":"bar"}' | tree-sitter-formatter --language json
+echo '{"foo":"bar"}' | topiary --language json
 ```
 
 Or, if you have Rust or Nix installed, like this:
@@ -27,7 +27,7 @@ It will output the following formatted code:
 }
 ```
 
-Insert `RUST_LOG=debug` in front of `tree-sitter-formatter` (or `cargo` or
+Insert `RUST_LOG=debug` in front of `topiary` (or `cargo` or
 `nix`) if you want to enable debug logging.
 
 ## Design

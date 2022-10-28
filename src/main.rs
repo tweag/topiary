@@ -4,7 +4,7 @@ use std::{
     fs::File,
     io::{stdin, stdout, BufReader},
 };
-use tree_sitter_formatter::{formatter, FormatterResult};
+use topiary::{formatter, FormatterResult};
 
 #[derive(ArgEnum, Clone, Copy, Debug)]
 enum SupportedLanguage {

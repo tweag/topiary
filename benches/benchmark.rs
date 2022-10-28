@@ -1,7 +1,7 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use std::fs;
 use std::io;
-use tree_sitter_formatter::formatter;
+use topiary::formatter;
 
 fn criterion_benchmark(c: &mut Criterion) {
     let input = fs::read_to_string("tests/samples/input/ocaml.ml").unwrap();
