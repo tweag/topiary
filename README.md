@@ -1,18 +1,18 @@
-# Tree-sitter experiment
+# Topiary
 
-This project attempts to answer the question if it is possible to create a
-uniform formatter for simple languages using the
+Topiary aims to be a uniform formatter for simple languages, as part of the
 [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) ecosystem.
 
 ## Example
 
-The program can be run like this:
+Once built, the program can be run like this:
 
 ```bash
 echo '{"foo":"bar"}' | topiary --language json
 ```
 
-Or, if you have Rust or Nix installed, like this:
+`topiary` can also be built and run from source via either Rust or Nix if you
+have those installed:
 
 ```bash
 echo '{"foo":"bar"}' | cargo run -- --language json
