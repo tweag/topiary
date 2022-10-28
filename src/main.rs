@@ -2,7 +2,7 @@ use clap::{ArgEnum, ArgGroup, Parser};
 use std::{
     error::Error,
     fs::File,
-    io::{stdin, stdout, BufReader},
+    io::{stdin, stdout, BufReader, BufWriter},
 };
 use topiary::{formatter, FormatterResult};
 
@@ -31,6 +31,16 @@ struct Args {
     /// Do not check that formatting twice gives the same output
     #[clap(short, long)]
     skip_idempotence: bool,
+
+    /// Path to an input file. If omitted, or equal to "-", read from standard
+    /// input.
+    #[clap(short, long)]
+    input_file: Option<String>,
+
+    /// Path to an output file. If omitted, or equal to "-", write to standard
+    /// output.
+    #[clap(short, long)]
+    output_file: Option<String>,
 }
 
 fn main() {
@@ -43,8 +53,18 @@ fn main() {
 fn run() -> FormatterResult<()> {
     env_logger::init();
     let args = Args::parse();
-    let mut input = stdin();
-    let mut output = stdout();
+
+    // The as_deref() gives us an Option<&str>, which we can match against
+    // string literals
+    let mut input: Box<dyn std::io::Read> = match args.input_file.as_deref() {
+        Some("-") | None => Box::new(stdin()),
+        Some(file) => Box::new(BufReader::new(File::open(file)?)),
+    };
+
+    let mut output: Box<dyn std::io::Write> = match args.output_file.as_deref() {
+        Some("-") | None => Box::new(stdout()),
+        Some(file) => Box::new(BufWriter::new(File::open(file)?)),
+    };
 
     let query_path = if let Some(query) = args.query {
         query

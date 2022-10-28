@@ -642,16 +642,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tree-sitter"
-version = "0.20.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4423c784fe11398ca91e505cdc71356b07b1a924fc8735cfab5333afe3e18bc"
-dependencies = [
- "cc",
- "regex",
-]
-
-[[package]]
 name = "topiary"
 version = "0.1.0"
 dependencies = [
@@ -669,6 +659,16 @@ dependencies = [
  "tree-sitter-ocaml",
  "tree-sitter-rust",
  "tree-sitter-toml",
+]
+
+[[package]]
+name = "tree-sitter"
+version = "0.20.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4423c784fe11398ca91e505cdc71356b07b1a924fc8735cfab5333afe3e18bc"
+dependencies = [
+ "cc",
+ "regex",
 ]
 
 [[package]]
