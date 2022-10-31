@@ -116,7 +116,10 @@ impl AtomCollection {
             "prepend_space" => self.prepend(Atom::Space, node),
             "prepend_spaced_softline" => self.prepend(Atom::Softline { spaced: true }, node),
             // Skip over leafs
-            _ => {}
+            "leaf" => {},
+            // Error on something like
+            //     "begin" @append_foo
+            x => log::error!("Encountered unknown capture name: {}", x),
         }
 
         Ok(())
