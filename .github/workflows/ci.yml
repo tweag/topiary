@@ -18,8 +18,8 @@ jobs:
       - name: Set up Nix cache
         uses: cachix/cachix-action@v10
         with:
-          name: tweag-tree-sitter-formatter
-          authToken: "${{ secrets.CACHIX_TWEAG_TREE_SITTER_FORMATTER_AUTH_TOKEN }}"
+          name: tweag-topiary
+          authToken: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
       - name: Clippy, test, and benchmark
         run: nix -L flake check
