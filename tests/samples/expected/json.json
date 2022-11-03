@@ -37,7 +37,7 @@
     {
       "category": {},
       "id": 3,
-      "question": null,
+      "question": { "field": "None" },
       "options": [],
       "answer": null
     }

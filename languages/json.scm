@@ -12,14 +12,24 @@
 ; We want every object and array to have the { start a softline and an indented
 ; block. So we match on the named object/array followed by the first anonymous
 ; node { or [.
+
+; We do not want to add spaces or newlines in empty objects and arrays,
+; so we add the newline and the indentation block only if there is a pair in
+; the object (or a value in the array).
 (object
-  . 
-  "{" @append_empty_softline @append_indent_start
+  .
+  "{" @append_spaced_softline @append_indent_start
+  (pair)
+  "}" @prepend_indent_end
+  .
 )
 
 (array
-  . 
-  "[" @append_empty_softline @append_indent_start
+  .
+  "[" @append_spaced_softline @append_indent_start
+  (_value)
+  "]" @prepend_indent_end
+  .
 )
 
 ; Pairs should always end with a softline. Pairs come in two kinds, ones with a
@@ -43,12 +53,4 @@
 (array
   (_) @append_spaced_softline
   .
-)
-
-(object
-  "}" @prepend_indent_end
-)
-
-(array
-  "]" @prepend_indent_end
 )
