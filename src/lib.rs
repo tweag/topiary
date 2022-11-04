@@ -50,7 +50,10 @@ pub enum Atom {
     Literal(String),
     /// Represents a softline. It will be turned into a hardline for multi-line
     /// constructs, and either a space or nothing for single-line constructs.
-    Softline { spaced: bool, considering_ancestor: bool },
+    Softline {
+        spaced: bool,
+        considering_ancestor: bool,
+    },
     /// Represents a space. Consecutive spaces are reduced to one before rendering.
     Space,
 }

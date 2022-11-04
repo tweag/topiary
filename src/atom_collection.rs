@@ -30,7 +30,7 @@ pub struct AtomCollection {
 // )
 // One could like to see it as an addition with 3 terms
 // rather than an addition nested under another one.
-fn earliest_ancestor_of_same_type(node : Node) -> Node {
+fn earliest_ancestor_of_same_type(node: Node) -> Node {
     if let Some(parent) = node.parent() {
         if parent.kind() == node.kind() {
             earliest_ancestor_of_same_type(parent)
@@ -99,8 +99,11 @@ impl AtomCollection {
                 node,
             ),
             "append_empty_softline" => self.append(
-                Atom::Softline { spaced: false, considering_ancestor: false },
-                node
+                Atom::Softline {
+                    spaced: false,
+                    considering_ancestor: false,
+                },
+                node,
             ),
             "append_hardline" => self.append(Atom::Hardline, node),
             "append_indent_start" => self.append(Atom::IndentStart, node),
@@ -116,16 +119,25 @@ impl AtomCollection {
             }
             "append_space" => self.append(Atom::Space, node),
             "append_spaced_softline" => self.append(
-                Atom::Softline { spaced: true, considering_ancestor: false },
-                node
+                Atom::Softline {
+                    spaced: true,
+                    considering_ancestor: false,
+                },
+                node,
             ),
             "append_empty_soft_ancestor_line" => self.append(
-                Atom::Softline { spaced: false, considering_ancestor: true },
-                node
+                Atom::Softline {
+                    spaced: false,
+                    considering_ancestor: true,
+                },
+                node,
             ),
             "append_spaced_soft_ancestor_line" => self.append(
-                Atom::Softline { spaced: true, considering_ancestor: true },
-                node
+                Atom::Softline {
+                    spaced: true,
+                    considering_ancestor: true,
+                },
+                node,
             ),
             "prepend_delimiter" => self.prepend(
                 Atom::Literal(
@@ -141,8 +153,11 @@ impl AtomCollection {
                 node,
             ),
             "prepend_empty_softline" => self.prepend(
-                Atom::Softline { spaced: false, considering_ancestor: false },
-                node
+                Atom::Softline {
+                    spaced: false,
+                    considering_ancestor: false,
+                },
+                node,
             ),
             "prepend_indent_start" => self.prepend(Atom::IndentStart, node),
             "prepend_indent_end" => self.prepend(Atom::IndentEnd, node),
@@ -157,16 +172,25 @@ impl AtomCollection {
             }
             "prepend_space" => self.prepend(Atom::Space, node),
             "prepend_spaced_softline" => self.prepend(
-                Atom::Softline { spaced: true, considering_ancestor: false },
-                node
+                Atom::Softline {
+                    spaced: true,
+                    considering_ancestor: false,
+                },
+                node,
             ),
             "prepend_empty_soft_ancestor_line" => self.prepend(
-                Atom::Softline { spaced: false, considering_ancestor: true },
-                node
+                Atom::Softline {
+                    spaced: false,
+                    considering_ancestor: true,
+                },
+                node,
             ),
             "prepend_spaced_soft_ancestor_line" => self.prepend(
-                Atom::Softline { spaced: true, considering_ancestor: true },
-                node
+                Atom::Softline {
+                    spaced: true,
+                    considering_ancestor: true,
+                },
+                node,
             ),
             // Skip over leafs
             "leaf" => {}
@@ -295,12 +319,17 @@ impl AtomCollection {
     }
 
     fn expand_softline(&self, atom: Atom, node: Node) -> Option<Atom> {
-        if let Atom::Softline { spaced , considering_ancestor } = atom {
+        if let Atom::Softline {
+            spaced,
+            considering_ancestor,
+        } = atom
+        {
             if let Some(parent) = node.parent() {
-                let ancestor =
-                    if considering_ancestor {
-                        earliest_ancestor_of_same_type(parent)
-                    } else {parent};
+                let ancestor = if considering_ancestor {
+                    earliest_ancestor_of_same_type(parent)
+                } else {
+                    parent
+                };
                 let ancestor_id = ancestor.id();
 
                 if self.multi_line_nodes.contains(&ancestor_id) {
