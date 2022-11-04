@@ -44,7 +44,7 @@
     (open_module)
     (type_definition)
   ] @append_hardline
-  . 
+  .
   (comment)* @do_nothing
 )
 
@@ -112,18 +112,18 @@
 (
   [
     (character)
-    (constructed_type) 
-    (constructor_path) 
+    (constructed_type)
+    (constructor_path)
     (field_get_expression)
     (labeled_argument)
     (number)
-    (parenthesized_expression) 
-    (parenthesized_pattern) 
-    (string) 
-    (type_constructor_path) 
-    (typed_expression) 
-    (value_path) 
-    (value_pattern) 
+    (parenthesized_expression)
+    (parenthesized_pattern)
+    (string)
+    (type_constructor_path)
+    (typed_expression)
+    (value_path)
+    (value_pattern)
     ")"
   ] @append_space
   .
@@ -137,19 +137,19 @@
   .
   [
     (character)
-    (constructed_type) 
-    (constructor_path) 
+    (constructed_type)
+    (constructor_path)
     (field_get_expression)
     (labeled_argument)
     (number)
-    (parenthesized_expression) 
-    (parenthesized_pattern) 
+    (parenthesized_expression)
+    (parenthesized_pattern)
     (prefix_expression)
-    (string) 
-    (type_constructor_path) 
-    (typed_expression) 
-    (value_path) 
-    (value_pattern) 
+    (string)
+    (type_constructor_path)
+    (typed_expression)
+    (value_path)
+    (value_pattern)
     "("
   ]
 )
@@ -247,7 +247,7 @@
 )
 
 ; Put a semicolon delimiter after field declarations, unless they already have
-; one, in which case we do nothing. 
+; one, in which case we do nothing.
 (
   (field_declaration) @append_delimiter
   .
@@ -288,7 +288,7 @@
 ;
 (typed_expression
   ":" @append_indent_start
-  (_) @append_indent_end 
+  (_) @append_indent_end
   .
   ; just doing _ above doesn't work, because it matches the final named node as
   ; well as the final non-named node, causing double indentation.
@@ -301,7 +301,7 @@
 ;
 (let_binding
   ":" @append_indent_start
-  (_) @append_indent_end 
+  (_) @append_indent_end
   .
 )
 
@@ -309,7 +309,7 @@
 ;
 (let_binding
   "=" @append_indent_start
-  (_) @append_indent_end 
+  (_) @append_indent_end
   .
 )
 
@@ -345,39 +345,39 @@
 )
 
 ; Make an indented block after match arrows.
-; 
+;
 ; match lid with
 ; | Ldot(_, "false") ->
 ;   Boolean
 ;
 (match_case
   "->" @append_indent_start
-  (_) @append_indent_end 
+  (_) @append_indent_end
   .
 )
 
 ; Make an indented block after constructor declaration arrows.
-; 
-; Errortrace.unification_error * Parsetree.pattern_desc option -> 
+;
+; Errortrace.unification_error * Parsetree.pattern_desc option ->
 ;   error
 ;
 (constructor_declaration
   "->" @append_indent_start
-  (_) @append_indent_end 
+  (_) @append_indent_end
   .
 )
 
 ; Make an indented block where a function type arrow starts. Only for the root
 ; level, not for each arrow.
-; 
-; (?used_slot:bool ref -> 
-;   Longident.t loc -> 
+;
+; (?used_slot:bool ref ->
+;   Longident.t loc ->
 ;   Path.t * Env.t)
 ;
 (constructed_type
   (function_type
     "->" @append_indent_start
-    (_) @append_indent_end 
+    (_) @append_indent_end
     .
   )
 )
