@@ -306,7 +306,6 @@
     "of"
     "struct"
     "then"
-    "->"
     "{"
     ":"
     ";"
@@ -315,6 +314,12 @@
   [
     (comment)
   ]* @do_nothing
+)
+
+(
+  "->" @append_spaced_soft_ancestor_line
+  .
+  [ (comment) ]* @do_nothing
 )
 
 ; Always put softlines before these:

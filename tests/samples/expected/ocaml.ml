@@ -424,3 +424,17 @@ let foo =
 module type FOO = sig val foo : string end
 let create foo : (module FOO) = (module struct let foo = foo end)
 module Foo = (val create "Issue #106")
+
+(* A long type annotation. *)
+
+let long_type :
+  ?used_slot: bool ref ->
+  override_flag ->
+  Env.t ->
+  Location.t ->
+  Longident.t loc ->
+  Path.t * Env.t =
+    (* The identity function does not have the declared type at all,
+     it is just for formatting verification purpose.
+  *)
+    fun x -> x

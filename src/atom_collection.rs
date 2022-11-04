@@ -16,6 +16,32 @@ pub struct AtomCollection {
     line_break_after: HashSet<usize>,
 }
 
+// The purpose of this function is to identify the node which plays the role of parent,
+// when a flat tree is represented as a binary tree.
+// For instance, if one has a tree of the form
+// (op
+//   (num 1)
+//   (symbol +)
+//   (op
+//     (num 2)
+//     (symbol +)
+//     (num 3)
+//   )
+// )
+// One could like to see it as an addition with 3 terms
+// rather than an addition nested under another one.
+fn earliest_ancestor_of_same_type(node : Node) -> Node {
+    if let Some(parent) = node.parent() {
+        if parent.kind() == node.kind() {
+            earliest_ancestor_of_same_type(parent)
+        } else {
+            node
+        }
+    } else {
+        node
+    }
+}
+
 impl AtomCollection {
     /// Use this to create an initial AtomCollection
     pub fn collect_leafs(
@@ -72,7 +98,10 @@ impl AtomCollection {
                 ),
                 node,
             ),
-            "append_empty_softline" => self.append(Atom::Softline { spaced: false }, node),
+            "append_empty_softline" => self.append(
+                Atom::Softline { spaced: false, considering_ancestor: false },
+                node
+            ),
             "append_hardline" => self.append(Atom::Hardline, node),
             "append_indent_start" => self.append(Atom::IndentStart, node),
             "append_indent_end" => self.append(Atom::IndentEnd, node),
@@ -86,7 +115,18 @@ impl AtomCollection {
                 self.append(space, node);
             }
             "append_space" => self.append(Atom::Space, node),
-            "append_spaced_softline" => self.append(Atom::Softline { spaced: true }, node),
+            "append_spaced_softline" => self.append(
+                Atom::Softline { spaced: true, considering_ancestor: false },
+                node
+            ),
+            "append_empty_soft_ancestor_line" => self.append(
+                Atom::Softline { spaced: false, considering_ancestor: true },
+                node
+            ),
+            "append_spaced_soft_ancestor_line" => self.append(
+                Atom::Softline { spaced: true, considering_ancestor: true },
+                node
+            ),
             "prepend_delimiter" => self.prepend(
                 Atom::Literal(
                     delimiter
@@ -100,7 +140,10 @@ impl AtomCollection {
                 ),
                 node,
             ),
-            "prepend_empty_softline" => self.prepend(Atom::Softline { spaced: false }, node),
+            "prepend_empty_softline" => self.prepend(
+                Atom::Softline { spaced: false, considering_ancestor: false },
+                node
+            ),
             "prepend_indent_start" => self.prepend(Atom::IndentStart, node),
             "prepend_indent_end" => self.prepend(Atom::IndentEnd, node),
             "prepend_input_softline" => {
@@ -113,7 +156,18 @@ impl AtomCollection {
                 self.prepend(space, node);
             }
             "prepend_space" => self.prepend(Atom::Space, node),
-            "prepend_spaced_softline" => self.prepend(Atom::Softline { spaced: true }, node),
+            "prepend_spaced_softline" => self.prepend(
+                Atom::Softline { spaced: true, considering_ancestor: false },
+                node
+            ),
+            "prepend_empty_soft_ancestor_line" => self.prepend(
+                Atom::Softline { spaced: false, considering_ancestor: true },
+                node
+            ),
+            "prepend_spaced_soft_ancestor_line" => self.prepend(
+                Atom::Softline { spaced: true, considering_ancestor: true },
+                node
+            ),
             // Skip over leafs
             "leaf" => {}
 
@@ -241,24 +295,28 @@ impl AtomCollection {
     }
 
     fn expand_softline(&self, atom: Atom, node: Node) -> Option<Atom> {
-        if let Atom::Softline { spaced } = atom {
+        if let Atom::Softline { spaced , considering_ancestor } = atom {
             if let Some(parent) = node.parent() {
-                let parent_id = parent.id();
+                let ancestor =
+                    if considering_ancestor {
+                        earliest_ancestor_of_same_type(parent)
+                    } else {parent};
+                let ancestor_id = ancestor.id();
 
-                if self.multi_line_nodes.contains(&parent_id) {
+                if self.multi_line_nodes.contains(&ancestor_id) {
                     log::debug!(
-                        "Expanding softline to hardline in node {:?} with parent {}: {:?}",
+                        "Expanding softline to hardline in node {:?} with ancestor {}: {:?}",
                         node,
-                        parent_id,
-                        parent
+                        ancestor_id,
+                        ancestor
                     );
                     Some(Atom::Hardline)
                 } else if spaced {
                     log::debug!(
-                        "Expanding softline to space in node {:?} with parent {}: {:?}",
+                        "Expanding softline to space in node {:?} with ancestor {}: {:?}",
                         node,
-                        parent_id,
-                        parent
+                        ancestor_id,
+                        ancestor
                     );
                     Some(Atom::Space)
                 } else {

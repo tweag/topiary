@@ -330,6 +330,66 @@ single-line nodes.
 )
 ```
 
+### @append_spaced_soft_ancestor_line / @prepend_spaced_soft_ancestor_line
+
+The matched nodes will have a spaced softline appended or prepended to them.
+This will be expanded to a newline if the earliest ancestor of the same type is a multi-line
+node and to a space if it is a single-line node.
+
+#### Use case
+
+For instance, if one has a tree of the form
+```
+(op
+  (num 1)
+  (symbol +)
+  (op
+    (num 2)
+    (symbol +)
+    (num 3)
+  )
+)
+```
+one could like to see it as an addition with 3 terms
+rather than an addition nested under another one.
+
+#### Example
+
+When functions are curried, their types are of the shape `a -> b -> c -> d`
+implicitely parenthesized as `a -> (b -> (c -> d))`,
+which can lead to a tree of the shape
+```
+(fun_type
+  a
+  "->"
+  (fun_type
+    b
+    "->"
+    (fun_type
+      c
+      "->"
+      d
+    )
+  )
+)
+```
+
+We generally prefer to have line break after all or none of the arrows,
+this is achieved with:
+
+```scheme
+; Append spaced softlines, unless there is a comment following.
+(
+  [
+    "->"
+  ] @append_spaced_soft_ancestor_line
+  .
+  (comment)* @do_nothing
+)
+```
+
+
+
 ### @do_nothing
 
 If any of the captures in a query match are `@do_nothing`, then the match will
