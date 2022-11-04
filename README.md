@@ -139,7 +139,11 @@ be specified using the predicate `#delimiter!`.
 )
 ```
 
-Note that this would be the same as `@append_space` with space as delimiter.
+If there is already a semicolon, the `@do_nothing` instruction will be activated
+and prevent the other instruction in the query (the `@append_delimiter`) to activate.
+Otherwise, the `";"*` captures nothing and in this case the associated instruction (`@do_nothing`) does not activate.
+
+Note that `@append_delimiter` is the same as `@append_space` when the delimiter is set to " " (space).
 
 ### @append_empty_softline / @prepend_empty_softline
 
