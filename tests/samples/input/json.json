@@ -4,12 +4,7 @@
             "category": "sports",
             "id": 0,
             "question": "Which one is correct team name in the Eredivisie?",
-            "options": [
-                "Amsterdam United",
-                "FC Leiden",
-                "Troy",
-                "Nijmegen Eendracht Combinatie"
-            ],
+            "options": ["Amsterdam United" , "FC Leiden" , "Troy" , "Nijmegen Eendracht Combinatie"],
             "answer": "Nijmegen Eendracht Combinatie"
         },
         {
