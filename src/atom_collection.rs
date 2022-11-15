@@ -1,6 +1,5 @@
 use std::collections::{BTreeSet, HashMap, HashSet};
 
-use itertools::Itertools;
 use tree_sitter::Node;
 
 use crate::{Atom, FormatterError, FormatterResult};
@@ -150,25 +149,6 @@ impl AtomCollection {
         self.atoms = expanded;
     }
 
-    pub fn post_process(&mut self) {
-        // TODO: Make sure these aren't unnecessarily inefficient, in terms of
-        // recreating a vector of atoms over and over.
-        log::debug!("Before post-processing: {:?}", self.atoms);
-        log::info!("Do post-processing");
-        self.put_before(Atom::IndentEnd, Atom::Space, &[]);
-        self.put_before(Atom::Hardline, Atom::Blankline, &[Atom::Space]);
-        self.put_before(Atom::IndentStart, Atom::Space, &[]);
-        self.put_before(Atom::IndentStart, Atom::Hardline, &[Atom::Space]);
-        self.put_before(Atom::IndentEnd, Atom::Hardline, &[Atom::Space]);
-        self.atoms = self.clean_up_consecutive(Atom::Space, &[]);
-        self.atoms = self.clean_up_consecutive(Atom::Hardline, &[Atom::Space]);
-        self.atoms = self.trim_following(Atom::Hardline, Atom::Space);
-        self.atoms = self.trim_following(Atom::Blankline, Atom::Space);
-        self.remove_before(Atom::Hardline, Atom::Blankline, &[Atom::Space]);
-        self.ensure_final_hardline();
-        log::debug!("Final list of atoms: {:?}", self.atoms);
-    }
-
     fn collect_leafs_inner(
         &mut self,
         node: Node,
@@ -284,79 +264,68 @@ impl AtomCollection {
         }
     }
 
-    fn clean_up_consecutive(&self, atom: Atom, ignoring: &[Atom]) -> Vec<Atom> {
-        let filtered = self
-            .atoms
-            .split(|a| *a == atom)
-            .filter(|chain| !chain.is_empty())
-            .filter(|chain| !only(chain, ignoring));
-
-        Itertools::intersperse(filtered, &[atom.clone()])
-            .flatten()
-            .cloned()
-            .collect_vec()
+    pub fn post_process(&mut self) {
+        let mut newvec = Vec::new();
+        post_process_internal(&mut newvec, &(self.atoms));
+        self.atoms = newvec;
     }
+}
 
-    fn trim_following(&self, delimiter: Atom, skip: Atom) -> Vec<Atom> {
-        let trimmed = self
-            .atoms
-            .split(|a| *a == delimiter)
-            .map(|slice| slice.iter().skip_while(|a| **a == skip).collect::<Vec<_>>());
-
-        Itertools::intersperse(trimmed, vec![&delimiter])
-            .flatten()
-            .cloned()
-            .collect_vec()
-    }
-
-    fn put_before(&mut self, before: Atom, after: Atom, ignoring: &[Atom]) {
-        for i in 0..self.atoms.len() - 1 {
-            if self.atoms[i] == after {
-                for j in i + 1..self.atoms.len() {
-                    if self.atoms[j] != before
-                        && self.atoms[j] != after
-                        && !ignoring.contains(&self.atoms[j])
-                    {
-                        // stop looking
-                        break;
-                    }
-                    if self.atoms[j] == before {
-                        // switch
-                        self.atoms[i] = before.clone();
-                        self.atoms[j] = after.clone();
-                        break;
-                    }
-                }
+fn post_process_internal(new_vec: &mut Vec<Atom>, old_vec: &Vec<Atom>) {
+    for i in 0..old_vec.len() {
+        let next = old_vec[i].clone();
+        if let Some(prev) = new_vec.last() {
+            match *prev {
+                Atom::Space =>
+                    match next {
+                        Atom::Space => {},
+                        Atom::Hardline => pop_and_push(new_vec, vec![Atom::Hardline]),
+                        Atom::Blankline => pop_and_push(new_vec, vec![Atom::Blankline]),
+                        Atom::IndentStart => pop_and_push(new_vec, vec![Atom::IndentStart, Atom::Space]),
+                        Atom::IndentEnd => pop_and_push(new_vec, vec![Atom::IndentEnd, Atom::Space]),
+                        _ => new_vec.push(next),
+                    },
+                Atom::Hardline =>
+                    match next {
+                        Atom::Space => {},
+                        Atom::Hardline => {},
+                        Atom::Blankline => pop_and_push(new_vec, vec![Atom::Blankline]),
+                        Atom::IndentStart => pop_and_push(new_vec, vec![Atom::IndentStart, Atom::Hardline]),
+                        Atom::IndentEnd => pop_and_push(new_vec, vec![Atom::IndentEnd, Atom::Hardline]),
+                        _ => new_vec.push(next),
+                    },
+                Atom::Blankline =>
+                    match next {
+                        Atom::Space => {},
+                        Atom::Hardline => {},
+                        Atom::Blankline => {},
+                        Atom::IndentStart => pop_and_push(new_vec, vec![Atom::IndentStart, Atom::Blankline]),
+                        Atom::IndentEnd => pop_and_push(new_vec, vec![Atom::IndentEnd, Atom::Blankline]),
+                        _ => new_vec.push(next),
+                    },
+                _ => new_vec.push(next),
             }
-        }
-    }
-
-    fn remove_before(&mut self, before: Atom, after: Atom, ignoring: &[Atom]) {
-        for i in 0..self.atoms.len() - 1 {
-            if self.atoms[i] == before {
-                for j in i + 1..self.atoms.len() {
-                    if self.atoms[j] != before
-                        && self.atoms[j] != after
-                        && !ignoring.contains(&self.atoms[j])
-                    {
-                        // stop looking
-                        break;
-                    }
-                    if self.atoms[j] == after {
-                        // remove
-                        self.atoms[i] = Atom::Empty;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    fn ensure_final_hardline(&mut self) {
-        if let Some(Atom::Hardline) = self.atoms.last() {
         } else {
-            self.atoms.push(Atom::Hardline);
+            match next {
+                Atom::Space | Atom::Hardline | Atom::Blankline => {},
+                _ => new_vec.push(next),
+            };
         }
+    }
+    ensure_final_hardline(new_vec);
+}
+
+fn ensure_final_hardline(v: &mut Vec<Atom>) {
+    if let Some(Atom::Hardline) = v.last() {
+    } else {
+        v.push(Atom::Hardline);
+    }
+}
+
+fn pop_and_push<A>(v: &mut Vec<A>, to_push: Vec<A>) {
+    v.pop();
+    for i in to_push {
+        v.push(i);
     }
 }
 
@@ -442,11 +411,6 @@ fn last_leaf(node: Node) -> Node {
     } else {
         last_leaf(node.child(nr_children - 1).unwrap())
     }
-}
-
-/// Check if a chain only contains certain Atoms
-fn only(chain: &[Atom], containing: &[Atom]) -> bool {
-    chain.iter().all(|c| containing.contains(c))
 }
 
 /// So that we can easily extract the atoms using &atom_collection[..]
