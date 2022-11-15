@@ -355,9 +355,9 @@ rather than an addition nested under another one.
 
 #### Example
 
-When functions are curried, their types are of the shape `a -> b -> c -> d`
-implicitely parenthesized as `a -> (b -> (c -> d))`,
-which can lead to a tree of the shape
+Consider an Ocaml type of shape `a -> b -> c -> d`
+implicitely parenthesized as `a -> (b -> (c -> d))`.
+It is parsed to a tree of the shape
 ```
 (fun_type
   a
@@ -374,7 +374,7 @@ which can lead to a tree of the shape
 )
 ```
 
-We generally prefer to have line break after all or none of the arrows,
+The Ocaml formatter inserts line break after either all or none of the arrows,
 this is achieved with:
 
 ```scheme
