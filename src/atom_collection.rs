@@ -272,43 +272,47 @@ impl AtomCollection {
 }
 
 fn post_process_internal(new_vec: &mut Vec<Atom>, old_vec: &Vec<Atom>) {
-    for i in 0..old_vec.len() {
-        let next = old_vec[i].clone();
+    for next in old_vec {
         if let Some(prev) = new_vec.last() {
             match *prev {
-                Atom::Space =>
-                    match next {
-                        Atom::Space => {},
-                        Atom::Hardline => pop_and_push(new_vec, vec![Atom::Hardline]),
-                        Atom::Blankline => pop_and_push(new_vec, vec![Atom::Blankline]),
-                        Atom::IndentStart => pop_and_push(new_vec, vec![Atom::IndentStart, Atom::Space]),
-                        Atom::IndentEnd => pop_and_push(new_vec, vec![Atom::IndentEnd, Atom::Space]),
-                        _ => new_vec.push(next),
-                    },
-                Atom::Hardline =>
-                    match next {
-                        Atom::Space => {},
-                        Atom::Hardline => {},
-                        Atom::Blankline => pop_and_push(new_vec, vec![Atom::Blankline]),
-                        Atom::IndentStart => pop_and_push(new_vec, vec![Atom::IndentStart, Atom::Hardline]),
-                        Atom::IndentEnd => pop_and_push(new_vec, vec![Atom::IndentEnd, Atom::Hardline]),
-                        _ => new_vec.push(next),
-                    },
-                Atom::Blankline =>
-                    match next {
-                        Atom::Space => {},
-                        Atom::Hardline => {},
-                        Atom::Blankline => {},
-                        Atom::IndentStart => pop_and_push(new_vec, vec![Atom::IndentStart, Atom::Blankline]),
-                        Atom::IndentEnd => pop_and_push(new_vec, vec![Atom::IndentEnd, Atom::Blankline]),
-                        _ => new_vec.push(next),
-                    },
-                _ => new_vec.push(next),
+                Atom::Space => match next {
+                    Atom::Space => {}
+                    Atom::Hardline => pop_and_push(new_vec, vec![Atom::Hardline]),
+                    Atom::Blankline => pop_and_push(new_vec, vec![Atom::Blankline]),
+                    Atom::IndentStart => {
+                        pop_and_push(new_vec, vec![Atom::IndentStart, Atom::Space])
+                    }
+                    Atom::IndentEnd => pop_and_push(new_vec, vec![Atom::IndentEnd, Atom::Space]),
+                    _ => new_vec.push(next.clone()),
+                },
+                Atom::Hardline => match next {
+                    Atom::Space => {}
+                    Atom::Hardline => {}
+                    Atom::Blankline => pop_and_push(new_vec, vec![Atom::Blankline]),
+                    Atom::IndentStart => {
+                        pop_and_push(new_vec, vec![Atom::IndentStart, Atom::Hardline])
+                    }
+                    Atom::IndentEnd => pop_and_push(new_vec, vec![Atom::IndentEnd, Atom::Hardline]),
+                    _ => new_vec.push(next.clone()),
+                },
+                Atom::Blankline => match next {
+                    Atom::Space => {}
+                    Atom::Hardline => {}
+                    Atom::Blankline => {}
+                    Atom::IndentStart => {
+                        pop_and_push(new_vec, vec![Atom::IndentStart, Atom::Blankline])
+                    }
+                    Atom::IndentEnd => {
+                        pop_and_push(new_vec, vec![Atom::IndentEnd, Atom::Blankline])
+                    }
+                    _ => new_vec.push(next.clone()),
+                },
+                _ => new_vec.push(next.clone()),
             }
         } else {
             match next {
-                Atom::Space | Atom::Hardline | Atom::Blankline => {},
-                _ => new_vec.push(next),
+                Atom::Space | Atom::Hardline | Atom::Blankline => {}
+                _ => new_vec.push(next.clone()),
             };
         }
     }
