@@ -429,3 +429,17 @@ let long_type : ?used_slot: bool ref -> override_flag ->
      it is just for formatting verification purpose.
   *)
   fun x -> x
+
+let long_higher_order_type : ?used_slot: bool ref -> override_flag ->
+  Env.t -> (Location.t -> Longident.t loc ->a) -> Path.t * Env.t =
+  (* The identity function does not have the declared type at all,
+      it is just for formatting verification purpose.
+  *)
+  fun x -> x
+
+let long_third_order_type : ?used_slot: bool ref -> override_flag ->
+  Env.t -> (a-> (Location.t -> Longident.t loc) ->a) -> Path.t * Env.t =
+  (* The identity function does not have the declared type at all,
+      it is just for formatting verification purpose.
+  *)
+  fun x -> x

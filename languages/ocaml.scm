@@ -317,9 +317,17 @@
 )
 
 (
-  "->" @append_spaced_soft_ancestor_line
+  "->" @append_spaced_softline
   .
   [ (comment) ]* @do_nothing
+)
+
+(function_type
+  "->"
+  .
+  (function_type
+    "->" @append_spaced_soft_ancestor_line
+  )
 )
 
 ; Always put softlines before these:
