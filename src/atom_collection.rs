@@ -271,6 +271,10 @@ impl AtomCollection {
     }
 }
 
+// This function merges the spaces, new lines and blank lines.
+// If there are several tokens of different kind one after the other,
+// the blank line is kept over the new line which itself is kept over the space.
+// Furthermore, this function put the indentation delimiters before any space/line atom.
 fn post_process_internal(new_vec: &mut Vec<Atom>, old_vec: &Vec<Atom>) {
     for next in old_vec {
         if let Some(prev) = new_vec.last() {
@@ -310,6 +314,9 @@ fn post_process_internal(new_vec: &mut Vec<Atom>, old_vec: &Vec<Atom>) {
                 _ => new_vec.push(next.clone()),
             }
         } else {
+            // If the new vector is still empty,
+            // we skip all the spaces and newlines
+            // and add the first significant atom to the new vector.
             match next {
                 Atom::Space | Atom::Hardline | Atom::Blankline => {}
                 _ => new_vec.push(next.clone()),
