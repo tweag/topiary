@@ -264,66 +264,55 @@ impl AtomCollection {
         }
     }
 
+    // This function merges the spaces, new lines and blank lines.
+    // If there are several tokens of different kind one after the other,
+    // the blank line is kept over the new line which itself is kept over the space.
+    // Furthermore, this function put the indentation delimiters before any space/line atom.
     pub fn post_process(&mut self) {
-        let mut newvec = Vec::new();
-        post_process_internal(&mut newvec, &(self.atoms));
-        self.atoms = newvec;
+        let mut new_vec: Vec<Atom> = Vec::new();
+        for next in &(self.atoms) {
+            if let Some(prev_var) = new_vec.last() {
+                let prev = prev_var.clone();
+                post_process_internal(&mut new_vec, prev, next.clone())
+            } else {
+                // If the new vector is still empty,
+                // we skip all the spaces and newlines
+                // and add the first significant atom to the new vector.
+                match next {
+                    Atom::Space | Atom::Hardline | Atom::Blankline => {}
+                    _ => new_vec.push(next.clone()),
+                };
+            }
+        }
+        ensure_final_hardline(&mut new_vec);
+        self.atoms = new_vec;
     }
 }
 
-// This function merges the spaces, new lines and blank lines.
-// If there are several tokens of different kind one after the other,
-// the blank line is kept over the new line which itself is kept over the space.
-// Furthermore, this function put the indentation delimiters before any space/line atom.
-fn post_process_internal(new_vec: &mut Vec<Atom>, old_vec: &Vec<Atom>) {
-    for next in old_vec {
-        if let Some(prev) = new_vec.last() {
-            match *prev {
-                Atom::Space => match next {
-                    Atom::Space => {}
-                    Atom::Hardline => pop_and_push(new_vec, vec![Atom::Hardline]),
-                    Atom::Blankline => pop_and_push(new_vec, vec![Atom::Blankline]),
-                    Atom::IndentStart => {
-                        pop_and_push(new_vec, vec![Atom::IndentStart, Atom::Space])
-                    }
-                    Atom::IndentEnd => pop_and_push(new_vec, vec![Atom::IndentEnd, Atom::Space]),
-                    _ => new_vec.push(next.clone()),
-                },
-                Atom::Hardline => match next {
-                    Atom::Space => {}
-                    Atom::Hardline => {}
-                    Atom::Blankline => pop_and_push(new_vec, vec![Atom::Blankline]),
-                    Atom::IndentStart => {
-                        pop_and_push(new_vec, vec![Atom::IndentStart, Atom::Hardline])
-                    }
-                    Atom::IndentEnd => pop_and_push(new_vec, vec![Atom::IndentEnd, Atom::Hardline]),
-                    _ => new_vec.push(next.clone()),
-                },
-                Atom::Blankline => match next {
-                    Atom::Space => {}
-                    Atom::Hardline => {}
-                    Atom::Blankline => {}
-                    Atom::IndentStart => {
-                        pop_and_push(new_vec, vec![Atom::IndentStart, Atom::Blankline])
-                    }
-                    Atom::IndentEnd => {
-                        pop_and_push(new_vec, vec![Atom::IndentEnd, Atom::Blankline])
-                    }
-                    _ => new_vec.push(next.clone()),
-                },
-                _ => new_vec.push(next.clone()),
-            }
-        } else {
-            // If the new vector is still empty,
-            // we skip all the spaces and newlines
-            // and add the first significant atom to the new vector.
+fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
+    match prev {
+        // If the last atom is a space/line
+        Atom::Space | Atom::Hardline | Atom::Blankline => {
             match next {
-                Atom::Space | Atom::Hardline | Atom::Blankline => {}
-                _ => new_vec.push(next.clone()),
-            };
+                // And the next one is also a space/line
+                Atom::Space | Atom::Hardline | Atom::Blankline => {
+                    if is_dominant(next.clone(), prev) {
+                        new_vec.pop();
+                        new_vec.push(next);
+                    }
+                }
+                // Or an indentation delimiter, then one has to merge/re-order.
+                Atom::IndentStart | Atom::IndentEnd => {
+                    new_vec.pop();
+                    new_vec.push(next);
+                    new_vec.push(prev);
+                }
+                _ => new_vec.push(next),
+            }
         }
+        // Otherwise, we simply copy the atom to the new vector.
+        _ => new_vec.push(next),
     }
-    ensure_final_hardline(new_vec);
 }
 
 fn ensure_final_hardline(v: &mut Vec<Atom>) {
@@ -333,10 +322,14 @@ fn ensure_final_hardline(v: &mut Vec<Atom>) {
     }
 }
 
-fn pop_and_push<A>(v: &mut Vec<A>, to_push: Vec<A>) {
-    v.pop();
-    for i in to_push {
-        v.push(i);
+// This function is only expected to take spaces and newlines as argument.
+// It defines the order Blankline > Hardline > Space.
+fn is_dominant(next: Atom, prev: Atom) -> bool {
+    match next {
+        Atom::Space => false,
+        Atom::Hardline => prev == Atom::Space,
+        Atom::Blankline => prev != Atom::Blankline,
+        _ => panic!("Unexpected character in is_dominant"),
     }
 }
 
