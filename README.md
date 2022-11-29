@@ -5,7 +5,50 @@
 Topiary aims to be a uniform formatter for simple languages, as part of the
 [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) ecosystem.
 
-## Example
+## Getting Started
+
+### Installing
+
+The project can be built and installed with Cargo from the repository
+directory:
+
+```bash
+cargo install --path .
+```
+
+See the [Contributing](#contributing) section for details on setting up
+a development environment.
+
+### Usage
+
+    topiary [OPTIONS] <--language <LANGUAGE>|--query <QUERY>>
+
+Options:
+
+* `-h`, `--help`\
+  Print help information
+
+* `-i`, `--input-file <INPUT_FILE>`\
+  Path to an input file. If omitted, or equal to "-", read from standard
+  input
+
+* `-l`, `--language <LANGUAGE>`\
+  Which language to parse and format [possible values: json, toml]
+
+* `-o`, `--output-file <OUTPUT_FILE>`\
+  Path to an output file. If omitted, or equal to "-", write to standard
+  output
+
+* `-q`, `--query <QUERY>`\
+  Which query file to use
+
+* `-s`, `--skip-idempotence`\
+  Do not check that formatting twice gives the same output
+
+* `-V`, `--version`\
+  Print version information
+
+#### Example
 
 Once built, the program can be run like this:
 
@@ -13,8 +56,8 @@ Once built, the program can be run like this:
 echo '{"foo":"bar"}' | topiary --language json
 ```
 
-`topiary` can also be built and run from source via either Rust or Nix if you
-have those installed:
+`topiary` can also be built and run from source via either Rust or Nix,
+if you have those installed:
 
 ```bash
 echo '{"foo":"bar"}' | cargo run -- --language json
@@ -24,13 +67,11 @@ echo '{"foo":"bar"}' | nix run . -- --language json
 It will output the following formatted code:
 
 ```json
-{
-    "foo": "bar"
-}
+{ "foo": "bar" }
 ```
 
-Insert `RUST_LOG=debug` in front of `topiary` (or `cargo` or
-`nix`) if you want to enable debug logging.
+Set the `RUST_LOG=debug` environment variable if you want to enable
+debug logging.
 
 ## Design
 
