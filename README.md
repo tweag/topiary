@@ -2,8 +2,10 @@
 
 ![CI Status](https://github.com/tweag/topiary/actions/workflows/ci.yml/badge.svg)
 
-Topiary aims to be a uniform formatter for simple languages, as part of the
-[Tree-sitter](https://tree-sitter.github.io/tree-sitter/) ecosystem.
+Topiary aims to be a uniform formatter for simple languages, as part of
+the [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) ecosystem.
+It is named after the art of clipping or trimming trees into fantastic
+shapes.
 
 ## Getting Started
 
