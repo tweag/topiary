@@ -3,7 +3,7 @@ let
   craneLib = crane.mkLib pkgs;
 
   commonArgs = {
-    src = nix-filter.lib.filter {  
+    src = nix-filter.lib.filter {
       root = ./.;
       include = [
         "benches"
@@ -31,7 +31,7 @@ in
   audit = craneLib.cargoAudit (commonArgs // {
     inherit advisory-db;
   });
-  
+
   benchmark = craneLib.buildPackage (commonArgs // {
     inherit cargoArtifacts;
     cargoTestCommand = "cargo bench --profile release";
@@ -39,5 +39,9 @@ in
 
   app = craneLib.buildPackage (commonArgs // {
     inherit cargoArtifacts;
+    postInstall = ''
+      install -Dm444 languages/* -t $out/share/languages
+    '';
+    TOPIARY_LANGUAGE_DIR = "${placeholder "out"}/share/languages";
   });
 }
