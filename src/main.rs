@@ -70,7 +70,7 @@ fn run() -> FormatterResult<()> {
     let query_path = if let Some(query) = args.query {
         query
     } else if let Some(language) = args.language {
-        PathBuf::from(option_env!("TOPIARY_LANGUAGE_DIR").unwrap_or("language"))
+        PathBuf::from(option_env!("TOPIARY_LANGUAGE_DIR").unwrap_or("languages"))
             .join(format!("{language:?}.scm").to_lowercase())
     } else {
         // Clap ensures we won't get here
