@@ -3,6 +3,7 @@ use std::{
     error::Error,
     fs::File,
     io::{stdin, stdout, BufReader, BufWriter},
+    path::PathBuf,
 };
 use topiary::{formatter, FormatterResult};
 
@@ -26,7 +27,7 @@ struct Args {
 
     /// Which query file to use
     #[clap(short, long)]
-    query: Option<String>,
+    query: Option<PathBuf>,
 
     /// Do not check that formatting twice gives the same output
     #[clap(short, long)]
@@ -69,7 +70,8 @@ fn run() -> FormatterResult<()> {
     let query_path = if let Some(query) = args.query {
         query
     } else if let Some(language) = args.language {
-        str::to_lowercase(format!("languages/{language:?}.scm").as_str())
+        PathBuf::from(option_env!("TOPIARY_LANGUAGE_DIR").unwrap_or("languages"))
+            .join(format!("{language:?}.scm").to_lowercase())
     } else {
         // Clap ensures we won't get here
         unreachable!();
