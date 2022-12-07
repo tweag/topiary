@@ -115,7 +115,15 @@ impl AtomCollection {
             "prepend_space" => self.prepend(Atom::Space, node),
             "prepend_spaced_softline" => self.prepend(Atom::Softline { spaced: true }, node),
             // Skip over leafs
-            _ => {}
+            "leaf" => {}
+
+            // Return a query parsing error on unknown capture names
+            unknown => {
+                return Err(FormatterError::Query(
+                    format!("@{unknown} is not a valid capture name"),
+                    None,
+                ))
+            }
         }
 
         Ok(())
