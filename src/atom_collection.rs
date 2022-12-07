@@ -120,7 +120,7 @@ impl AtomCollection {
             // Return a query parsing error on unknown capture names
             unknown => {
                 return Err(FormatterError::Query(
-                    format!("@{unknown} is not a valid capture name").into(),
+                    format!("@{unknown} is not a valid capture name"),
                     None,
                 ))
             }
