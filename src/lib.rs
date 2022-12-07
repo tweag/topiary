@@ -136,15 +136,22 @@ fn idempotence_check(content: &str, query: &str) -> FormatterResult<()> {
     let mut input = content.as_bytes();
     let mut query = query.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
-    formatter(&mut input, &mut output, &mut query, true)?;
-    let reformatted = String::from_utf8(output.into_inner()?)?;
-
-    if content == reformatted {
-        Ok(())
+    let do_steps = || -> Result<(), FormatterError> {
+        formatter(&mut input, &mut output, &mut query, true)?;
+        let reformatted = String::from_utf8(output.into_inner()?)?;
+        if content == reformatted {
+            Ok(())
+        } else {
+            log::error!("Failed idempotence check");
+            assert_eq!(content, reformatted);
+            Err(FormatterError::Idempotence)
+        }
+    };
+    let res = do_steps();
+    if let Err(_err) = res {
+        Err(FormatterError::Formatting(Box::new(_err)))
     } else {
-        log::error!("Failed idempotence check");
-        assert_eq!(content, reformatted);
-        Err(FormatterError::Idempotence)
+        res
     }
 }
 

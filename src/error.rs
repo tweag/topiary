@@ -3,6 +3,11 @@ use std::{error::Error, ffi, fmt, io, str, string};
 /// The various errors the formatter may return.
 #[derive(Debug)]
 pub enum FormatterError {
+    /// The input produced output that cannot be formatted, i.e. trying to format the
+    /// output again produced an error. If this happened using our provided
+    /// query files, it is a bug. Please log an issue.
+    Formatting(Box<FormatterError>),
+
     /// The input produced output that isn't idempotent, i.e. formatting the
     /// output again made further changes. If this happened using our provided
     /// query files, it is a bug. Please log an issue.
@@ -94,6 +99,13 @@ impl fmt::Display for FormatterError {
                     ),
                 }
             }
+            Self::Formatting(err) => {
+                write!(
+                    f,
+                    "Idempotence found this error when running topiary on its own output:\n\t"
+                )?;
+                err.fmt(f)
+            }
         }
     }
 }
@@ -112,6 +124,7 @@ impl Error for FormatterError {
             Self::Writing(WritingError::FromUtf8(source)) => Some(source),
             Self::Writing(WritingError::IntoInner(source)) => Some(source),
             Self::Writing(WritingError::Io(source)) => Some(source),
+            Self::Formatting(err) => err.source(),
         }
     }
 }
