@@ -330,10 +330,19 @@
 ;
 
 ; This query guarantees that a break occurs after the first arrow of a multiline type.
-(
-  "->" @append_spaced_softline
-  .
-  [ (comment) ]* @do_nothing
+(function_type
+  (
+    "->" @append_spaced_softline
+    .
+    (comment)* @do_nothing
+  )
+)
+(function_type
+  (
+    "->"
+    .
+    (comment)+ @append_spaced_softline
+  )
 )
 
 ; But the first query alone is not sufficient, because Ocaml arrows are binary operators,
@@ -367,11 +376,38 @@
 (function_type
   "->"
   .
+  (comment)*
+  .
   (function_type
     "->" @append_spaced_soft_ancestor_line
     .
-    [ (comment) ]* @do_nothing
+    (comment)* @do_nothing
   )
+)
+
+(function_type
+  "->"
+  (comment)*
+  .
+  (function_type
+    "->"
+    .
+    (comment)+ @append_spaced_soft_ancestor_line
+  )
+)
+
+; In matches, if a line break is required, we want it to happen after the last comment following the arrow.
+
+(match_case
+  "->"  @append_spaced_softline
+  .
+  (comment)* @do_nothing
+)
+
+(match_case
+  "->"
+  .
+  (comment)+ @append_spaced_softline
 )
 
 ; Always put softlines before these:

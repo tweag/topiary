@@ -423,14 +423,14 @@ module Foo = (val create "Issue #106")
 
 (* A long type annotation. *)
 
-let long_type : ?used_slot: bool ref -> override_flag ->
+let long_type : ?used_slot: bool ref -> override_flag -> (* With a comment *)
   Env.t -> Location.t -> Longident.t loc -> Path.t * Env.t =
   (* The identity function does not have the declared type at all,
      it is just for formatting verification purpose.
   *)
   fun x -> x
 
-let long_higher_order_type : ?used_slot: bool ref -> override_flag ->
+let long_higher_order_type : ?used_slot: bool ref ->  (* With a comment *) override_flag ->
   Env.t -> (Location.t -> Longident.t loc ->a) -> Path.t * Env.t =
   (* The identity function does not have the declared type at all,
       it is just for formatting verification purpose.
@@ -438,7 +438,7 @@ let long_higher_order_type : ?used_slot: bool ref -> override_flag ->
   fun x -> x
 
 let long_third_order_type : ?used_slot: bool ref -> override_flag ->
-  Env.t -> (a-> (Location.t -> Longident.t loc) ->a) -> Path.t * Env.t =
+  Env.t -> (a-> (Location.t -> Longident.t loc) ->a) ->  (* With a comment *) Path.t * Env.t =
   (* The identity function does not have the declared type at all,
       it is just for formatting verification purpose.
   *)
