@@ -46,7 +46,7 @@ let sub b ofs len =
 let blit src srcoff dst dstoff len =
   if len < 0 || srcoff < 0 || srcoff > src.position - len
              || dstoff < 0 || dstoff > (Bytes.length dst) - len
-  then 
+  then
     invalid_arg "Buffer.blit"
   else
     Bytes.unsafe_blit src.buffer srcoff dst dstoff len
@@ -414,3 +414,9 @@ if u then
 else
   let y = w1 in
   w2
+
+(* Test of a first-class module. *)
+
+module type FOO = sig val foo : string end
+let create foo : (module FOO) = (module struct let foo = foo end)
+module Foo = (val create "Issue #106")

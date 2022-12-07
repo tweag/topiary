@@ -418,3 +418,9 @@ let foo =
   else
     let y = w1 in
     w2
+
+(* Test of a first-class module. *)
+
+module type FOO = sig val foo : string end
+let create foo : (module FOO) = (module struct let foo = foo end)
+module Foo = (val create "Issue #106")

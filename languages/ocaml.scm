@@ -41,6 +41,8 @@
   [
     (exception_definition)
     (external)
+    (module_definition)
+    (module_type_definition)
     (open_module)
     (type_definition)
   ] @append_hardline
@@ -52,10 +54,19 @@
 (
   (value_definition) @append_hardline
   .
-  (value_definition)
+  [
+    (exception_definition)
+    (external)
+    (module_definition)
+    (module_type_definition)
+    (open_module)
+    (type_definition)
+    (value_definition)
+  ]
 )
 
 ; Surround spaces
+; A space is put after, and before (except just after an open parenthesis).
 [
   "as"
   "assert"
@@ -73,9 +84,11 @@
   "open"
   (parameter)
   "rec"
+  "sig"
   "then"
   "try"
   "type"
+  "val"
   "when"
   "while"
   "with"
@@ -87,7 +100,46 @@
   "<-"
   "{"
   "}"
-] @prepend_space @append_space
+] @append_space
+
+(
+  "("* @do_nothing
+  .
+  [
+    "as"
+    "assert"
+    "begin"
+    "do"
+    "else"
+    "exception"
+    "external"
+    (infix_operator)
+    "let"
+    "match"
+    "module"
+    "mutable"
+    "of"
+    "open"
+    (parameter)
+    "rec"
+    "sig"
+    "then"
+    "try"
+    "type"
+    "val"
+    "when"
+    "while"
+    "with"
+    "*"
+    "="
+    "|"
+    "||"
+    "->"
+    "<-"
+    "{"
+    "}"
+  ] @prepend_space
+)
 
 ; Prepend spaces
 [
@@ -264,6 +316,7 @@
 [
   "begin"
   "else"
+  "sig"
   "struct"
   "then"
   "{"
