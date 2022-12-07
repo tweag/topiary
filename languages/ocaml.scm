@@ -14,9 +14,10 @@
 ; Allow blank line before
 [
   (comment)
-  (external)
   (exception_definition)
+  (external)
   (module_definition)
+  (module_type_definition)
   (open_module)
   (type_definition)
   (value_definition)
@@ -41,6 +42,8 @@
   [
     (exception_definition)
     (external)
+    (module_definition)
+    (module_type_definition)
     (open_module)
     (type_definition)
   ] @append_hardline
@@ -52,10 +55,19 @@
 (
   (value_definition) @append_hardline
   .
-  (value_definition)
+  [
+    (exception_definition)
+    (external)
+    (module_definition)
+    (module_type_definition)
+    (open_module)
+    (type_definition)
+    (value_definition)
+  ]
 )
 
 ; Surround spaces
+; A space is put after, and before (except just after an open parenthesis).
 [
   "as"
   "assert"
@@ -64,6 +76,7 @@
   "else"
   "exception"
   "external"
+  "if"
   (infix_operator)
   "let"
   "match"
@@ -73,9 +86,11 @@
   "open"
   (parameter)
   "rec"
+  "sig"
   "then"
   "try"
   "type"
+  "val"
   "when"
   "while"
   "with"
@@ -87,19 +102,132 @@
   "<-"
   "{"
   "}"
-] @prepend_space @append_space
-
-; Prepend spaces
-[
-  "done"
-] @prepend_space
-
-; Append spaces
-[
-  "if"
   ":"
   ";"
 ] @append_space
+
+; Those keywords are not expected to come right after an open parenthesis.
+[
+    "as"
+    "do"
+    "done"
+    "else"
+    "of"
+    "rec"
+    "then"
+    "when"
+    "while"
+    "with"
+    "|"
+    "->"
+    "<-"
+] @prepend_space
+
+; For those queries, we should not have multiple queries,
+; however, due to a known bug in tree-sitter queries
+; https://github.com/tree-sitter/tree-sitter/issues/1811
+; using an alternative after the starred parenthesis does not work as intented.
+;
+(
+  "("* @do_nothing
+  .
+  "assert" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "begin" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "exception" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "external" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  (infix_operator) @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "let" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "match" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "module" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "mutable" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "open" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  (parameter) @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "sig" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "try" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "type" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "val" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "*" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "=" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "||" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "{" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "}" @prepend_space
+)
 
 ; Put a space after commas, except the last one.
 (
@@ -264,6 +392,7 @@
 [
   "begin"
   "else"
+  "sig"
   "struct"
   "then"
   "{"
