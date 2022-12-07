@@ -316,12 +316,54 @@
   ]* @do_nothing
 )
 
+; If a type is written on several lines, then the types of all the arguments should be separated.
+;
+; let f : typeA -> typeB ->
+;   typeC -> typeD =
+;
+; is formatted as
+;
+; let f : typeA ->
+;   typeB ->
+;   typeC ->
+;   typeD
+;
+
+; This query guarantees that a break occurs after the first arrow of a multiline type.
 (
   "->" @append_spaced_softline
   .
   [ (comment) ]* @do_nothing
 )
 
+; But the first query alone is not sufficient, because Ocaml arrows are binary operators,
+; so  typeA -> typeB -> typeC -> typeD is parsed as the tree
+;
+; fun_type
+;   typeA
+;   "->"
+;   (fun_type
+;     typeB
+;     "->"
+;     (fun_type
+;       typeC
+;       "->"
+;       typeD
+;     )
+;   )
+; )
+;
+; Hence, we want to flatten the tree of arrows
+; (Well, since we do not modify the parsed tree,
+; we will rather put special glasses to look at the tree as if it was flattened).
+; But the arrow is not an assoicated operation, so for instance we do not want
+;
+; typeA ->
+; (typeB -> typeC) ->
+; typeD
+;
+; to be displayed with a line break between typeB and typeC just because the whole type is on several lines.
+; So we only merge the arrows on the right-hand side of another one with the top node.
 (function_type
   "->"
   .
