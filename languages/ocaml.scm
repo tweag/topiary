@@ -369,6 +369,8 @@
   .
   (function_type
     "->" @append_spaced_soft_ancestor_line
+    .
+    [ (comment) ]* @do_nothing
   )
 )
 
