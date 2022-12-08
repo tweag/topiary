@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::{FormatterError, FormatterResult};
 
 /// The languages that we support with query files.
@@ -21,5 +23,16 @@ impl Language {
                 None,
             )),
         }
+    }
+
+    pub fn detect(filename: &str) -> FormatterResult<&str> {
+        todo!()
+    }
+
+    pub fn query_path(language: &str) -> FormatterResult<PathBuf> {
+        Ok(
+            PathBuf::from(option_env!("TOPIARY_LANGUAGE_DIR").unwrap_or("languages"))
+                .join(format!("{language}.scm")),
+        )
     }
 }

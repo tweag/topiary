@@ -5,7 +5,7 @@ use std::{
     io::{stdin, stdout, BufReader, BufWriter},
     path::PathBuf,
 };
-use topiary::{formatter, FormatterResult};
+use topiary::{formatter, FormatterResult, Language};
 
 #[derive(ArgEnum, Clone, Copy, Debug)]
 enum SupportedLanguage {
@@ -14,6 +14,15 @@ enum SupportedLanguage {
     // Any other entries in crate::Language are experimental and won't be
     // exposed in the CLI. They can be accessed using --query language/foo.scm
     // instead.
+}
+
+impl From<SupportedLanguage> for &str {
+    fn from(s: SupportedLanguage) -> Self {
+        match s {
+            SupportedLanguage::Json => "json",
+            SupportedLanguage::Toml => "toml",
+        }
+    }
 }
 
 #[derive(Parser, Debug)]
@@ -70,8 +79,9 @@ fn run() -> FormatterResult<()> {
     let query_path = if let Some(query) = args.query {
         query
     } else if let Some(language) = args.language {
-        PathBuf::from(option_env!("TOPIARY_LANGUAGE_DIR").unwrap_or("languages"))
-            .join(format!("{language:?}.scm").to_lowercase())
+        Language::query_path(language.into())?
+    } else if let Some(file) = args.input_file.as_deref() {
+        Language::query_path(Language::detect(file)?)?
     } else {
         // Clap ensures we won't get here
         unreachable!();
