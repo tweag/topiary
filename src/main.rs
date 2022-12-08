@@ -19,7 +19,7 @@ enum SupportedLanguage {
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 // Require either --language or --query, but not both.
-#[clap(group(ArgGroup::new("rule").required(true).args(&["language", "query"]),))]
+#[clap(group(ArgGroup::new("rule").required(true).args(&["language", "query", "input-file"]),))]
 struct Args {
     /// Which language to parse and format
     #[clap(short, long, arg_enum)]
