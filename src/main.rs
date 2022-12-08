@@ -27,8 +27,8 @@ impl From<SupportedLanguage> for &str {
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
-// Require either --language or --query, but not both.
-#[clap(group(ArgGroup::new("rule").required(true).args(&["language", "query", "input-file"]),))]
+// Require at least one of --language, --query or --input-file (n.b., query > language > input)
+#[clap(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "query", "input-file"]),))]
 struct Args {
     /// Which language to parse and format
     #[clap(short, long, arg_enum)]
