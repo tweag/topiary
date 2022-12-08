@@ -17,8 +17,8 @@ enum SupportedLanguage {
 }
 
 impl From<SupportedLanguage> for &str {
-    fn from(s: SupportedLanguage) -> Self {
-        match s {
+    fn from(language: SupportedLanguage) -> Self {
+        match language {
             SupportedLanguage::Json => "json",
             SupportedLanguage::Toml => "toml",
         }
