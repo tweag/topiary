@@ -23,7 +23,9 @@ a development environment.
 
 ### Usage
 
-    topiary [OPTIONS] <--language <LANGUAGE>|--query <QUERY>>
+    topiary [OPTIONS] <--language <LANGUAGE>
+                      |--query <QUERY>
+                      |--input-file <INPUT_FILE>>
 
 Options:
 
@@ -49,6 +51,11 @@ Options:
 
 * `-V`, `--version`\
   Print version information
+
+Language selection is based on precedence, in the following order:
+* A specified query file
+* A specified language
+* Detected from the input file's extension
 
 #### Example
 
