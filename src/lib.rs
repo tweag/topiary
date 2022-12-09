@@ -148,15 +148,15 @@ fn idempotence_check(content: &str, query: &str) -> FormatterResult<()> {
         }
     };
     let res = do_steps();
-    if let Err(_err) = res {
-        match _err {
+    if let Err(err) = res {
+        match err {
             // If topiary ran smoothly on its own output,
             // but produced a different output, it is a Idempotence error.
             FormatterError::Idempotence => Err(FormatterError::Idempotence),
             // On the other hand, if it failed to run on its output,
             // it means that when formatting the code, topiary somehow broke it.
             // Hence it is a formatting error.
-            _ => Err(FormatterError::Formatting(Box::new(_err))),
+            _ => Err(FormatterError::Formatting(Box::new(err))),
         }
     } else {
         res

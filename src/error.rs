@@ -100,15 +100,10 @@ impl fmt::Display for FormatterError {
                     ),
                 }
             }
-            Self::Formatting(err) => {
+            Self::Formatting(_err) => {
                 write!(
                     f,
-                    "The formatter errored when trying to format the code twice (idempotence check).\nThe error was:\n\t"
-                )?;
-                err.fmt(f)?;
-                write!(
-                    f,
-                    "This probably means that the formatter produced invalid code.\n{please_log_message}"
+                    "The formatter errored when trying to format the code twice (idempotence check).\nThis probably means that the formatter produced invalid code.\n{please_log_message}"
                 )
             }
         }
