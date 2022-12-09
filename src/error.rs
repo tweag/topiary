@@ -1,4 +1,4 @@
-use std::{error::Error, fmt, io, str, string};
+use std::{error::Error, ffi, fmt, io, str, string};
 
 /// The various errors the formatter may return.
 #[derive(Debug)]
@@ -24,7 +24,7 @@ pub enum FormatterError {
     Query(String, Option<tree_sitter::QueryError>),
 
     /// Could not detect the input language from the (filename, Option<extension>)
-    LanguageDetection(String, Option<String>),
+    LanguageDetection(String, Option<ffi::OsString>),
 
     /// Could not read the input.
     Reading(ReadingError),
@@ -85,8 +85,9 @@ impl fmt::Display for FormatterError {
                 };
 
                 match extension {
-                    Some(ext) => write!(f,
-                        "Cannot detect language {file} due to unknown extension '.{ext}'. Try specifying language explicitly."
+                    Some(extension) => write!(f,
+                        "Cannot detect language {file} due to unknown extension '.{}'. Try specifying language explicitly.",
+                        extension.to_string_lossy()
                     ),
                     None => write!(f,
                         "Cannot detect language {file}. Try specifying language explicitly."

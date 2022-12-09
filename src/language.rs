@@ -1,3 +1,4 @@
+use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
 use crate::{FormatterError, FormatterResult};
@@ -53,24 +54,24 @@ impl Language {
     }
 
     pub fn detect(filename: &str) -> FormatterResult<&str> {
-        // NOTE This extension search is influenced by Wilfred Hughes' Difftastic
-        // https://github.com/Wilfred/difftastic/blob/master/src/parse/guess_language.rs
-        if let Some(extension) = Path::new(filename).extension() {
-            let extension = extension.to_str().unwrap();
+        let filename: String = filename.into();
+        let extension: Option<OsString> = Path::new(&filename)
+            .extension()
+            .map(|ext| ext.to_os_string());
 
+        if extension.is_some() {
+            let extension = extension.as_deref().unwrap();
+
+            // NOTE This extension search is influenced by Wilfred Hughes' Difftastic
+            // https://github.com/Wilfred/difftastic/blob/master/src/parse/guess_language.rs
             for (language, extensions) in EXTENSIONS {
                 if extensions.iter().any(|&candidate| candidate == extension) {
                     return Ok(*language);
                 }
             }
-
-            return Err(FormatterError::LanguageDetection(
-                filename.into(),
-                Some(extension.into()),
-            ));
         }
 
-        Err(FormatterError::LanguageDetection(filename.into(), None))
+        Err(FormatterError::LanguageDetection(filename, extension))
     }
 
     pub fn query_path(language: &str) -> FormatterResult<PathBuf> {
