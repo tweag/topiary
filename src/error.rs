@@ -23,6 +23,9 @@ pub enum FormatterError {
     /// provided query files, it is a bug. Please log an issue.
     Query(String, Option<tree_sitter::QueryError>),
 
+    /// Could not detect the input language
+    LanguageDetection(String),
+
     /// Could not read the input.
     Reading(ReadingError),
 
@@ -72,7 +75,9 @@ impl fmt::Display for FormatterError {
             Self::Writing(_) => {
                 write!(f, "Writing error")
             }
-            Self::Internal(message, _) | Self::Query(message, _) => {
+            Self::Internal(message, _)
+            | Self::Query(message, _)
+            | Self::LanguageDetection(message) => {
                 write!(f, "{message}")
             }
         }
@@ -86,6 +91,7 @@ impl Error for FormatterError {
             Self::Internal(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::Parsing { .. } => None,
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
+            Self::LanguageDetection(_) => None,
             Self::Reading(ReadingError::Io(_, source)) => Some(source),
             Self::Reading(ReadingError::Utf8(source)) => Some(source),
             Self::Writing(WritingError::Fmt(source)) => Some(source),
