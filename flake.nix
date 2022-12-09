@@ -3,10 +3,10 @@
 
   nixConfig = {
     extra-substituters = [
-      "https://tweag-tree-sitter-formatter.cachix.org"
+      "https://tweag-topiary.cachix.org"
     ];
     extra-trusted-public-keys = [
-      "tweag-tree-sitter-formatter.cachix.org-1:R95oCa9JV/Cu8dtdFZY55HLFqJ3ASh34dXh7o7LeL5Y="
+      "tweag-topiary.cachix.org-1:8TKqya43LAfj4qNHnljLpuBnxAY/YwEBfzo3kzXxNY0="
     ];
   };
   
@@ -34,3 +34,4 @@
       }
     );
 }
+
