@@ -5,7 +5,7 @@ use std::{
     io::{stdin, stdout, BufReader, BufWriter},
     path::PathBuf,
 };
-use topiary::{formatter, FormatterResult};
+use topiary::{formatter, FormatterResult, Language};
 
 #[derive(ArgEnum, Clone, Copy, Debug)]
 enum SupportedLanguage {
@@ -16,10 +16,19 @@ enum SupportedLanguage {
     // instead.
 }
 
+impl From<SupportedLanguage> for &str {
+    fn from(language: SupportedLanguage) -> Self {
+        match language {
+            SupportedLanguage::Json => "json",
+            SupportedLanguage::Toml => "toml",
+        }
+    }
+}
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
-// Require either --language or --query, but not both.
-#[clap(group(ArgGroup::new("rule").required(true).args(&["language", "query"]),))]
+// Require at least one of --language, --query or --input-file (n.b., query > language > input)
+#[clap(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "query", "input-file"]),))]
 struct Args {
     /// Which language to parse and format
     #[clap(short, long, arg_enum)]
@@ -70,8 +79,9 @@ fn run() -> FormatterResult<()> {
     let query_path = if let Some(query) = args.query {
         query
     } else if let Some(language) = args.language {
-        PathBuf::from(option_env!("TOPIARY_LANGUAGE_DIR").unwrap_or("languages"))
-            .join(format!("{language:?}.scm").to_lowercase())
+        Language::query_path(language.into())?
+    } else if let Some(file) = args.input_file.as_deref() {
+        Language::query_path(Language::detect(file)?)?
     } else {
         // Clap ensures we won't get here
         unreachable!();

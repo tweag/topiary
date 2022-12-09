@@ -1,4 +1,4 @@
-use std::{error::Error, fmt, io, str, string};
+use std::{error::Error, ffi, fmt, io, str, string};
 
 /// The various errors the formatter may return.
 #[derive(Debug)]
@@ -22,6 +22,9 @@ pub enum FormatterError {
     /// There was an error in the query file. If this happened using our
     /// provided query files, it is a bug. Please log an issue.
     Query(String, Option<tree_sitter::QueryError>),
+
+    /// Could not detect the input language from the (filename, Option<extension>)
+    LanguageDetection(String, Option<ffi::OsString>),
 
     /// Could not read the input.
     Reading(ReadingError),
@@ -75,6 +78,22 @@ impl fmt::Display for FormatterError {
             Self::Internal(message, _) | Self::Query(message, _) => {
                 write!(f, "{message}")
             }
+            Self::LanguageDetection(filename, extension) => {
+                let file: String = match filename.as_str() {
+                    "-" => "from standard input".into(),
+                    _ => format!("of file '{filename}'"),
+                };
+
+                match extension {
+                    Some(extension) => write!(f,
+                        "Cannot detect language {file} due to unknown extension '.{}'. Try specifying language explicitly.",
+                        extension.to_string_lossy()
+                    ),
+                    None => write!(f,
+                        "Cannot detect language {file}. Try specifying language explicitly."
+                    ),
+                }
+            }
         }
     }
 }
@@ -86,6 +105,7 @@ impl Error for FormatterError {
             Self::Internal(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::Parsing { .. } => None,
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
+            Self::LanguageDetection(_, _) => None,
             Self::Reading(ReadingError::Io(_, source)) => Some(source),
             Self::Reading(ReadingError::Utf8(source)) => Some(source),
             Self::Writing(WritingError::Fmt(source)) => Some(source),
