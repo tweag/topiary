@@ -59,10 +59,8 @@ impl Language {
             let extension = extension.to_str().unwrap();
 
             for (language, extensions) in EXTENSIONS {
-                for candidate in extensions.iter() {
-                    if *candidate == extension {
-                        return Ok(*language);
-                    }
+                if extensions.iter().any(|&candidate| candidate == extension) {
+                    return Ok(*language);
                 }
             }
 
