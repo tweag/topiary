@@ -64,14 +64,13 @@ impl Language {
                 }
             }
 
-            return Err(FormatterError::LanguageDetection(format!(
-                "Cannot detect language of file '{filename}' due to unknown extension '.{extension}'. Try specifying language explicitly."
-            )));
+            return Err(FormatterError::LanguageDetection(
+                filename.into(),
+                Some(extension.into()),
+            ));
         }
 
-        Err(FormatterError::LanguageDetection(format!(
-            "Cannot detect language of file '{filename}'. Try specifying language explicitly."
-        )))
+        Err(FormatterError::LanguageDetection(filename.into(), None))
     }
 
     pub fn query_path(language: &str) -> FormatterResult<PathBuf> {

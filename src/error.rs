@@ -23,8 +23,8 @@ pub enum FormatterError {
     /// provided query files, it is a bug. Please log an issue.
     Query(String, Option<tree_sitter::QueryError>),
 
-    /// Could not detect the input language
-    LanguageDetection(String),
+    /// Could not detect the input language from the (filename, Option<extension>)
+    LanguageDetection(String, Option<String>),
 
     /// Could not read the input.
     Reading(ReadingError),
@@ -75,10 +75,23 @@ impl fmt::Display for FormatterError {
             Self::Writing(_) => {
                 write!(f, "Writing error")
             }
-            Self::Internal(message, _)
-            | Self::Query(message, _)
-            | Self::LanguageDetection(message) => {
+            Self::Internal(message, _) | Self::Query(message, _) => {
                 write!(f, "{message}")
+            }
+            Self::LanguageDetection(filename, extension) => {
+                let file: String = match filename.as_str() {
+                    "-" => "from standard input".into(),
+                    _ => format!("of file '{filename}'"),
+                };
+
+                match extension {
+                    Some(ext) => write!(f,
+                        "Cannot detect language {file} due to unknown extension '.{ext}'. Try specifying language explicitly."
+                    ),
+                    None => write!(f,
+                        "Cannot detect language {file}. Try specifying language explicitly."
+                    ),
+                }
             }
         }
     }
@@ -91,7 +104,7 @@ impl Error for FormatterError {
             Self::Internal(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::Parsing { .. } => None,
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
-            Self::LanguageDetection(_) => None,
+            Self::LanguageDetection(_, _) => None,
             Self::Reading(ReadingError::Io(_, source)) => Some(source),
             Self::Reading(ReadingError::Utf8(source)) => Some(source),
             Self::Writing(WritingError::Fmt(source)) => Some(source),
