@@ -460,3 +460,7 @@ let long_third_order_type :
       it is just for formatting verification purpose.
   *)
     fun x -> x
+
+let _ =
+  let f x y = x::y in
+  f 120 [130]
