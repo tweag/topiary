@@ -297,8 +297,8 @@
 )
 
 ; Space is the application operator.
-; There should be a space a function and its first argument,
-; as well as between all of it arguments.
+; There should be a space between a function and its first argument,
+; as well as between all of its arguments.
 (application_expression
   (_) @append_space
   .
