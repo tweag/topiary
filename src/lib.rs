@@ -139,15 +139,30 @@ fn idempotence_check(content: &str, query: &str) -> FormatterResult<()> {
     let mut input = content.as_bytes();
     let mut query = query.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
-    formatter(&mut input, &mut output, &mut query, true)?;
-    let reformatted = String::from_utf8(output.into_inner()?)?;
-
-    if content == reformatted {
-        Ok(())
+    let do_steps = || -> Result<(), FormatterError> {
+        formatter(&mut input, &mut output, &mut query, true)?;
+        let reformatted = String::from_utf8(output.into_inner()?)?;
+        if content == reformatted {
+            Ok(())
+        } else {
+            log::error!("Failed idempotence check");
+            assert_eq!(content, reformatted);
+            Err(FormatterError::Idempotence)
+        }
+    };
+    let res = do_steps();
+    if let Err(err) = res {
+        match err {
+            // If topiary ran smoothly on its own output,
+            // but produced a different output, it is a Idempotence error.
+            FormatterError::Idempotence => Err(FormatterError::Idempotence),
+            // On the other hand, if it failed to run on its output,
+            // it means that when formatting the code, topiary somehow broke it.
+            // Hence it is a formatting error.
+            _ => Err(FormatterError::Formatting(Box::new(err))),
+        }
     } else {
-        log::error!("Failed idempotence check");
-        assert_eq!(content, reformatted);
-        Err(FormatterError::Idempotence)
+        res
     }
 }
 
