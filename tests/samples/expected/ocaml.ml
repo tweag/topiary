@@ -462,5 +462,5 @@ let long_third_order_type :
     fun x -> x
 
 let _ =
-  let f x y = x::y in
+  let f x l = x::l in
   f 120 [130]

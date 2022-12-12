@@ -261,6 +261,7 @@
     "."
     ".."
     ")"
+    "::"
   ]* @do_nothing
   .
   [
@@ -293,6 +294,15 @@
   ] @append_space
   .
   ":"
+)
+
+; Space is the application operator.
+; There should be a space between a function and its first argument,
+; as well as between all of its arguments.
+(application_expression
+  (_) @append_space
+  .
+  (_)
 )
 
 ; Softlines. These become either a space or a newline, depending on whether we
