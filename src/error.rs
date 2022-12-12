@@ -3,6 +3,11 @@ use std::{error::Error, ffi, fmt, io, str, string};
 /// The various errors the formatter may return.
 #[derive(Debug)]
 pub enum FormatterError {
+    /// The input produced output that cannot be formatted, i.e. trying to format the
+    /// output again produced an error. If this happened using our provided
+    /// query files, it is a bug. Please log an issue.
+    Formatting(Box<FormatterError>),
+
     /// The input produced output that isn't idempotent, i.e. formatting the
     /// output again made further changes. If this happened using our provided
     /// query files, it is a bug. Please log an issue.
@@ -51,11 +56,12 @@ pub enum WritingError {
 
 impl fmt::Display for FormatterError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let please_log_message = "It would be helpful if you logged this error at https://github.com/tweag/topiary/issues/new?assignees=&labels=type%3A+bug&template=bug_report.md";
         match self {
             Self::Idempotence => {
                 write!(
                     f,
-                    "The formatter is not idempotent on this input. Please log an error."
+                    "The formatter did not produce the same result when invoked twice (idempotence check).\n{please_log_message}"
                 )
             }
             Self::Parsing {
@@ -94,6 +100,12 @@ impl fmt::Display for FormatterError {
                     ),
                 }
             }
+            Self::Formatting(_err) => {
+                write!(
+                    f,
+                    "The formatter errored when trying to format the code twice (idempotence check).\nThis probably means that the formatter produced invalid code.\n{please_log_message}"
+                )
+            }
         }
     }
 }
@@ -112,6 +124,7 @@ impl Error for FormatterError {
             Self::Writing(WritingError::FromUtf8(source)) => Some(source),
             Self::Writing(WritingError::IntoInner(source)) => Some(source),
             Self::Writing(WritingError::Io(source)) => Some(source),
+            Self::Formatting(err) => Some(err),
         }
     }
 }
