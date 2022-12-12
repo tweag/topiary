@@ -420,3 +420,7 @@ else
 module type FOO = sig val foo : string end
 let create foo : (module FOO) = (module struct let foo = foo end)
 module Foo = (val create "Issue #106")
+
+let _ =
+  let f x l = x::l in
+  f 120 [130]
