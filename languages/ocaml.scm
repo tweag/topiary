@@ -23,6 +23,10 @@
   (value_definition)
 ] @allow_blank_line_before
 
+(value_definition
+  "and" @allow_blank_line_before
+)
+
 ; Input softlines before and after all comments. This means that the input
 ; decides if a comment should have line breaks before or after. But don't put a
 ; softline directly in front of commas or semicolons.
@@ -69,6 +73,7 @@
 ; Surround spaces
 ; A space is put after, and before (except just after an open parenthesis).
 [
+  "and"
   "as"
   "assert"
   "begin"
@@ -78,16 +83,17 @@
   "external"
   "if"
   "in"
+  "include"
   (infix_operator)
   "let"
   "match"
   "module"
   "mutable"
+  "nonrec"
   "of"
   "open"
   (parameter)
   "rec"
-  "sig"
   "then"
   "try"
   "type"
@@ -105,6 +111,7 @@
   "}"
   ":"
   ";"
+  "+="
 ] @append_space
 
 ; Those keywords are not expected to come right after an open parenthesis.
@@ -114,6 +121,7 @@
     "done"
     "else"
     "in"
+    "nonrec"
     "of"
     "rec"
     "then"
@@ -123,6 +131,7 @@
     "|"
     "->"
     "<-"
+    "+="
 ] @prepend_space
 
 ; For those queries, we should not have multiple queries,
@@ -149,6 +158,11 @@
   "("* @do_nothing
   .
   "external" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "include" @prepend_space
 )
 (
   "("* @do_nothing
@@ -313,6 +327,12 @@
   (_)
 )
 
+(type_binding
+  (_) @append_space
+  .
+  (_)
+)
+
 
 ; Softlines. These become either a space or a newline, depending on whether we
 ; format their node as single-line or multi-line. If there is a comment
@@ -333,6 +353,20 @@
   [
     (comment)
   ]* @do_nothing
+)
+
+(signature
+  "sig" @append_spaced_softline
+  (value_specification) @append_spaced_softline
+)
+
+(abstract_type
+  [
+    "type"
+    (type_constructor)
+  ] @append_space
+  .
+  (type_constructor)
 )
 
 ; If a type is written on several lines, then the types of all the arguments should be separated.
@@ -465,6 +499,10 @@
   )
   .
   "in"
+)
+
+(value_definition
+  "and" @prepend_spaced_softline
 )
 
 ; The following are many constructs that need a softline.

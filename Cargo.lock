@@ -684,7 +684,7 @@ dependencies = [
 [[package]]
 name = "tree-sitter-ocaml"
 version = "0.20.0"
-source = "git+https://github.com/tweag/tree-sitter-ocaml?branch=gg/tag-constructor-name#06a30b4deaa4e5db45f1b05b7c1fe68ca6571bad"
+source = "git+https://github.com/tweag/tree-sitter-ocaml?branch=gg/tag-constructor-name#c6361c855481a12d63a3dc28e55ce004fc9fc6b2"
 dependencies = [
  "cc",
  "tree-sitter",

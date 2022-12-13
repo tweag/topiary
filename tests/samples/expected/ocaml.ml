@@ -490,7 +490,8 @@ module type ENCODING = sig
   val entries : unit -> Entry.entry list
   val safe : bool
   val signature : Signature.t
-  val encode_term : ?sg:Signature.t -> ?ctx:Term.typed_context -> Term.term -> Term.term
+  val encode_term :
+  ?sg: Signature.t -> ?ctx: Term.typed_context -> Term.term -> Term.term
   val decode_term : Term.term -> Term.term
-  val encode_rule : ?sg:Signature.t -> 'a Rule.rule -> 'a Rule.rule
+  val encode_rule : ?sg: Signature.t -> 'a Rule.rule -> 'a Rule.rule
 end
