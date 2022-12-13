@@ -307,6 +307,13 @@
   (_)
 )
 
+(constructed_type
+  (_) @append_space
+  .
+  (_)
+)
+
+
 ; Softlines. These become either a space or a newline, depending on whether we
 ; format their node as single-line or multi-line. If there is a comment
 ; following, we don't add anything, because they will have their own line break
