@@ -509,3 +509,17 @@ let is_prime n =
     then no_divisor := false;
   done;
   !no_divisor
+
+(* Showcase the usage of operator bindings *)
+let greetings =
+  let (let*) = Option.bind
+  and (and*) a_opt b_opt =
+    match (a_opt, b_opt) with
+    | (Some a, Some b) -> Some (a, b)
+    | _ -> None
+  in
+  let* msg1 =
+    Option.map String.capitalize_ascii (Some "hello ")
+  and* msg2 = Some "world"
+  in
+  Some (msg1 ^ msg2)
