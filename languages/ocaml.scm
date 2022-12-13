@@ -77,6 +77,7 @@
   "exception"
   "external"
   "if"
+  "in"
   (infix_operator)
   "let"
   "match"
@@ -112,6 +113,7 @@
     "do"
     "done"
     "else"
+    "in"
     "of"
     "rec"
     "then"

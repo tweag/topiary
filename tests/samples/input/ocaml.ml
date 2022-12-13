@@ -424,3 +424,24 @@ module Foo = (val create "Issue #106")
 let _ =
   let f x l = x::l in
   f 120 [130]
+
+let topological_sort deps =
+  let to_graph _ deps graph = (deps.file, MSet.elements deps.deps)::graph in
+  let graph = Hashtbl.fold to_graph deps [] in
+  let rec explore path visited node =
+    if List.mem node path then
+      raise @@ Dep_error (CircularDependencies (node, path));
+    if List.mem node visited then visited
+    else
+      let edges = try
+          List.assoc node graph
+        with
+          Not_found ->
+            if !ignore then []
+            else
+              raise
+                @@ Files_legacy.Files_error (ObjectFileNotFound (mk_mident node))
+      in node::List.fold_left (explore (node::path)) visited
+        (List.map Files_legacy.get_file edges)
+  in
+  List.rev @@ List.fold_left (fun visited (n, _) -> explore [] visited n) [] graph
