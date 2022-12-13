@@ -448,3 +448,13 @@ let topological_sort deps =
       in node::List.fold_left (explore (node::path))
         visited (List.map Files_legacy.get_file edges)
   in List.rev @@ List.fold_left (fun visited (n, _) -> explore [] visited n) [] graph
+
+module type ENCODING = sig
+  val md : Basic.mident
+  val entries : unit -> Entry.entry list
+  val safe : bool
+  val signature : Signature.t
+  val encode_term : ?sg:Signature.t -> ?ctx:Term.typed_context -> Term.term -> Term.term
+  val decode_term : Term.term -> Term.term
+  val encode_rule : ?sg:Signature.t -> 'a Rule.rule -> 'a Rule.rule
+end
