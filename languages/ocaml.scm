@@ -48,6 +48,7 @@
   [
     (exception_definition)
     (external)
+    (include_module)
     (module_definition)
     (module_type_definition)
     (open_module)
@@ -85,6 +86,7 @@
   "external"
   "if"
   "in"
+  "include"
   (infix_operator)
   "let"
   "match"
@@ -156,6 +158,11 @@
   "("* @do_nothing
   .
   "external" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "include" @prepend_space
 )
 (
   "("* @do_nothing
