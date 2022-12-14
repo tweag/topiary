@@ -115,6 +115,7 @@
   "}"
   ":"
   ";"
+  "+="
 ] @append_space
 
 ; Those keywords are not expected to come right after an open parenthesis.
@@ -134,6 +135,7 @@
     "|"
     "->"
     "<-"
+    "+="
 ] @prepend_space
 
 ; For those queries, we should not have multiple queries,
