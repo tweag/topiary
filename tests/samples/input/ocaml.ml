@@ -452,3 +452,9 @@ let rec odd = function
 | y -> even (y - 1)
 
   and even y = if y = 0 then true else odd (y - 1)
+
+
+module ListSetExtended = struct
+  include ListSet
+  let of_list lst = List.fold_right add lst empty
+end
