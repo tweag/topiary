@@ -325,6 +325,32 @@
   (_)
 )
 
+; There are various situation where type application can occur.
+; In each of them, we want to separate the arguments with spaces.
+(abstract_type
+  [
+    "type"
+    (type_constructor)
+  ] @append_space
+  .
+  (type_constructor)
+)
+(constructed_type
+  (_) @append_space
+  .
+  (_)
+)
+(type_binding
+  (_) @append_space
+  .
+  (_)
+)
+(constrain_type
+  (_) @append_space
+  .
+  (_)
+)
+
 ; Softlines. These become either a space or a newline, depending on whether we
 ; format their node as single-line or multi-line. If there is a comment
 ; following, we don't add anything, because they will have their own line break
