@@ -115,6 +115,7 @@
   "}"
   ":"
   ";"
+  "+="
 ] @append_space
 
 ; Those keywords are not expected to come right after an open parenthesis.
@@ -134,6 +135,7 @@
     "|"
     "->"
     "<-"
+    "+="
 ] @prepend_space
 
 ; For those queries, we should not have multiple queries,
@@ -318,6 +320,32 @@
 ; There should be a space between a function and its first argument,
 ; as well as between all of its arguments.
 (application_expression
+  (_) @append_space
+  .
+  (_)
+)
+
+; There are various situation where type application can occur.
+; In each of them, we want to separate the arguments with spaces.
+(abstract_type
+  [
+    "type"
+    (type_constructor)
+  ] @append_space
+  .
+  (type_constructor)
+)
+(constructed_type
+  (_) @append_space
+  .
+  (_)
+)
+(type_binding
+  (_) @append_space
+  .
+  (_)
+)
+(constrain_type
   (_) @append_space
   .
   (_)

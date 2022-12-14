@@ -469,3 +469,14 @@ module type Printer = sig
   val print_name : name printer
   val print_ident : ident printer
 end
+
+(* Let us declare an extensible variant. *)
+type _ variant = ..
+
+(* And extend it. *)
+type _ variant +=
+  | Basic : unit variant
+  | PrettyPrinter : unit variant (** Pretty print *)
+
+(* Two times. *)
+type _ variant += WithBuff : t variant
