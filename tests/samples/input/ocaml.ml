@@ -480,3 +480,10 @@ type _ variant +=
 
 (* Two times. *)
 type _ variant += WithBuff : t variant
+
+let add_multiline x =
+  let res =
+    x + x in
+  res
+
+let add_one_line x = let res = x + x in res

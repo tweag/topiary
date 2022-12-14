@@ -222,7 +222,8 @@ let add_channel b ic len =
 let output_buffer oc b =
   output oc b.buffer 0 b.position
 
-let closing = function
+let closing =
+  function
   | '(' -> ')'
   | '{' -> '}'
   | _ -> assert false
@@ -437,7 +438,8 @@ let topological_sort deps =
       raise @@ Dep_error (CircularDependencies (node, path));
     if List.mem node visited then visited
     else
-      let edges = try
+      let edges =
+        try
           List.assoc node graph
         with
           Not_found ->
@@ -450,7 +452,8 @@ let topological_sort deps =
   in List.rev @@ List.fold_left (fun visited (n, _) -> explore [] visited n) [] graph
 
 (* The even and odd functions assume that their argument is non-negative. *)
-let rec odd = function
+let rec odd =
+  function
   | 0 -> false
   | y -> even (y - 1)
 
@@ -480,3 +483,11 @@ type _ variant +=
 
 (* Two times. *)
 type _ variant += WithBuff : t variant
+
+let add_multiline x =
+  let res =
+    x + x
+  in
+  res
+
+let add_one_line x = let res = x + x in res

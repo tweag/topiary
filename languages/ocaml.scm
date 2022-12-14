@@ -395,7 +395,7 @@
   (match_case) @prepend_spaced_softline
 )
 
-; Multi-line definitions must have a linebreak before "in":
+; Multi-line definitions must have a linebreak after "=" and before "in":
 ;
 ; let a =
 ;   expression
@@ -410,6 +410,10 @@
   .
   "in"
 )
+(let_binding
+  "=" @append_spaced_softline
+)
+
 (value_definition
   "and" @prepend_spaced_softline
 )
