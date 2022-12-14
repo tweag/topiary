@@ -222,7 +222,8 @@ let add_channel b ic len =
 let output_buffer oc b =
   output oc b.buffer 0 b.position
 
-let closing = function
+let closing =
+  function
   | '(' -> ')'
   | '{' -> '}'
   | _ -> assert false
@@ -473,7 +474,8 @@ let topological_sort deps =
       raise @@ Dep_error (CircularDependencies (node, path));
     if List.mem node visited then visited
     else
-      let edges = try
+      let edges =
+        try
           List.assoc node graph
         with
           Not_found ->

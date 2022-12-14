@@ -21,7 +21,7 @@ tree-sitter-rust = "0.20"
 tree-sitter-toml = "0.20.0"
 
 # Needs a version > 0.19
-tree-sitter-ocaml = { git = "https://github.com/tweag/tree-sitter-ocaml", branch = "gg/tag-constructor-name"}
+tree-sitter-ocaml = { git = "https://github.com/tweag/tree-sitter-ocaml", branch = "gg/dont-split-tags"}
 
 [dev-dependencies]
 criterion = "0.4"

@@ -332,6 +332,11 @@
   .
   (_)
 )
+(constrain_type
+  (_) @append_space
+  .
+  (_)
+)
 
 
 ; Softlines. These become either a space or a newline, depending on whether we
@@ -485,13 +490,16 @@
   (match_case) @prepend_spaced_softline
 )
 
-; Multi-line definitions must have a linebreak before "in":
+; Multi-line definitions must have a linebreak after "=" and before "in":
 ;
 ; let a =
 ;   expression
 ;   in
 ;   expression
 ;
+(let_binding
+  "=" @append_spaced_softline
+)
 (
   (value_definition
     (_) @append_spaced_softline
