@@ -448,3 +448,10 @@ let topological_sort deps =
       in node::List.fold_left (explore (node::path))
         visited (List.map Files_legacy.get_file edges)
   in List.rev @@ List.fold_left (fun visited (n, _) -> explore [] visited n) [] graph
+
+(* The even and odd functions assume that their argument is non-negative. *)
+let rec odd = function
+  | 0 -> false
+  | y -> even (y - 1)
+
+and even y = if y = 0 then true else odd (y - 1)

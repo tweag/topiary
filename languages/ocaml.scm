@@ -23,6 +23,12 @@
   (value_definition)
 ] @allow_blank_line_before
 
+; In a definition including several mutually recursive functions,
+; one can skip a line before each of them.
+(value_definition
+  "and" @allow_blank_line_before
+)
+
 ; Input softlines before and after all comments. This means that the input
 ; decides if a comment should have line breaks before or after. But don't put a
 ; softline directly in front of commas or semicolons.
@@ -69,6 +75,7 @@
 ; Surround spaces
 ; A space is put after, and before (except just after an open parenthesis).
 [
+  "and"
   "as"
   "assert"
   "begin"
@@ -365,6 +372,9 @@
   )
   .
   "in"
+)
+(value_definition
+  "and" @prepend_spaced_softline
 )
 
 ; The following are many constructs that need a softline.
