@@ -464,3 +464,8 @@ end
 module M = struct
   type nonrec t = t
 end
+
+module type Printer = sig
+  val print_name : name printer
+  val print_ident : ident printer
+end
