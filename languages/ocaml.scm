@@ -92,6 +92,7 @@
   "match"
   "module"
   "mutable"
+  "nonrec"
   "of"
   "open"
   (parameter)
@@ -123,6 +124,7 @@
     "done"
     "else"
     "in"
+    "nonrec"
     "of"
     "rec"
     "then"
