@@ -405,6 +405,18 @@
   ]
 )
 
+; In module signature, each symbol declaration is separated by a softline.
+;
+; module type Name = sig
+;   val function1 : type1
+;   val function2 : type2
+;  end
+;
+(signature
+  "sig" @append_spaced_softline
+  (value_specification) @append_spaced_softline
+)
+
 ; Put a semicolon delimiter after field declarations, unless they already have
 ; one, in which case we do nothing.
 (
