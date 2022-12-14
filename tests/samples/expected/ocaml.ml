@@ -460,3 +460,7 @@ module ListSetExtended = struct
   include ListSet
   let of_list lst = List.fold_right add lst empty
 end
+
+module M = struct
+  type nonrec t = t
+end
