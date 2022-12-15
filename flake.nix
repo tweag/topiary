@@ -9,7 +9,7 @@
       "tweag-topiary.cachix.org-1:8TKqya43LAfj4qNHnljLpuBnxAY/YwEBfzo3kzXxNY0="
     ];
   };
-  
+
   inputs = {
     advisory-db = {
       url = "github:rustsec/advisory-db";
@@ -22,16 +22,15 @@
   };
 
   outputs = inputs: with inputs;
-    flake-utils.lib.eachDefaultSystem (system:
+    flake-utils.lib.eachSystem [ flake-utils.lib.system.x86_64-linux ] (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
         code = pkgs.callPackage ./. { inherit advisory-db crane nix-filter; };
       in {
         packages.default = code.app;
         checks = with code; {
-          inherit app clippy fmt audit benchmark;
+          inherit app clippy fmt audit benchmark coverage;
         };
       }
     );
 }
-

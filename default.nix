@@ -32,6 +32,8 @@ in
     inherit advisory-db;
   });
 
+  coverage = craneLib.cargoTarpaulin (commonArgs);
+
   benchmark = craneLib.buildPackage (commonArgs // {
     inherit cargoArtifacts;
     cargoTestCommand = "cargo bench --profile release";
