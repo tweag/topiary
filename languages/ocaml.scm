@@ -395,7 +395,7 @@
   (match_case) @prepend_spaced_softline
 )
 
-; Multi-line definitions must have a linebreak before "in":
+; Multi-line definitions must have a linebreak after "=" and before "in":
 ;
 ; let a =
 ;   expression
@@ -410,6 +410,25 @@
   .
   "in"
 )
+; There are special cases however. We do not want to break lines after "=" when writing
+;
+; let f = function
+;   | Constructor -> expression
+;
+; or
+;
+; let f = fun x ->
+;   expression
+;
+(let_binding
+  "=" @append_spaced_softline
+  .
+  [
+    (function_expression)
+    (fun_expression)
+  ]* @do_nothing
+)
+
 (value_definition
   "and" @prepend_spaced_softline
 )
