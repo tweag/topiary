@@ -2,3 +2,4 @@
 /result
 /.envrc
 /.direnv
+*.profraw
