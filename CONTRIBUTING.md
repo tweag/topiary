@@ -51,5 +51,6 @@ grcov --branch \
 :warning: `grcov` relies on the `llvm-tools-preview` component for
 `rustup`. For Nix users, `rustup` can interfere with the Rust toolchain
 that is provided by Nix, if you have both installed. For convenience,
-the `generate-coverage.sh` script can be run to avoid contaminating your
-environment.
+the `generate-coverage.sh` script can be run from the root of this
+repository to avoid contaminating your environment, but note it will
+download a full toolchain on each run.
