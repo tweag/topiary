@@ -324,14 +324,11 @@ fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
                 _ => new_vec.push(next),
             }
         }
-        // If the last one is a DeleteBegin
+        // If the last one is a DeleteBegin,
+        // we ignore all the atoms until a DeleteEnd is met.
         Atom::DeleteBegin => {
-            match next {
-                Atom::DeleteEnd => {
-                    new_vec.pop();
-                    ();
-                }
-                _ => ()
+            if next == Atom::DeleteEnd {
+                new_vec.pop();
             }
         }
         // Otherwise, we simply copy the atom to the new vector.
