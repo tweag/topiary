@@ -668,7 +668,7 @@
     .
   )
   .
-  "in"
+  "in" @append_spaced_softline
 )
 ; There are special cases however. We do not want to break lines after "=" when writing
 ;
@@ -691,29 +691,6 @@
 
 (value_definition
   (and_operator) @prepend_spaced_softline
-)
-
-; The following are many constructs that need a softline.
-(
-  [
-    "in"
-    "with"
-    "="
-  ] @append_spaced_softline
-  .
-  [
-    (application_expression)
-    (class_body_type)
-    (if_expression)
-    (let_expression)
-    (object_expression)
-    (product_expression)
-    (record_expression)
-    (sequence_expression)
-    (set_expression)
-    (typed_expression)
-    (value_path)
-  ]
 )
 
 ; In module signature, each symbol declaration is separated by a softline.

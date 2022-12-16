@@ -493,6 +493,15 @@ let add_multiline x =
 
 let add_one_line x = let res = x + x in res
 
+let add_two_lines x =
+  let res = x + x in
+  res
+
+let add_three_lines x =
+  let res = x + x
+  in
+  res
+
 let add_as_fun_multiline = fun x ->
   x
 

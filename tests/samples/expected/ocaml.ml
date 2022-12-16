@@ -446,10 +446,11 @@ let topological_sort deps =
             else
               raise
               @@ Files_legacy.Files_error (ObjectFileNotFound (mk_mident node))
-          | _ -> assert false
-      in node::List.fold_left (explore (node::path))
+      in
+      node::List.fold_left (explore (node::path))
         visited (List.map Files_legacy.get_file edges)
-  in List.rev @@ List.fold_left (fun visited (n, _) -> explore [] visited n) [] graph
+  in
+  List.rev @@ List.fold_left (fun visited (n, _) -> explore [] visited n) [] graph
 
 (* The even and odd functions assume that their argument is non-negative. *)
 let rec odd = function
@@ -495,6 +496,14 @@ let add_multiline x =
   res
 
 let add_one_line x = let res = x + x in res
+
+let add_two_lines x =
+  let res = x + x in
+  res
+
+let add_three_lines x =
+  let res = x + x in
+  res
 
 let add_as_fun_multiline = fun x ->
   x
