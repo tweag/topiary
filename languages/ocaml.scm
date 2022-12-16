@@ -591,9 +591,11 @@
     "begin"
     "do"
     "else"
+    "in"
     "of"
     "struct"
     "then"
+    "with"
     "->"
     "{"
     ":"
@@ -668,7 +670,7 @@
     .
   )
   .
-  "in" @append_spaced_softline
+  "in"
 )
 ; There are special cases however. We do not want to break lines after "=" when writing
 ;
