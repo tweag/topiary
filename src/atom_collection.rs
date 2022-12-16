@@ -117,6 +117,11 @@ impl AtomCollection {
             "prepend_spaced_softline" => self.prepend(Atom::Softline { spaced: true }, node),
             // Skip over leafs
             "leaf" => {}
+            // Deletion
+            "delete" => {
+                self.prepend(Atom::DeleteBegin, node);
+                self.append(Atom::DeleteEnd, node)
+            }
 
             // Return a query parsing error on unknown capture names
             unknown => {
@@ -317,6 +322,16 @@ fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
                     new_vec.push(prev);
                 }
                 _ => new_vec.push(next),
+            }
+        }
+        // If the last one is a DeleteBegin
+        Atom::DeleteBegin => {
+            match next {
+                Atom::DeleteEnd => {
+                    new_vec.pop();
+                    ();
+                }
+                _ => ()
             }
         }
         // Otherwise, we simply copy the atom to the new vector.

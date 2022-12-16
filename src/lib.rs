@@ -53,6 +53,11 @@ pub enum Atom {
     Softline { spaced: bool },
     /// Represents a space. Consecutive spaces are reduced to one before rendering.
     Space,
+    /// Represents a segment to be deleted.
+    // It is a segment, because if one wants to delete a node,
+    // it might happen that it contains several leaves.
+    DeleteBegin,
+    DeleteEnd,
 }
 
 /// A convenience wrapper around `std::result::Result<T, FormatterError>`.
