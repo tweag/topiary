@@ -28,6 +28,9 @@
 (value_definition
   "and" @allow_blank_line_before
 )
+(value_definition
+  (and_operator) @allow_blank_line_before
+)
 
 ; Input softlines before and after all comments. This means that the input
 ; decides if a comment should have line breaks before or after. But don't put a
@@ -137,6 +140,20 @@
     "<-"
     "+="
 ] @prepend_space
+
+; let-like and and-like operators are only followed by a closing parenthesis
+; during their definition, in which case no space must be appended.
+; space must be appended otherwise
+(
+  (and_operator) @append_space
+  .
+  ")"* @do_nothing
+)
+(
+  (let_operator) @append_space
+  .
+  ")"* @do_nothing
+)
 
 ; For those queries, we should not have multiple queries,
 ; however, due to a known bug in tree-sitter queries
@@ -443,6 +460,10 @@
 
 (value_definition
   "and" @prepend_spaced_softline
+)
+
+(value_definition
+  (and_operator) @prepend_spaced_softline
 )
 
 ; The following are many constructs that need a softline.
