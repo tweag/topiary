@@ -495,3 +495,17 @@ let add_as_fun_multiline = fun x ->
   x
 
 let add_as_fun_one_line = fun x -> x
+
+let sum_of_int n =
+  let res = ref 0 in
+  for i = 1 to n do res := !res + i; done
+
+let is_prime n =
+  let no_divisor = ref true in
+  let i = ref 1 in
+  while !no_divisor && !i * !i < n do
+    incr i;
+    if n mod !i = 0
+    then no_divisor := false;
+  done;
+  !no_divisor

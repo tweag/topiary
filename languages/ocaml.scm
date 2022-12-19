@@ -79,11 +79,10 @@
   "and"
   "as"
   "assert"
-  "begin"
-  "do"
   "else"
   "exception"
   "external"
+  "for"
   "if"
   "in"
   "include"
@@ -99,6 +98,7 @@
   "rec"
   "sig"
   "then"
+  "to"
   "try"
   "type"
   "val"
@@ -129,8 +129,8 @@
     "of"
     "rec"
     "then"
+    "to"
     "when"
-    "while"
     "with"
     "|"
     "->"
@@ -162,6 +162,11 @@
   "("* @do_nothing
   .
   "external" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "for" @prepend_space
 )
 (
   "("* @do_nothing
@@ -222,6 +227,11 @@
   "("* @do_nothing
   .
   "val" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "while" @prepend_space
 )
 (
   "("* @do_nothing
@@ -358,6 +368,7 @@
 (
   [
     "begin"
+    "do"
     "else"
     "of"
     "struct"
@@ -375,6 +386,7 @@
 
 ; Always put softlines before these:
 [
+  "done"
   "end"
   (else_clause)
   (infix_operator)
@@ -481,6 +493,7 @@
 ; Start an indented block after these
 [
   "begin"
+  "do"
   "else"
   "sig"
   "struct"
@@ -490,6 +503,7 @@
 
 ; End the indented block before these
 [
+  "done"
   "end"
   "}"
 ] @prepend_indent_end
