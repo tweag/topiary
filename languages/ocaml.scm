@@ -324,6 +324,7 @@
     (string)
     (type_constructor_path)
     (typed_expression)
+    (value_name)
     (value_path)
     (value_pattern)
     "("
