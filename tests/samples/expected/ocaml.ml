@@ -523,3 +523,10 @@ let greetings =
   and* msg2 = Some "world"
   in
   Some (msg1 ^ msg2)
+
+(* Some pattern-matching *)
+let hd::_ = [1, 2, 3]
+
+let Some message = Some "message"
+
+let [1, snd] = [1, 2]
