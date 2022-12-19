@@ -534,3 +534,6 @@ let hd::_ = [1, 2, 3]
 let Some message = Some "message"
 
 let [1, snd] = [1, 2]
+
+type a = int and
+b = float
