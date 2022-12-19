@@ -500,6 +500,10 @@ let sum_of_int n =
   let res = ref 0 in
   for i = 1 to n do res := !res + i; done
 
+let sum_of_int_reversed n =
+  let res = ref 0 in
+  for i = n downto 1 do res := !res + i; done
+
 let is_prime n =
   let no_divisor = ref true in
   let i = ref 1 in
