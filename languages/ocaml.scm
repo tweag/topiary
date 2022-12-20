@@ -364,7 +364,6 @@
 (
   [
     (boolean)
-    (attribute_id)
     (character)
     (class_path)
     (class_type_path)
@@ -430,6 +429,22 @@
   ]
 )
 
+; When one uses a language extension, we always put a space after the extension name,
+; if this name ends by the '?' or ':' token, the space comes after it.
+;
+(
+  (attribute_id) @append_space
+  .
+  (attribute_payload)* @do_nothing
+)
+(attribute_payload
+  [
+    "?"
+    ":"
+  ] @append_space
+)
+
+
 ; Some kinds of colons should have a space in front.
 (
   [
@@ -478,18 +493,13 @@
   (_)
 )
 
-; When one uses a language extension, the extension name should be separated from the next identifier
-(attribute_payload
-  [
-    ":"
-    "?"
-  ] @append_space
-)
-
 ; Softlines. These become either a space or a newline, depending on whether we
 ; format their node as single-line or multi-line. If there is a comment
 ; following, we don't add anything, because they will have their own line break
 ; processing applied to them.
+;
+; If those keywords are followed by a ppx extension,
+; the soft linebreak comes after it.
 (
   [
     "begin"
@@ -506,7 +516,31 @@
   .
   [
     (comment)
+    "%"
   ]* @do_nothing
+)
+
+(
+  [
+    "begin"
+    "do"
+    "else"
+    "in"
+    "of"
+    "struct"
+    "then"
+    "with"
+    "->"
+    "{"
+    ":"
+    ";"
+  ]
+  .
+  "%"
+  .
+  (attribute_id) @append_spaced_softline
+  .
+  (comment)* @do_nothing
 )
 
 ; Always put softlines before these:
@@ -650,7 +684,9 @@
 ; Indenting. This will only do anything in multi-line blocks. In single-line
 ; blocks they do nothing.
 
-(variant_declaration) @prepend_indent_start @append_indent_end
+(
+  (variant_declaration) @prepend_indent_start @append_indent_end
+)
 
 ; Start an indented block after these
 [
@@ -671,10 +707,12 @@
 )
 
 ; End the indented block before these
-[
-  "done"
-  "end"
-] @prepend_indent_end
+(
+  [
+    "done"
+    "end"
+  ] @prepend_indent_end
+)
 
 ; "}" can be used to end quoted strings. Don't indent in that case
 (
@@ -684,10 +722,12 @@
 )
 
 ; End the indented block after these
-[
-  (else_clause)
-  (then_clause)
-] @append_indent_end
+(
+  [
+    (else_clause)
+    (then_clause)
+  ] @append_indent_end
+)
 
 ; Make an indented block after ":" in typed expressions
 ;
@@ -815,8 +855,20 @@
 )
 
 ; Try block formatting
-(
+; A soft linebreak after the "try" (potentially "try%ppx") and one after the "with".
+(try_expression
   "try" @append_spaced_softline @append_indent_start
+  .
+  "%"* @do_nothing
+)
+(try_expression
+  "try"
+  .
+  "%"
+  .
+  (attribute_id) @append_spaced_softline @append_indent_start
+)
+(try_expression
   "with" @prepend_indent_end @prepend_spaced_softline @append_indent_start
   (_) @append_indent_end
   .
