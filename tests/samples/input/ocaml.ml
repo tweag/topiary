@@ -649,3 +649,19 @@ module F (X: T1) (Y: T1 with type t := X.t) = struct
 
   include M
 end
+
+(* Showcase ppx usage *)
+let lid = [%sedlex.regexp? R] in
+body
+
+let _ =
+  [%sedlex match lexbuf with
+    | R1 -> e1
+    | Rn -> en
+    | _  -> def
+  ]
+
+let _ = match%sedlex lexbuf with
+  | R1 -> e1
+  | Rn -> en
+  | _  -> def

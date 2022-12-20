@@ -89,58 +89,62 @@
 
 ; Surround spaces
 ; A space is put after, and before (except just after an open parenthesis).
-[
-  "and"
-  "as"
-  "assert"
-  "class"
-  "downto"
-  "else"
-  "exception"
-  "external"
-  "for"
-  "if"
-  "in"
-  "include"
-  (infix_operator)
-  "inherit"
-  "let"
-  "match"
-  "method"
-  "module"
-  (module_parameter)
-  "mutable"
-  "new"
-  "nonrec"
-  "object"
-  "of"
-  "open"
-  (parameter)
-  "private"
-  "rec"
-  "sig"
-  "then"
-  "to"
-  "try"
-  "type"
-  "val"
-  "virtual"
-  "when"
-  "while"
-  "with"
-  "*"
-  "="
-  "|"
-  "||"
-  "->"
-  "<-"
-  "{"
-  "}"
-  ":"
-  ";"
-  "+="
-  ":="
-] @append_space
+(
+  [
+    "and"
+    "as"
+    "assert"
+    "class"
+    "downto"
+    "else"
+    "exception"
+    "external"
+    "for"
+    "if"
+    "in"
+    "include"
+    (infix_operator)
+    "inherit"
+    "let"
+    "match"
+    "method"
+    "module"
+    (module_parameter)
+    "mutable"
+    "new"
+    "nonrec"
+    "object"
+    "of"
+    "open"
+    (parameter)
+    "private"
+    "rec"
+    "sig"
+    "then"
+    "to"
+    "try"
+    "type"
+    "val"
+    "virtual"
+    "when"
+    "while"
+    "with"
+    "*"
+    "="
+    "|"
+    "||"
+    "->"
+    "<-"
+    "{"
+    "}"
+    ":"
+    ";"
+    "+="
+    ":="
+  ] @append_space
+  .
+  "%"? @do_nothing
+)
 
 ; Those keywords are not expected to come right after an open parenthesis.
 [
@@ -360,6 +364,7 @@
 (
   [
     (boolean)
+    (attribute_id)
     (character)
     (class_path)
     (class_type_path)
@@ -471,6 +476,14 @@
   (_) @append_space
   .
   (_)
+)
+
+; When one uses a language extension, the extension name should be separated from the next identifier
+(attribute_payload
+  [
+    ":"
+    "?"
+  ] @append_space
 )
 
 ; Softlines. These become either a space or a newline, depending on whether we
