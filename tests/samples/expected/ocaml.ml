@@ -550,3 +550,8 @@ let _ =
   {
     my_string = quoted_string ^ quoted_string_multiline_with_id
   }
+
+(* Tags in pattern matching *)
+type my_box = [`Foo of int | `Bar of int]
+let unbox = function
+  | `Foo a | `Bar a -> a
