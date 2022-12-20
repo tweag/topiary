@@ -536,3 +536,17 @@ let [1, snd] = [1, 2]
 
 type a = int
 and b = float
+
+(* Messing around with quoted strings and curly brackets *)
+type string_record = { my_string: string; }
+let quoted_string =
+  {|Hello|}
+and quoted_string_multiline_with_id =
+  {external|
+World
+{|!|}
+|external}
+let _ =
+  {
+    my_string = quoted_string ^ quoted_string_multiline_with_id
+  }
