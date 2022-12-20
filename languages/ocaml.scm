@@ -7,6 +7,7 @@
 (
   [
     (character)
+    (quoted_string)
     (string)
   ]
 ) @leaf
@@ -296,6 +297,7 @@
     (number)
     (parenthesized_expression)
     (parenthesized_pattern)
+    (quoted_string)
     (string)
     (type_constructor_path)
     (typed_expression)
@@ -323,6 +325,7 @@
     (parenthesized_expression)
     (parenthesized_pattern)
     (prefix_expression)
+    (quoted_string)
     (string)
     (type_constructor_path)
     (typed_expression)
@@ -519,15 +522,27 @@
   "sig"
   "struct"
   "then"
-  "{"
 ] @append_indent_start
+
+; "{" can be used to start quoted strings. Don't indent in that case
+(
+  "{" @append_indent_start
+  .
+  (quoted_string_content)* @do_nothing
+)
 
 ; End the indented block before these
 [
   "done"
   "end"
-  "}"
 ] @prepend_indent_end
+
+; "}" can be used to end quoted strings. Don't indent in that case
+(
+  (quoted_string_content)* @do_nothing
+  .
+  "}" @prepend_indent_end
+)
 
 ; End the indented block after these
 [
