@@ -406,6 +406,7 @@
 
 ; Always put softlines before these:
 [
+  "and"
   "done"
   "end"
   (else_clause)
@@ -459,10 +460,6 @@
     (function_expression)
     (fun_expression)
   ]* @do_nothing
-)
-
-(value_definition
-  "and" @prepend_spaced_softline
 )
 
 (value_definition
