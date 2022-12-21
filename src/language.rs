@@ -6,6 +6,7 @@ use crate::{FormatterError, FormatterResult};
 /// The languages that we support with query files.
 #[derive(Clone, Copy, Debug)]
 pub enum Language {
+    Bash,
     Json,
     Ocaml,
     Rust,
@@ -15,6 +16,7 @@ pub enum Language {
 // NOTE This list of extension mappings is influenced by Wilfred Hughes' Difftastic
 // https://github.com/Wilfred/difftastic/blob/master/src/parse/guess_language.rs
 const EXTENSIONS: &[(&str, &[&str])] = &[
+    ("bash", &["sh", "bash"]),
     (
         "json",
         &[
@@ -42,10 +44,12 @@ const EXTENSIONS: &[(&str, &[&str])] = &[
 impl Language {
     pub fn new(s: &str) -> FormatterResult<Self> {
         match s.to_lowercase().as_str() {
+            "bash" => Ok(Language::Bash),
             "json" => Ok(Language::Json),
             "ocaml" => Ok(Language::Ocaml),
             "rust" => Ok(Language::Rust),
             "toml" => Ok(Language::Toml),
+
             _ => Err(FormatterError::Query(
                 format!("Unsupported language specified: '{s}'"),
                 None,

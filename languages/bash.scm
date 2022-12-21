@@ -1,0 +1,2 @@
+; Configuration
+(#language! bash)

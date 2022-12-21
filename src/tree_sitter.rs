@@ -83,6 +83,7 @@ fn capture_name<'a, 'b>(query: &'a Query, capture: &'b QueryCapture) -> &'a str 
 
 fn grammar(language: Language) -> tree_sitter::Language {
     match language {
+        Language::Bash => tree_sitter_bash::language(),
         Language::Json => tree_sitter_json::language(),
         Language::Ocaml => tree_sitter_ocaml::language_ocaml(),
         Language::Rust => tree_sitter_rust::language(),
