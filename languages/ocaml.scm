@@ -246,6 +246,11 @@
 (
   "("* @do_nothing
   .
+  (type_variable) @prepend_space
+)
+(
+  "("* @do_nothing
+  .
   "val" @prepend_space
 )
 (
@@ -302,6 +307,7 @@
     (tag)
     (type_constructor_path)
     (typed_expression)
+    (type_variable)
     (value_path)
     (value_pattern)
     ")"
