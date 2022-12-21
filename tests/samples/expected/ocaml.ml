@@ -555,3 +555,6 @@ let _ =
 type my_box = [`Foo of int | `Bar of int]
 let unbox = function
   | `Foo a | `Bar a -> a
+
+(* function signature containing type variables *)
+let my_const : 'a 'b. 'a -> 'b -> 'a = Fun.const
