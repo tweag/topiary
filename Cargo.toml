@@ -5,7 +5,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-# For now we just load the tree-sitter language parsers statically. 
+# For now we just load the tree-sitter language parsers statically.
 # Eventually we will want to dynamically load them, like Helix does.
 clap = { version = "3.2", features = ["derive"]}
 env_logger = "0.9"
@@ -19,6 +19,7 @@ tree-sitter = "0.20"
 tree-sitter-json = "0.19"
 tree-sitter-rust = "0.20"
 tree-sitter-toml = "0.20.0"
+tree-sitter-bash = "0.19.0"
 
 # Needs a version > 0.19
 tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml" }

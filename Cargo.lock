@@ -650,11 +650,22 @@ dependencies = [
  "pretty_assertions",
  "regex",
  "test-log",
- "tree-sitter",
+ "tree-sitter 0.20.9",
+ "tree-sitter-bash",
  "tree-sitter-json",
  "tree-sitter-ocaml",
  "tree-sitter-rust",
  "tree-sitter-toml",
+]
+
+[[package]]
+name = "tree-sitter"
+version = "0.19.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad726ec26496bf4c083fff0f43d4eb3a2ad1bba305323af5ff91383c0b6ecac0"
+dependencies = [
+ "cc",
+ "regex",
 ]
 
 [[package]]
@@ -668,13 +679,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "tree-sitter-bash"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c629e2d29ebb85b34cd195a1c511a161ed775451456cde110470e7af693424db"
+dependencies = [
+ "cc",
+ "tree-sitter 0.19.5",
+]
+
+[[package]]
 name = "tree-sitter-json"
 version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90b04c4e1a92139535eb9fca4ec8fa9666cc96b618005d3ae35f3c957fa92f92"
 dependencies = [
  "cc",
- "tree-sitter",
+ "tree-sitter 0.20.9",
 ]
 
 [[package]]
@@ -683,7 +704,7 @@ version = "0.20.1"
 source = "git+https://github.com/tree-sitter/tree-sitter-ocaml#de07323343946c32759933cb3b7c78e821098cad"
 dependencies = [
  "cc",
- "tree-sitter",
+ "tree-sitter 0.20.9",
 ]
 
 [[package]]
@@ -693,7 +714,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13470fafb7327a3acf96f5bc1013b5539a899a182f01c59b5af53f6b93195717"
 dependencies = [
  "cc",
- "tree-sitter",
+ "tree-sitter 0.20.9",
 ]
 
 [[package]]
@@ -703,7 +724,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca517f578a98b23d20780247cc2688407fa81effad5b627a5a364ec3339b53e8"
 dependencies = [
  "cc",
- "tree-sitter",
+ "tree-sitter 0.20.9",
 ]
 
 [[package]]
