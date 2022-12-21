@@ -87,6 +87,7 @@ fn grammar(language: Language) -> tree_sitter::Language {
         Language::Ocaml => tree_sitter_ocaml::language_ocaml(),
         Language::Rust => tree_sitter_rust::language(),
         Language::Toml => tree_sitter_toml::language(),
+        Language::Bash => tree_sitter_bash::language(),
     }
 }
 
