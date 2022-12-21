@@ -19,10 +19,10 @@ tree-sitter = "0.20"
 tree-sitter-json = "0.19"
 tree-sitter-rust = "0.20"
 tree-sitter-toml = "0.20.0"
-tree-sitter-bash = "0.19.0"
 
 # Needs a version > 0.19
 tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml" }
+tree-sitter-bash = { git = "https://github.com/tree-sitter/tree-sitter-bash" }
 
 [dev-dependencies]
 criterion = "0.4"
