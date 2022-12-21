@@ -10,6 +10,7 @@ pub enum Language {
     Ocaml,
     Rust,
     Toml,
+    Bash,
 }
 
 // NOTE This list of extension mappings is influenced by Wilfred Hughes' Difftastic
@@ -37,6 +38,7 @@ const EXTENSIONS: &[(&str, &[&str])] = &[
     ("ocaml", &["ml"]),
     ("rust", &["rs"]),
     ("toml", &["toml"]),
+    ("bash", &["sh", "bash"]),
 ];
 
 impl Language {
@@ -46,6 +48,8 @@ impl Language {
             "ocaml" => Ok(Language::Ocaml),
             "rust" => Ok(Language::Rust),
             "toml" => Ok(Language::Toml),
+            "bash" => Ok(Language::Bash),
+
             _ => Err(FormatterError::Query(
                 format!("Unsupported language specified: '{s}'"),
                 None,
