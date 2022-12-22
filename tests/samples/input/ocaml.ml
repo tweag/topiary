@@ -606,7 +606,10 @@ let (Some 2) =
   my_stack#push 2;
   my_stack#pop
 
-(* Module with a private type *)
+(* Some modules and functors *)
 module type M = sig
   type t = private int64
+end
+
+module F (X: M) (Y: M with type t := X.t) = struct
 end
