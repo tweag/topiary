@@ -605,3 +605,7 @@ let (Some 2) =
   my_stack#push 1;
   my_stack#push 2;
   my_stack#pop
+
+(* Module with a private type *)
+module type M = sig type t = private int64
+end

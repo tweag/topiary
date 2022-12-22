@@ -111,6 +111,7 @@
   "of"
   "open"
   (parameter)
+  "private"
   "rec"
   "sig"
   "then"
@@ -265,6 +266,11 @@
   "("* @do_nothing
   .
   (parameter) @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "private" @prepend_space
 )
 (
   "("* @do_nothing
