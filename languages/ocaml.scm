@@ -19,6 +19,8 @@
   (comment)
   (exception_definition)
   (external)
+  (include_module)
+  (include_module_type)
   (inheritance_definition)
   (inheritance_specification)
   (instance_variable_definition)
@@ -28,6 +30,7 @@
   (open_module)
   (type_definition)
   (value_definition)
+  (value_specification)
 ] @allow_blank_line_before
 
 ; In a definition including several mutually recursive functions,
