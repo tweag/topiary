@@ -462,8 +462,9 @@ module ListSetExtended = struct
   let of_list lst = List.fold_right add lst empty
 end
 
-module M = struct
+module My_types = struct
   type nonrec t = t
+  type my_rec = { my_bool: bool; }
 end
 
 module type Printer = sig
@@ -512,6 +513,10 @@ let is_prime n =
     if n mod !i = 0 then no_divisor := false;
   done;
   !no_divisor
+
+let unbox_rec = function
+  | Some My_types.{ my_bool } -> my_bool
+  | _ -> false
 
 (* Showcase the usage of operator bindings *)
 let greetings =
