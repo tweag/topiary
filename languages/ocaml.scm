@@ -579,7 +579,11 @@
 ;
 (signature
   "sig" @append_spaced_softline
-  (value_specification) @append_spaced_softline
+  [
+    (value_specification)
+    (type_definition)
+    (include_module_type)
+  ] @append_spaced_softline
 )
 
 ; In class definitions and class type definitions, each declaration is separated

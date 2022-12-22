@@ -607,7 +607,7 @@ let (Some 2) =
   my_stack#pop
 
 (* Some modules and functors *)
-module type M = sig
+module type T1 = sig
   type t = private int64
 end
 
@@ -615,7 +615,7 @@ module type T2 = sig end
 
 module M: T2 = struct end
 
-module F (X: M) (Y: M with type t := X.t) = struct
+module F (X: T1) (Y: T1 with type t := X.t) = struct
   module type S = sig
     type t = X.t
 
