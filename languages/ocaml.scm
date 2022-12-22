@@ -347,6 +347,7 @@
 ; Certain elements must be separated by spaces.
 (
   [
+    (boolean)
     (character)
     (class_path)
     (class_type_path)
@@ -382,6 +383,7 @@
   ]* @do_nothing
   .
   [
+    (boolean)
     (character)
     (class_name)
     (class_path)

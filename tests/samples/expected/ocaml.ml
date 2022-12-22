@@ -519,6 +519,10 @@ let unbox_rec = function
   | Some My_types.{ my_bool } -> my_bool
   | _ -> false
 
+let unbox_bool = function
+  | Some true -> true
+  | _ -> false
+
 (* Showcase the usage of operator bindings *)
 let greetings =
   let (let*) = Option.bind
