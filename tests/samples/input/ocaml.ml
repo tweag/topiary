@@ -559,3 +559,49 @@ let unbox = function
 
 (* function signature containing type variables *)
 let my_const : 'a 'b. 'a -> 'b -> 'a = Fun.const
+
+(* Showcase OOP *)
+module Inner1 = struct
+  class ['a] pushable =
+    object (self)
+      val mutable list = ([]: 'a list)
+
+      method push x =
+        list <- x::list
+    end
+
+  class virtual ['a] poppable =
+    object (self)
+      inherit ['a] pushable
+
+      (* unsafe implementation *)
+      method pop =
+        let result::rest = list in
+        list <- rest;
+        Some result
+    end
+end
+
+module Inner2 = struct
+  class type ['a] stack =
+    object
+      inherit ['a] Inner1.poppable
+    end
+
+  class ['a] stack_impl : ['a] stack =
+    object
+      inherit ['a] Inner1.poppable as super
+
+      (* safe implementation *)
+      method pop =
+        match list with
+        | _::_ -> super#pop
+        | _ -> None
+    end
+end
+
+let (Some 2) =
+  let my_stack = new Inner2.stack_impl in
+  my_stack#push 1;
+  my_stack#push 2;
+  my_stack#pop

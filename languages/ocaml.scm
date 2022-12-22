@@ -14,9 +14,15 @@
 
 ; Allow blank line before
 [
+  (class_definition)
+  (class_type_definition)
   (comment)
   (exception_definition)
   (external)
+  (inheritance_definition)
+  (inheritance_specification)
+  (instance_variable_definition)
+  (method_definition)
   (module_definition)
   (module_type_definition)
   (open_module)
@@ -83,6 +89,7 @@
   "and"
   "as"
   "assert"
+  "class"
   "downto"
   "else"
   "exception"
@@ -92,11 +99,15 @@
   "in"
   "include"
   (infix_operator)
+  "inherit"
   "let"
   "match"
+  "method"
   "module"
   "mutable"
+  "new"
   "nonrec"
+  "object"
   "of"
   "open"
   (parameter)
@@ -107,6 +118,7 @@
   "try"
   "type"
   "val"
+  "virtual"
   "when"
   "while"
   "with"
@@ -136,6 +148,7 @@
     "rec"
     "then"
     "to"
+    "virtual"
     "when"
     "with"
     "|"
@@ -176,6 +189,11 @@
 (
   "("* @do_nothing
   .
+  "class" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
   "exception" @prepend_space
 )
 (
@@ -201,6 +219,11 @@
 (
   "("* @do_nothing
   .
+  "inherit" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
   "let" @prepend_space
 )
 (
@@ -211,12 +234,27 @@
 (
   "("* @do_nothing
   .
+  "method" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
   "module" @prepend_space
 )
 (
   "("* @do_nothing
   .
   "mutable" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "new" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "object" @prepend_space
 )
 (
   "("* @do_nothing
@@ -244,7 +282,10 @@
   "type" @prepend_space
 )
 (
-  "("* @do_nothing
+  [
+    "("
+    "["
+  ]* @do_nothing
   .
   (type_variable) @prepend_space
 )
@@ -295,10 +336,14 @@
 (
   [
     (character)
+    (class_path)
+    (class_type_path)
     (constructed_type)
     (constructor_path)
+    (extended_module_path)
     (field_get_expression)
     (labeled_argument)
+    (module_path)
     (number)
     (parenthesized_expression)
     (parenthesized_pattern)
@@ -311,6 +356,7 @@
     (value_path)
     (value_pattern)
     ")"
+    "]"
   ] @append_space
   .
   [
@@ -319,15 +365,22 @@
     "."
     ".."
     ")"
+    "]"
     "::"
   ]* @do_nothing
   .
   [
     (character)
+    (class_name)
+    (class_path)
+    (class_type_name)
+    (class_type_path)
     (constructed_type)
     (constructor_path)
+    (extended_module_path)
     (field_get_expression)
     (labeled_argument)
+    (module_path)
     (number)
     (parenthesized_expression)
     (parenthesized_pattern)
@@ -487,11 +540,15 @@
   .
   [
     (application_expression)
+    (class_body_type)
     (if_expression)
     (let_expression)
+    (object_expression)
     (product_expression)
     (record_expression)
     (sequence_expression)
+    (set_expression)
+    (typed_expression)
     (value_path)
   ]
 )
@@ -506,6 +563,34 @@
 (signature
   "sig" @append_spaced_softline
   (value_specification) @append_spaced_softline
+)
+
+; In class definitions and class type definitions, each declaration is separated
+; by a softline.
+
+; class foo =
+;   object
+;     inherit bar
+;     val baz = None
+;     method qux = None
+;   end
+;
+(object_expression
+  "object"
+  [
+    (inheritance_definition)
+    (instance_variable_definition)
+    (method_definition)
+  ] @append_spaced_softline @prepend_spaced_softline
+)
+
+(class_body_type
+  "object"
+  [
+    (inheritance_specification)
+    (instance_variable_definition)
+    (method_definition)
+  ] @append_spaced_softline @prepend_spaced_softline
 )
 
 ; Put a semicolon delimiter after field declarations, unless they already have
@@ -527,6 +612,7 @@
   "begin"
   "do"
   "else"
+  "object"
   "sig"
   "struct"
   "then"
@@ -582,12 +668,36 @@
   .
 )
 
-; Make an indented block after "=" in let bindings
+; Make an indented block after "=" in
+; * let bindings
+; * class[_type] bindings
+; * method definitions
+; * instance variable definitions
 ;
 (let_binding
   "=" @append_indent_start
   (_) @append_indent_end
   .
+)
+
+(class_binding
+  "=" @append_indent_start
+  (_) @append_indent_end
+)
+
+(class_type_binding
+  "=" @append_indent_start
+  (_) @append_indent_end
+)
+
+(method_definition
+  "=" @append_indent_start
+  (_) @append_indent_end
+)
+
+(instance_variable_definition
+  "=" @append_indent_start
+  (_) @append_indent_end
 )
 
 ; Make an indented block after "of" or ":" in constructor declarations
