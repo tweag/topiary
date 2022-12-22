@@ -8,6 +8,7 @@
   [
     (character)
     (quoted_string)
+    (signed_number)
     (string)
   ]
 ) @leaf
