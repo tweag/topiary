@@ -104,6 +104,7 @@
   "match"
   "method"
   "module"
+  (module_parameter)
   "mutable"
   "new"
   "nonrec"
@@ -243,6 +244,11 @@
   "("* @do_nothing
   .
   "module" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  (module_parameter) @prepend_space
 )
 (
   "("* @do_nothing

@@ -610,5 +610,5 @@ let (Some 2) =
 module type M = sig type t = private int64
 end
 
-module F(X: M)(Y: M with type t := X.t) = struct
+module F (X: M) (Y: M with type t := X.t) = struct
 end
