@@ -27,8 +27,7 @@
 
 ; Space between command line arguments
 (command
-  (command_name)
-  _ @append_space @prepend_space
+  argument: _ @append_space @prepend_space
 )
 
 ; FIXME One command per line, modulo many exceptions:
