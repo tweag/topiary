@@ -84,11 +84,11 @@
     (struct_item)
     (type_item)
     (use_declaration)
-  ] @append_hardline 
-  . 
+  ] @append_hardline
+  .
   [
     (block_comment)
-    (line_comment) 
+    (line_comment)
   ]* @do_nothing
 )
 
@@ -100,7 +100,7 @@
     ","
     ";"
   ] @append_spaced_softline
-  . 
+  .
   [ (block_comment) (line_comment) ]* @do_nothing
 )
 
@@ -195,20 +195,12 @@
   (binary_expression) @prepend_space
 )
 
-; if let
-(if_let_expression
-  [
-    (identifier)
-    "let"
-  ] @prepend_space
-)
-
 ; impl
 (impl_item
   (type_identifier) @prepend_space
 )
 
-(declaration_list  
+(declaration_list
   .
   "{" @prepend_space
 )
