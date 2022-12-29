@@ -15,7 +15,8 @@ let
       ];
     };
 
-    nativeBuildInputs = [ pkgs.libiconv ];
+    nativeBuildInputs = with pkgs; [ libiconv ];
+    buildInputs = with pkgs; [ pkg-config openssl];
   };
 
   cargoArtifacts = craneLib.buildDepsOnly (commonArgs);

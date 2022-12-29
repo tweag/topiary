@@ -1,3 +1,5 @@
+//! Tree-sitter API related functions.
+//! Notably, this module is not responsible for managing the actual grammars.
 use crate::atom_collection::AtomCollection;
 use crate::error::FormatterError;
 use crate::language::Language;
@@ -10,7 +12,7 @@ use tree_sitter::{
 pub fn apply_query(
     input_content: &str,
     query_content: &str,
-    language: Language,
+    language: &Language,
 ) -> FormatterResult<AtomCollection> {
     let grammar = grammar(language);
     let tree = parse(input_content, grammar)?;
@@ -81,14 +83,8 @@ fn capture_name<'a, 'b>(query: &'a Query, capture: &'b QueryCapture) -> &'a str 
     query.capture_names()[capture.index as usize].as_str()
 }
 
-fn grammar(language: Language) -> tree_sitter::Language {
-    match language {
-        Language::Bash => tree_sitter_bash::language(),
-        Language::Json => tree_sitter_json::language(),
-        Language::Ocaml => tree_sitter_ocaml::language_ocaml(),
-        Language::Rust => tree_sitter_rust::language(),
-        Language::Toml => tree_sitter_toml::language(),
-    }
+fn grammar(language: &Language) -> tree_sitter::Language {
+    todo!()
 }
 
 fn parse(content: &str, grammar: tree_sitter::Language) -> FormatterResult<Tree> {

@@ -1,63 +1,24 @@
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
+use directories::ProjectDirs;
+use serde_derive::{Deserialize, Serialize};
+
+use crate::grammar::GrammarSource;
+use crate::project_dirs::TOPIARY_DIRS;
 use crate::{FormatterError, FormatterResult};
 
 /// The languages that we support with query files.
-#[derive(Clone, Copy, Debug)]
-pub enum Language {
-    Bash,
-    Json,
-    Ocaml,
-    Rust,
-    Toml,
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Language {
+    pub name: String,
+    pub grammar: GrammarSource,
+    pub extensions: Vec<String>,
+    indent_level: Option<isize>,
 }
 
-// NOTE This list of extension mappings is influenced by Wilfred Hughes' Difftastic
-// https://github.com/Wilfred/difftastic/blob/master/src/parse/guess_language.rs
-const EXTENSIONS: &[(&str, &[&str])] = &[
-    ("bash", &["sh", "bash"]),
-    (
-        "json",
-        &[
-            "json",
-            "avsc",
-            "geojson",
-            "gltf",
-            "har",
-            "ice",
-            "JSON-tmLanguage",
-            "jsonl",
-            "mcmeta",
-            "tfstate",
-            "tfstate.backup",
-            "topojson",
-            "webapp",
-            "webmanifest",
-        ],
-    ),
-    ("ocaml", &["ml"]),
-    ("rust", &["rs"]),
-    ("toml", &["toml"]),
-];
-
 impl Language {
-    pub fn new(s: &str) -> FormatterResult<Self> {
-        match s.to_lowercase().as_str() {
-            "bash" => Ok(Language::Bash),
-            "json" => Ok(Language::Json),
-            "ocaml" => Ok(Language::Ocaml),
-            "rust" => Ok(Language::Rust),
-            "toml" => Ok(Language::Toml),
-
-            _ => Err(FormatterError::Query(
-                format!("Unsupported language specified: '{s}'"),
-                None,
-            )),
-        }
-    }
-
-    pub fn detect(filename: &str) -> FormatterResult<&str> {
+    pub fn check_extension(&self, filename: &str) -> bool {
         let filename: String = filename.into();
         let extension: Option<OsString> = Path::new(&filename)
             .extension()
@@ -68,23 +29,47 @@ impl Language {
 
             // NOTE This extension search is influenced by Wilfred Hughes' Difftastic
             // https://github.com/Wilfred/difftastic/blob/master/src/parse/guess_language.rs
-            for (language, extensions) in EXTENSIONS {
-                if extensions.iter().any(|&candidate| candidate == extension) {
-                    return Ok(*language);
-                }
+            if self
+                .extensions
+                .iter()
+                .any(|candidate| candidate.as_str() == extension)
+            {
+                return true;
             }
         }
 
-        Err(FormatterError::LanguageDetection(filename, extension))
+        false
     }
 
-    pub fn query_path(language: &str) -> FormatterResult<PathBuf> {
-        // Check for support
-        Language::new(language)?;
+    /// Returns the path to the directory containing the grammar
+    pub fn grammar_path(&self) -> FormatterResult<PathBuf> {
+        match &self.grammar {
+            GrammarSource::Local { path } => Ok(PathBuf::from(path)),
+            GrammarSource::Git { remote, revision } => {
+                let mut path = TOPIARY_DIRS.cache_dir().to_path_buf();
+                path.push("grammars/");
+                path.push(format!("{}/", self.name));
+                Ok(path)
+            }
+        }
+    }
 
+    pub fn indent_level(&self) -> isize {
+        self.indent_level.unwrap_or(2)
+    }
+
+    /// Returns the path to the .o file containing the parser of the language
+    pub fn parser_path(&self) -> FormatterResult<PathBuf> {
+        let mut path = TOPIARY_DIRS.cache_dir().to_path_buf();
+        path.push("parsers/");
+        path.push(format!("{}.o", self.name));
+        Ok(path)
+    }
+
+    pub fn query_path(&self) -> FormatterResult<PathBuf> {
         Ok(
             PathBuf::from(option_env!("TOPIARY_LANGUAGE_DIR").unwrap_or("languages"))
-                .join(format!("{language}.scm")),
+                .join(format!("{}.scm", self.name)),
         )
     }
 }

@@ -10,6 +10,9 @@
 //! More details can be found on
 //! [GitHub](https://github.com/tweag/topiary).
 
+#[macro_use]
+extern crate lazy_static;
+
 use configuration::Configuration;
 pub use error::{FormatterError, ReadingError, WritingError};
 use itertools::Itertools;
@@ -18,10 +21,13 @@ use pretty_assertions::assert_eq;
 use std::io;
 
 mod atom_collection;
-mod configuration;
+// TODO: Make private again
+pub mod configuration;
 mod error;
+mod grammar;
 mod language;
 mod pretty;
+mod project_dirs;
 mod tree_sitter;
 
 /// An atom represents a small piece of the output. We turn Tree-sitter nodes
@@ -97,18 +103,20 @@ pub fn formatter(
         FormatterError::Reading(ReadingError::Io("Failed to read query content".into(), e))
     })?;
 
-    let configuration = Configuration::parse(&query)?;
+    let configuration = Configuration::parse()?;
+
+    let language = configuration.find_language_by_extension("TODO");
 
     // All the work related to tree-sitter and the query is done here
     log::info!("Apply Tree-sitter query");
-    let mut atoms = tree_sitter::apply_query(&content, &query, configuration.language)?;
+    let mut atoms = tree_sitter::apply_query(&content, &query, &language)?;
 
     // Various post-processing of whitespace
     atoms.post_process();
 
     // Pretty-print atoms
     log::info!("Pretty-print output");
-    let rendered = pretty::render(&atoms[..], configuration.indent_level)?;
+    let rendered = pretty::render(&atoms[..], language.indent_level())?;
     let trimmed = trim_trailing_spaces(&rendered);
 
     if !skip_idempotence {

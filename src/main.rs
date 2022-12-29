@@ -5,7 +5,7 @@ use std::{
     io::{stdin, stdout, BufReader, BufWriter},
     path::PathBuf,
 };
-use topiary::{formatter, FormatterResult, Language};
+use topiary::{configuration::Configuration, formatter, FormatterResult, Language};
 
 #[derive(ArgEnum, Clone, Copy, Debug)]
 enum SupportedLanguage {
@@ -63,33 +63,33 @@ fn main() {
 fn run() -> FormatterResult<()> {
     env_logger::init();
     let args = Args::parse();
-
+    let config = Configuration::parse();
     // The as_deref() gives us an Option<&str>, which we can match against
     // string literals
-    let mut input: Box<dyn std::io::Read> = match args.input_file.as_deref() {
-        Some("-") | None => Box::new(stdin()),
-        Some(file) => Box::new(BufReader::new(File::open(file)?)),
-    };
-
-    let mut output: Box<dyn std::io::Write> = match args.output_file.as_deref() {
-        Some("-") | None => Box::new(stdout()),
-        Some(file) => Box::new(BufWriter::new(File::open(file)?)),
-    };
-
-    let query_path = if let Some(query) = args.query {
-        query
-    } else if let Some(language) = args.language {
-        Language::query_path(language.into())?
-    } else if let Some(file) = args.input_file.as_deref() {
-        Language::query_path(Language::detect(file)?)?
-    } else {
-        // Clap ensures we won't get here
-        unreachable!();
-    };
-
-    let mut query = BufReader::new(File::open(query_path)?);
-
-    formatter(&mut input, &mut output, &mut query, args.skip_idempotence)?;
+    //    let mut input: Box<dyn std::io::Read> = match args.input_file.as_deref() {
+    //        Some("-") | None => Box::new(stdin()),
+    //        Some(file) => Box::new(BufReader::new(File::open(file)?)),
+    //    };
+    //
+    //    let mut output: Box<dyn std::io::Write> = match args.output_file.as_deref() {
+    //        Some("-") | None => Box::new(stdout()),
+    //        Some(file) => Box::new(BufWriter::new(File::open(file)?)),
+    //    };
+    //
+    //    let query_path = if let Some(query) = args.query {
+    //        query
+    //    } else if let Some(language) = args.language {
+    //        Language::query_path(language.into())?
+    //    } else if let Some(file) = args.input_file.as_deref() {
+    //        Language::query_path(Language::detect(file)?)?
+    //    } else {
+    //        // Clap ensures we won't get here
+    //        unreachable!();
+    //    };
+    //
+    //    let mut query = BufReader::new(File::open(query_path)?);
+    //
+    //    formatter(&mut input, &mut output, &mut query, args.skip_idempotence)?;
 
     Ok(())
 }

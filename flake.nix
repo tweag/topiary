@@ -31,6 +31,15 @@
         checks = with code; {
           inherit app clippy fmt audit benchmark;
         };
+        devShells.default = pkgs.mkShell {
+          inputsFrom = [ code.app ];
+          packages = with pkgs; [
+            cargo
+            rust-analyzer
+            rustc
+            rustfmt
+          ];
+        };
       }
     );
 }
