@@ -62,7 +62,7 @@ impl Language {
     pub fn parser_path(&self) -> FormatterResult<PathBuf> {
         let mut path = TOPIARY_DIRS.cache_dir().to_path_buf();
         path.push("parsers/");
-        path.push(format!("{}.o", self.name));
+        path.push(format!("{}/parser.so", self.name));
         Ok(path)
     }
 
@@ -75,6 +75,25 @@ impl Language {
 
     pub fn ensure_available(&self) -> Result<(), FormatterError> {
         self.grammar.ensure_available(&self.name)
+    }
+
+    // TODO: Error
+    pub fn get_tree_sitter_language(&self) -> FormatterResult<tree_sitter::Language> {
+        use libloading::{Library, Symbol};
+        let library_path = self.parser_path()?;
+
+        let library = unsafe { Library::new(&library_path) }
+            //.with_context(|| format!("Error opening dynamic library {:?}", library_path))
+            .unwrap();
+        let language_fn_name = format!("tree_sitter_{}", self.name.replace('-', "_"));
+        let language = unsafe {
+            let language_fn: Symbol<unsafe extern "C" fn() -> tree_sitter::Language> =
+                library.get(language_fn_name.as_bytes()).unwrap();
+            //.with_context(|| format!("Failed to load symbol {}", language_fn_name))?;
+            language_fn()
+        };
+        std::mem::forget(library);
+        Ok(language)
     }
 
     #[cfg(test)]

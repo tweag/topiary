@@ -5,14 +5,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-# For now we just load the tree-sitter language parsers statically.
-# Eventually we will want to dynamically load them, like Helix does.
 cc = "1.0"
 clap = { version = "3.2", features = ["derive"]}
 directories = "4.0"
 env_logger = "0.9"
 git2 = "0.15"
 itertools = "0.10"
+lazy_static = "1.4"
+libloading = "0.7"
 log = "0.4"
 pretty = "0.11"
 pretty_assertions = "1.3"
@@ -22,7 +22,6 @@ serde_derive = "1.0"
 test-log = "0.2"
 toml = "0.5"
 tree-sitter = "0.20"
-lazy_static = "1.4"
 
 [dev-dependencies]
 criterion = "0.4"

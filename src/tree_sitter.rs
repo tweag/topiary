@@ -14,7 +14,7 @@ pub fn apply_query(
     query_content: &str,
     language: &Language,
 ) -> FormatterResult<AtomCollection> {
-    let grammar = grammar(language);
+    let grammar = language.get_tree_sitter_language()?;
     let tree = parse(input_content, grammar)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
@@ -81,12 +81,6 @@ pub fn apply_query(
 
 fn capture_name<'a, 'b>(query: &'a Query, capture: &'b QueryCapture) -> &'a str {
     query.capture_names()[capture.index as usize].as_str()
-}
-
-fn grammar(language: &Language) -> tree_sitter::Language {
-    let _grammar_path = language.grammar_path();
-    language.ensure_available();
-    todo!()
 }
 
 fn parse(content: &str, grammar: tree_sitter::Language) -> FormatterResult<Tree> {
