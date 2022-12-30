@@ -4,6 +4,7 @@
 //! to make them available for the formatter portion of Topiary.
 
 use std::{
+    fs,
     path::{Path, PathBuf},
     process::Command,
 };
@@ -11,7 +12,9 @@ use std::{
 use git2::{Oid, Repository};
 use serde_derive::{Deserialize, Serialize};
 
-use crate::{project_dirs::TOPIARY_DIRS, FormatterError, FormatterResult};
+use crate::{
+    error::ParserCompilationError, project_dirs::TOPIARY_DIRS, FormatterError, FormatterResult,
+};
 
 const BUILD_TARGET: &str = env!("BUILD_TARGET");
 
@@ -86,7 +89,7 @@ fn fetch_grammar(remote: &str, revision: &str) -> FormatterResult<PathBuf> {
 // Since we do not know if a grammar is already built or not, we always build
 // it. We could possible avoid this by tagging the binary with some kind of
 // revision.
-fn compile_grammar(source_path: &Path, name: &str) {
+fn compile_grammar(source_path: &Path, name: &str) -> FormatterResult<()> {
     let src_path = source_path.join("src");
     let header_path = src_path.clone();
     let parser_path = src_path.join("parser.c");
@@ -103,10 +106,13 @@ fn compile_grammar(source_path: &Path, name: &str) {
         }
     };
 
-    let mut library_path = TOPIARY_DIRS
-        .cache_dir()
-        .join(format!("parsers/{}/parser", name));
-    // TODO: Ensure path exists
+    let mut library_path = TOPIARY_DIRS.cache_dir().join(format!("parsers/{}/", name));
+
+    // Ensure path exists
+    fs::create_dir_all(&library_path)
+        .map_err(|e| FormatterError::ParserCompilation(ParserCompilationError::Io(e)))?;
+
+    library_path.push("parser");
     library_path.set_extension(DYLIB_EXTENSION);
 
     let mut config = cc::Build::new();
@@ -144,13 +150,18 @@ fn compile_grammar(source_path: &Path, name: &str) {
     command.arg("-xc").arg(parser_path);
     command.arg("-Wl,-z,relro,-z,now");
 
-    let output = command.output().unwrap();
+    let output = command
+        .output()
+        .map_err(|e| FormatterError::ParserCompilation(ParserCompilationError::Io(e)))?;
+
     if !output.status.success() {
-        println!(
-            "Parser compilation failed.\nStdout: {}\nStderr: {}",
-            String::from_utf8_lossy(&output.stdout),
-            String::from_utf8_lossy(&output.stderr)
-        );
-        todo!("error")
+        let out = String::from_utf8_lossy(&output.stdout);
+        let err = String::from_utf8_lossy(&output.stderr);
+
+        return Err(FormatterError::ParserCompilation(
+            ParserCompilationError::Cc(out.into_owned(), err.into_owned()),
+        ));
     }
+
+    Ok(())
 }

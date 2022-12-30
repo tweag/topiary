@@ -1,4 +1,4 @@
-use std::{error::Error, ffi, fmt, io, str, string};
+use std::{error::Error, ffi, fmt, io, process, str, string};
 
 /// The various errors the formatter may return.
 #[derive(Debug)]
@@ -42,6 +42,9 @@ pub enum FormatterError {
 
     /// There was an error loading tree-sitter error
     ParserLoading(libloading::Error),
+
+    /// Any error related to the compilation
+    ParserCompilation(ParserCompilationError),
 }
 
 /// A subtype of `FormatterError::Reading`.
@@ -58,6 +61,13 @@ pub enum WritingError {
     IntoInner(io::IntoInnerError<io::BufWriter<Vec<u8>>>),
     Io(io::Error),
     FromUtf8(string::FromUtf8Error),
+}
+
+/// A subtype of `FormatterError::ParserCompilation`.
+#[derive(Debug)]
+pub enum ParserCompilationError {
+    Io(io::Error),
+    Cc(String, String),
 }
 
 impl fmt::Display for FormatterError {
@@ -125,6 +135,16 @@ impl fmt::Display for FormatterError {
                     err
                 )
             }
+            Self::ParserCompilation(err) => match err {
+                ParserCompilationError::Io(err) => write!(
+                    f,
+                    "The formatter ran into an IO error when compiling a Parser: {err}"
+                ),
+                ParserCompilationError::Cc(out, err) => write!(
+                    f,
+                    "The formatter ran into an error when compiling a Parser. Output from the CC subprocess: {out} {err}"
+                ),
+            },
         }
     }
 }
@@ -146,6 +166,8 @@ impl Error for FormatterError {
             Self::Formatting(err) => Some(err),
             Self::Git(err) => Some(err),
             Self::ParserLoading(err) => Some(err),
+            Self::ParserCompilation(ParserCompilationError::Io(err)) => Some(err),
+            Self::ParserCompilation(ParserCompilationError::Cc(_, _)) => None,
         }
     }
 }
