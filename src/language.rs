@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use directories::ProjectDirs;
 use serde_derive::{Deserialize, Serialize};
 
-use crate::grammar::GrammarSource;
+use crate::grammar::{GrammarSource, DYLIB_EXTENSION};
 use crate::project_dirs::TOPIARY_DIRS;
 use crate::{FormatterError, FormatterResult};
 
@@ -62,7 +62,7 @@ impl Language {
     pub fn parser_path(&self) -> FormatterResult<PathBuf> {
         let mut path = TOPIARY_DIRS.cache_dir().to_path_buf();
         path.push("parsers/");
-        path.push(format!("{}/parser.so", self.name));
+        path.push(format!("{}/parser.{}", self.name, DYLIB_EXTENSION));
         Ok(path)
     }
 

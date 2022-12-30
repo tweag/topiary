@@ -1,5 +1,7 @@
-//! This module deals with the tree-sitter grammars.
-//! It is responsible for fetching and building them.
+//! This module deals with the tree-sitter grammars. For the purpose of
+//! Topiary we consider grammars to be the entire source code of a tree-sitter
+//! grammar project. This module is responsible for fetching and building them
+//! to make them available for the formatter portion of Topiary.
 
 use std::{
     path::{Path, PathBuf},
@@ -12,6 +14,12 @@ use serde_derive::{Deserialize, Serialize};
 use crate::{project_dirs::TOPIARY_DIRS, FormatterError, FormatterResult};
 
 const BUILD_TARGET: &str = env!("BUILD_TARGET");
+
+#[cfg(unix)]
+pub const DYLIB_EXTENSION: &str = "so";
+
+#[cfg(windows)]
+pub const DYLIB_EXTENSION: &str = "dll";
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase", untagged)]
@@ -52,7 +60,7 @@ impl GrammarSource {
     }
 }
 
-/// Fetches the grammar from the remote, returns doing nothing if already present.
+/// Fetches the grammar from the remote, returns the location of the grammar.
 fn fetch_grammar(remote: &str, revision: &str) -> FormatterResult<PathBuf> {
     let mut path = TOPIARY_DIRS.cache_dir().to_path_buf();
     path.push("grammars/");
@@ -98,9 +106,8 @@ fn compile_grammar(source_path: &Path, name: &str) {
     let mut library_path = TOPIARY_DIRS
         .cache_dir()
         .join(format!("parsers/{}/parser", name));
-    // TODO: Not assume Linux
     // TODO: Ensure path exists
-    library_path.set_extension("so");
+    library_path.set_extension(DYLIB_EXTENSION);
 
     let mut config = cc::Build::new();
     config
