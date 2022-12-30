@@ -1,6 +1,6 @@
 //! This file deals with reading and parsing the configuration file. It is also
 //! responsible for combining the builtin one with the one provided by the user.
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::{language::Language, project_dirs::TOPIARY_DIRS, FormatterError, FormatterResult};
 
@@ -24,8 +24,14 @@ impl Configuration {
         Ok(config)
     }
 
-    pub fn find_language_by_extension(&self, extension: &str) -> &Language {
-        todo!()
+    pub fn find_language_by_extension(&self, file_path: &Path) -> &Language {
+        // TODO: Error
+        let extension_buf = PathBuf::from(file_path);
+        let extension = extension_buf.extension().unwrap();
+        self.language
+            .iter()
+            .find(|&l| l.check_extension(&extension.to_str().unwrap()))
+            .unwrap()
     }
 
     pub fn find_language_by_name(&self, name: &str) -> &Language {

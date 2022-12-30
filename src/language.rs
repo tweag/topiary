@@ -72,4 +72,14 @@ impl Language {
                 .join(format!("{}.scm", self.name)),
         )
     }
+
+    #[cfg(test)]
+    pub fn dummy_json_lanuage() -> Self {
+        Self {
+            name: "json",
+            grammar: todo!(),
+            extensions: vec![".json"],
+            indent_level: Some(2),
+        }
+    }
 }

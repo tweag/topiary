@@ -95,6 +95,7 @@ pub fn formatter(
     output: &mut dyn io::Write,
     query: &mut dyn io::Read,
     skip_idempotence: bool,
+    language: &Language,
 ) -> FormatterResult<()> {
     let content = read_input(input).map_err(|e| {
         FormatterError::Reading(ReadingError::Io("Failed to read input content".into(), e))
@@ -102,10 +103,6 @@ pub fn formatter(
     let query = read_input(query).map_err(|e| {
         FormatterError::Reading(ReadingError::Io("Failed to read query content".into(), e))
     })?;
-
-    let configuration = Configuration::parse()?;
-
-    let language = configuration.find_language_by_extension("TODO");
 
     // All the work related to tree-sitter and the query is done here
     log::info!("Apply Tree-sitter query");
@@ -120,7 +117,7 @@ pub fn formatter(
     let trimmed = trim_trailing_spaces(&rendered);
 
     if !skip_idempotence {
-        idempotence_check(&trimmed, &query)?
+        idempotence_check(&trimmed, &query, &language)?
     }
 
     write!(output, "{trimmed}")?;
@@ -138,14 +135,14 @@ fn trim_trailing_spaces(s: &str) -> String {
     Itertools::intersperse(s.split('\n').map(|line| line.trim_end()), "\n").collect::<String>()
 }
 
-fn idempotence_check(content: &str, query: &str) -> FormatterResult<()> {
+fn idempotence_check(content: &str, query: &str, language: &Language) -> FormatterResult<()> {
     log::info!("Checking for idempotence ...");
 
     let mut input = content.as_bytes();
     let mut query = query.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
     let do_steps = || -> Result<(), FormatterError> {
-        formatter(&mut input, &mut output, &mut query, true)?;
+        formatter(&mut input, &mut output, &mut query, true, &language)?;
         let reformatted = String::from_utf8(output.into_inner()?)?;
         if content == reformatted {
             Ok(())
@@ -176,7 +173,8 @@ fn parse_error_fails_formatting() {
     let mut input = "[ 1, % ]".as_bytes();
     let mut output = Vec::new();
     let mut query = "(#language! json)".as_bytes();
-    match formatter(&mut input, &mut output, &mut query, true) {
+    let language = Language::dummy_json_lanuage();
+    match formatter(&mut input, &mut output, &mut query, true, &language) {
         Err(FormatterError::Parsing {
             start_line: 1,
             end_line: 1,
