@@ -1,7 +1,7 @@
-use crate::{Atom, FormatterResult};
+use crate::{Atom, TopiaryResult};
 use pretty::RcDoc;
 
-pub fn render(atoms: &[Atom], indent_level: isize) -> FormatterResult<String> {
+pub fn render(atoms: &[Atom], indent_level: isize) -> TopiaryResult<String> {
     let doc = atoms_to_doc(&mut 0, atoms, indent_level);
     let mut rendered = String::new();
     doc.render_fmt(usize::max_value(), &mut rendered)?;

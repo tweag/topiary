@@ -5,7 +5,7 @@ use std::{
     io::{stdin, stdout, BufReader, BufWriter},
     path::{Path, PathBuf},
 };
-use topiary::{configuration::Configuration, formatter, FormatterResult, Language};
+use topiary::{configuration::Configuration, formatter, Language, TopiaryResult};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -42,7 +42,7 @@ fn main() {
     }
 }
 
-fn run() -> FormatterResult<()> {
+fn run() -> TopiaryResult<()> {
     env_logger::init();
     let args = Args::parse();
     let config = Configuration::parse()?;

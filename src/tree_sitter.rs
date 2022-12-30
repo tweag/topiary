@@ -1,9 +1,9 @@
 //! Tree-sitter API related functions.
 //! Notably, this module is not responsible for managing the actual grammars.
 use crate::atom_collection::AtomCollection;
-use crate::error::FormatterError;
+use crate::error::TopiaryError;
 use crate::language::Language;
-use crate::FormatterResult;
+use crate::TopiaryResult;
 use std::collections::BTreeSet;
 use tree_sitter::{
     Node, Parser, Query, QueryCapture, QueryCursor, QueryPredicate, QueryPredicateArg, Tree,
@@ -13,13 +13,13 @@ pub fn apply_query(
     input_content: &str,
     query_content: &str,
     language: &Language,
-) -> FormatterResult<AtomCollection> {
+) -> TopiaryResult<AtomCollection> {
     let grammar = language.get_tree_sitter_language()?;
     let tree = parse(input_content, grammar)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
     let query = Query::new(grammar, query_content)
-        .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
+        .map_err(|e| TopiaryError::Query("Error parsing query file".into(), Some(e)))?;
 
     // Fail formatting if we don't get a complete syntax tree.
     check_for_error_nodes(root)?;
@@ -83,24 +83,24 @@ fn capture_name<'a, 'b>(query: &'a Query, capture: &'b QueryCapture) -> &'a str 
     query.capture_names()[capture.index as usize].as_str()
 }
 
-fn parse(content: &str, grammar: tree_sitter::Language) -> FormatterResult<Tree> {
+fn parse(content: &str, grammar: tree_sitter::Language) -> TopiaryResult<Tree> {
     let mut parser = Parser::new();
-    parser.set_language(grammar).map_err(|_| {
-        FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
-    })?;
+    parser
+        .set_language(grammar)
+        .map_err(|_| TopiaryError::Internal("Could not apply Tree-sitter grammar".into(), None))?;
 
     parser
         .parse(&content, None)
-        .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))
+        .ok_or_else(|| TopiaryError::Internal("Could not parse input".into(), None))
 }
 
-fn check_for_error_nodes(node: Node) -> FormatterResult<()> {
+fn check_for_error_nodes(node: Node) -> TopiaryResult<()> {
     if node.kind() == "ERROR" {
         let start = node.start_position();
         let end = node.end_position();
 
         // Report 1-based lines and columns.
-        return Err(FormatterError::Parsing {
+        return Err(TopiaryError::Parsing {
             start_line: start.row + 1,
             start_column: start.column + 1,
             end_line: end.row + 1,
@@ -132,19 +132,19 @@ fn collect_leaf_ids<'a>(query: &Query, root: Node, source: &'a [u8]) -> BTreeSet
     ids
 }
 
-fn handle_delimiter_predicate(predicate: &QueryPredicate) -> FormatterResult<Option<String>> {
+fn handle_delimiter_predicate(predicate: &QueryPredicate) -> TopiaryResult<Option<String>> {
     let operator = &*predicate.operator;
 
     if let "delimiter!" = operator {
         let arg = predicate
             .args
             .first()
-            .ok_or_else(|| FormatterError::Query(format!("{operator} needs an argument"), None))?;
+            .ok_or_else(|| TopiaryError::Query(format!("{operator} needs an argument"), None))?;
 
         if let QueryPredicateArg::String(s) = arg {
             Ok(Some(s.to_string()))
         } else {
-            Err(FormatterError::Query(
+            Err(TopiaryError::Query(
                 format!("{operator} needs a string argument, but got {arg:?}."),
                 None,
             ))

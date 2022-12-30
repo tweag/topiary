@@ -5,7 +5,7 @@ use serde_derive::{Deserialize, Serialize};
 
 use crate::grammar::{GrammarSource, DYLIB_EXTENSION};
 use crate::project_dirs::TOPIARY_DIRS;
-use crate::{FormatterError, FormatterResult};
+use crate::{TopiaryError, TopiaryResult};
 
 /// The languages that we support with query files.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -43,35 +43,35 @@ impl Language {
     }
 
     /// Returns the path to the .o file containing the parser of the language
-    pub fn parser_path(&self) -> FormatterResult<PathBuf> {
+    pub fn parser_path(&self) -> TopiaryResult<PathBuf> {
         let mut path = TOPIARY_DIRS.cache_dir().to_path_buf();
         path.push("parsers/");
         path.push(format!("{}/parser.{}", self.name, DYLIB_EXTENSION));
         Ok(path)
     }
 
-    pub fn query_path(&self) -> FormatterResult<PathBuf> {
+    pub fn query_path(&self) -> TopiaryResult<PathBuf> {
         Ok(
             PathBuf::from(option_env!("TOPIARY_LANGUAGE_DIR").unwrap_or("languages"))
                 .join(format!("{}.scm", self.name)),
         )
     }
 
-    pub fn ensure_available(&self) -> Result<(), FormatterError> {
+    pub fn ensure_available(&self) -> Result<(), TopiaryError> {
         self.grammar.ensure_available(&self.name)
     }
 
-    pub fn get_tree_sitter_language(&self) -> FormatterResult<tree_sitter::Language> {
+    pub fn get_tree_sitter_language(&self) -> TopiaryResult<tree_sitter::Language> {
         use libloading::{Library, Symbol};
         let library_path = self.parser_path()?;
 
         let library =
-            unsafe { Library::new(&library_path) }.map_err(|e| FormatterError::ParserLoading(e))?;
+            unsafe { Library::new(&library_path) }.map_err(|e| TopiaryError::ParserLoading(e))?;
         let language_fn_name = format!("tree_sitter_{}", self.name.replace('-', "_"));
         let language = unsafe {
             let language_fn: Symbol<unsafe extern "C" fn() -> tree_sitter::Language> = library
                 .get(language_fn_name.as_bytes())
-                .map_err(|e| FormatterError::ParserLoading(e))?;
+                .map_err(|e| TopiaryError::ParserLoading(e))?;
             language_fn()
         };
         std::mem::forget(library);

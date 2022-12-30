@@ -13,7 +13,7 @@ use git2::{Oid, Repository};
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
-    error::ParserCompilationError, project_dirs::TOPIARY_DIRS, FormatterError, FormatterResult,
+    error::ParserCompilationError, project_dirs::TOPIARY_DIRS, TopiaryError, TopiaryResult,
 };
 
 const BUILD_TARGET: &str = env!("BUILD_TARGET");
@@ -41,7 +41,7 @@ pub enum GrammarSource {
 impl GrammarSource {
     /// Ensures the grammar is updated and available. This includes fetching,
     /// compiling and placing it in the required place.
-    pub fn ensure_available(&self, name: &str) -> FormatterResult<()> {
+    pub fn ensure_available(&self, name: &str) -> TopiaryResult<()> {
         match self {
             GrammarSource::Local { path } => {
                 let path = Path::new(path);
@@ -64,7 +64,7 @@ impl GrammarSource {
 }
 
 /// Fetches the grammar from the remote, returns the location of the grammar.
-fn fetch_grammar(remote: &str, revision: &str) -> FormatterResult<PathBuf> {
+fn fetch_grammar(remote: &str, revision: &str) -> TopiaryResult<PathBuf> {
     let mut path = TOPIARY_DIRS.cache_dir().to_path_buf();
     path.push("grammars/");
     path.push(format!("{}/", revision));
@@ -75,21 +75,21 @@ fn fetch_grammar(remote: &str, revision: &str) -> FormatterResult<PathBuf> {
         Ok(_) => return Ok(path),
         Err(_) => match Repository::clone_recurse(remote, &path) {
             Ok(repo) => repo,
-            Err(e) => return Err(FormatterError::Git(e)),
+            Err(e) => return Err(TopiaryError::Git(e)),
         },
     };
 
     // Set detached head to the required revision
-    let oid = Oid::from_str(revision).map_err(|e| FormatterError::Git(e))?;
+    let oid = Oid::from_str(revision).map_err(|e| TopiaryError::Git(e))?;
     repo.set_head_detached(oid)
-        .map_err(|e| FormatterError::Git(e))?;
+        .map_err(|e| TopiaryError::Git(e))?;
     Ok(path)
 }
 
 // Since we do not know if a grammar is already built or not, we always build
 // it. We could possible avoid this by tagging the binary with some kind of
 // revision.
-fn compile_grammar(source_path: &Path, name: &str) -> FormatterResult<()> {
+fn compile_grammar(source_path: &Path, name: &str) -> TopiaryResult<()> {
     let src_path = source_path.join("src");
     let header_path = src_path.clone();
     let parser_path = src_path.join("parser.c");
@@ -110,7 +110,7 @@ fn compile_grammar(source_path: &Path, name: &str) -> FormatterResult<()> {
 
     // Ensure path exists
     fs::create_dir_all(&library_path)
-        .map_err(|e| FormatterError::ParserCompilation(ParserCompilationError::Io(e)))?;
+        .map_err(|e| TopiaryError::ParserCompilation(ParserCompilationError::Io(e)))?;
 
     library_path.push("parser");
     library_path.set_extension(DYLIB_EXTENSION);
@@ -152,15 +152,16 @@ fn compile_grammar(source_path: &Path, name: &str) -> FormatterResult<()> {
 
     let output = command
         .output()
-        .map_err(|e| FormatterError::ParserCompilation(ParserCompilationError::Io(e)))?;
+        .map_err(|e| TopiaryError::ParserCompilation(ParserCompilationError::Io(e)))?;
 
     if !output.status.success() {
         let out = String::from_utf8_lossy(&output.stdout);
         let err = String::from_utf8_lossy(&output.stderr);
 
-        return Err(FormatterError::ParserCompilation(
-            ParserCompilationError::Cc(out.into_owned(), err.into_owned()),
-        ));
+        return Err(TopiaryError::ParserCompilation(ParserCompilationError::Cc(
+            out.into_owned(),
+            err.into_owned(),
+        )));
     }
 
     Ok(())

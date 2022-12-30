@@ -2,7 +2,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 
 use tree_sitter::Node;
 
-use crate::{Atom, FormatterError, FormatterResult};
+use crate::{Atom, TopiaryError, TopiaryResult};
 
 #[derive(Debug)]
 pub struct AtomCollection {
@@ -22,7 +22,7 @@ impl AtomCollection {
         root: Node,
         source: &[u8],
         specified_leaf_nodes: BTreeSet<usize>,
-    ) -> FormatterResult<AtomCollection> {
+    ) -> TopiaryResult<AtomCollection> {
         // Detect user specified line breaks
         let multi_line_nodes = detect_multi_line_nodes(root);
         let blank_lines_before = detect_blank_lines_before(root);
@@ -50,7 +50,7 @@ impl AtomCollection {
         name: &str,
         node: Node,
         delimiter: Option<&str>,
-    ) -> FormatterResult<()> {
+    ) -> TopiaryResult<()> {
         log::debug!("Resolving {name}");
 
         match name {
@@ -63,7 +63,7 @@ impl AtomCollection {
                 Atom::Literal(
                     delimiter
                         .ok_or_else(|| {
-                            FormatterError::Query(
+                            TopiaryError::Query(
                                 "@append_delimiter requires a #delimiter! predicate".into(),
                                 None,
                             )
@@ -91,7 +91,7 @@ impl AtomCollection {
                 Atom::Literal(
                     delimiter
                         .ok_or_else(|| {
-                            FormatterError::Query(
+                            TopiaryError::Query(
                                 "@prepend_delimiter requires a #delimiter! predicate".into(),
                                 None,
                             )
@@ -119,7 +119,7 @@ impl AtomCollection {
 
             // Return a query parsing error on unknown capture names
             unknown => {
-                return Err(FormatterError::Query(
+                return Err(TopiaryError::Query(
                     format!("@{unknown} is not a valid capture name"),
                     None,
                 ))
@@ -163,7 +163,7 @@ impl AtomCollection {
         source: &[u8],
         parent_ids: &[usize],
         level: usize,
-    ) -> FormatterResult<()> {
+    ) -> TopiaryResult<()> {
         let id = node.id();
         let parent_ids = [parent_ids, &[id]].concat();
 

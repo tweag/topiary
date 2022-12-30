@@ -14,7 +14,7 @@
 extern crate lazy_static;
 
 use configuration::Configuration;
-pub use error::{FormatterError, ReadingError, WritingError};
+pub use error::{ReadingError, TopiaryError, WritingError};
 use itertools::Itertools;
 pub use language::Language;
 use pretty_assertions::assert_eq;
@@ -61,8 +61,8 @@ pub enum Atom {
     Space,
 }
 
-/// A convenience wrapper around `std::result::Result<T, FormatterError>`.
-pub type FormatterResult<T> = std::result::Result<T, FormatterError>;
+/// A convenience wrapper around `std::result::Result<T, TopiaryError>`.
+pub type TopiaryResult<T> = std::result::Result<T, TopiaryError>;
 
 /// The function that takes an input and formats an output.
 ///
@@ -71,7 +71,7 @@ pub type FormatterResult<T> = std::result::Result<T, FormatterError>;
 /// ```
 /// use std::fs::File;
 /// use std::io::BufReader;
-/// use topiary::{formatter, FormatterError};
+/// use topiary::{formatter, TopiaryError};
 ///
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
@@ -82,7 +82,7 @@ pub type FormatterResult<T> = std::result::Result<T, FormatterError>;
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
-///   Err(FormatterError::Query(message, _)) => {
+///   Err(TopiaryError::Query(message, _)) => {
 ///     panic!("Error in query file: {message}");
 ///   }
 ///   Err(_) => {
@@ -96,12 +96,12 @@ pub fn formatter(
     query: &mut dyn io::Read,
     skip_idempotence: bool,
     language: &Language,
-) -> FormatterResult<()> {
+) -> TopiaryResult<()> {
     let content = read_input(input).map_err(|e| {
-        FormatterError::Reading(ReadingError::Io("Failed to read input content".into(), e))
+        TopiaryError::Reading(ReadingError::Io("Failed to read input content".into(), e))
     })?;
     let query = read_input(query).map_err(|e| {
-        FormatterError::Reading(ReadingError::Io("Failed to read query content".into(), e))
+        TopiaryError::Reading(ReadingError::Io("Failed to read query content".into(), e))
     })?;
 
     // All the work related to tree-sitter and the query is done here
@@ -135,13 +135,13 @@ fn trim_trailing_spaces(s: &str) -> String {
     Itertools::intersperse(s.split('\n').map(|line| line.trim_end()), "\n").collect::<String>()
 }
 
-fn idempotence_check(content: &str, query: &str, language: &Language) -> FormatterResult<()> {
+fn idempotence_check(content: &str, query: &str, language: &Language) -> TopiaryResult<()> {
     log::info!("Checking for idempotence ...");
 
     let mut input = content.as_bytes();
     let mut query = query.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
-    let do_steps = || -> Result<(), FormatterError> {
+    let do_steps = || -> Result<(), TopiaryError> {
         formatter(&mut input, &mut output, &mut query, true, &language)?;
         let reformatted = String::from_utf8(output.into_inner()?)?;
         if content == reformatted {
@@ -149,7 +149,7 @@ fn idempotence_check(content: &str, query: &str, language: &Language) -> Formatt
         } else {
             log::error!("Failed idempotence check");
             assert_eq!(content, reformatted);
-            Err(FormatterError::Idempotence)
+            Err(TopiaryError::Idempotence)
         }
     };
     let res = do_steps();
@@ -157,11 +157,11 @@ fn idempotence_check(content: &str, query: &str, language: &Language) -> Formatt
         match err {
             // If topiary ran smoothly on its own output,
             // but produced a different output, it is a Idempotence error.
-            FormatterError::Idempotence => Err(FormatterError::Idempotence),
+            TopiaryError::Idempotence => Err(TopiaryError::Idempotence),
             // On the other hand, if it failed to run on its output,
             // it means that when formatting the code, topiary somehow broke it.
             // Hence it is a formatting error.
-            _ => Err(FormatterError::Formatting(Box::new(err))),
+            _ => Err(TopiaryError::Formatting(Box::new(err))),
         }
     } else {
         res
@@ -175,7 +175,7 @@ fn parse_error_fails_formatting() {
     let mut query = "(#language! json)".as_bytes();
     let language = Language::dummy_json_lanuage();
     match formatter(&mut input, &mut output, &mut query, true, &language) {
-        Err(FormatterError::Parsing {
+        Err(TopiaryError::Parsing {
             start_line: 1,
             end_line: 1,
             ..

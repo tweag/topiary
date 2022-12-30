@@ -2,11 +2,11 @@ use std::{error::Error, ffi, fmt, io, process, str, string};
 
 /// The various errors the formatter may return.
 #[derive(Debug)]
-pub enum FormatterError {
+pub enum TopiaryError {
     /// The input produced output that cannot be formatted, i.e. trying to format the
     /// output again produced an error. If this happened using our provided
     /// query files, it is a bug. Please log an issue.
-    Formatting(Box<FormatterError>),
+    Formatting(Box<TopiaryError>),
 
     /// The input produced output that isn't idempotent, i.e. formatting the
     /// output again made further changes. If this happened using our provided
@@ -47,14 +47,14 @@ pub enum FormatterError {
     ParserCompilation(ParserCompilationError),
 }
 
-/// A subtype of `FormatterError::Reading`.
+/// A subtype of `TopiaryError::Reading`.
 #[derive(Debug)]
 pub enum ReadingError {
     Io(String, io::Error),
     Utf8(str::Utf8Error),
 }
 
-/// A subtype of `FormatterError::Writing`.
+/// A subtype of `TopiaryError::Writing`.
 #[derive(Debug)]
 pub enum WritingError {
     Fmt(fmt::Error),
@@ -63,14 +63,14 @@ pub enum WritingError {
     FromUtf8(string::FromUtf8Error),
 }
 
-/// A subtype of `FormatterError::ParserCompilation`.
+/// A subtype of `TopiaryError::ParserCompilation`.
 #[derive(Debug)]
 pub enum ParserCompilationError {
     Io(io::Error),
     Cc(String, String),
 }
 
-impl fmt::Display for FormatterError {
+impl fmt::Display for TopiaryError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let please_log_message = "It would be helpful if you logged this error at https://github.com/tweag/topiary/issues/new?assignees=&labels=type%3A+bug&template=bug_report.md";
         match self {
@@ -149,7 +149,7 @@ impl fmt::Display for FormatterError {
     }
 }
 
-impl Error for FormatterError {
+impl Error for TopiaryError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             Self::Idempotence => None,
@@ -172,32 +172,32 @@ impl Error for FormatterError {
     }
 }
 
-impl From<str::Utf8Error> for FormatterError {
+impl From<str::Utf8Error> for TopiaryError {
     fn from(e: str::Utf8Error) -> Self {
-        FormatterError::Reading(ReadingError::Utf8(e))
+        TopiaryError::Reading(ReadingError::Utf8(e))
     }
 }
 
-impl From<io::Error> for FormatterError {
+impl From<io::Error> for TopiaryError {
     fn from(e: io::Error) -> Self {
-        FormatterError::Writing(WritingError::Io(e))
+        TopiaryError::Writing(WritingError::Io(e))
     }
 }
 
-impl From<string::FromUtf8Error> for FormatterError {
+impl From<string::FromUtf8Error> for TopiaryError {
     fn from(e: string::FromUtf8Error) -> Self {
-        FormatterError::Writing(WritingError::FromUtf8(e))
+        TopiaryError::Writing(WritingError::FromUtf8(e))
     }
 }
 
-impl From<io::IntoInnerError<io::BufWriter<Vec<u8>>>> for FormatterError {
+impl From<io::IntoInnerError<io::BufWriter<Vec<u8>>>> for TopiaryError {
     fn from(e: io::IntoInnerError<io::BufWriter<Vec<u8>>>) -> Self {
-        FormatterError::Writing(WritingError::IntoInner(e))
+        TopiaryError::Writing(WritingError::IntoInner(e))
     }
 }
 
-impl From<fmt::Error> for FormatterError {
+impl From<fmt::Error> for TopiaryError {
     fn from(e: fmt::Error) -> Self {
-        FormatterError::Writing(WritingError::Fmt(e))
+        TopiaryError::Writing(WritingError::Fmt(e))
     }
 }

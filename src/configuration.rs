@@ -2,7 +2,7 @@
 //! responsible for combining the builtin one with the one provided by the user.
 use std::path::{Path, PathBuf};
 
-use crate::{language::Language, project_dirs::TOPIARY_DIRS, FormatterError, FormatterResult};
+use crate::{language::Language, project_dirs::TOPIARY_DIRS, TopiaryError, TopiaryResult};
 
 use serde_derive::{Deserialize, Serialize};
 
@@ -12,7 +12,7 @@ pub struct Configuration {
 }
 
 impl Configuration {
-    pub fn parse() -> FormatterResult<Self> {
+    pub fn parse() -> TopiaryResult<Self> {
         let config_path: PathBuf = TOPIARY_DIRS.config_dir().join("languages.toml");
         println!("config_path = {:#?}", config_path);
         // TODO: error
