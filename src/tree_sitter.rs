@@ -84,6 +84,8 @@ fn capture_name<'a, 'b>(query: &'a Query, capture: &'b QueryCapture) -> &'a str 
 }
 
 fn grammar(language: &Language) -> tree_sitter::Language {
+    let _grammar_path = language.grammar_path();
+    language.ensure_available();
     todo!()
 }
 

@@ -11,6 +11,8 @@ use serde_derive::{Deserialize, Serialize};
 
 use crate::{project_dirs::TOPIARY_DIRS, FormatterResult};
 
+const BUILD_TARGET: &str = env!("BUILD_TARGET");
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase", untagged)]
 pub enum GrammarSource {
@@ -99,7 +101,12 @@ fn compile_grammar(src_path: &Path, name: &str) {
     library_path.set_extension(".so");
 
     let mut config = cc::Build::new();
-    config.cpp(true).opt_level(3).cargo_metadata(false);
+    config
+        .cpp(true)
+        .opt_level(3)
+        .cargo_metadata(false)
+        .host(BUILD_TARGET)
+        .target(BUILD_TARGET);
     let compiler = config.get_compiler();
     let mut command = Command::new(compiler.path());
     command.current_dir(src_path);

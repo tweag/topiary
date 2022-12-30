@@ -73,12 +73,16 @@ impl Language {
         )
     }
 
+    pub fn ensure_available(&self) -> Result<(), FormatterError> {
+        self.grammar.ensure_available(&self.name)
+    }
+
     #[cfg(test)]
     pub fn dummy_json_lanuage() -> Self {
         Self {
-            name: "json",
+            name: String::from("json"),
             grammar: todo!(),
-            extensions: vec![".json"],
+            extensions: vec![String::from(".json")],
             indent_level: Some(2),
         }
     }
