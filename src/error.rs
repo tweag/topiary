@@ -36,6 +36,9 @@ pub enum FormatterError {
 
     /// Could not write the formatted output.
     Writing(WritingError),
+
+    /// Any issue that occured related to Git.
+    Git(git2::Error),
 }
 
 /// A subtype of `FormatterError::Reading`.
@@ -106,6 +109,12 @@ impl fmt::Display for FormatterError {
                     "The formatter errored when trying to format the code twice (idempotence check).\nThis probably means that the formatter produced invalid code.\n{please_log_message}"
                 )
             }
+            Self::Git(err) => {
+                write!(
+                    f,
+                    "The formatter errored when trying to fetch a grammar from git. See the following message: {}", err
+                )
+            }
         }
     }
 }
@@ -125,6 +134,7 @@ impl Error for FormatterError {
             Self::Writing(WritingError::IntoInner(source)) => Some(source),
             Self::Writing(WritingError::Io(source)) => Some(source),
             Self::Formatting(err) => Some(err),
+            Self::Git(err) => Some(err),
         }
     }
 }

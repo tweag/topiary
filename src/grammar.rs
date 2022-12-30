@@ -9,7 +9,7 @@ use std::{
 use git2::{Oid, Repository};
 use serde_derive::{Deserialize, Serialize};
 
-use crate::{project_dirs::TOPIARY_DIRS, FormatterResult};
+use crate::{project_dirs::TOPIARY_DIRS, FormatterError, FormatterResult};
 
 const BUILD_TARGET: &str = env!("BUILD_TARGET");
 
@@ -44,7 +44,7 @@ impl GrammarSource {
             }
             GrammarSource::Git { remote, revision } => {
                 // We could construct the path ourselves
-                let grammar_path = fetch_grammar(remote, revision);
+                let grammar_path = fetch_grammar(remote, revision)?;
                 compile_grammar(&grammar_path, name);
                 Ok(())
             }
@@ -53,7 +53,7 @@ impl GrammarSource {
 }
 
 /// Fetches the grammar from the remote, returns doing nothing if already present.
-fn fetch_grammar(remote: &str, revision: &str) -> PathBuf {
+fn fetch_grammar(remote: &str, revision: &str) -> FormatterResult<PathBuf> {
     let mut path = TOPIARY_DIRS.cache_dir().to_path_buf();
     path.push("grammars/");
     path.push(format!("{}/", revision));
@@ -61,18 +61,18 @@ fn fetch_grammar(remote: &str, revision: &str) -> PathBuf {
     // Try to open, if fails, create new.
     let repo = match Repository::open(&path) {
         // If it can succesfully open the repository, we can safely return
-        Ok(repo) => return path,
-        Err(e) => match Repository::clone_recurse(remote, &path) {
+        Ok(_) => return Ok(path),
+        Err(_) => match Repository::clone_recurse(remote, &path) {
             Ok(repo) => repo,
-            Err(e) => panic!("failed to init: {}", e),
+            Err(e) => return Err(FormatterError::Git(e)),
         },
     };
 
     // Set detached head to the required revision
-    // TODO: error
-    repo.set_head_detached(Oid::from_str(revision).unwrap())
-        .unwrap();
-    return path;
+    let oid = Oid::from_str(revision).map_err(|e| FormatterError::Git(e))?;
+    repo.set_head_detached(oid)
+        .map_err(|e| FormatterError::Git(e))?;
+    Ok(path)
 }
 
 // Since we do not know if a grammar is already built or not, we always build
