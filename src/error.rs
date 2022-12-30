@@ -39,6 +39,9 @@ pub enum FormatterError {
 
     /// Any issue that occured related to Git.
     Git(git2::Error),
+
+    /// There was an error loading tree-sitter error
+    ParserLoading(libloading::Error),
 }
 
 /// A subtype of `FormatterError::Reading`.
@@ -115,6 +118,13 @@ impl fmt::Display for FormatterError {
                     "The formatter errored when trying to fetch a grammar from git. See the following message: {}", err
                 )
             }
+            Self::ParserLoading(err) => {
+                write!(
+                    f,
+                    "The formatter errored when trying load the parser dynamic library: {}",
+                    err
+                )
+            }
         }
     }
 }
@@ -135,6 +145,7 @@ impl Error for FormatterError {
             Self::Writing(WritingError::Io(source)) => Some(source),
             Self::Formatting(err) => Some(err),
             Self::Git(err) => Some(err),
+            Self::ParserLoading(err) => Some(err),
         }
     }
 }

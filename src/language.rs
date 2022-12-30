@@ -1,7 +1,6 @@
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
-use directories::ProjectDirs;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::grammar::{GrammarSource, DYLIB_EXTENSION};
@@ -24,9 +23,7 @@ impl Language {
             .extension()
             .map(|ext| ext.to_os_string());
 
-        if extension.is_some() {
-            let extension = extension.as_deref().unwrap();
-
+        if let Some(extension) = extension {
             // NOTE This extension search is influenced by Wilfred Hughes' Difftastic
             // https://github.com/Wilfred/difftastic/blob/master/src/parse/guess_language.rs
             if self
@@ -39,19 +36,6 @@ impl Language {
         }
 
         false
-    }
-
-    /// Returns the path to the directory containing the grammar
-    pub fn grammar_path(&self) -> FormatterResult<PathBuf> {
-        match &self.grammar {
-            GrammarSource::Local { path } => Ok(PathBuf::from(path)),
-            GrammarSource::Git { remote, revision } => {
-                let mut path = TOPIARY_DIRS.cache_dir().to_path_buf();
-                path.push("grammars/");
-                path.push(format!("{}/", self.name));
-                Ok(path)
-            }
-        }
     }
 
     pub fn indent_level(&self) -> isize {
@@ -77,19 +61,17 @@ impl Language {
         self.grammar.ensure_available(&self.name)
     }
 
-    // TODO: Error
     pub fn get_tree_sitter_language(&self) -> FormatterResult<tree_sitter::Language> {
         use libloading::{Library, Symbol};
         let library_path = self.parser_path()?;
 
-        let library = unsafe { Library::new(&library_path) }
-            //.with_context(|| format!("Error opening dynamic library {:?}", library_path))
-            .unwrap();
+        let library =
+            unsafe { Library::new(&library_path) }.map_err(|e| FormatterError::ParserLoading(e))?;
         let language_fn_name = format!("tree_sitter_{}", self.name.replace('-', "_"));
         let language = unsafe {
-            let language_fn: Symbol<unsafe extern "C" fn() -> tree_sitter::Language> =
-                library.get(language_fn_name.as_bytes()).unwrap();
-            //.with_context(|| format!("Failed to load symbol {}", language_fn_name))?;
+            let language_fn: Symbol<unsafe extern "C" fn() -> tree_sitter::Language> = library
+                .get(language_fn_name.as_bytes())
+                .map_err(|e| FormatterError::ParserLoading(e))?;
             language_fn()
         };
         std::mem::forget(library);
