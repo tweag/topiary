@@ -78,8 +78,9 @@ fn fetch_grammar(remote: &str, revision: &str) -> PathBuf {
 // Since we do not know if a grammar is already built or not, we always build
 // it. We could possible avoid this by tagging the binary with some kind of
 // revision.
-fn compile_grammar(src_path: &Path, name: &str) {
-    let header_path = src_path;
+fn compile_grammar(source_path: &Path, name: &str) {
+    let src_path = source_path.join("src");
+    let header_path = src_path.clone();
     let parser_path = src_path.join("parser.c");
     let mut scanner_path = src_path.join("scanner.c");
 
@@ -98,7 +99,8 @@ fn compile_grammar(src_path: &Path, name: &str) {
         .cache_dir()
         .join(format!("parsers/{}/parser", name));
     // TODO: Not assume Linux
-    library_path.set_extension(".so");
+    // TODO: Ensure path exists
+    library_path.set_extension("so");
 
     let mut config = cc::Build::new();
     config
@@ -137,6 +139,11 @@ fn compile_grammar(src_path: &Path, name: &str) {
 
     let output = command.output().unwrap();
     if !output.status.success() {
+        println!(
+            "Parser compilation failed.\nStdout: {}\nStderr: {}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
         todo!("error")
     }
 }
