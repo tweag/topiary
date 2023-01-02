@@ -317,11 +317,6 @@
 (
   "("* @do_nothing
   .
-  "{" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
   "}" @prepend_space
 )
 
@@ -379,6 +374,7 @@
     (constructor_path)
     (extended_module_path)
     (field_get_expression)
+    (local_open_pattern)
     (labeled_argument)
     (module_path)
     (number)
@@ -394,6 +390,7 @@
     (value_path)
     (value_pattern)
     "("
+    "{"
   ]
 )
 
