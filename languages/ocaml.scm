@@ -19,6 +19,8 @@
   (comment)
   (exception_definition)
   (external)
+  (include_module)
+  (include_module_type)
   (inheritance_definition)
   (inheritance_specification)
   (instance_variable_definition)
@@ -28,6 +30,7 @@
   (open_module)
   (type_definition)
   (value_definition)
+  (value_specification)
 ] @allow_blank_line_before
 
 ; In a definition including several mutually recursive functions,
@@ -104,6 +107,7 @@
   "match"
   "method"
   "module"
+  (module_parameter)
   "mutable"
   "new"
   "nonrec"
@@ -111,6 +115,7 @@
   "of"
   "open"
   (parameter)
+  "private"
   "rec"
   "sig"
   "then"
@@ -133,6 +138,7 @@
   ":"
   ";"
   "+="
+  ":="
 ] @append_space
 
 ; Those keywords are not expected to come right after an open parenthesis.
@@ -155,6 +161,7 @@
     "->"
     "<-"
     "+="
+    ":="
 ] @prepend_space
 
 ; let-like and and-like operators are only followed by a closing parenthesis
@@ -244,6 +251,11 @@
 (
   "("* @do_nothing
   .
+  (module_parameter) @prepend_space
+)
+(
+  "("* @do_nothing
+  .
   "mutable" @prepend_space
 )
 (
@@ -265,6 +277,11 @@
   "("* @do_nothing
   .
   (parameter) @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "private" @prepend_space
 )
 (
   "("* @do_nothing
@@ -559,7 +576,11 @@
 ;
 (signature
   "sig" @append_spaced_softline
-  (value_specification) @append_spaced_softline
+  [
+    (value_specification)
+    (type_definition)
+    (include_module_type)
+  ] @append_spaced_softline
 )
 
 ; In class definitions and class type definitions, each declaration is separated

@@ -472,6 +472,7 @@ module type Printer = sig
     element printer and [sep] as separator between elements. *)
   val print_list : string -> 'a printer -> 'a list printer
   val print_name : name printer
+
   val print_ident : ident printer
 end
 
@@ -610,3 +611,30 @@ let (Some 2) =
   my_stack#push 1;
   my_stack#push 2;
   my_stack#pop
+
+(* Some modules and functors *)
+module type T1 = sig
+  type t = private int64
+end
+
+module type T2 = sig end
+
+module M: T2 = struct end
+
+module F (X: T1) (Y: T1 with type t := X.t) = struct
+  module type S = sig
+    type t = X.t
+
+    val zero : t
+
+    val succ : t -> t
+
+    include T2
+  end
+
+  let zero = 0
+
+  let succ n = n + 1
+
+  include M
+end
