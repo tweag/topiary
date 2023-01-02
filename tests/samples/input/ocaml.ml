@@ -527,6 +527,10 @@ let unbox_bool = function
   | Some true -> true
   | _ -> false
 
+let my_const :
+  type a b. a: a -> b: b -> a =
+  fun ~a ~b -> a
+
 (* Showcase the usage of operator bindings *)
 let greetings =
   let (let*) = Option.bind
