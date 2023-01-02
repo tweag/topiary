@@ -473,6 +473,18 @@
   (_)
 )
 
+; Keep spacing between pointy brackets when used in object types.
+;
+; This is syntactically correct:
+;   let obj_id (obj : < .. >) = obj
+; This is not:
+;   let obj_id (obj : <..>) = obj
+(object_type
+  "<" @append_space
+  (_)*
+  ">" @prepend_space
+)
+
 ; Softlines. These become either a space or a newline, depending on whether we
 ; format their node as single-line or multi-line. If there is a comment
 ; following, we don't add anything, because they will have their own line break
