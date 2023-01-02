@@ -345,6 +345,17 @@
   (_)
 )
 
+; Put a space after the dot in polymorphic function types
+;
+; let my_const :
+;   type a b. a: a -> b: b -> a =
+;   fun ~a ~b -> a
+(polymorphic_type
+  (abstract_type)
+  .
+  "." @append_space
+)
+
 ; Certain elements must be separated by spaces.
 (
   [
