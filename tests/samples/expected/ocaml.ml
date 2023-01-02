@@ -649,3 +649,14 @@ module F (X: T1) (Y: T1 with type t := X.t) = struct
 
   include M
 end
+
+(* Showcase of ppx syntax *)
+let _ = [%ext fun () -> ()]
+
+let _ = 12 [@attr pl]
+
+let _ = "some string" [@@attr pl]
+
+[@@@attr pl]
+
+let%ext _ = ()

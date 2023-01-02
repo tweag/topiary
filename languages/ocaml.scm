@@ -89,64 +89,69 @@
 )
 
 ; Surround spaces
-; A space is put after, and before (except just after an open parenthesis).
-[
-  "and"
-  "as"
-  "assert"
-  (attribute)
-  (attribute_id)
-  "class"
-  "downto"
-  "else"
-  "exception"
-  (extension)
-  "external"
-  (floating_attribute)
-  "for"
-  "if"
-  "in"
-  "include"
-  (infix_operator)
-  "inherit"
-  (item_attribute)
-  "let"
-  "match"
-  "method"
-  "module"
-  (module_parameter)
-  "mutable"
-  "new"
-  "nonrec"
-  "object"
-  "of"
-  "open"
-  (parameter)
-  "private"
-  "rec"
-  "sig"
-  "then"
-  "to"
-  "try"
-  "type"
-  "val"
-  "virtual"
-  "when"
-  "while"
-  "with"
-  "*"
-  "="
-  "|"
-  "||"
-  "->"
-  "<-"
-  "{"
-  "}"
-  ":"
-  ";"
-  "+="
-  ":="
-] @append_space
+; A space is put after (except just before a '%', which indicates ppx syntax),
+; and before (except just after an open parenthesis).
+(
+  [
+    "and"
+    "as"
+    "assert"
+    (attribute)
+    (attribute_id)
+    "class"
+    "downto"
+    "else"
+    "exception"
+    (extension)
+    "external"
+    (floating_attribute)
+    "for"
+    "if"
+    "in"
+    "include"
+    (infix_operator)
+    "inherit"
+    (item_attribute)
+    "let"
+    "match"
+    "method"
+    "module"
+    (module_parameter)
+    "mutable"
+    "new"
+    "nonrec"
+    "object"
+    "of"
+    "open"
+    (parameter)
+    "private"
+    "rec"
+    "sig"
+    "then"
+    "to"
+    "try"
+    "type"
+    "val"
+    "virtual"
+    "when"
+    "while"
+    "with"
+    "*"
+    "="
+    "|"
+    "||"
+    "->"
+    "<-"
+    "{"
+    "}"
+    ":"
+    ";"
+    "+="
+    ":="
+  ] @append_space
+  .
+  "%"* @do_nothing
+)
 
 ; Those keywords are not expected to come right after an open parenthesis.
 [
