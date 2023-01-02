@@ -506,6 +506,10 @@ let sum_of_int n =
 let sum_of_int_reversed n =
   let res = ref 0 in for i = n downto 1 do res := !res + i; done
 
+let verbose_id = function
+  | -1 -> -1
+  | n -> n
+
 let is_prime n =
   let no_divisor = ref true in
   let i = ref 1 in
