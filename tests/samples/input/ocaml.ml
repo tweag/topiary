@@ -528,6 +528,10 @@ let unbox_bool = function
   | Some true -> true
   | _ -> false
 
+let is_some_letter = function
+  | Some 'a'..'z' -> true
+  | _ -> false
+
 let my_const :
   type a b. a: a -> b: b -> a =
   fun ~a ~b -> a

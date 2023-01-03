@@ -438,6 +438,7 @@
     (parenthesized_pattern)
     (prefix_expression)
     (quoted_string)
+    (range_pattern)
     (string)
     (tag)
     (type_constructor_path)
