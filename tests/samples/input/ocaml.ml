@@ -532,6 +532,10 @@ let my_const :
   type a b. a: a -> b: b -> a =
   fun ~a ~b -> a
 
+let my_id ~value = value
+
+let into_list ~value = my_id ~value :: []
+
 (* Showcase the usage of operator bindings *)
 let greetings =
   let (let*) = Option.bind
