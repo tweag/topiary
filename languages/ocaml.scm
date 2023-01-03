@@ -428,6 +428,7 @@
     (class_type_path)
     (constructed_type)
     (constructor_path)
+    (constructor_pattern)
     (extended_module_path)
     (field_get_expression)
     (local_open_pattern)
