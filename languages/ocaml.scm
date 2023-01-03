@@ -145,6 +145,7 @@
     ";"
     "+="
     ":="
+    ":>"
   ] @append_space
   .
   "%"? @do_nothing
@@ -171,6 +172,7 @@
     "<-"
     "+="
     ":="
+    ":>"
 ] @prepend_space
 
 ; let-like and and-like operators are only followed by a closing parenthesis

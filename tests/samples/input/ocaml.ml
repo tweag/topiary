@@ -579,6 +579,9 @@ type my_box = [`Foo of int | `Bar of int]
 let unbox = function
   | `Foo a | `Bar a -> a
 
+(* Type coercion *)
+let _ = (`Foo 4 :> [`Foo of int])
+
 (* function signature containing type variables *)
 let my_const : 'a 'b. 'a -> 'b -> 'a = Fun.const
 
