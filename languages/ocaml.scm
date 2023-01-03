@@ -20,6 +20,7 @@
   (comment)
   (exception_definition)
   (external)
+  (floating_attribute)
   (include_module)
   (include_module_type)
   (inheritance_definition)
@@ -89,58 +90,65 @@
 
 ; Surround spaces
 ; A space is put after, and before (except just after an open parenthesis).
-[
-  "and"
-  "as"
-  "assert"
-  "class"
-  "downto"
-  "else"
-  "exception"
-  "external"
-  "for"
-  "if"
-  "in"
-  "include"
-  (infix_operator)
-  "inherit"
-  "let"
-  "match"
-  "method"
-  "module"
-  (module_parameter)
-  "mutable"
-  "new"
-  "nonrec"
-  "object"
-  "of"
-  "open"
-  (parameter)
-  "private"
-  "rec"
-  "sig"
-  "then"
-  "to"
-  "try"
-  "type"
-  "val"
-  "virtual"
-  "when"
-  "while"
-  "with"
-  "*"
-  "="
-  "|"
-  "||"
-  "->"
-  "<-"
-  "{"
-  "}"
-  ":"
-  ";"
-  "+="
-  ":="
-] @append_space
+(
+  [
+    "and"
+    "as"
+    "assert"
+    (attribute)
+    "class"
+    "downto"
+    "else"
+    "exception"
+    "external"
+    (floating_attribute)
+    "for"
+    "if"
+    "in"
+    "include"
+    (infix_operator)
+    "inherit"
+    (item_attribute)
+    "let"
+    "match"
+    "method"
+    "module"
+    (module_parameter)
+    "mutable"
+    "new"
+    "nonrec"
+    "object"
+    "of"
+    "open"
+    (parameter)
+    "private"
+    "rec"
+    "sig"
+    "then"
+    "to"
+    "try"
+    "type"
+    "val"
+    "virtual"
+    "when"
+    "while"
+    "with"
+    "*"
+    "="
+    "|"
+    "||"
+    "->"
+    "<-"
+    "{"
+    "}"
+    ":"
+    ";"
+    "+="
+    ":="
+  ] @append_space
+  .
+  "%"? @do_nothing
+)
 
 ; Those keywords are not expected to come right after an open parenthesis.
 [
@@ -192,6 +200,11 @@
 (
   "("* @do_nothing
   .
+  (attribute) @prepend_space
+)
+(
+  "("* @do_nothing
+  .
   "begin" @prepend_space
 )
 (
@@ -212,6 +225,11 @@
 (
   "("* @do_nothing
   .
+  (floating_attribute) @prepend_space
+)
+(
+  "("* @do_nothing
+  .
   "for" @prepend_space
 )
 (
@@ -228,6 +246,11 @@
   "("* @do_nothing
   .
   "inherit" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  (item_attribute) @prepend_space
 )
 (
   "("* @do_nothing
@@ -425,6 +448,27 @@
   ]
 )
 
+; When one uses a language extension, we always put a space after the extension name,
+; if this name ends by the '?' or ':' token, the space comes after it.
+;
+(
+  (attribute_id) @append_space
+  .
+  (attribute_payload
+    [
+      "?"
+      ":"
+    ]
+  )* @do_nothing
+)
+(attribute_payload
+  [
+    "?"
+    ":"
+  ] @append_space
+)
+
+
 ; Some kinds of colons should have a space in front.
 (
   [
@@ -477,6 +521,9 @@
 ; format their node as single-line or multi-line. If there is a comment
 ; following, we don't add anything, because they will have their own line break
 ; processing applied to them.
+;
+; If those keywords are followed by a ppx extension,
+; the soft linebreak comes after it.
 (
   [
     "begin"
@@ -493,7 +540,31 @@
   .
   [
     (comment)
+    "%"
   ]* @do_nothing
+)
+
+(
+  [
+    "begin"
+    "do"
+    "else"
+    "in"
+    "of"
+    "struct"
+    "then"
+    "with"
+    "->"
+    "{"
+    ":"
+    ";"
+  ]
+  .
+  "%"
+  .
+  (attribute_id) @append_spaced_softline
+  .
+  (comment)* @do_nothing
 )
 
 ; Always put softlines before these:
@@ -503,6 +574,7 @@
   "end"
   (else_clause)
   (infix_operator)
+  (item_attribute)
   (match_expression)
   "*"
   "|"
@@ -637,7 +709,9 @@
 ; Indenting. This will only do anything in multi-line blocks. In single-line
 ; blocks they do nothing.
 
-(variant_declaration) @prepend_indent_start @append_indent_end
+(
+  (variant_declaration) @prepend_indent_start @append_indent_end
+)
 
 ; Start an indented block after these
 [
@@ -658,10 +732,12 @@
 )
 
 ; End the indented block before these
-[
-  "done"
-  "end"
-] @prepend_indent_end
+(
+  [
+    "done"
+    "end"
+  ] @prepend_indent_end
+)
 
 ; "}" can be used to end quoted strings. Don't indent in that case
 (
@@ -671,10 +747,12 @@
 )
 
 ; End the indented block after these
-[
-  (else_clause)
-  (then_clause)
-] @append_indent_end
+(
+  [
+    (else_clause)
+    (then_clause)
+  ] @append_indent_end
+)
 
 ; Make an indented block after ":" in typed expressions
 ;
@@ -802,8 +880,20 @@
 )
 
 ; Try block formatting
-(
+; A soft linebreak after the "try" (potentially "try%ppx") and one after the "with".
+(try_expression
   "try" @append_spaced_softline @append_indent_start
+  .
+  "%"* @do_nothing
+)
+(try_expression
+  "try"
+  .
+  "%"
+  .
+  (attribute_id) @append_spaced_softline @append_indent_start
+)
+(try_expression
   "with" @prepend_indent_end @prepend_spaced_softline @append_indent_start
   (_) @append_indent_end
   .

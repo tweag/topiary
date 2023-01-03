@@ -446,6 +446,7 @@ let topological_sort deps =
             else
               raise
               @@ Files_legacy.Files_error (ObjectFileNotFound (mk_mident node))
+          | _ -> assert false
       in node::List.fold_left (explore (node::path))
         visited (List.map Files_legacy.get_file edges)
   in List.rev @@ List.fold_left (fun visited (n, _) -> explore [] visited n) [] graph
@@ -649,3 +650,30 @@ module F (X: T1) (Y: T1 with type t := X.t) = struct
 
   include M
 end
+
+(* Showcase ppx usage *)
+let lid =
+  [%sedlex.regexp? R] in body
+
+let _ = [%sedlex.regexp R]
+
+let _ =
+  [%sedlex
+  match lexbuf with
+  | R1 -> e1
+  | Rn -> en
+  | _ -> def]
+
+let _ =
+  match%sedlex lexbuf with
+  | R1 -> e1
+  | Rn -> en
+  | _ -> def
+
+let _ = 12 [@deprecated "12 is deprecated, use 13 instead"]
+
+let _ =
+  "some string"
+  [@@deprecated "assignment are deprecated, inline everything instead"]
+
+[@@@deprecated "writing code is deprecated, use ai-generated code instead"]
