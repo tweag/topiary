@@ -624,6 +624,12 @@ let (Some 2) =
   my_stack#push 2;
   my_stack#pop
 
+let obj_id (obj : < .. >) = obj
+
+let obj_with_unit_id (obj : < nothing: unit; .. >) = obj
+
+let obj_with_only_unit_id (obj : < nothing: unit >) = obj
+
 (* Some modules and functors *)
 module type T1 = sig
   type t = private int64
