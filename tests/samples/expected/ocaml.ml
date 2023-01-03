@@ -528,6 +528,14 @@ let unbox_bool = function
   | Some true -> true
   | _ -> false
 
+let is_some_letter = function
+  | Some 'a'..'z' -> true
+  | _ -> false
+
+let is_some_some = function
+  | Some Some _ -> true
+  | _ -> false
+
 let my_const :
   type a b. a: a -> b: b -> a = fun ~a ~b -> a
 
@@ -577,6 +585,9 @@ let _ =
 type my_box = [`Foo of int | `Bar of int]
 let unbox = function
   | `Foo a | `Bar a -> a
+
+(* Type coercion *)
+let _ = (`Foo 4 :> [`Foo of int])
 
 (* function signature containing type variables *)
 let my_const : 'a 'b. 'a -> 'b -> 'a = Fun.const

@@ -145,6 +145,7 @@
     ";"
     "+="
     ":="
+    ":>"
   ] @append_space
   .
   "%"? @do_nothing
@@ -171,6 +172,7 @@
     "<-"
     "+="
     ":="
+    ":>"
 ] @prepend_space
 
 ; let-like and and-like operators are only followed by a closing parenthesis
@@ -426,6 +428,7 @@
     (class_type_path)
     (constructed_type)
     (constructor_path)
+    (constructor_pattern)
     (extended_module_path)
     (field_get_expression)
     (local_open_pattern)
@@ -436,6 +439,7 @@
     (parenthesized_pattern)
     (prefix_expression)
     (quoted_string)
+    (range_pattern)
     (string)
     (tag)
     (type_constructor_path)
