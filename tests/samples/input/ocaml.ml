@@ -655,6 +655,8 @@ end
 let lid = [%sedlex.regexp? R] in
 body
 
+let _ = [%sedlex.regexp R]
+
 let _ =
   [%sedlex match lexbuf with
     | R1 -> e1
@@ -666,3 +668,10 @@ let _ = match%sedlex lexbuf with
   | R1 -> e1
   | Rn -> en
   | _  -> def
+
+let _ = 12 [@deprecated "12 is deprecated, use 13 instead"]
+
+let _ = "some string"
+  [@@deprecated "assignment are deprecated, inline everything instead"]
+
+[@@@deprecated "writing code is deprecated, use ai-generated code instead"]

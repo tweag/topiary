@@ -20,6 +20,7 @@
   (comment)
   (exception_definition)
   (external)
+  (floating_attribute)
   (include_module)
   (include_module_type)
   (inheritance_definition)
@@ -94,17 +95,20 @@
     "and"
     "as"
     "assert"
+    (attribute)
     "class"
     "downto"
     "else"
     "exception"
     "external"
+    (floating_attribute)
     "for"
     "if"
     "in"
     "include"
     (infix_operator)
     "inherit"
+    (item_attribute)
     "let"
     "match"
     "method"
@@ -196,6 +200,11 @@
 (
   "("* @do_nothing
   .
+  (attribute) @prepend_space
+)
+(
+  "("* @do_nothing
+  .
   "begin" @prepend_space
 )
 (
@@ -216,6 +225,11 @@
 (
   "("* @do_nothing
   .
+  (floating_attribute) @prepend_space
+)
+(
+  "("* @do_nothing
+  .
   "for" @prepend_space
 )
 (
@@ -232,6 +246,11 @@
   "("* @do_nothing
   .
   "inherit" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  (item_attribute) @prepend_space
 )
 (
   "("* @do_nothing
@@ -435,7 +454,12 @@
 (
   (attribute_id) @append_space
   .
-  (attribute_payload)* @do_nothing
+  (attribute_payload
+    [
+      "?"
+      ":"
+    ]
+  )* @do_nothing
 )
 (attribute_payload
   [
@@ -550,6 +574,7 @@
   "end"
   (else_clause)
   (infix_operator)
+  (item_attribute)
   (match_expression)
   "*"
   "|"
