@@ -22,11 +22,12 @@ fn input_output_tester() {
 
         let mut input = BufReader::new(fs::File::open(file.path()).unwrap());
         let mut output = Vec::new();
-        let query_path = str::to_lowercase(format!("languages/{language}.scm").as_str());
+        let query_path_base = Language::query_file_base_name(language);
+        let query_path = str::to_lowercase(format!("languages/{query_path_base}.scm").as_str());
         let query = fs::read_to_string(query_path).unwrap();
         let mut query = query.as_bytes();
 
-        formatter(&mut input, &mut output, &mut query, true).unwrap();
+        formatter(&mut input, &mut output, &mut query, Some(language), true).unwrap();
         let formatted = String::from_utf8(output).unwrap();
         log::debug!("{}", formatted);
 

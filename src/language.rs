@@ -15,10 +15,10 @@ pub enum Language {
 
 // NOTE This list of extension mappings is influenced by Wilfred Hughes' Difftastic
 // https://github.com/Wilfred/difftastic/blob/master/src/parse/guess_language.rs
-const EXTENSIONS: &[(&str, &[&str])] = &[
-    ("bash", &["sh", "bash"]),
+const EXTENSIONS: &[(Language, &[&str])] = &[
+    (Language::Bash, &["sh", "bash"]),
     (
-        "json",
+        Language::Json,
         &[
             "json",
             "avsc",
@@ -36,9 +36,9 @@ const EXTENSIONS: &[(&str, &[&str])] = &[
             "webmanifest",
         ],
     ),
-    ("ocaml", &["ml"]),
-    ("rust", &["rs"]),
-    ("toml", &["toml"]),
+    (Language::Ocaml, &["ml"]),
+    (Language::Rust, &["rs"]),
+    (Language::Toml, &["toml"]),
 ];
 
 impl Language {
@@ -57,7 +57,7 @@ impl Language {
         }
     }
 
-    pub fn detect(filename: &str) -> FormatterResult<&str> {
+    pub fn detect(filename: &str) -> FormatterResult<Language> {
         let filename: String = filename.into();
         let extension: Option<OsString> = Path::new(&filename)
             .extension()
@@ -78,13 +78,32 @@ impl Language {
         Err(FormatterError::LanguageDetection(filename, extension))
     }
 
-    pub fn query_path(language: &str) -> FormatterResult<PathBuf> {
-        // Check for support
-        Language::new(language)?;
+    pub fn query_file_base_name(language: Language) -> &'static str {
+        match language {
+            Language::Bash => "bash",
+            Language::Json => "json",
+            Language::Ocaml => "ocaml",
+            Language::Rust => "rust",
+            Language::Toml => "toml",
+        }
+    }
 
-        Ok(
-            PathBuf::from(option_env!("TOPIARY_LANGUAGE_DIR").unwrap_or("languages"))
-                .join(format!("{language}.scm")),
-        )
+    // Different languages may map to the same query file, because their grammars
+    // produce similar trees, which can be formatted with the same queries.
+    pub fn query_path(language: Language) -> PathBuf {
+        let query_file = Self::query_file_base_name(language);
+
+        PathBuf::from(option_env!("TOPIARY_LANGUAGE_DIR").unwrap_or("languages"))
+            .join(format!("{query_file}.scm"))
+    }
+
+    pub fn grammars(language: Language) -> Vec<tree_sitter::Language> {
+        match language {
+            Language::Bash => vec![tree_sitter_bash::language()],
+            Language::Json => vec![tree_sitter_json::language()],
+            Language::Ocaml => vec![tree_sitter_ocaml::language_ocaml()],
+            Language::Rust => vec![tree_sitter_rust::language()],
+            Language::Toml => vec![tree_sitter_toml::language()],
+        }
     }
 }
