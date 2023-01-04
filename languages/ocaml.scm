@@ -623,6 +623,7 @@
 ;
 (
   "|"* @do_nothing
+  .
   (match_case) @prepend_spaced_softline
 )
 
