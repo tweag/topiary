@@ -1,0 +1,19 @@
+$ time ( topiary -s -i ocaml_real.ml > /dev/null 2>&1 )
+real    0m17,029s
+user    0m17,000s
+sys     0m0,028s
+
+$ time ( topiary -s -i ocaml_512.ml > /dev/null 2>&1 )
+real    0m6,669s
+user    0m6,661s
+sys     0m0,008s
+
+$ time ( topiary -s -i ocaml_1024.ml > /dev/null 2>&1 )
+real    0m56,513s
+user    0m56,489s
+sys     0m0,021s
+
+$ time ( topiary -s -i ocaml_2048.ml > /dev/null 2>&1 )
+real    8m2,791s
+user    8m2,752s
+sys     0m0,009s
