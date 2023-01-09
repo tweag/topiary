@@ -662,6 +662,7 @@ dependencies = [
  "tree-sitter",
  "tree-sitter-bash",
  "tree-sitter-json",
+ "tree-sitter-nickel",
  "tree-sitter-ocaml",
  "tree-sitter-rust",
  "tree-sitter-toml",
@@ -691,6 +692,15 @@ name = "tree-sitter-json"
 version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90b04c4e1a92139535eb9fca4ec8fa9666cc96b618005d3ae35f3c957fa92f92"
+dependencies = [
+ "cc",
+ "tree-sitter",
+]
+
+[[package]]
+name = "tree-sitter-nickel"
+version = "0.0.1"
+source = "git+https://github.com/nickel-lang/tree-sitter-nickel#9d83db400b6c11260b9106f131f93ddda8131933"
 dependencies = [
  "cc",
  "tree-sitter",
