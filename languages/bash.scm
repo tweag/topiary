@@ -11,7 +11,8 @@
   (if_statement)
 ] @allow_blank_line_before
 
-; Surround spaces
+; Prepend spaces
+; (Not "surround", to avoid extraneous spaces between delimiters)
 ; TODO Add keywords, etc., here...
 [
   "if"
@@ -20,8 +21,9 @@
   "else"
   "fi"
   (string)
+  (command)
   (test_command)
-] @prepend_space @append_space
+] @prepend_space
 
 ;; Commands
 
@@ -40,26 +42,28 @@
 
 ;; Operators
 
-; Ensure there's a space after the negation operator
+; Ensure the negation operator is surrounded by spaces
 (negated_command
-  "!" @append_space
+  "!" @prepend_space @append_space
 )
 
 ;; Conditionals
 
+; Start conditional on a new line
+[
+  (if_statement)
+  (elif_clause)
+  (else_clause)
+] @prepend_spaced_softline
+
 ; New line after "then" and start indent block
-(if_statement
-  "then" @append_hardline @append_indent_start
-) @prepend_spaced_softline
+[
+  (if_statement)
+  (elif_clause)
+] "then" @append_hardline @append_indent_start
 
-; FIXME Can this be generalised from the above?
-(elif_clause
-  "then" @append_hardline @append_indent_start
-) @prepend_spaced_softline
-
-(else_clause
-  "else" @append_hardline @append_indent_start
-) @prepend_spaced_softline
+; New line after "else" and start indent block
+(else_clause "else" @append_hardline @append_indent_start)
 
 ; Keep the "if" and the "then" on the same line,
 ; inserting a delimiter when necessary
@@ -95,7 +99,8 @@
   (unary_expression) @prepend_space @append_space
 )
 
-; FIXME This doesn't do anything :(
+; FIXME The binary_expression node is not being returned by Tree-Sitter
+; See https://github.com/tweag/topiary/pull/155#issuecomment-1364143677
 (test_command
   (binary_expression
      left: _ @prepend_space @append_space
