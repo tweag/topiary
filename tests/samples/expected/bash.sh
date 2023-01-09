@@ -10,7 +10,7 @@ fi
 
 if [[ -e "/some/file" ]]; then
   foo
-elif ! (( 1 == 0 )); then
+elif ! ((1==0)); then
   bar
 else
   baz
