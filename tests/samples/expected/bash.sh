@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # Here is a comment
+do_a_thing
 
 if some_command; then
   do_something

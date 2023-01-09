@@ -21,24 +21,29 @@
   "else"
   "fi"
   (string)
-  (command)
   (test_command)
 ] @prepend_space
 
 ;; Commands
 
-; Space between command line arguments
-(command
-  argument: _ @append_space @prepend_space
-)
-
-; FIXME One command per line, modulo many exceptions:
+; One command per line, modulo many exceptions:
 ; * Strings of && and ||
 ; * Pipelines
 ; * Subshells
 ; * As arguments to if, while, for, etc.
 ; * Others?...
-;(command) @append_input_softline
+;
+; FIXME Can this be generalised, or does *every* context need to be
+; individually enumerated?...
+(program (command) @prepend_spaced_softline @append_hardline)
+(if_statement _ "then"(command) @prepend_spaced_softline)
+(elif_clause _ "then" (command) @prepend_spaced_softline)
+(else_clause (command) @prepend_spaced_softline)
+
+; Space between command line arguments
+(command
+  argument: _ @append_space @prepend_space
+)
 
 ;; Operators
 
@@ -68,7 +73,7 @@
 ; Keep the "if" and the "then" on the same line,
 ; inserting a delimiter when necessary
 (if_statement
-  (_) @append_delimiter
+  (_) @prepend_space @append_delimiter
   ";"* @do_nothing
   "then"
 
@@ -77,7 +82,7 @@
 
 ; FIXME Can this be generalised from the above?
 (elif_clause
-  (_) @append_delimiter
+  (_) @prepend_space @append_delimiter
   ";"* @do_nothing
   "then"
 
