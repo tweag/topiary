@@ -348,6 +348,105 @@ be ignored.
 )
 ```
 
+### Understanding the different newline captures
+
+| Type            | Append/Prepend | Single-Line Context | Multi-Line Context |
+| :-------------- | :------------- | :------------------ | :----------------- |
+| Hardline        | Append Only    | Newline             | Newline            |
+| Empty Softline  | Both           | Nothing             | Newline            |
+| Spaced Softline | Both           | Space               | Newline            |
+| Input Softline  | Both           | Input-Dependent     | Input-Dependent    |
+
+"Input softlines" are rendered as newlines whenever they proceed a
+newline in the input. Otherwise, they are rendered as spaces.
+
+#### Example
+
+Consider the following pseudocode:
+
+```bash
+# This is a comment
+
+# Here's another comment
+some_syntax # Yet another comment
+```
+
+We shall apply the different newline captures to syntactic items and
+comments, respectively, to observe their effect. That is, for each
+`@CAPTURE` name, we apply the following queries:
+
+```scheme
+(syntax_node) @CAPTURE
+(comment) @CAPTURE
+```
+
+(Note that trailing newlines have been replaced with `␊` so they are not
+stripped by GitHub's markdown rendering.)
+
+##### `@append_hardline`
+
+```bash
+# This is a comment
+# Here's another comment
+some_syntax
+# Yet another comment
+␊
+```
+
+##### `@append_empty_softline`
+
+```bash
+# This is a comment
+# Here's another comment
+some_syntax
+# Yet another comment
+␊
+```
+
+##### `@prepend_empty_softline`
+
+```bash
+# This is a comment
+# Here's another comment
+some_syntax
+# Yet another comment
+```
+
+##### `@append_spaced_softline`
+
+```bash
+# This is a comment
+# Here's another comment
+some_syntax
+# Yet another comment
+␊
+```
+
+##### `@prepend_spaced_softline`
+
+```bash
+# This is a comment
+# Here's another comment
+some_syntax
+# Yet another comment
+```
+
+##### `@append_input_softline`
+
+```bash
+# This is a comment
+# Here's another comment
+some_syntax # Yet another comment
+```
+
+##### `@prepend_input_softline`
+
+```bash
+# This is a comment
+# Here's another comment
+some_syntax # Yet another comment
+```
+
 ## Suggested workflow
 
 In order to work productively on query files, the following is one suggested way to work:
