@@ -36,7 +36,7 @@
 ; FIXME Can this be generalised, or does *every* context need to be
 ; individually enumerated?...
 (program (command) @prepend_spaced_softline @append_hardline)
-(if_statement _ "then"(command) @prepend_spaced_softline)
+(if_statement _ "then" (command) @prepend_spaced_softline)
 (elif_clause _ "then" (command) @prepend_spaced_softline)
 (else_clause (command) @prepend_spaced_softline)
 
@@ -72,16 +72,7 @@
 
 ; Keep the "if" and the "then" on the same line,
 ; inserting a delimiter when necessary
-(if_statement
-  (_) @prepend_space @append_delimiter
-  ";"* @do_nothing
-  "then"
-
-  (#delimiter! ";")
-)
-
-; FIXME Can this be generalised from the above?
-(elif_clause
+(_
   (_) @prepend_space @append_delimiter
   ";"* @do_nothing
   "then"
