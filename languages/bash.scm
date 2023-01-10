@@ -48,6 +48,7 @@
 ;; Operators
 
 ; Ensure the negation operator is surrounded by spaces
+; NOTE This is a syntactic requirement
 (negated_command
   "!" @prepend_space @append_space
 )
