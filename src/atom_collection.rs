@@ -101,6 +101,7 @@ impl AtomCollection {
                 node,
             ),
             "prepend_empty_softline" => self.prepend(Atom::Softline { spaced: false }, node),
+            "prepend_hardline" => self.prepend(Atom::Hardline, node),
             "prepend_indent_start" => self.prepend(Atom::IndentStart, node),
             "prepend_indent_end" => self.prepend(Atom::IndentEnd, node),
             "prepend_input_softline" => {
