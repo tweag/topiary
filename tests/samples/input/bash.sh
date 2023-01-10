@@ -3,6 +3,7 @@
 # Here is a comment
 
 do_a_thing
+produce | consume
 
 if some_command
 then
@@ -17,6 +18,9 @@ elif !((1==0))
 then
   bar
 else
-    baz
-  quux
+    baz \
+  && quux && xyzzy
 fi
+
+multi \
+| line |& pipeline

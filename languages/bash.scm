@@ -35,10 +35,14 @@
 ;
 ; FIXME Can this be generalised, or does *every* context need to be
 ; individually enumerated?...
-(program (command) @prepend_spaced_softline @append_hardline)
+(program (command) @prepend_spaced_softline)
 (if_statement _ "then" (command) @prepend_spaced_softline)
 (elif_clause _ "then" (command) @prepend_spaced_softline)
 (else_clause (command) @prepend_spaced_softline)
+
+[(list) (pipeline)] @prepend_empty_softline
+(list ["&&" "||"] @append_space @prepend_space)
+(pipeline ["|" "|&"] @append_space @prepend_space)
 
 ; Space between command line arguments
 (command
