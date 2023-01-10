@@ -213,9 +213,9 @@ single-line nodes.
 )
 ```
 
-### @append_hardline
+### @append_hardline / @prepend_hardline
 
-The matched nodes will have a newline appended to them.
+The matched nodes will have a newline appended or prepended to them.
 
 #### Example
 
@@ -350,12 +350,12 @@ be ignored.
 
 ### Understanding the different newline captures
 
-| Type            | Append/Prepend | Single-Line Context | Multi-Line Context |
-| :-------------- | :------------- | :------------------ | :----------------- |
-| Hardline        | Append Only    | Newline             | Newline            |
-| Empty Softline  | Both           | Nothing             | Newline            |
-| Spaced Softline | Both           | Space               | Newline            |
-| Input Softline  | Both           | Input-Dependent     | Input-Dependent    |
+| Type            | Single-Line Context | Multi-Line Context |
+| :-------------- | :------------------ | :----------------- |
+| Hardline        | Newline             | Newline            |
+| Empty Softline  | Nothing             | Newline            |
+| Spaced Softline | Space               | Newline            |
+| Input Softline  | Input-Dependent     | Input-Dependent    |
 
 "Input softlines" are rendered as newlines whenever they proceed a
 newline in the input. Otherwise, they are rendered as spaces.
@@ -391,6 +391,15 @@ stripped by GitHub's markdown rendering.)
 some_syntax
 # Yet another comment
 ␊
+```
+
+##### `@prepend_hardline`
+
+```bash
+# This is a comment
+# Here's another comment
+some_syntax
+# Yet another comment
 ```
 
 ##### `@append_empty_softline`
