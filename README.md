@@ -357,7 +357,7 @@ be ignored.
 | Spaced Softline | Space               | Newline            |
 | Input Softline  | Input-Dependent     | Input-Dependent    |
 
-"Input softlines" are rendered as newlines whenever they proceed a
+"Input softlines" are rendered as newlines whenever they follow a
 newline in the input. Otherwise, they are rendered as spaces.
 
 #### Example
