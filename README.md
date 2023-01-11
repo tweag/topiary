@@ -362,103 +362,141 @@ newline in the input. Otherwise, they are rendered as spaces.
 
 #### Example
 
-Consider the following pseudocode:
+Consider the following JSON:
 
-```bash
-# This is a comment
-
-# Here's another comment
-some_syntax # Yet another comment
+```json
+{
+  "single-line": [1, 2, 3],
+  "multi-line": [
+    1,
+    2,
+    3
+  ]
+}
 ```
 
-We shall apply the different newline captures to syntactic items and
-comments, respectively, to observe their effect. That is, for each
-`@CAPTURE` name, we apply the following query:
+We'll apply a simplified set of JSON format queries that:
+* Opens (and closes) an indented block for objects;
+* Each key-value pair gets its own line, with the value split onto a second;
+* Applies the different newline capture name on array delimiters.
+
+That is, iterating over each `@NEWLINE` type, we apply the following:
 
 ```scheme
-(_ [(syntax_node) (comment)] @CAPTURE)
+(#language! json)
+
+(object . "{" @append_hardline @append_indent_start)
+(object "}" @prepend_hardline @prepend_indent_end .)
+(object (pair) @prepend_hardline)
+(pair . _ ":" @append_hardline)
+
+(array "," @NEWLINE)
 ```
-
-**Notes**
-
-1. The query is embedded with respect to an arbitrary parent node to
-   "escape" any multi-line context that may be inherited from that
-   parent.
-
-2. Trailing newlines, in the output, have been replaced with `␊` so they
-   are not stripped out by GitHub's markdown rendering.
 
 ##### `@append_hardline`
 
-```bash
-# This is a comment
-# Here's another comment
-some_syntax
-# Yet another comment
-␊
+```json
+{
+  "single-line":
+  [1,
+  2,
+  3],
+  "multi-line":
+  [1,
+  2,
+  3]
+}
 ```
 
 ##### `@prepend_hardline`
 
-```bash
-# This is a comment
-# Here's another comment
-some_syntax
-# Yet another comment
+```json
+{
+  "single-line":
+  [1
+  ,2
+  ,3],
+  "multi-line":
+  [1
+  ,2
+  ,3]
+}
 ```
 
 ##### `@append_empty_softline`
 
-```bash
-# This is a comment
-# Here's another comment
-some_syntax
-# Yet another comment
-␊
+```json
+{
+  "single-line":
+  [1,2,3],
+  "multi-line":
+  [1,
+  2,
+  3]
+}
 ```
 
 ##### `@prepend_empty_softline`
 
-```bash
-# This is a comment
-# Here's another comment
-some_syntax
-# Yet another comment
+```json
+{
+  "single-line":
+  [1,2,3],
+  "multi-line":
+  [1
+  ,2
+  ,3]
+}
 ```
 
 ##### `@append_spaced_softline`
 
-```bash
-# This is a comment
-# Here's another comment
-some_syntax
-# Yet another comment
-␊
+```json
+{
+  "single-line":
+  [1, 2, 3],
+  "multi-line":
+  [1,
+  2,
+  3]
+}
 ```
 
 ##### `@prepend_spaced_softline`
 
-```bash
-# This is a comment
-# Here's another comment
-some_syntax
-# Yet another comment
+```json
+{
+  "single-line":
+  [1 ,2 ,3],
+  "multi-line":
+  [1
+  ,2
+  ,3]
+}
 ```
 
 ##### `@append_input_softline`
 
-```bash
-# This is a comment
-# Here's another comment
-some_syntax # Yet another comment
+```json
+{
+  "single-line":
+  [1, 2, 3],
+  "multi-line":
+  [1,
+  2,
+  3]
+}
 ```
 
 ##### `@prepend_input_softline`
 
-```bash
-# This is a comment
-# Here's another comment
-some_syntax # Yet another comment
+```json
+{
+  "single-line":
+  [1 ,2 ,3],
+  "multi-line":
+  [1 ,2 ,3]
+}
 ```
 
 ## Suggested workflow
