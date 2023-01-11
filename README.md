@@ -357,8 +357,8 @@ be ignored.
 | Spaced Softline | Space               | Newline            |
 | Input Softline  | Input-Dependent     | Input-Dependent    |
 
-"Input softlines" are rendered as newlines whenever they follow a
-newline in the input. Otherwise, they are rendered as spaces.
+"Input softlines" are rendered as newlines whenever the targeted node
+follows a newline in the input. Otherwise, they are rendered as spaces.
 
 #### Example
 
@@ -367,10 +367,11 @@ every context under which the different newline capture names operate:
 
 ```json
 {
-  "single-line": [1, 2, 3],
+  "single-line": [1, 2, 3, 4],
   "multi-line": [
     1, 2,
     3
+    , 4
   ]
 }
 ```
@@ -394,7 +395,7 @@ That is, iterating over each `@NEWLINE` type, we apply the following:
 ```
 
 The first two formatting rules are just for clarity's sake. The last
-rule is what's important and demonstrated below:
+rule is what's important; the results of which are demonstrated below:
 
 ##### `@append_hardline`
 
@@ -403,11 +404,13 @@ rule is what's important and demonstrated below:
   "single-line":
   [1,
   2,
-  3],
+  3,
+  4],
   "multi-line":
   [1,
   2,
-  3]
+  3,
+  4]
 }
 ```
 
@@ -418,11 +421,13 @@ rule is what's important and demonstrated below:
   "single-line":
   [1
   ,2
-  ,3],
+  ,3
+  ,4],
   "multi-line":
   [1
   ,2
-  ,3]
+  ,3
+  ,4]
 }
 ```
 
@@ -431,11 +436,12 @@ rule is what's important and demonstrated below:
 ```json
 {
   "single-line":
-  [1,2,3],
+  [1,2,3,4],
   "multi-line":
   [1,
   2,
-  3]
+  3,
+  4]
 }
 ```
 
@@ -444,11 +450,12 @@ rule is what's important and demonstrated below:
 ```json
 {
   "single-line":
-  [1,2,3],
+  [1,2,3,4],
   "multi-line":
   [1
   ,2
-  ,3]
+  ,3
+  ,4]
 }
 ```
 
@@ -457,11 +464,12 @@ rule is what's important and demonstrated below:
 ```json
 {
   "single-line":
-  [1, 2, 3],
+  [1, 2, 3, 4],
   "multi-line":
   [1,
   2,
-  3]
+  3,
+  4]
 }
 ```
 
@@ -470,11 +478,12 @@ rule is what's important and demonstrated below:
 ```json
 {
   "single-line":
-  [1 ,2 ,3],
+  [1 ,2 ,3 ,4],
   "multi-line":
   [1
   ,2
-  ,3]
+  ,3
+  ,4]
 }
 ```
 
@@ -483,10 +492,10 @@ rule is what's important and demonstrated below:
 ```json
 {
   "single-line":
-  [1, 2, 3],
+  [1, 2, 3, 4],
   "multi-line":
   [1, 2,
-  3]
+  3, 4]
 }
 ```
 
@@ -495,9 +504,10 @@ rule is what's important and demonstrated below:
 ```json
 {
   "single-line":
-  [1 ,2 ,3],
+  [1 ,2 ,3 ,4],
   "multi-line":
-  [1 ,2 ,3]
+  [1 ,2 ,3
+  ,4]
 }
 ```
 
