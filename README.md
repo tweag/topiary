@@ -393,7 +393,8 @@ comments, respectively, to observe their effect. That is, for each
 ```bash
 # This is a comment
 # Here's another comment
-some_syntax# Yet another comment
+some_syntax
+# Yet another comment
 ␊
 ```
 
@@ -401,7 +402,8 @@ some_syntax# Yet another comment
 
 ```bash
 # This is a comment
-# Here's another commentsome_syntax
+# Here's another comment
+some_syntax
 # Yet another comment
 ```
 
@@ -410,7 +412,8 @@ some_syntax# Yet another comment
 ```bash
 # This is a comment
 # Here's another comment
-some_syntax# Yet another comment
+some_syntax
+# Yet another comment
 ␊
 ```
 
@@ -418,7 +421,8 @@ some_syntax# Yet another comment
 
 ```bash
 # This is a comment
-# Here's another commentsome_syntax
+# Here's another comment
+some_syntax
 # Yet another comment
 ```
 
@@ -427,7 +431,8 @@ some_syntax# Yet another comment
 ```bash
 # This is a comment
 # Here's another comment
-some_syntax# Yet another comment
+some_syntax
+# Yet another comment
 ␊
 ```
 
@@ -435,7 +440,8 @@ some_syntax# Yet another comment
 
 ```bash
 # This is a comment
-# Here's another commentsome_syntax
+# Here's another comment
+some_syntax
 # Yet another comment
 ```
 
@@ -444,14 +450,15 @@ some_syntax# Yet another comment
 ```bash
 # This is a comment
 # Here's another comment
-some_syntax# Yet another comment
+some_syntax # Yet another comment
 ```
 
 ##### `@prepend_input_softline`
 
 ```bash
 # This is a comment
-# Here's another commentsome_syntax # Yet another comment
+# Here's another comment
+some_syntax # Yet another comment
 ```
 
 ## Suggested workflow
