@@ -373,23 +373,27 @@ some_syntax # Yet another comment
 
 We shall apply the different newline captures to syntactic items and
 comments, respectively, to observe their effect. That is, for each
-`@CAPTURE` name, we apply the following queries:
+`@CAPTURE` name, we apply the following query:
 
 ```scheme
-(syntax_node) @CAPTURE
-(comment) @CAPTURE
+(_ [(syntax_node) (comment)] @CAPTURE)
 ```
 
-(Note that trailing newlines have been replaced with `␊` so they are not
-stripped by GitHub's markdown rendering.)
+**Notes**
+
+1. The query is embedded with respect to an arbitrary parent node to
+   "escape" any multi-line context that may be inherited from that
+   parent.
+
+2. Trailing newlines, in the output, have been replaced with `␊` so they
+   are not stripped out by GitHub's markdown rendering.
 
 ##### `@append_hardline`
 
 ```bash
 # This is a comment
 # Here's another comment
-some_syntax
-# Yet another comment
+some_syntax# Yet another comment
 ␊
 ```
 
@@ -397,8 +401,7 @@ some_syntax
 
 ```bash
 # This is a comment
-# Here's another comment
-some_syntax
+# Here's another commentsome_syntax
 # Yet another comment
 ```
 
@@ -407,8 +410,7 @@ some_syntax
 ```bash
 # This is a comment
 # Here's another comment
-some_syntax
-# Yet another comment
+some_syntax# Yet another comment
 ␊
 ```
 
@@ -416,8 +418,7 @@ some_syntax
 
 ```bash
 # This is a comment
-# Here's another comment
-some_syntax
+# Here's another commentsome_syntax
 # Yet another comment
 ```
 
@@ -426,8 +427,7 @@ some_syntax
 ```bash
 # This is a comment
 # Here's another comment
-some_syntax
-# Yet another comment
+some_syntax# Yet another comment
 ␊
 ```
 
@@ -435,8 +435,7 @@ some_syntax
 
 ```bash
 # This is a comment
-# Here's another comment
-some_syntax
+# Here's another commentsome_syntax
 # Yet another comment
 ```
 
@@ -445,15 +444,14 @@ some_syntax
 ```bash
 # This is a comment
 # Here's another comment
-some_syntax # Yet another comment
+some_syntax# Yet another comment
 ```
 
 ##### `@prepend_input_softline`
 
 ```bash
 # This is a comment
-# Here's another comment
-some_syntax # Yet another comment
+# Here's another commentsome_syntax # Yet another comment
 ```
 
 ## Suggested workflow
