@@ -362,23 +362,23 @@ newline in the input. Otherwise, they are rendered as spaces.
 
 #### Example
 
-Consider the following JSON:
+Consider the following JSON, which has been hand-formatted to exhibit
+every context under which the different newline capture names operate:
 
 ```json
 {
   "single-line": [1, 2, 3],
   "multi-line": [
-    1,
-    2,
+    1, 2,
     3
   ]
 }
 ```
 
 We'll apply a simplified set of JSON format queries that:
-* Opens (and closes) an indented block for objects;
-* Each key-value pair gets its own line, with the value split onto a second;
-* Applies the different newline capture name on array delimiters.
+1. Opens (and closes) an indented block for objects;
+2. Each key-value pair gets its own line, with the value split onto a second;
+3. Applies the different newline capture name on array delimiters.
 
 That is, iterating over each `@NEWLINE` type, we apply the following:
 
@@ -392,6 +392,9 @@ That is, iterating over each `@NEWLINE` type, we apply the following:
 
 (array "," @NEWLINE)
 ```
+
+The first two formatting rules are just for clarity's sake. The last
+rule is what's important and demonstrated below:
 
 ##### `@append_hardline`
 
@@ -482,8 +485,7 @@ That is, iterating over each `@NEWLINE` type, we apply the following:
   "single-line":
   [1, 2, 3],
   "multi-line":
-  [1,
-  2,
+  [1, 2,
   3]
 }
 ```
