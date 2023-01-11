@@ -9,6 +9,8 @@ pub enum Language {
     Bash,
     Json,
     Ocaml,
+    OcamlImplementation,
+    OcamlInterface,
     Rust,
     Toml,
 }
@@ -36,7 +38,8 @@ const EXTENSIONS: &[(Language, &[&str])] = &[
             "webmanifest",
         ],
     ),
-    (Language::Ocaml, &["ml"]),
+    (Language::OcamlImplementation, &["ml"]),
+    (Language::OcamlInterface, &["mli"]),
     (Language::Rust, &["rs"]),
     (Language::Toml, &["toml"]),
 ];
@@ -47,6 +50,8 @@ impl Language {
             "bash" => Ok(Language::Bash),
             "json" => Ok(Language::Json),
             "ocaml" => Ok(Language::Ocaml),
+            "ocaml-implementation" => Ok(Language::OcamlImplementation),
+            "ocaml-interface" => Ok(Language::OcamlInterface),
             "rust" => Ok(Language::Rust),
             "toml" => Ok(Language::Toml),
 
@@ -83,6 +88,8 @@ impl Language {
             Language::Bash => "bash",
             Language::Json => "json",
             Language::Ocaml => "ocaml",
+            Language::OcamlImplementation => "ocaml",
+            Language::OcamlInterface => "ocaml",
             Language::Rust => "rust",
             Language::Toml => "toml",
         }
@@ -101,7 +108,12 @@ impl Language {
         match language {
             Language::Bash => vec![tree_sitter_bash::language()],
             Language::Json => vec![tree_sitter_json::language()],
-            Language::Ocaml => vec![tree_sitter_ocaml::language_ocaml()],
+            Language::Ocaml => vec![
+                tree_sitter_ocaml::language_ocaml(),
+                tree_sitter_ocaml::language_ocaml_interface(),
+            ],
+            Language::OcamlImplementation => vec![tree_sitter_ocaml::language_ocaml()],
+            Language::OcamlInterface => vec![tree_sitter_ocaml::language_ocaml_interface()],
             Language::Rust => vec![tree_sitter_rust::language()],
             Language::Toml => vec![tree_sitter_toml::language()],
         }
