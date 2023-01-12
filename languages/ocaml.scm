@@ -695,6 +695,25 @@
   (and_operator) @prepend_spaced_softline
 )
 
+; There a large class of terms which should be separated from "=" by a soft lineb break.
+(
+  "=" @append_spaced_softline
+  .
+  [
+    (application_expression)
+    (class_body_type)
+    (if_expression)
+    (let_expression)
+    (object_expression)
+    (product_expression)
+    (record_expression)
+    (sequence_expression)
+    (set_expression)
+    (typed_expression)
+    (value_path)
+  ]
+)
+
 ; In module signature, each symbol declaration is separated by a softline.
 ;
 ; module type Name = sig
