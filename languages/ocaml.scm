@@ -752,6 +752,22 @@
 
 ; Put a semicolon delimiter after field declarations, unless they already have
 ; one, in which case we do nothing.
+; The semicolon always comes right after the declaration of the new field,
+; before any comment.
+; Hence, if there is a comment between the field declaration and the associated ";",
+; the semicolon is moved before the comment.
+;
+; type t =
+;   { mutable position : int (* End-of-line comment *);
+;   ...
+;
+; is turned into
+;
+; type t =
+;   {
+;     mutable position : int; (* End-of-line comment *)
+;     ...
+;
 (
   (field_declaration) @append_delimiter
   .
@@ -762,13 +778,13 @@
   (#delimiter! ";")
 )
 (
-  (field_declaration)
-  .
-  ";"* @delete
-  .
-  (comment)+  @append_delimiter
+  (field_declaration) @append_delimiter
   .
   ";"* @do_nothing
+  .
+  (comment)+ @append_input_softline
+  .
+  ";"* @delete
   (#delimiter! ";")
 )
 

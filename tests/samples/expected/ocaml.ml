@@ -17,7 +17,7 @@
 
 type t = {
   mutable buffer: bytes;
-  mutable position: int (* End-of-line comment *);
+  mutable position: int; (* End-of-line comment *)
   mutable length: int;
   initial_buffer: bytes;
 }
@@ -700,10 +700,10 @@ let _ =
 [@@@deprecated "writing code is deprecated, use ai-generated code instead"]
 
 type t = {
-  verbose: int
-  (** Verbosity level. *);
-  loggers: string
-  (** Loggers enabled. *);
-  bflags: bool StrMap.t
-  (** Boolean flags. *);
+  verbose: int;
+  (** Verbosity level. *)
+  loggers: string;
+  (** Loggers enabled. *)
+  bflags: bool StrMap.t;
+  (** Boolean flags. *)
 }
