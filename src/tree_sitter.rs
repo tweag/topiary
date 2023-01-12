@@ -12,15 +12,12 @@ pub fn apply_query(
     query_content: &str,
     language: Language,
 ) -> FormatterResult<AtomCollection> {
-    let grammar = grammar(language);
-    let tree = parse(input_content, grammar)?;
+    let grammars = Language::grammars(language);
+    let (tree, grammar) = parse(input_content, grammars)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
     let query = Query::new(grammar, query_content)
         .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
-
-    // Fail formatting if we don't get a complete syntax tree.
-    check_for_error_nodes(root)?;
 
     // Find the ids of all tree-sitter nodes that were identified as a leaf
     // We want to avoid recursing into them in the collect_leafs function.
@@ -81,25 +78,37 @@ fn capture_name<'a, 'b>(query: &'a Query, capture: &'b QueryCapture) -> &'a str 
     query.capture_names()[capture.index as usize].as_str()
 }
 
-fn grammar(language: Language) -> tree_sitter::Language {
-    match language {
-        Language::Bash => tree_sitter_bash::language(),
-        Language::Json => tree_sitter_json::language(),
-        Language::Ocaml => tree_sitter_ocaml::language_ocaml(),
-        Language::Rust => tree_sitter_rust::language(),
-        Language::Toml => tree_sitter_toml::language(),
-    }
-}
-
-fn parse(content: &str, grammar: tree_sitter::Language) -> FormatterResult<Tree> {
+// A single "language" can correspond to multiple grammars.
+// For instance, we have separate grammars for interfaces and implementation in OCaml.
+// When the proper grammar cannot be inferred from the extension of the input file,
+// this function tries to parse the data with every possible grammar.
+// It returns the syntax tree of the first grammar that succeeds, along with said grammar,
+// or the last error if all grammars fail.
+fn parse(
+    content: &str,
+    grammars: Vec<tree_sitter::Language>,
+) -> FormatterResult<(Tree, tree_sitter::Language)> {
     let mut parser = Parser::new();
-    parser.set_language(grammar).map_err(|_| {
-        FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
-    })?;
-
-    parser
-        .parse(&content, None)
-        .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))
+    grammars
+        .iter()
+        .map(|grammar| {
+            parser.set_language(*grammar).map_err(|_| {
+                FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
+            })?;
+            let tree = parser
+                .parse(&content, None)
+                .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))?;
+            // Fail parsing if we don't get a complete syntax tree.
+            check_for_error_nodes(tree.root_node())?;
+            Ok((tree, *grammar))
+        })
+        .fold(
+            Err(FormatterError::Internal(
+                "Could not find any grammar".into(),
+                None,
+            )),
+            Result::or,
+        )
 }
 
 fn check_for_error_nodes(node: Node) -> FormatterResult<()> {

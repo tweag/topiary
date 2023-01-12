@@ -53,9 +53,9 @@ Options:
   Print version information
 
 Language selection is based on precedence, in the following order:
-* A specified query file
 * A specified language
 * Detected from the input file's extension
+* A specified query file
 
 #### Example
 

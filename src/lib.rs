@@ -72,7 +72,7 @@ pub type FormatterResult<T> = std::result::Result<T, FormatterError>;
 /// let mut output = Vec::new();
 /// let mut query = BufReader::new(File::open("languages/json.scm").expect("query file"));
 ///
-/// match formatter(&mut input, &mut output, &mut query, false) {
+/// match formatter(&mut input, &mut output, &mut query, None, false) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
@@ -88,6 +88,7 @@ pub fn formatter(
     input: &mut dyn io::Read,
     output: &mut dyn io::Write,
     query: &mut dyn io::Read,
+    language: Option<Language>,
     skip_idempotence: bool,
 ) -> FormatterResult<()> {
     let content = read_input(input).map_err(|e| {
@@ -97,7 +98,11 @@ pub fn formatter(
         FormatterError::Reading(ReadingError::Io("Failed to read query content".into(), e))
     })?;
 
-    let configuration = Configuration::parse(&query)?;
+    let mut configuration = Configuration::parse(&query)?;
+    // Replace the language deduced from the query file by the one from the CLI, if any
+    if let Some(l) = language {
+        configuration.language = l
+    }
 
     // All the work related to tree-sitter and the query is done here
     log::info!("Apply Tree-sitter query");
@@ -112,7 +117,7 @@ pub fn formatter(
     let trimmed = trim_trailing_spaces(&rendered);
 
     if !skip_idempotence {
-        idempotence_check(&trimmed, &query)?
+        idempotence_check(&trimmed, &query, language)?
     }
 
     write!(output, "{trimmed}")?;
@@ -130,14 +135,18 @@ fn trim_trailing_spaces(s: &str) -> String {
     Itertools::intersperse(s.split('\n').map(|line| line.trim_end()), "\n").collect::<String>()
 }
 
-fn idempotence_check(content: &str, query: &str) -> FormatterResult<()> {
+fn idempotence_check(
+    content: &str,
+    query: &str,
+    language: Option<Language>,
+) -> FormatterResult<()> {
     log::info!("Checking for idempotence ...");
 
     let mut input = content.as_bytes();
     let mut query = query.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
     let do_steps = || -> Result<(), FormatterError> {
-        formatter(&mut input, &mut output, &mut query, true)?;
+        formatter(&mut input, &mut output, &mut query, language, true)?;
         let reformatted = String::from_utf8(output.into_inner()?)?;
         if content == reformatted {
             Ok(())
@@ -168,7 +177,7 @@ fn parse_error_fails_formatting() {
     let mut input = "[ 1, % ]".as_bytes();
     let mut output = Vec::new();
     let mut query = "(#language! json)".as_bytes();
-    match formatter(&mut input, &mut output, &mut query, true) {
+    match formatter(&mut input, &mut output, &mut query, None, true) {
         Err(FormatterError::Parsing {
             start_line: 1,
             end_line: 1,

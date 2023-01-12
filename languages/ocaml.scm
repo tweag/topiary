@@ -1,6 +1,27 @@
 ; Configuration
 (#language! ocaml)
 
+; This query file is used to format trees produced by two different grammars:
+; - the grammar for OCaml interface files `tree_sitter_ocaml::language_ocaml_interface()`
+; - the grammar for OCaml implementation files `tree_sitter_ocaml::language_ocaml()`
+
+; On certain cases, some files may correctly parse with both grammars, but produce
+; different syntax trees. We want those files to be formatted the same way,
+; independently of the grammar used to parse them.
+
+; To ensure this property, we introduce equivalence classes on syntax node types.
+; Simply put, if two node types are in the same equivalence class, then they must
+; appear in the same queries.
+
+; If you add or modify a query containing a node type in one of the equivalence classes,
+; please make sure to add or modify the corresponding queries for all other node types
+; in the same equivalence class.
+
+; The equivalence classes are the following:
+; - include_module, include_module_type
+; - module_path, extended_module_path, module_type_path
+; - module_name, module_type_name
+
 ; Sometimes we want to indicate that certain parts of our source text should
 ; not be formatted, but taken as is. We use the leaf capture name to inform the
 ; tool of this.
@@ -21,8 +42,9 @@
   (exception_definition)
   (external)
   (floating_attribute)
-  (include_module)
-  (include_module_type)
+  ; equivalence class
+    (include_module)
+    (include_module_type)
   (inheritance_definition)
   (inheritance_specification)
   (instance_variable_definition)
@@ -63,7 +85,9 @@
   [
     (exception_definition)
     (external)
-    (include_module)
+    ; equivalence class
+      (include_module)
+      (include_module_type)
     (module_definition)
     (module_type_definition)
     (open_module)
@@ -390,10 +414,12 @@
     (class_type_path)
     (constructed_type)
     (constructor_path)
-    (extended_module_path)
     (field_get_expression)
     (labeled_argument)
-    (module_path)
+    ; equivalence class
+      (extended_module_path)
+      (module_path)
+      (module_type_path)
     (number)
     (parenthesized_expression)
     (parenthesized_pattern)
@@ -429,11 +455,13 @@
     (constructed_type)
     (constructor_path)
     (constructor_pattern)
-    (extended_module_path)
     (field_get_expression)
     (local_open_pattern)
     (labeled_argument)
-    (module_path)
+    ; equivalence class
+      (extended_module_path)
+      (module_path)
+      (module_type_path)
     (number)
     (parenthesized_expression)
     (parenthesized_pattern)
@@ -700,7 +728,9 @@
   [
     (value_specification)
     (type_definition)
-    (include_module_type)
+    ; equivalence class
+      (include_module)
+      (include_module_type)
   ] @append_spaced_softline
 )
 
