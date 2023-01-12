@@ -696,3 +696,12 @@ let _ = "some string"
   [@@deprecated "assignment are deprecated, inline everything instead"]
 
 [@@@deprecated "writing code is deprecated, use ai-generated code instead"]
+
+type t =
+  { verbose: int
+  (** Verbosity level. *)
+  ; loggers: string
+  (** Loggers enabled. *)
+  ; bflags: bool StrMap.t
+  (** Boolean flags. *)
+  }

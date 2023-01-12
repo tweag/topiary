@@ -66,18 +66,6 @@
   (and_operator) @allow_blank_line_before
 )
 
-; Input softlines before and after all comments. This means that the input
-; decides if a comment should have line breaks before or after. But don't put a
-; softline directly in front of commas or semicolons.
-
-(comment) @prepend_input_softline
-
-(
-  (comment) @append_input_softline
-  .
-  [ "," ";" ]* @do_nothing
-)
-
 ; Append line breaks. If there is a comment following, we don't add anything,
 ; because the input softlines and spaces above will already have sorted out the
 ; formatting.
@@ -764,10 +752,39 @@
 
 ; Put a semicolon delimiter after field declarations, unless they already have
 ; one, in which case we do nothing.
+; The semicolon always comes right after the declaration of the new field,
+; before any comment.
+; Hence, if there is a comment between the field declaration and the associated ";",
+; the semicolon is moved before the comment.
+;
+; type t =
+;   { mutable position : int (* End-of-line comment *);
+;   ...
+;
+; is turned into
+;
+; type t =
+;   {
+;     mutable position : int; (* End-of-line comment *)
+;     ...
+;
+(
+  (field_declaration) @append_delimiter
+  .
+  [
+    ";"
+    (comment)
+  ]* @do_nothing
+  (#delimiter! ";")
+)
 (
   (field_declaration) @append_delimiter
   .
   ";"* @do_nothing
+  .
+  (comment)+ @append_input_softline
+  .
+  ";"* @delete
   (#delimiter! ";")
 )
 
@@ -973,4 +990,16 @@
   (parenthesized_expression) @append_spaced_softline @append_indent_start
   (parenthesized_expression) @append_indent_end
   .
+)
+
+; Input softlines before and after all comments. This means that the input
+; decides if a comment should have line breaks before or after. But don't put a
+; softline directly in front of commas or semicolons.
+
+(comment) @prepend_input_softline
+
+(
+  (comment) @append_input_softline
+  .
+  [ "," ";" ]* @do_nothing
 )

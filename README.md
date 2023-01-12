@@ -330,6 +330,22 @@ single-line nodes.
 )
 ```
 
+### @delete
+
+Suppress the matched node.
+
+#### Example
+
+```scheme
+; Move semicolon after comments.
+(
+  ";" @delete
+  .
+  (comment)+ @append_delimiter
+  (#delimiter! ";")
+)
+```
+
 ### @do_nothing
 
 If any of the captures in a query match are `@do_nothing`, then the match will

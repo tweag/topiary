@@ -45,14 +45,24 @@ pub enum Atom {
     IndentStart,
     /// Represents the contents of a named Tree-sitter node. We track the node id here
     /// as well.
-    Leaf { content: String, id: usize },
+    Leaf {
+        content: String,
+        id: usize,
+    },
     /// Represents a literal string, such as a semicolon.
     Literal(String),
     /// Represents a softline. It will be turned into a hardline for multi-line
     /// constructs, and either a space or nothing for single-line constructs.
-    Softline { spaced: bool },
+    Softline {
+        spaced: bool,
+    },
     /// Represents a space. Consecutive spaces are reduced to one before rendering.
     Space,
+    /// Represents a segment to be deleted.
+    // It is a segment, because if one wants to delete a node,
+    // it might happen that it contains several leaves.
+    DeleteBegin,
+    DeleteEnd,
 }
 
 /// A convenience wrapper around `std::result::Result<T, FormatterError>`.
