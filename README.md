@@ -213,9 +213,9 @@ single-line nodes.
 )
 ```
 
-### @append_hardline
+### @append_hardline / @prepend_hardline
 
-The matched nodes will have a newline appended to them.
+The matched nodes will have a newline appended or prepended to them.
 
 #### Example
 
@@ -346,6 +346,169 @@ be ignored.
   ";"* @do_nothing
   (#delimiter! ";")
 )
+```
+
+### Understanding the different newline captures
+
+| Type            | Single-Line Context | Multi-Line Context |
+| :-------------- | :------------------ | :----------------- |
+| Hardline        | Newline             | Newline            |
+| Empty Softline  | Nothing             | Newline            |
+| Spaced Softline | Space               | Newline            |
+| Input Softline  | Input-Dependent     | Input-Dependent    |
+
+"Input softlines" are rendered as newlines whenever the targeted node
+follows a newline in the input. Otherwise, they are rendered as spaces.
+
+#### Example
+
+Consider the following JSON, which has been hand-formatted to exhibit
+every context under which the different newline capture names operate:
+
+```json
+{
+  "single-line": [1, 2, 3, 4],
+  "multi-line": [
+    1, 2,
+    3
+    , 4
+  ]
+}
+```
+
+We'll apply a simplified set of JSON format queries that:
+1. Opens (and closes) an indented block for objects;
+2. Each key-value pair gets its own line, with the value split onto a second;
+3. Applies the different newline capture name on array delimiters.
+
+That is, iterating over each `@NEWLINE` type, we apply the following:
+
+```scheme
+(#language! json)
+
+(object . "{" @append_hardline @append_indent_start)
+(object "}" @prepend_hardline @prepend_indent_end .)
+(object (pair) @prepend_hardline)
+(pair . _ ":" @append_hardline)
+
+(array "," @NEWLINE)
+```
+
+The first two formatting rules are just for clarity's sake. The last
+rule is what's important; the results of which are demonstrated below:
+
+##### `@append_hardline`
+
+```json
+{
+  "single-line":
+  [1,
+  2,
+  3,
+  4],
+  "multi-line":
+  [1,
+  2,
+  3,
+  4]
+}
+```
+
+##### `@prepend_hardline`
+
+```json
+{
+  "single-line":
+  [1
+  ,2
+  ,3
+  ,4],
+  "multi-line":
+  [1
+  ,2
+  ,3
+  ,4]
+}
+```
+
+##### `@append_empty_softline`
+
+```json
+{
+  "single-line":
+  [1,2,3,4],
+  "multi-line":
+  [1,
+  2,
+  3,
+  4]
+}
+```
+
+##### `@prepend_empty_softline`
+
+```json
+{
+  "single-line":
+  [1,2,3,4],
+  "multi-line":
+  [1
+  ,2
+  ,3
+  ,4]
+}
+```
+
+##### `@append_spaced_softline`
+
+```json
+{
+  "single-line":
+  [1, 2, 3, 4],
+  "multi-line":
+  [1,
+  2,
+  3,
+  4]
+}
+```
+
+##### `@prepend_spaced_softline`
+
+```json
+{
+  "single-line":
+  [1 ,2 ,3 ,4],
+  "multi-line":
+  [1
+  ,2
+  ,3
+  ,4]
+}
+```
+
+##### `@append_input_softline`
+
+```json
+{
+  "single-line":
+  [1, 2, 3, 4],
+  "multi-line":
+  [1, 2,
+  3, 4]
+}
+```
+
+##### `@prepend_input_softline`
+
+```json
+{
+  "single-line":
+  [1 ,2 ,3 ,4],
+  "multi-line":
+  [1 ,2 ,3
+  ,4]
+}
 ```
 
 ## Suggested workflow
