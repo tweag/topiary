@@ -579,9 +579,11 @@
     "begin"
     "do"
     "else"
+    "in"
     "of"
     "struct"
     "then"
+    "with"
     "->"
     "{"
     ":"
@@ -681,13 +683,9 @@
   (and_operator) @prepend_spaced_softline
 )
 
-; The following are many constructs that need a softline.
+; There a large class of terms which should be separated from "=" by a soft lineb break.
 (
-  [
-    "in"
-    "with"
-    "="
-  ] @append_spaced_softline
+  "=" @append_spaced_softline
   .
   [
     (application_expression)

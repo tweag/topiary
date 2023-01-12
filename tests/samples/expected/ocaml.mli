@@ -390,7 +390,8 @@ sig
   *)
 
   module Arith:
-  Fixed_point_repr.Safe with type 'a t = private Saturation_repr.may_saturate Saturation_repr.t
+  Fixed_point_repr.Safe with
+  type 'a t = private Saturation_repr.may_saturate Saturation_repr.t
 
   (** For maintenance operations or for testing, gas can be
      [Unaccounted]. Otherwise, the computation is [Limited] by the
@@ -2186,7 +2187,8 @@ sig
   module Merkle_hash: S.HASH
 
   module Merkle:
-  Merkle_list.T with type elt = Tx_rollup_message_result_hash.t
+  Merkle_list.T with
+  type elt = Tx_rollup_message_result_hash.t
   and type h = Merkle_hash.t
 
   type 'a template = {
@@ -3422,7 +3424,8 @@ sig
 
     module History:
     sig
-      include Bounded_history_repr.S with type key = Hash.t
+      include Bounded_history_repr.S with
+      type key = Hash.t
       and type value = merkelized_and_payload
 
       val no_history : t
@@ -3518,7 +3521,8 @@ sig
     module Hash: S.HASH
 
     module History:
-    Bounded_history_repr.S with type key = Hash.t
+    Bounded_history_repr.S with
+    type key = Hash.t
     and type value = history_proof
 
     type serialized_proof
@@ -3765,7 +3769,8 @@ sig
       end
     end
 
-    type ('state , 'proof , 'output )implementation = (module S with type state = 'state
+    type ('state , 'proof , 'output )implementation = (module S with
+    type state = 'state
     and type proof = 'proof
     and type output_proof = 'output)
 
@@ -3822,7 +3827,8 @@ sig
 
     module Make (C: P) :
     sig
-      include PVM.S with type context = C.Tree.t
+      include PVM.S with
+      type context = C.Tree.t
       and type state = C.tree
       and type proof = C.proof
 
@@ -3844,7 +3850,8 @@ sig
     val reference_initial_state_hash : State_hash.t
 
     module Protocol_implementation:
-    PVM.S with type context = Context.t
+    PVM.S with
+    type context = Context.t
     and type state = Context.tree
     and type proof = Context.Proof.tree Context.Proof.t
   end
@@ -3889,7 +3896,8 @@ sig
 
     module Make (Wasm_backend: Make_wasm) (C: P) :
     sig
-      include PVM.S with type context = C.Tree.t
+      include PVM.S with
+      type context = C.Tree.t
       and type state = C.tree
       and type proof = C.proof
 
@@ -3909,7 +3917,8 @@ sig
     end
 
     module Protocol_implementation:
-    PVM.S with type context = Context.t
+    PVM.S with
+    type context = Context.t
     and type state = Context.tree
     and type proof = Context.Proof.tree Context.Proof.t
 
@@ -5452,7 +5461,8 @@ end
 (** This module re-exports definitions from {!Raw_context.Consensus}. *)
 module Consensus:
 sig
-  include Raw_context.CONSENSUS with type t := t
+  include Raw_context.CONSENSUS with
+  type t := t
   and type slot := Slot.t
   and type 'a slot_map := 'a Slot.Map.t
   and type slot_set := Slot.Set.t
