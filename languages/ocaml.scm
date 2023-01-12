@@ -774,7 +774,7 @@
   [
     ";"
     (comment)
-  ] * @do_nothing
+  ]* @do_nothing
   (#delimiter! ";")
 )
 (
