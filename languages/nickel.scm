@@ -1,6 +1,9 @@
 ; Configuration
 (#language! nickel)
 
+; Sometimes we want to indicate that certain parts of our source text should
+; not be formatted, but taken as is. We use the leaf capture name to inform the
+; tool of this.
 [
   (static_string)
   (str_chunks_single)
@@ -30,7 +33,7 @@
     "forall"
     "in"
     "let"
-    "switch"
+    "match"
     "null"
     "true"
     "false"
@@ -38,6 +41,9 @@
     "import"
     "default"
     "doc"
+    "force"
+    "optional"
+    "priority"
     "|"
     ":"
     "?"
@@ -51,6 +57,27 @@
     "Bool"
     "Str"
     "->"
+    (interpolation_start)
+    (interpolation_end)
+    ;  We put spaces around infix operators
+    "++"
+    "@"
+    "*"
+    "/"
+    "%"
+    "+"
+    "-"
+    "!"
+    "&"
+    "|>"
+    "<"
+    "<="
+    ">"
+    ">="
+    "=="
+    "!="
+    "&&"
+    "||"
   ]
 ) @prepend_space @append_space
 
@@ -72,18 +99,18 @@
   (pattern) @append_space
 )
 
-(switch_expr
+(match_expr
   "{" @append_spaced_softline @append_indent_start
   "}" @prepend_indent_end @prepend_spaced_softline @append_spaced_softline
 )
 
-(switch_expr
+(match_expr
   "," @append_spaced_softline
 )
 
 (ite_expr
   "then" @prepend_spaced_softline @append_spaced_softline @append_indent_start
-  t1 : (term) @append_spaced_softline @append_indent_end
+  t1: (term) @append_spaced_softline @append_indent_end
   "else" @append_indent_start @append_spaced_softline
   t2: (term) @append_indent_end
 )
@@ -136,38 +163,11 @@
   "," @append_spaced_softline
 )
 
-[
-  (interpolation_start)
-  (interpolation_end)
-] @prepend_space @append_space
-
-(switch_case
+(match_case
   "=>" @append_spaced_softline @append_indent_start
   (_) @append_indent_end
   .
 )
-
-; We put spaces around infix operators
-[
-  "++"
-  "@"
-  "*"
-  "/"
-  "%"
-  "+"
-  "-"
-  "!"
-  "&"
-  "|>"
-  "<"
-  "<="
-  ">"
-  ">="
-  "=="
-  "!="
-  "&&"
-  "||"
-] @prepend_space @append_space
 
 (type_atom
   [
