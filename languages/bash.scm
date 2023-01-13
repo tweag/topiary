@@ -11,21 +11,24 @@
   (command)
   (list)
   (pipeline)
+  (for_statement)
   ; TODO: etc.
 ] @allow_blank_line_before
 
-; Prepend spaces
-; (Not "surround", to avoid extraneous spaces between delimiters)
+; Surround with spaces
 [
   "if"
   "then"
   "elif"
   "else"
   "fi"
+  "for"
+  "in"
+  "do"
+  "done"
   (string)
-  (test_command)
   ; TODO: etc.
-] @prepend_space
+] @append_space @prepend_space
 
 ;; Commands
 
@@ -44,14 +47,16 @@
 ; One command per line in the following contexts:
 ; * Top-level
 ; * In any branch of a conditional
+; * Within loops
 ; * <TODO: etc.>
 ;
 ; NOTE Because "command" is such a pervasive and general concept, each
 ; context needs to be individually enumerated to account for exceptions.
 (program [(command) (list) (pipeline)] @prepend_hardline)
-(if_statement _ "then" [(command) (list) (pipeline)] @prepend_hardline)
-(elif_clause _ "then" [(command) (list) (pipeline)] @prepend_hardline)
-(else_clause [(command) (list) (pipeline)] @prepend_hardline)
+(if_statement . _ "then" [(command) (list) (pipeline)] @prepend_hardline)
+(elif_clause . _ "then" [(command) (list) (pipeline)] @prepend_hardline)
+(else_clause . "else" [(command) (list) (pipeline)] @prepend_hardline)
+(do_group . "do" [(command) (list) (pipeline)] @prepend_hardline)
 
 ; Surround command list and pipeline delimiters with spaces
 (list ["&&" "||"] @append_space @prepend_space)
@@ -63,17 +68,13 @@
 (_ [(command) (list) (pipeline)] . "&" @prepend_space)
 
 ; Space between command line arguments
-(command
-  argument: _ @append_space @prepend_space
-)
+(command argument: _* @append_space @prepend_space)
 
 ;; Operators
 
 ; Ensure the negation operator is surrounded by spaces
 ; NOTE This is a syntactic requirement
-(negated_command
-  "!" @prepend_space @append_space
-)
+(negated_command . "!" @prepend_space @append_space)
 
 ;; Conditionals
 
@@ -91,9 +92,9 @@
 ] "then" @append_hardline @append_indent_start
 
 ; New line after "else" and start indent block
-(else_clause "else" @append_hardline @append_indent_start)
+(else_clause . "else" @append_hardline @append_indent_start)
 
-; Keep the "if" and the "then" on the same line,
+; Keep the "if"/"elif" and the "then" on the same line,
 ; inserting a delimiter when necessary
 (_
   (_) @prepend_space @append_delimiter
@@ -109,14 +110,12 @@
     "fi"
     (else_clause)
     (elif_clause)
-  ] @prepend_indent_end @prepend_spaced_softline @append_hardline
+  ] @prepend_indent_end @prepend_hardline @append_hardline
 )
 
 ;; Test Commands
 
-(test_command
-  (unary_expression) @prepend_space @append_space
-)
+(test_command . (unary_expression) @prepend_space @append_space)
 
 ; FIXME The binary_expression node is not being returned by Tree-Sitter
 ; See https://github.com/tweag/topiary/pull/155#issuecomment-1364143677
@@ -125,4 +124,30 @@
      left: _ @prepend_space @append_space
      right: _ @prepend_space @append_space
   )
+)
+
+;; Loops
+
+; Start loops on a new line
+[
+  (for_statement)
+  ; <TODO: etc.>
+] @prepend_hardline
+
+; Indentation block between the "do" and the "done"
+(do_group . "do" @append_hardline @append_indent_start)
+(do_group "done" @prepend_indent_end @prepend_hardline .)
+
+; Ensure the word list is delimited by spaces
+(for_statement value: _* @prepend_space)
+
+; Keep the loop construct and the "do" on the same line,
+; inserting a delimiter when necessary
+(_
+  (_) @append_delimiter
+  ";"* @do_nothing
+  .
+  (do_group)
+
+  (#delimiter! ";")
 )
