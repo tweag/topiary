@@ -5,15 +5,17 @@
 (string) @leaf
 
 ; Allow blank line before
-; TODO Add directives here...
 [
   (comment)
   (if_statement)
+  (command)
+  (list)
+  (pipeline)
+  ; TODO: etc.
 ] @allow_blank_line_before
 
 ; Prepend spaces
 ; (Not "surround", to avoid extraneous spaces between delimiters)
-; TODO Add keywords, etc., here...
 [
   "if"
   "then"
@@ -22,27 +24,43 @@
   "fi"
   (string)
   (test_command)
+  ; TODO: etc.
 ] @prepend_space
 
 ;; Commands
 
-; One command per line, modulo many exceptions:
-; * Strings of && and ||
-; * Pipelines
-; * Subshells
-; * As arguments to if, while, for, etc.
-; * Others?...
+; NOTE "Command" is shorthand for a "unit of execution":
+; * Simple commands (e.g., binaries, builtins, functions, etc.)
+; * Command lists
+; * Command pipelines
 ;
-; FIXME Can this be generalised, or does *every* context need to be
-; individually enumerated?...
-(program (command) @prepend_spaced_softline)
-(if_statement _ "then" (command) @prepend_spaced_softline)
-(elif_clause _ "then" (command) @prepend_spaced_softline)
-(else_clause (command) @prepend_spaced_softline)
+; That is: [(command) (list) (pipeline)], per the grammar
 
-[(list) (pipeline)] @prepend_empty_softline
+; FIXME I don't think it's possible to insert the necessary line
+; continuations; or, at least, it's not possible to insert them only in
+; a multi-line context. As such, all multi-line commands are forcibly
+; collapsed on to a single line for now... See Issue #172
+
+; One command per line in the following contexts:
+; * Top-level
+; * In any branch of a conditional
+; * <TODO: etc.>
+;
+; NOTE Because "command" is such a pervasive and general concept, each
+; context needs to be individually enumerated to account for exceptions.
+(program [(command) (list) (pipeline)] @prepend_hardline)
+(if_statement _ "then" [(command) (list) (pipeline)] @prepend_hardline)
+(elif_clause _ "then" [(command) (list) (pipeline)] @prepend_hardline)
+(else_clause [(command) (list) (pipeline)] @prepend_hardline)
+
+; Surround command list and pipeline delimiters with spaces
 (list ["&&" "||"] @append_space @prepend_space)
 (pipeline ["|" "|&"] @append_space @prepend_space)
+
+; Prepend the asynchronous operator with a space
+; NOTE If I'm not mistaken, this can interpose two "commands" -- like a
+; delimiter -- but I've never seen this form in the wild
+(_ [(command) (list) (pipeline)] . "&" @prepend_space)
 
 ; Space between command line arguments
 (command
@@ -64,7 +82,7 @@
   (if_statement)
   (elif_clause)
   (else_clause)
-] @prepend_spaced_softline
+] @prepend_hardline
 
 ; New line after "then" and start indent block
 [
