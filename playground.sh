@@ -48,7 +48,7 @@ main() {
 
   # Horizontal rule (this is a function because executing it in a TTY-
   # -less subshell, to assign it to a variable, sets COLUMNS to 0)
-  hr() { printf "%${COLUMNS}s" "" | tr " " "-"; }
+  hr() { printf "%${COLUMNS}s\n" "" | tr " " "-"; }
 
   while true; do
     clear
