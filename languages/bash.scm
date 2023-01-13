@@ -15,6 +15,7 @@
   (if_statement)
   (list)
   (pipeline)
+  (while_statement)
   ; TODO: etc.
 ] @allow_blank_line_before
 
@@ -30,6 +31,8 @@
   "in"
   "select"
   "then"
+  "until"
+  "while"
   (string)
   ; TODO: etc.
 ] @append_space @prepend_space
@@ -133,9 +136,9 @@
 
 ; Start loops on a new line
 [
-  (for_statement)
   (c_style_for_statement)
-  ; <TODO: etc.>
+  (for_statement)
+  (while_statement)
 ] @prepend_hardline
 
 ; Indentation block between the "do" and the "done"
