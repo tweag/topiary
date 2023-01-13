@@ -15,6 +15,7 @@
   (list)
   (pipeline)
   (for_statement)
+  (c_style_for_statement)
   ; TODO: etc.
 ] @allow_blank_line_before
 
@@ -100,9 +101,9 @@
 ; Keep the "if"/"elif" and the "then" on the same line,
 ; inserting a delimiter when necessary
 (_
-  (_) @prepend_space @append_delimiter
   ";"* @do_nothing
-  "then"
+  .
+  "then" @prepend_delimiter
 
   (#delimiter! ";")
 )
@@ -121,12 +122,11 @@
 (test_command . (unary_expression) @prepend_space @append_space)
 
 ; FIXME The binary_expression node is not being returned by Tree-Sitter
+; in the context of a (test_command); it does work in other contexts
 ; See https://github.com/tweag/topiary/pull/155#issuecomment-1364143677
-(test_command
-  (binary_expression
-     left: _ @prepend_space @append_space
-     right: _ @prepend_space @append_space
-  )
+(binary_expression
+   left: _ @append_space
+   right: _ @prepend_space
 )
 
 ;; Loops
@@ -134,6 +134,7 @@
 ; Start loops on a new line
 [
   (for_statement)
+  (c_style_for_statement)
   ; <TODO: etc.>
 ] @prepend_hardline
 
@@ -141,16 +142,22 @@
 (do_group . "do" @append_hardline @append_indent_start)
 (do_group "done" @prepend_indent_end @prepend_hardline .)
 
-; Ensure the word list is delimited by spaces
+; Ensure the word list is delimited by spaces in classic for loops
 (for_statement value: _* @prepend_space)
+
+; Ensure the loop condition is pleasantly spaced in C-style for loops
+(c_style_for_statement
+  initializer: _ @prepend_space
+  condition: _ @prepend_space
+  update: _ @prepend_space @append_space
+)
 
 ; Keep the loop construct and the "do" on the same line,
 ; inserting a delimiter when necessary
 (_
-  (_) @append_delimiter
   ";"* @do_nothing
   .
-  (do_group)
+  (do_group) @prepend_delimiter
 
   (#delimiter! ";")
 )
