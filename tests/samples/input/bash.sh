@@ -24,3 +24,28 @@ fi
 
 multi \
 | line |& pipeline
+
+for thing in foo bar quux
+do
+  echo $thing
+  rm -rf /
+done
+
+select thing in foo bar quux; do
+  echo $thing
+  break
+done
+
+for (( i=0; i<10; i++ )); do
+  echo $i
+done
+
+while true
+do
+  echo "Hello world!"
+done
+
+until true
+do
+  echo "Hello world!"
+done
