@@ -27,6 +27,7 @@
   "else"
   "fi"
   "for"
+  "select"
   "in"
   "do"
   "done"
