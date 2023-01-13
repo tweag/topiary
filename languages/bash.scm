@@ -1,36 +1,35 @@
 ; Configuration
 (#language! bash)
 
-; FIXME Blank line spacing around major syntactic blocks is not correct.
-; Some blank lines are getting consumed unexpectedly in the output.
-
 ; Don't modify string literals
 (string) @leaf
 
 ; Allow blank line before
+; FIXME Blank line spacing around major syntactic blocks is not correct.
+; Some blank lines are getting consumed unexpectedly in the output.
 [
-  (comment)
-  (if_statement)
+  (c_style_for_statement)
   (command)
+  (comment)
+  (for_statement)
+  (if_statement)
   (list)
   (pipeline)
-  (for_statement)
-  (c_style_for_statement)
   ; TODO: etc.
 ] @allow_blank_line_before
 
 ; Surround with spaces
 [
-  "if"
-  "then"
+  "do"
+  "done"
   "elif"
   "else"
   "fi"
   "for"
-  "select"
+  "if"
   "in"
-  "do"
-  "done"
+  "select"
+  "then"
   (string)
   ; TODO: etc.
 ] @append_space @prepend_space
