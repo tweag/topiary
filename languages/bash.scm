@@ -62,10 +62,6 @@
 ; delimiter -- but I've never seen this form in the wild
 (_ [(command) (list) (pipeline)] . "&" @prepend_space)
 
-[(list) (pipeline)] @prepend_empty_softline
-(list ["&&" "||"] @append_space @prepend_space)
-(pipeline ["|" "|&"] @append_space @prepend_space)
-
 ; Space between command line arguments
 (command
   argument: _ @append_space @prepend_space
