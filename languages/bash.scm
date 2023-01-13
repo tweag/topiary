@@ -1,6 +1,9 @@
 ; Configuration
 (#language! bash)
 
+; FIXME Blank line spacing around major syntactic blocks is not correct.
+; Some blank lines are getting consumed unexpectedly in the output.
+
 ; Don't modify string literals
 (string) @leaf
 
