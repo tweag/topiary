@@ -1,11 +1,8 @@
 ; Configuration
 (#language! bash)
 
-; Don't modify commands and string literals
-[
- (command)
- (string)
-] @leaf
+; Don't modify string literals
+(string) @leaf
 
 ; Allow blank line before
 ; FIXME Blank line spacing around major syntactic blocks is not correct.
@@ -120,6 +117,10 @@
 )
 
 ; Space between command line arguments
+; NOTE If we treat (command) as a leaf node, then commands are formatted
+; as is and the below will be ignored. On balance, I think keeping this
+; rule, rather than deferring to the input, is the better choice
+; (although it's not without its problems; e.g., see Issue #172).
 (command
   argument: _* @append_space @prepend_space
 )
