@@ -575,3 +575,24 @@ In order to work productively on query files, the following is one suggested way
 ```
 
 12. Run `cargo test` again, see if the output is better now, and then go back to step 6.
+
+### Terminal-Based Playground
+
+Nix users may also find the `playground.sh` script to be helpful in
+aiding the interactive development of query files. When run in a
+terminal, it will format the given source input with the requested query
+file, updating the output on any inotify event against those files.
+
+```
+Usage: playground.sh (LANGUAGE | QUERY_FILE) [INPUT_SOURCE]
+
+LANGUAGE can be one of the supported languages (e.g., "ocaml", "rust",
+etc.); alternatively, give the path to the query file itself, as
+QUERY_FILE.
+
+The INPUT_SOURCE is optional. If not specified, it defaults to trying
+to find the bundled integration test input file for the given language.
+```
+
+For example, the playground can be run in a tmux pane, with your editor
+of choice open in another.
