@@ -224,7 +224,11 @@
 ; new line in a single-line context
 ; NOTE The terminator is optional in the final condition
 (case_item
-  [";;" ";;&" ";&"] @prepend_empty_softline @append_hardline
+  [
+    ";;"
+    ";;&"
+    ";&"
+  ] @prepend_empty_softline @append_hardline
 )
 
 ; Finish indent blocks after switch branches and at the "esac", which
