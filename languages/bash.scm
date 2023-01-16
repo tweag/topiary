@@ -1,8 +1,11 @@
 ; Configuration
 (#language! bash)
 
-; Don't modify string literals
-(string) @leaf
+; Don't modify commands and string literals
+[
+ (command)
+ (string)
+] @leaf
 
 ; Allow blank line before
 ; FIXME Blank line spacing around major syntactic blocks is not correct.
