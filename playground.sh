@@ -46,24 +46,33 @@ main() {
   local input="${2-$(get_sample_input "${language}")}"
   [[ -e "${input}" ]] || fail "Couldn't find input source file '${input}'"
 
+  # Horizontal rule (this is a function because executing it in a TTY-
+  # -less subshell, to assign it to a variable, sets COLUMNS to 0)
+  hr() { printf "%${COLUMNS}s\n" "" | tr " " "-"; }
+
   while true; do
     clear
 
+    hr
     cat <<-EOF
 		Query File    ${query}
 		Input Source  ${input}
-		$(printf "%${COLUMNS}s" "" | tr " " "-")
 		EOF
+    hr
 
     cargo run --quiet -- \
       --skip-idempotence \
       --query "${query}" \
-      --input-file "${input}"
+      --input-file "${input}" \
+    || true
+
+    hr
 
     # NOTE We don't wait for specific inotify events because different
     # editors have different strategies for modifying files
     inotifywait --quiet "${query}" "${input}"
   done
+
 }
 
 main "$@"
