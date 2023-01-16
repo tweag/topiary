@@ -90,6 +90,9 @@
 )
 
 ; Surround command list and pipeline delimiters with spaces
+; TODO These rules can be subsumed into the list of symbols that are
+; surrounded by spaces, above; the context is irrelevant.
+; (See https://github.com/tweag/topiary/pull/173#discussion_r1071123588)
 (list
   [
     "&&"
