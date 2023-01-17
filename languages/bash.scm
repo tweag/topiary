@@ -6,17 +6,18 @@
 
 ; Allow blank line before
 ; FIXME Blank line spacing around major syntactic blocks is not correct.
-; Some blank lines are getting consumed unexpectedly in the output.
 [
   (c_style_for_statement)
   (case_item)
   (case_statement)
   (command)
   (comment)
+  (compound_statement)
   (for_statement)
   (if_statement)
   (list)
   (pipeline)
+  (subshell)
   (while_statement)
   ; TODO: etc.
 ] @allow_blank_line_before
@@ -41,14 +42,49 @@
   ; TODO: etc.
 ] @append_space @prepend_space
 
+;; Compound Statements and Subshells
+
+; Compound statements and subshells are formatted in exactly the same
+; way. In a multi-line context, their opening parenthesis triggers a new
+; line and the start of an indent block; the closing parenthesis
+; finishes that block. In a single-line context, spacing is used instead
+; of newlines (NOTE that this is a syntactic requirement of compound
+; statements, but not of subshells).
+;
+; NOTE Despite being isomorphic, the queries for compound statements and
+; subshells are _not_ generalised, to ensure parentheses balance.
+
+(compound_statement
+  .
+  "{" @append_spaced_softline @append_indent_start
+)
+
+(compound_statement
+  "}" @prepend_spaced_softline @prepend_indent_end
+  .
+)
+
+(subshell
+  .
+  "(" @append_spaced_softline @append_indent_start
+)
+
+(subshell
+  ")" @prepend_spaced_softline @prepend_indent_end
+  .
+)
+
 ;; Commands
 
-; NOTE "Command" is shorthand for a "unit of execution":
+; NOTE "Command" is an epithet for a "unit of execution":
 ; * Simple commands (e.g., binaries, builtins, functions, etc.)
 ; * Command lists
 ; * Command pipelines
+; * Compound statements
+; * Subshells
 ;
-; That is: [(command) (list) (pipeline)], per the grammar
+; That is, per the grammar:
+;   [(command) (list) (pipeline) (compound_statement) (subshell)]
 
 ; FIXME I don't think it's possible to insert the necessary line
 ; continuations; or, at least, it's not possible to insert them only in
@@ -57,35 +93,47 @@
 
 ; One command per line in the following contexts:
 ; * Top-level
+; * Multi-line compound statements and subshells
 ; * In any branch of a conditional
 ; * In any branch of a switch statement
 ; * Within loops
 ; * <TODO: etc.>
 ;
 ; NOTE Because "command" is such a pervasive and general concept, each
-; context needs to be individually enumerated to account for exceptions.
+; context needs to be individually enumerated to account for exceptions;
+; the primary of which being the condition in if statements.
 (program
-  [(command) (list) (pipeline)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_hardline
+)
+
+; NOTE Single-line compound statements are a thing; hence the softline
+(compound_statement
+  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_spaced_softline
+)
+
+; NOTE Single-line subshells are a thing; hence the softline
+(subshell
+  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_spaced_softline
 )
 
 (if_statement
   .
   _
   "then"
-  [(command) (list) (pipeline)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_hardline
 )
 
 (elif_clause
   .
   _
   "then"
-  [(command) (list) (pipeline)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_hardline
 )
 
 (else_clause
   .
   "else"
-  [(command) (list) (pipeline)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_hardline
 )
 
 ; NOTE Single-line switch branches are a thing; hence the softline
@@ -93,13 +141,13 @@
   .
   _
   ")"
-  [(command) (list) (pipeline)] @prepend_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_spaced_softline
 )
 
 (do_group
   .
   "do"
-  [(command) (list) (pipeline)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_hardline
 )
 
 ; Surround command list and pipeline delimiters with spaces
@@ -124,7 +172,7 @@
 ; NOTE If I'm not mistaken, this can interpose two "commands" -- like a
 ; delimiter -- but I've never seen this form in the wild
 (_
-  [(command) (list) (pipeline)]
+  [(command) (list) (pipeline) (compound_statement) (subshell)]
   .
   "&" @prepend_space
 )
@@ -184,7 +232,7 @@
     "fi"
     (else_clause)
     (elif_clause)
-  ] @prepend_indent_end @prepend_hardline @append_hardline
+  ] @prepend_indent_end @prepend_hardline
 )
 
 ;; Test Commands

@@ -7,7 +7,6 @@ if some_command; then
   do_something
   another_thing --foo --bar
 fi
-
 if [[ -e "/some/file" ]] || true; then
   foo
 elif ! ((1==0)); then
@@ -16,7 +15,6 @@ elif ! ((1==0)); then
 else
   baz && quux || xyzzy &
 fi
-
 multi | line |& pipeline
 for thing in foo bar quux; do
   echo $thing
@@ -47,3 +45,28 @@ case "${foo}" in
   *)
     exit 1
 esac
+{
+  here
+  is
+  { a; nested; compound; }
+}
+if { foo; }; then
+  echo
+fi
+(
+  here
+  is
+  ( a; nested; subshell )
+)
+if ( foo; bar ); then
+  echo
+fi
+{ one; ( inside; the ); other; }
+(
+  one
+  {
+    inside
+    the
+  }
+  other
+)

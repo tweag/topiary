@@ -62,3 +62,30 @@ case "${foo}" in
   *)
     exit 1
 esac
+
+{
+  here
+  is
+  { a; nested; compound; }
+}
+
+if { foo; }; then
+  echo
+fi
+
+(
+  here
+  is
+  ( a; nested; subshell )
+)
+
+if ( foo; bar ); then
+  echo
+fi
+
+{ one; (inside; the); other; }
+( one
+  { inside
+    the
+  }
+  other )
