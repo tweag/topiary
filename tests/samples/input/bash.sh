@@ -89,3 +89,10 @@ fi
     the
   }
   other )
+
+function foo  () {
+  bar
+  quux || xyzzy
+}
+
+quux() { xyzzy; }

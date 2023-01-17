@@ -14,6 +14,7 @@
   (comment)
   (compound_statement)
   (for_statement)
+  (function_definition)
   (if_statement)
   (list)
   (pipeline)
@@ -327,4 +328,24 @@
   (do_group) @prepend_delimiter
 
   (#delimiter! ";")
+)
+
+;; Function Definitions
+
+; NOTE Much of the formatting work for function definitions is done by
+; whatever already-defined queries apply to the function body (e.g.,
+; (compound_statement), etc.). All we do here is ensure functions get
+; their own line and put a space between its name and the body.
+(function_definition) @prepend_hardline
+
+(function_definition
+  body: _ @prepend_space
+)
+
+; NOTE The "function" keyword in function definitions is optional and
+; thus usually considered redundant. Therefore we delete it, if it's
+; present in the input.
+(function_definition
+  .
+  "function" @delete
 )

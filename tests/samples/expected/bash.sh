@@ -70,3 +70,8 @@ fi
   }
   other
 )
+foo() {
+  bar
+  quux || xyzzy
+}
+quux() { xyzzy; }
