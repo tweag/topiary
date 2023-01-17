@@ -49,3 +49,16 @@ until true
 do
   echo "Hello world!"
 done
+
+case "${foo}" in
+  single) line --mode ;;
+  multi)
+    line && mode
+    ;;&
+  bar|quux)
+    xyzzy
+  do_something | least_expected
+    ;;
+  *)
+    exit 1
+esac

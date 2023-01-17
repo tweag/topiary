@@ -9,6 +9,8 @@
 ; Some blank lines are getting consumed unexpectedly in the output.
 [
   (c_style_for_statement)
+  (case_item)
+  (case_statement)
   (command)
   (comment)
   (for_statement)
@@ -21,10 +23,12 @@
 
 ; Surround with spaces
 [
+  "case"
   "do"
   "done"
   "elif"
   "else"
+  "esac"
   "fi"
   "for"
   "if"
@@ -54,6 +58,7 @@
 ; One command per line in the following contexts:
 ; * Top-level
 ; * In any branch of a conditional
+; * In any branch of a switch statement
 ; * Within loops
 ; * <TODO: etc.>
 ;
@@ -81,6 +86,14 @@
   .
   "else"
   [(command) (list) (pipeline)] @prepend_hardline
+)
+
+; NOTE Single-line switch branches are a thing; hence the softline
+(case_item
+  .
+  _
+  ")"
+  [(command) (list) (pipeline)] @prepend_spaced_softline
 )
 
 (do_group
@@ -122,7 +135,7 @@
 ; rule, rather than deferring to the input, is the better choice
 ; (although it's not without its problems; e.g., see Issue #172).
 (command
-  argument: _* @append_space @prepend_space
+  argument: _* @prepend_space
 )
 
 ;; Operators
@@ -187,6 +200,43 @@
 (binary_expression
    left: _ @append_space
    right: _ @prepend_space
+)
+
+;; Switch Statements
+
+; Start switch on a new line
+(case_statement) @prepend_hardline
+
+; New line after "in" and start indent block
+(case_statement
+  .
+  _
+  "in" @append_hardline @append_indent_start
+)
+
+; New (soft)line after switch branch and start indent block
+(case_item
+  ")" @append_spaced_softline @append_indent_start
+)
+
+; Ensure switch branch terminators appear on their own line, in a
+; multi-line context; or, at least, push the next switch branch on to a
+; new line in a single-line context
+; NOTE The terminator is optional in the final condition
+(case_item
+  [
+    ";;"
+    ";;&"
+    ";&"
+  ] @prepend_empty_softline @append_hardline
+)
+
+; Finish indent blocks after switch branches and at the "esac", which
+; should appear on its own line
+(case_item) @append_indent_end
+(case_statement
+  "esac" @prepend_hardline @prepend_indent_end
+  .
 )
 
 ;; Loops
