@@ -682,8 +682,9 @@ module F (X: T1) (Y: T1 with type t := X.t) = struct
 end
 
 (* Showcase ppx usage *)
-let lid = [%sedlex.regexp? R] in
-body
+let _ =
+  let lid = [%sedlex.regexp? R] in
+  body
 
 let _ = [%sedlex.regexp R]
 

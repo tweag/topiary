@@ -959,6 +959,25 @@
   )
 )
 
+; Indent and add softlines in multiline application expressions, such as
+; let _ =
+;   large function
+;     long_argument_1
+;     long_argument_2
+;     long_argument_3
+;     long_argument_4
+(application_expression
+  .
+  (_) @append_indent_start
+  (_) @append_indent_end
+  .
+)
+(application_expression
+  (_) @append_spaced_softline
+  .
+  (_)
+)
+
 ; Try block formatting
 ; A soft linebreak after the "try" (potentially "try%ppx") and one after the "with".
 (try_expression
@@ -976,17 +995,6 @@
 (try_expression
   "with" @prepend_indent_end @prepend_spaced_softline @append_indent_start
   (_) @append_indent_end
-  .
-)
-
-; Softlines and indenting between parenthesized expressions
-;
-; mkexp (Texp_construct(mknoloc lid, csome, [texp]))
-;   (type_option texp.exp_type) texp.exp_loc texp.exp_env
-;
-(
-  (parenthesized_expression) @append_spaced_softline @append_indent_start
-  (parenthesized_expression) @append_indent_end
   .
 )
 
