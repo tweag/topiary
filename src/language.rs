@@ -1,3 +1,4 @@
+// use std::env::var;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
@@ -83,6 +84,8 @@ impl Language {
         Err(FormatterError::LanguageDetection(filename, extension))
     }
 
+    // Different languages may map to the same query file, because their grammars
+    // produce similar trees, which can be formatted with the same queries.
     pub fn query_file_base_name(language: Language) -> &'static str {
         match language {
             Language::Bash => "bash",
@@ -95,13 +98,21 @@ impl Language {
         }
     }
 
-    // Different languages may map to the same query file, because their grammars
-    // produce similar trees, which can be formatted with the same queries.
     pub fn query_path(language: Language) -> PathBuf {
         let query_file = Self::query_file_base_name(language);
 
-        PathBuf::from(option_env!("TOPIARY_LANGUAGE_DIR").unwrap_or("languages"))
-            .join(format!("{query_file}.scm"))
+        // We test 3 different locations for query files, and stop
+        // at the first which works:
+        // * the TOPIARY_LANGUAGE_DIR env variable at runtime,
+        // * the TOPIARY_LANGUAGE_DIR env variable at compile time,
+        // * the "languages" subdirectory of the running directory.
+        PathBuf::from(
+            std::env::var("TOPIARY_LANGUAGE_DIR")
+                .ok()
+                .or(option_env!("TOPIARY_LANGUAGE_DIR").map(String::from))
+                .unwrap_or_else(|| "languages".into()),
+        )
+        .join(format!("{query_file}.scm"))
     }
 
     pub fn grammars(language: Language) -> Vec<tree_sitter::Language> {
