@@ -1,8 +1,12 @@
 ; Configuration
 (#language! bash)
 
-; Don't modify string literals
-(string) @leaf
+; Don't modify string literals or variable expansions
+[
+  (expansion)
+  (simple_expansion)
+  (string)
+] @leaf
 
 ; Allow blank line before
 ; FIXME Blank line spacing around major syntactic blocks is not correct.
@@ -13,12 +17,14 @@
   (command)
   (comment)
   (compound_statement)
+  (declaration_command)
   (for_statement)
   (function_definition)
   (if_statement)
   (list)
   (pipeline)
   (subshell)
+  (variable_assignment)
   (while_statement)
   ; TODO: etc.
 ] @allow_blank_line_before
@@ -26,17 +32,22 @@
 ; Surround with spaces
 [
   "case"
+  "declare"
   "do"
   "done"
   "elif"
   "else"
   "esac"
+  "export"
   "fi"
   "for"
   "if"
   "in"
+  "local"
+  "readonly"
   "select"
   "then"
+  "typeset"
   "until"
   "while"
   (string)
@@ -49,7 +60,7 @@
 ; way. In a multi-line context, their opening parenthesis triggers a new
 ; line and the start of an indent block; the closing parenthesis
 ; finishes that block. In a single-line context, spacing is used instead
-; of newlines (NOTE that this is a syntactic requirement of compound
+; of new lines (NOTE that this is a syntactic requirement of compound
 ; statements, but not of subshells).
 ;
 ; NOTE Despite being isomorphic, the queries for compound statements and
@@ -349,3 +360,25 @@
   .
   "function" @delete
 )
+
+;; Variable Declaration, Assignment and Expansion
+
+; Declaration and assignment on a new line.
+(declaration_command) @prepend_hardline
+(variable_assignment) @prepend_empty_softline
+
+; Multiple variables can be exported (and assigned) at once
+(declaration_command
+  .
+  "export"
+  [(variable_name) (variable_assignment)] @prepend_space
+)
+
+; NOTE The (simple_expansion), for `$foo`, and (expansion), for `${foo}`
+; and friends, node types exist. We consider them as leaves (see above).
+; However, it would be _really_ nice if we could write a query that
+; converts all (simple_expansions) into (expansions). It can almost be
+; done with delimiters, but it doesn't quite work :( For example:
+;
+; (simple_expansion (variable_name) @prepend_delimiter (#delimiter! "{"))
+; (simple_expansion (variable_name) @append_delimiter (#delimiter! "}"))

@@ -96,3 +96,9 @@ function foo  () {
 }
 
 quux() { xyzzy; }
+
+export a b=1 c
+declare x=$foo
+x=123
+echo "${x:-something}"
+echo "${x/foo/bar}"
