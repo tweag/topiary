@@ -96,10 +96,9 @@ fi
 ...nor this
 EOF
 }
-readonly a=$( foo | bar || baz --quux 2>&1)
+readonly a=$(foo | bar || baz --quux 2>&1)
 foo <(bar || baz --something) | tee >(quux)
-export
-xyzzy=$(
+export xyzzy=$(
   something
   another_thing --foo
 )

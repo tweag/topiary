@@ -103,9 +103,12 @@
 ; * Redirection statements (NOTE these aren't "units of execution" in
 ;   their own right, but are treated as such due to how the grammar
 ;   organises them as parent nodes of such units)
+; * Variable assignment (NOTE these aren't "units of execution" at all,
+;   but are treated as such to isolate them from their declaration
+;   context; see Variables section, below)
 ;
 ; That is, per the grammar:
-;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)]
+;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)]
 
 ; One command per line in the following contexts:
 ; * Top-level
@@ -119,37 +122,37 @@
 ; context needs to be individually enumerated to account for exceptions;
 ; the primary of which being the condition in if statements.
 (program
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_hardline
 )
 
 ; NOTE Single-line compound statements are a thing; hence the softline
 (compound_statement
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_spaced_softline
 )
 
 ; NOTE Single-line subshells are a thing; hence the softline
 (subshell
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_spaced_softline
 )
 
 (if_statement
   .
   _
   "then"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_hardline
 )
 
 (elif_clause
   .
   _
   "then"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_hardline
 )
 
 (else_clause
   .
   "else"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_hardline
 )
 
 ; NOTE Single-line switch branches are a thing; hence the softline
@@ -157,22 +160,22 @@
   .
   _
   ")"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_spaced_softline
 )
 
 (do_group
   .
   "do"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_hardline
 )
 
 ; NOTE Single-line command substitutions are a thing; hence the softline
 (command_substitution
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_empty_softline
 )
 
 ; Surround command list and pipeline delimiters with spaces
-; TODO These rules can be subsumed into the list of symbols that are
+; TODO These queries can be subsumed into the list of symbols that are
 ; surrounded by spaces, above; the context is irrelevant.
 ; (See https://github.com/tweag/topiary/pull/173#discussion_r1071123588)
 (list
@@ -398,9 +401,13 @@
 
 ;; Variable Declaration, Assignment and Expansion
 
-; Declaration and assignment on a new line.
+; NOTE Assignment only gets a new line when not part of a declaration;
+; that is, all the contexts in which units of execution can appear.
+; Hence the queries for this are defined above. (My kingdom for a
+; negative anchor!)
+
+; Declaration on a new line
 (declaration_command) @prepend_hardline
-(variable_assignment) @prepend_empty_softline
 
 ; Multiple variables can be exported (and assigned) at once
 (declaration_command
@@ -417,3 +424,5 @@
 ;
 ; (simple_expansion (variable_name) @prepend_delimiter (#delimiter! "{"))
 ; (simple_expansion (variable_name) @append_delimiter (#delimiter! "}"))
+;
+; See https://github.com/tweag/topiary/pull/179#discussion_r1073202151
