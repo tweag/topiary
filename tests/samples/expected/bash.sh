@@ -90,3 +90,16 @@ another_thing <<< herestring
 if foo 2>/dev/null; then
   exit 1
 fi
+{
+  cat <<EOF
+  This shouldn't be indented
+...nor this
+EOF
+}
+readonly a=$( foo | bar || baz --quux 2>&1)
+foo <(bar || baz --something) | tee >(quux)
+export
+xyzzy=$(
+  something
+  another_thing --foo
+)

@@ -7,6 +7,7 @@
 
 ; Don't modify string literals, heredocs, atomic "words" or variable
 ; expansions (simple or otherwise)
+; FIXME The first line of heredocs are affected by the indent level
 [
   (expansion)
   (heredoc_body)
@@ -34,7 +35,6 @@
   (subshell)
   (variable_assignment)
   (while_statement)
-  ; TODO: etc.
 ] @allow_blank_line_before
 
 ; Surround with spaces
@@ -58,8 +58,6 @@
   "typeset"
   "until"
   "while"
-  (string)
-  ; TODO: etc.
 ] @append_space @prepend_space
 
 ;; Compound Statements and Subshells
@@ -115,7 +113,7 @@
 ; * In any branch of a conditional
 ; * In any branch of a switch statement
 ; * Within loops
-; * <TODO: etc.>
+; * Multi-line command substitutions
 ;
 ; NOTE Because "command" is such a pervasive and general concept, each
 ; context needs to be individually enumerated to account for exceptions;
@@ -168,6 +166,11 @@
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_hardline
 )
 
+; NOTE Single-line command substitutions are a thing; hence the softline
+(command_substitution
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_spaced_softline
+)
+
 ; Surround command list and pipeline delimiters with spaces
 ; TODO These rules can be subsumed into the list of symbols that are
 ; surrounded by spaces, above; the context is irrelevant.
@@ -204,13 +207,22 @@
   argument: _* @prepend_space
 )
 
-;; Operators
-
 ; Ensure the negation operator is surrounded by spaces
 ; NOTE This is a syntactic requirement
 (negated_command
   .
   "!" @prepend_space @append_space
+)
+
+; Multi-line command substitutions become and indent block
+(command_substitution
+  .
+  (_) @prepend_empty_softline @prepend_indent_start
+)
+
+(command_substitution
+  ")" @prepend_empty_softline @prepend_indent_end
+  .
 )
 
 ;; Redirections
@@ -223,9 +235,10 @@
 ; ...with the exceptions of herestrings, that are spaced
 (herestring_redirect (_) @prepend_space)
 
-; Ensure heredocs start on a new line, after their marker
+; Ensure heredocs start on a new line, after their start marker, and
+; there is a new line after their end marker
 ; NOTE This is a syntactic requirement
-(heredoc_body) @prepend_hardline
+(heredoc_body) @prepend_hardline @append_input_softline
 
 ;; Conditionals
 
@@ -271,7 +284,9 @@
 
 (test_command
   .
-  (unary_expression) @prepend_space @append_space
+  (unary_expression
+    _ @prepend_space
+  ) @append_space
 )
 
 ; FIXME The binary_expression node is not being returned by Tree-Sitter
