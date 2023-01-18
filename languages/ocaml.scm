@@ -847,17 +847,6 @@
   ; well as the final non-named node, causing double indentation.
 )
 
-; Make an indented block after ":" in let bindings
-;
-; let type_open :
-;   (?used_slot:bool ref -> override_flag -> Env.t -> Location.t ->
-;
-(let_binding
-  ":" @append_indent_start
-  (_) @append_indent_end
-  .
-)
-
 ; Make an indented block after "=" in
 ; * let bindings
 ; * class[_type] bindings
@@ -961,7 +950,7 @@
 
 ; Indent and add softlines in multiline application expressions, such as
 ; let _ =
-;   large function
+;   long_function
 ;     long_argument_1
 ;     long_argument_2
 ;     long_argument_3
@@ -976,6 +965,24 @@
   (_) @append_spaced_softline
   .
   (_)
+)
+
+; Indent and allow softlines in multiline function definitions, such as
+; let long_function
+;   (long_argument_1: int)
+;   (long_argument_2: int)
+;   (long_argument_3: int)
+;   (long_argument_4: int) =
+;   ()
+(let_binding
+  .
+  (_) @append_indent_start
+  (_) @append_indent_end
+  .
+  "="
+)
+(let_binding
+  (parameter) @prepend_input_softline
 )
 
 ; Try block formatting
