@@ -560,6 +560,15 @@ let long_function
   (long_argument_4 : int) =
   ()
 
+let large_const =
+  let val = 3 in
+  fun
+    (long_argument_1 : int)
+    (long_argument_2 : int)
+    (long_argument_3 : int)
+    (long_argument_4 : int) ->
+    val
+
 (* Showcase the usage of operator bindings *)
 let greetings =
   let (let*) = Option.bind
