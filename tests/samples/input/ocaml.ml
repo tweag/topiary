@@ -553,6 +553,13 @@ let my_id ~value = value
 
 let into_list ~value = my_id ~value :: []
 
+let long_function
+  (long_argument_1 : int)
+  (long_argument_2 : int)
+  (long_argument_3 : int)
+  (long_argument_4 : int) =
+  ()
+
 (* Showcase the usage of operator bindings *)
 let greetings =
   let (let*) = Option.bind
