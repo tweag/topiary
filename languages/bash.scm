@@ -1,6 +1,10 @@
 ; Configuration
 (#language! bash)
 
+; NOTE There is (currently) no support for line continuations. As such,
+; any which are encountered by Topiary will be forcibly collapsed on to
+; a single line. (See Issue #172)
+
 ; Don't modify string literals or variable expansions
 [
   (expansion)
@@ -97,11 +101,6 @@
 ;
 ; That is, per the grammar:
 ;   [(command) (list) (pipeline) (compound_statement) (subshell)]
-
-; FIXME I don't think it's possible to insert the necessary line
-; continuations; or, at least, it's not possible to insert them only in
-; a multi-line context. As such, all multi-line commands are forcibly
-; collapsed on to a single line for now... See Issue #172
 
 ; One command per line in the following contexts:
 ; * Top-level
