@@ -254,7 +254,7 @@
 
 ; NOTE Single-line command substitutions are a thing; hence the softline
 (command_substitution
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_empty_softline
 )
 
 ; Surround command list and pipeline delimiters with spaces
