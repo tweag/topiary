@@ -848,16 +848,9 @@
 )
 
 ; Make an indented block after "=" in
-; * let bindings
 ; * class[_type] bindings
 ; * method definitions
 ; * instance variable definitions
-;
-(let_binding
-  "=" @append_indent_start
-  (_) @append_indent_end
-  .
-)
 
 (class_binding
   "=" @append_indent_start
@@ -979,9 +972,25 @@
   (_) @append_indent_start
   (_) @append_indent_end
   .
-  "="
 )
 (let_binding
+  (parameter) @prepend_input_softline
+)
+
+; Indent and allow softlines in anonymous function definitions, such as
+; fun
+;   (long_argument_1: int)
+;   (long_argument_2: int)
+;   (long_argument_3: int)
+;   (long_argument_4: int) ->
+;   ()
+(fun_expression
+  .
+  "fun" @append_indent_start
+  (_) @append_indent_end
+  .
+)
+(fun_expression
   (parameter) @prepend_input_softline
 )
 
