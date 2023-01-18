@@ -5,11 +5,14 @@
 ; any which are encountered by Topiary will be forcibly collapsed on to
 ; a single line. (See Issue #172)
 
-; Don't modify string literals or variable expansions
+; Don't modify string literals, heredocs, atomic "words" or variable
+; expansions (simple or otherwise)
 [
   (expansion)
+  (heredoc_body)
   (simple_expansion)
   (string)
+  (word)
 ] @leaf
 
 ; Allow blank line before
@@ -27,6 +30,7 @@
   (if_statement)
   (list)
   (pipeline)
+  (redirected_statement)
   (subshell)
   (variable_assignment)
   (while_statement)
@@ -98,9 +102,12 @@
 ; * Command pipelines
 ; * Compound statements
 ; * Subshells
+; * Redirection statements (NOTE these aren't "units of execution" in
+;   their own right, but are treated as such due to how the grammar
+;   organises them as parent nodes of such units)
 ;
 ; That is, per the grammar:
-;   [(command) (list) (pipeline) (compound_statement) (subshell)]
+;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)]
 
 ; One command per line in the following contexts:
 ; * Top-level
@@ -114,37 +121,37 @@
 ; context needs to be individually enumerated to account for exceptions;
 ; the primary of which being the condition in if statements.
 (program
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_hardline
 )
 
 ; NOTE Single-line compound statements are a thing; hence the softline
 (compound_statement
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_spaced_softline
 )
 
 ; NOTE Single-line subshells are a thing; hence the softline
 (subshell
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_spaced_softline
 )
 
 (if_statement
   .
   _
   "then"
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_hardline
 )
 
 (elif_clause
   .
   _
   "then"
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_hardline
 )
 
 (else_clause
   .
   "else"
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_hardline
 )
 
 ; NOTE Single-line switch branches are a thing; hence the softline
@@ -152,13 +159,13 @@
   .
   _
   ")"
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_spaced_softline
 )
 
 (do_group
   .
   "do"
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)] @prepend_hardline
 )
 
 ; Surround command list and pipeline delimiters with spaces
@@ -183,7 +190,7 @@
 ; NOTE If I'm not mistaken, this can interpose two "commands" -- like a
 ; delimiter -- but I've never seen this form in the wild
 (_
-  [(command) (list) (pipeline) (compound_statement) (subshell)]
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)]
   .
   "&" @prepend_space
 )
@@ -205,6 +212,20 @@
   .
   "!" @prepend_space @append_space
 )
+
+;; Redirections
+
+; Insert a space before all redirections, but _not_ after the operator
+(redirected_statement
+  redirect: _* @prepend_space
+)
+
+; ...with the exceptions of herestrings, that are spaced
+(herestring_redirect (_) @prepend_space)
+
+; Ensure heredocs start on a new line, after their marker
+; NOTE This is a syntactic requirement
+(heredoc_body) @prepend_hardline
 
 ;; Conditionals
 

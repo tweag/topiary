@@ -80,3 +80,13 @@ declare x=$foo
 x=123
 echo "${x:-something}"
 echo "${x/foo/bar}"
+cat <<-HEREDOC
+	Here is
+	a
+	  heredoc
+	HEREDOC
+some_command >output <input
+another_thing <<< herestring
+if foo 2>/dev/null; then
+  exit 1
+fi
