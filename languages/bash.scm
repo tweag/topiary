@@ -16,8 +16,9 @@
   (word)
 ] @leaf
 
+;; Spacing
+
 ; Allow blank line before
-; FIXME Blank line spacing around major syntactic blocks is not correct.
 [
   (c_style_for_statement)
   (case_item)
@@ -37,7 +38,80 @@
   (while_statement)
 ] @allow_blank_line_before
 
-; Surround with spaces
+; Insert a new line after multi-line syntactic blocks or, for where
+; single-line variants exists, after the "closing" subnodes (the
+; specificity is to avoid targeting the single-line context)
+[
+  (if_statement)
+  (case_statement)
+  (do_group)
+] @append_hardline
+
+(subshell
+  ")" @append_empty_softline
+  .
+)
+
+(compound_statement
+  "}" @append_empty_softline
+  .
+)
+
+; A run of "units of execution" (see below, sans variables which are
+; special) and function definitions should be followed by a new line,
+; before a multi-line syntactic block or variable.
+(
+  [
+    (command)
+    (compound_statement)
+    (function_definition)
+    (list)
+    (pipeline)
+    (redirected_statement)
+    (subshell)
+  ] @append_empty_softline
+  .
+  [
+    (c_style_for_statement)
+    (case_statement)
+    (compound_statement)
+    (declaration_command)
+    (for_statement)
+    (function_definition)
+    (if_statement)
+    (subshell)
+    (variable_assignment)
+    (while_statement)
+  ]
+)
+
+; A run of variable declarations and assignments should be followed by a
+; new line, before anything else
+(
+  [
+    (declaration_command)
+    (variable_assignment)
+  ] @append_hardline
+  .
+  [
+    (c_style_for_statement)
+    (case_statement)
+    (command)
+    (compound_statement)
+    (compound_statement)
+    (for_statement)
+    (function_definition)
+    (if_statement)
+    (list)
+    (pipeline)
+    (redirected_statement)
+    (subshell)
+    (subshell)
+    (while_statement)
+  ]
+)
+
+; Surround keywords with spaces
 [
   "case"
   "declare"
@@ -175,9 +249,10 @@
 )
 
 ; Surround command list and pipeline delimiters with spaces
-; TODO These queries can be subsumed into the list of symbols that are
-; surrounded by spaces, above; the context is irrelevant.
-; (See https://github.com/tweag/topiary/pull/173#discussion_r1071123588)
+; NOTE These queries could be subsumed into the list of symbols that are
+; surrounded by spaces (above), as the context is irrelevant. However,
+; they're kept here, separately, in anticipation of line continuation
+; support in multi-line contexts.
 (list
   [
     "&&"
@@ -217,7 +292,7 @@
   "!" @prepend_space @append_space
 )
 
-; Multi-line command substitutions become and indent block
+; Multi-line command substitutions become an indent block
 (command_substitution
   .
   (_) @prepend_empty_softline @prepend_indent_start
