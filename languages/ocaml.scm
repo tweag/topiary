@@ -1002,6 +1002,26 @@
   (parameter) @prepend_input_softline
 )
 
+; Indent and allow softlines in tuples, such as
+; let _ =
+;   (
+;     long_value_1,
+;     long_value_2,
+;     long_value_3
+;   )
+(parenthesized_expression
+  .
+  "(" @append_empty_softline
+  .
+  (product_expression) @prepend_indent_start @append_indent_end
+  .
+  ")" @prepend_empty_softline
+  .
+)
+(product_expression
+  "," @append_spaced_softline
+)
+
 ; Try block formatting
 ; A soft linebreak after the "try" (potentially "try%ppx") and one after the "with".
 (try_expression
