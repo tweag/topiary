@@ -735,3 +735,10 @@ type t =
 let _ =
   let open Printf in
   sprintf "hello world"
+
+let _ =
+  ( 1
+  , 2
+  , 3
+  , 4
+  )
