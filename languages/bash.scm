@@ -74,6 +74,7 @@
   [
     (c_style_for_statement)
     (case_statement)
+    (comment)
     (compound_statement)
     (declaration_command)
     (for_statement)
@@ -97,6 +98,7 @@
     (c_style_for_statement)
     (case_statement)
     (command)
+    (comment)
     (compound_statement)
     (compound_statement)
     (for_statement)
@@ -133,6 +135,8 @@
   "until"
   "while"
 ] @append_space @prepend_space
+
+(comment) @prepend_hardline
 
 ;; Compound Statements and Subshells
 
@@ -316,7 +320,8 @@
 ; Ensure heredocs start on a new line, after their start marker, and
 ; there is a new line after their end marker
 ; NOTE This is a syntactic requirement
-(heredoc_body) @prepend_hardline @append_input_softline
+(heredoc_start) @append_hardline
+(heredoc_body) @append_input_softline
 
 ;; Conditionals
 
