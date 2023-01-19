@@ -738,3 +738,7 @@ type t = {
   bflags: bool StrMap.t;
   (** Boolean flags. *)
 }
+
+let _ =
+  let open Printf in
+  sprintf "hello world"

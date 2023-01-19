@@ -78,9 +78,17 @@
       (include_module_type)
     (module_definition)
     (module_type_definition)
-    (open_module)
     (type_definition)
   ] @append_hardline
+  .
+  (comment)* @do_nothing
+)
+; Also append line breaks after open_module, except when it's
+; preceded by "let", because in this case it's in a let_open_expression.
+(
+  "let" @do_nothing
+  .
+  (open_module) @append_hardline
   .
   (comment)* @do_nothing
 )
