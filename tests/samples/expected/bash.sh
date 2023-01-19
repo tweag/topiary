@@ -80,6 +80,7 @@ declare x=$foo
 x=123
 echo "${x:-something}"
 echo "${x/foo/bar}"
+ENV_VAR=123 ANOTHER=456 some_command
 cat <<-HEREDOC
 	Here is
 	a

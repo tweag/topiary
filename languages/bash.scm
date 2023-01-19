@@ -416,6 +416,11 @@
   [(variable_name) (variable_assignment)] @prepend_space
 )
 
+; Environment variables assigned to commands inline need to be spaced
+(command
+  (variable_assignment) @append_space
+)
+
 ; NOTE The (simple_expansion), for `$foo`, and (expansion), for `${foo}`
 ; and friends, node types exist. We consider them as leaves (see above).
 ; However, it would be _really_ nice if we could write a query that
