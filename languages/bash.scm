@@ -5,10 +5,11 @@
 ; any which are encountered by Topiary will be forcibly collapsed on to
 ; a single line. (See Issue #172)
 
-; Don't modify string literals, heredocs, atomic "words" or variable
-; expansions (simple or otherwise)
+; Don't modify string literals, heredocs, comments, atomic "words" or
+; variable expansions (simple or otherwise)
 ; FIXME The first line of heredocs are affected by the indent level
 [
+  (comment)
   (expansion)
   (heredoc_body)
   (simple_expansion)
@@ -74,7 +75,6 @@
   [
     (c_style_for_statement)
     (case_statement)
-    (comment)
     (compound_statement)
     (declaration_command)
     (for_statement)
@@ -98,7 +98,6 @@
     (c_style_for_statement)
     (case_statement)
     (command)
-    (comment)
     (compound_statement)
     (compound_statement)
     (for_statement)
@@ -136,7 +135,10 @@
   "while"
 ] @append_space @prepend_space
 
-(comment) @prepend_hardline
+;; Comments
+
+; FIXME
+(comment) @append_hardline
 
 ;; Compound Statements and Subshells
 
