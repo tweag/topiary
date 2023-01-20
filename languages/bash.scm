@@ -42,75 +42,75 @@
 ; Insert a new line after multi-line syntactic blocks or, for where
 ; single-line variants exists, after the "closing" subnodes (the
 ; specificity is to avoid targeting the single-line context)
-[
-  (if_statement)
-  (case_statement)
-  (do_group)
-] @append_hardline
-
-(subshell
-  ")" @append_empty_softline
-  .
-)
-
-(compound_statement
-  "}" @append_empty_softline
-  .
-)
+; FIXME ; [
+; FIXME ;   (if_statement)
+; FIXME ;   (case_statement)
+; FIXME ;   (do_group)
+; FIXME ; ] @append_hardline
+; FIXME ;
+; FIXME ; (subshell
+; FIXME ;   ")" @append_empty_softline
+; FIXME ;   .
+; FIXME ; )
+; FIXME ;
+; FIXME ; (compound_statement
+; FIXME ;   "}" @append_empty_softline
+; FIXME ;   .
+; FIXME ; )
 
 ; A run of "units of execution" (see below, sans variables which are
 ; special) and function definitions should be followed by a new line,
 ; before a multi-line syntactic block or variable.
-(
-  [
-    (command)
-    (compound_statement)
-    (function_definition)
-    (list)
-    (pipeline)
-    (redirected_statement)
-    (subshell)
-  ] @append_empty_softline
-  .
-  [
-    (c_style_for_statement)
-    (case_statement)
-    (compound_statement)
-    (declaration_command)
-    (for_statement)
-    (function_definition)
-    (if_statement)
-    (subshell)
-    (variable_assignment)
-    (while_statement)
-  ]
-)
+; FIXME ; (
+; FIXME ;   [
+; FIXME ;     (command)
+; FIXME ;     (compound_statement)
+; FIXME ;     (function_definition)
+; FIXME ;     (list)
+; FIXME ;     (pipeline)
+; FIXME ;     (redirected_statement)
+; FIXME ;     (subshell)
+; FIXME ;   ] @append_empty_softline
+; FIXME ;   .
+; FIXME ;   [
+; FIXME ;     (c_style_for_statement)
+; FIXME ;     (case_statement)
+; FIXME ;     (compound_statement)
+; FIXME ;     (declaration_command)
+; FIXME ;     (for_statement)
+; FIXME ;     (function_definition)
+; FIXME ;     (if_statement)
+; FIXME ;     (subshell)
+; FIXME ;     (variable_assignment)
+; FIXME ;     (while_statement)
+; FIXME ;   ]
+; FIXME ; )
 
 ; A run of variable declarations and assignments should be followed by a
 ; new line, before anything else
-(
-  [
-    (declaration_command)
-    (variable_assignment)
-  ] @append_hardline
-  .
-  [
-    (c_style_for_statement)
-    (case_statement)
-    (command)
-    (compound_statement)
-    (compound_statement)
-    (for_statement)
-    (function_definition)
-    (if_statement)
-    (list)
-    (pipeline)
-    (redirected_statement)
-    (subshell)
-    (subshell)
-    (while_statement)
-  ]
-)
+; FIXME ; (
+; FIXME ;   [
+; FIXME ;     (declaration_command)
+; FIXME ;     (variable_assignment)
+; FIXME ;   ] @append_hardline
+; FIXME ;   .
+; FIXME ;   [
+; FIXME ;     (c_style_for_statement)
+; FIXME ;     (case_statement)
+; FIXME ;     (command)
+; FIXME ;     (compound_statement)
+; FIXME ;     (compound_statement)
+; FIXME ;     (for_statement)
+; FIXME ;     (function_definition)
+; FIXME ;     (if_statement)
+; FIXME ;     (list)
+; FIXME ;     (pipeline)
+; FIXME ;     (redirected_statement)
+; FIXME ;     (subshell)
+; FIXME ;     (subshell)
+; FIXME ;     (while_statement)
+; FIXME ;   ]
+; FIXME ; )
 
 ; Surround keywords with spaces
 [
