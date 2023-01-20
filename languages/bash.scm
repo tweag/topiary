@@ -137,6 +137,28 @@
 
 ;; Comments
 
+; Comments come in two flavours: standalone (i.e., it's the only thing
+; on a line, starting at the current indent level); and trailing (i.e.,
+; following some other statement on the same line, with a space
+; interposed). Bash does not have multi-line comments; they are all
+; single-line.
+;
+; The grammar parses all comments as the (comment) node, which are
+; siblings under a common parent.
+;
+; Formatting Rules:
+;
+; 1. A comment's contents must not be touched; some (namely the shebang)
+;    have a syntactic purpose.
+; 2. All comments must end with a new line.
+; 3. Comments can be interposed by blank lines, if they exist in the
+;    input (i.e., blank lines shouldn't be engineered elsewhere).
+; 4. A run of standalone comments (i.e., without anything, including
+;    blank lines, interposing) should be kept together.
+; 5. Trailing comments should only appear after "units of execution" or
+;    variable declarations/assignment. (This is despite it being
+;    syntactically valid to put them elsewhere.)
+
 ; FIXME
 (comment) @append_hardline
 
