@@ -202,37 +202,37 @@
 ; context needs to be individually enumerated to account for exceptions;
 ; the primary of which being the condition in if statements.
 (program
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
 )
 
 ; NOTE Single-line compound statements are a thing; hence the softline
 (compound_statement
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_spaced_softline
 )
 
 ; NOTE Single-line subshells are a thing; hence the softline
 (subshell
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_spaced_softline
 )
 
 (if_statement
   .
   _
   "then"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
 )
 
 (elif_clause
   .
   _
   "then"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
 )
 
 (else_clause
   .
   "else"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
 )
 
 ; NOTE Single-line switch branches are a thing; hence the softline
@@ -240,18 +240,18 @@
   .
   _
   ")"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_spaced_softline
 )
 
 (do_group
   .
   "do"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
 )
 
 ; NOTE Single-line command substitutions are a thing; hence the softline
 (command_substitution
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_empty_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_empty_softline
 )
 
 ; NOTE Single-line command substitutions are a thing; hence the softline
@@ -328,16 +328,16 @@
 ; there is a new line after their end marker
 ; NOTE This is a syntactic requirement
 (heredoc_start) @append_hardline
-(heredoc_body) @append_input_softline
+(heredoc_body) @append_hardline
 
 ;; Conditionals
 
-; Start conditional on a new line
+; New line after conditionals
 [
   (if_statement)
   (elif_clause)
   (else_clause)
-] @prepend_hardline
+] @append_hardline
 
 ; New line after "then" and start indent block
 [
@@ -389,8 +389,8 @@
 
 ;; Switch Statements
 
-; Start switch on a new line
-(case_statement) @prepend_hardline
+; New line after switch statement
+(case_statement) @append_hardline
 
 ; New line after "in" and start indent block
 (case_statement
@@ -416,22 +416,22 @@
   ] @prepend_empty_softline @append_hardline
 )
 
-; Finish indent blocks after switch branches and at the "esac", which
-; should appear on its own line
+; Finish indent blocks after switch branches and at the "esac"
 (case_item) @append_indent_end
 (case_statement
-  "esac" @prepend_hardline @prepend_indent_end
+  "esac" @prepend_indent_end
   .
 )
 
 ;; Loops
 
 ; Start loops on a new line
-[
-  (c_style_for_statement)
-  (for_statement)
-  (while_statement)
-] @prepend_hardline
+; FIXME We may not need this any more
+; FIXME ; [
+; FIXME ;   (c_style_for_statement)
+; FIXME ;   (for_statement)
+; FIXME ;   (while_statement)
+; FIXME ; ] @prepend_hardline
 
 ; Indentation block between the "do" and the "done"
 (do_group
@@ -440,7 +440,7 @@
 )
 
 (do_group
-  "done" @prepend_indent_end @prepend_hardline
+  "done" @prepend_indent_end @append_hardline
   .
 )
 
@@ -472,7 +472,8 @@
 ; whatever already-defined queries apply to the function body (e.g.,
 ; (compound_statement), etc.). All we do here is ensure functions get
 ; their own line and put a space between its name and the body.
-(function_definition) @prepend_hardline
+; FIXME We may not need this any more
+; FIXME ; (function_definition) @prepend_hardline
 
 (function_definition
   body: _ @prepend_space
@@ -494,7 +495,8 @@
 ; negative anchor!)
 
 ; Declaration on a new line
-(declaration_command) @prepend_hardline
+; FIXME We may not need this any more
+; FIXME ; (declaration_command) @prepend_hardline
 
 ; Multiple variables can be exported (and assigned) at once
 (declaration_command
