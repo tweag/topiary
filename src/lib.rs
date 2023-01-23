@@ -66,6 +66,18 @@ pub enum Atom {
     // it might happen that it contains several leaves.
     DeleteBegin,
     DeleteEnd,
+    /// Scoped commands
+    // ScopedSoftline works together with the @open_scope and @end_scope query tags.
+    // To decide if a scoped softline must be expanded into a hardline, we look at
+    // the innermost scope having the corresponding `scope_id`, that encompasses it.
+    // We expand the softline if that scope is multi-line.
+    // The `id` value is here for technical reasons, it allows tracking of the atom
+    // during post-processing.
+    ScopedSoftline {
+        id: usize,
+        scope_id: String,
+        spaced: bool,
+    },
 }
 
 /// A convenience wrapper around `std::result::Result<T, FormatterError>`.

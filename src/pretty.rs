@@ -32,6 +32,7 @@ fn atoms_to_doc<'a>(i: &mut usize, atoms: &'a [Atom], indent_level: isize) -> Rc
                 Atom::Space => RcDoc::space(),
                 Atom::DeleteBegin => unreachable!(),
                 Atom::DeleteEnd => unreachable!(),
+                Atom::ScopedSoftline { .. } => unreachable!(),
             });
         }
         *i += 1;
