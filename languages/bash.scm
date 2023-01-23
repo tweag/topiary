@@ -1,15 +1,24 @@
 ; Configuration
 (#language! bash)
 
-; Don't modify string literals or variable expansions
+; NOTE There is (currently) no support for line continuations. As such,
+; any which are encountered by Topiary will be forcibly collapsed on to
+; a single line. (See Issue #172)
+
+; Don't modify string literals, heredocs, atomic "words" or variable
+; expansions (simple or otherwise)
+; FIXME The first line of heredocs are affected by the indent level
 [
   (expansion)
+  (heredoc_body)
   (simple_expansion)
   (string)
+  (word)
 ] @leaf
 
+;; Spacing
+
 ; Allow blank line before
-; FIXME Blank line spacing around major syntactic blocks is not correct.
 [
   (c_style_for_statement)
   (case_item)
@@ -23,13 +32,88 @@
   (if_statement)
   (list)
   (pipeline)
+  (redirected_statement)
   (subshell)
   (variable_assignment)
   (while_statement)
-  ; TODO: etc.
 ] @allow_blank_line_before
 
-; Surround with spaces
+; Insert a new line after multi-line syntactic blocks or, for where
+; single-line variants exists, after the "closing" subnodes (the
+; specificity is to avoid targeting the single-line context)
+[
+  (if_statement)
+  (case_statement)
+  (do_group)
+] @append_hardline
+
+(subshell
+  ")" @append_empty_softline
+  .
+)
+
+(compound_statement
+  "}" @append_empty_softline
+  .
+)
+
+; A run of "units of execution" (see below, sans variables which are
+; special) and function definitions should be followed by a new line,
+; before a multi-line syntactic block or variable.
+(
+  [
+    (command)
+    (compound_statement)
+    (function_definition)
+    (list)
+    (pipeline)
+    (redirected_statement)
+    (subshell)
+  ] @append_empty_softline
+  .
+  [
+    (c_style_for_statement)
+    (case_statement)
+    (comment)
+    (compound_statement)
+    (declaration_command)
+    (for_statement)
+    (function_definition)
+    (if_statement)
+    (subshell)
+    (variable_assignment)
+    (while_statement)
+  ]
+)
+
+; A run of variable declarations and assignments should be followed by a
+; new line, before anything else
+(
+  [
+    (declaration_command)
+    (variable_assignment)
+  ] @append_hardline
+  .
+  [
+    (c_style_for_statement)
+    (case_statement)
+    (command)
+    (comment)
+    (compound_statement)
+    (compound_statement)
+    (for_statement)
+    (function_definition)
+    (if_statement)
+    (list)
+    (pipeline)
+    (redirected_statement)
+    (subshell)
+    (subshell)
+    (while_statement)
+  ]
+)
+
+; Surround keywords with spaces
 [
   "case"
   "declare"
@@ -50,9 +134,9 @@
   "typeset"
   "until"
   "while"
-  (string)
-  ; TODO: etc.
 ] @append_space @prepend_space
+
+(comment) @prepend_hardline
 
 ;; Compound Statements and Subshells
 
@@ -94,14 +178,15 @@
 ; * Command pipelines
 ; * Compound statements
 ; * Subshells
+; * Redirection statements (NOTE these aren't "units of execution" in
+;   their own right, but are treated as such due to how the grammar
+;   organises them as parent nodes of such units)
+; * Variable assignment (NOTE these aren't "units of execution" at all,
+;   but are treated as such to isolate them from their declaration
+;   context; see Variables section, below)
 ;
 ; That is, per the grammar:
-;   [(command) (list) (pipeline) (compound_statement) (subshell)]
-
-; FIXME I don't think it's possible to insert the necessary line
-; continuations; or, at least, it's not possible to insert them only in
-; a multi-line context. As such, all multi-line commands are forcibly
-; collapsed on to a single line for now... See Issue #172
+;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)]
 
 ; One command per line in the following contexts:
 ; * Top-level
@@ -109,43 +194,43 @@
 ; * In any branch of a conditional
 ; * In any branch of a switch statement
 ; * Within loops
-; * <TODO: etc.>
+; * Multi-line command substitutions
 ;
 ; NOTE Because "command" is such a pervasive and general concept, each
 ; context needs to be individually enumerated to account for exceptions;
 ; the primary of which being the condition in if statements.
 (program
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_hardline
 )
 
 ; NOTE Single-line compound statements are a thing; hence the softline
 (compound_statement
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_spaced_softline
 )
 
 ; NOTE Single-line subshells are a thing; hence the softline
 (subshell
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_spaced_softline
 )
 
 (if_statement
   .
   _
   "then"
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_hardline
 )
 
 (elif_clause
   .
   _
   "then"
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_hardline
 )
 
 (else_clause
   .
   "else"
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_hardline
 )
 
 ; NOTE Single-line switch branches are a thing; hence the softline
@@ -153,19 +238,25 @@
   .
   _
   ")"
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_spaced_softline
 )
 
 (do_group
   .
   "do"
-  [(command) (list) (pipeline) (compound_statement) (subshell)] @prepend_hardline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_hardline
+)
+
+; NOTE Single-line command substitutions are a thing; hence the softline
+(command_substitution
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_empty_softline
 )
 
 ; Surround command list and pipeline delimiters with spaces
-; TODO These rules can be subsumed into the list of symbols that are
-; surrounded by spaces, above; the context is irrelevant.
-; (See https://github.com/tweag/topiary/pull/173#discussion_r1071123588)
+; NOTE These queries could be subsumed into the list of symbols that are
+; surrounded by spaces (above), as the context is irrelevant. However,
+; they're kept here, separately, in anticipation of line continuation
+; support in multi-line contexts.
 (list
   [
     "&&"
@@ -184,7 +275,7 @@
 ; NOTE If I'm not mistaken, this can interpose two "commands" -- like a
 ; delimiter -- but I've never seen this form in the wild
 (_
-  [(command) (list) (pipeline) (compound_statement) (subshell)]
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)]
   .
   "&" @prepend_space
 )
@@ -198,14 +289,39 @@
   argument: _* @prepend_space
 )
 
-;; Operators
-
 ; Ensure the negation operator is surrounded by spaces
 ; NOTE This is a syntactic requirement
 (negated_command
   .
   "!" @prepend_space @append_space
 )
+
+; Multi-line command substitutions become an indent block
+(command_substitution
+  .
+  (_) @prepend_empty_softline @prepend_indent_start
+)
+
+(command_substitution
+  ")" @prepend_empty_softline @prepend_indent_end
+  .
+)
+
+;; Redirections
+
+; Insert a space before all redirections, but _not_ after the operator
+(redirected_statement
+  redirect: _* @prepend_space
+)
+
+; ...with the exceptions of herestrings, that are spaced
+(herestring_redirect (_) @prepend_space)
+
+; Ensure heredocs start on a new line, after their start marker, and
+; there is a new line after their end marker
+; NOTE This is a syntactic requirement
+(heredoc_start) @append_hardline
+(heredoc_body) @append_input_softline
 
 ;; Conditionals
 
@@ -251,7 +367,9 @@
 
 (test_command
   .
-  (unary_expression) @prepend_space @append_space
+  (unary_expression
+    _ @prepend_space
+  ) @append_space
 )
 
 ; FIXME The binary_expression node is not being returned by Tree-Sitter
@@ -363,15 +481,24 @@
 
 ;; Variable Declaration, Assignment and Expansion
 
-; Declaration and assignment on a new line.
+; NOTE Assignment only gets a new line when not part of a declaration;
+; that is, all the contexts in which units of execution can appear.
+; Hence the queries for this are defined above. (My kingdom for a
+; negative anchor!)
+
+; Declaration on a new line
 (declaration_command) @prepend_hardline
-(variable_assignment) @prepend_empty_softline
 
 ; Multiple variables can be exported (and assigned) at once
 (declaration_command
   .
   "export"
   [(variable_name) (variable_assignment)] @prepend_space
+)
+
+; Environment variables assigned to commands inline need to be spaced
+(command
+  (variable_assignment) @append_space
 )
 
 ; NOTE The (simple_expansion), for `$foo`, and (expansion), for `${foo}`
@@ -382,3 +509,5 @@
 ;
 ; (simple_expansion (variable_name) @prepend_delimiter (#delimiter! "{"))
 ; (simple_expansion (variable_name) @append_delimiter (#delimiter! "}"))
+;
+; See https://github.com/tweag/topiary/pull/179#discussion_r1073202151

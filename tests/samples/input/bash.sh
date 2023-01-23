@@ -91,6 +91,8 @@ fi
   other )
 
 function foo  () {
+  local x=1
+  x=2
   bar
   quux || xyzzy
 }
@@ -102,3 +104,32 @@ declare x=$foo
 x=123
 echo "${x:-something}"
 echo "${x/foo/bar}"
+ENV_VAR=123 ANOTHER=456 some_command
+
+cat <<-HEREDOC
+	Here is
+	a
+	  heredoc
+	HEREDOC
+
+some_command > output < input
+another_thing <<< herestring
+
+if foo 2>/dev/null; then
+  exit 1
+fi
+
+{
+  cat <<EOF
+This shouldn't be indented
+...nor this
+EOF
+}
+
+readonly a=$(foo | bar || baz --quux 2>&1)
+foo <(bar||baz --something) | tee >(quux)
+
+export xyzzy=$(
+  something
+  another_thing --foo
+)
