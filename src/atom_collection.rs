@@ -14,6 +14,14 @@ pub struct AtomCollection {
     blank_lines_before: HashSet<usize>,
     line_break_before: HashSet<usize>,
     line_break_after: HashSet<usize>,
+    /// The semantics of the types of scope_begin and scope_end is
+    // HashMap<leaf_node_id, (line_number, Vec<scope_id>)>
+    // The line number is passed here because otherwise the information
+    // is lost at post-processing time.
+    scope_begin: HashMap<usize, (usize, Vec<String>)>,
+    scope_end: HashMap<usize, (usize, Vec<String>)>,
+    /// Used to generate unique IDs
+    counter: usize,
 }
 
 impl AtomCollection {
@@ -37,6 +45,9 @@ impl AtomCollection {
             blank_lines_before,
             line_break_before,
             line_break_after,
+            scope_begin: HashMap::new(),
+            scope_end: HashMap::new(),
+            counter: 0,
         };
 
         atoms.collect_leafs_inner(root, source, &Vec::new(), 0)?;
@@ -50,6 +61,7 @@ impl AtomCollection {
         name: &str,
         node: Node,
         delimiter: Option<&str>,
+        scope_id: Option<&str>,
     ) -> FormatterResult<()> {
         log::debug!("Resolving {name}");
 
@@ -122,7 +134,99 @@ impl AtomCollection {
                 self.prepend(Atom::DeleteBegin, node);
                 self.append(Atom::DeleteEnd, node)
             }
-
+            // Scope manipulation
+            "begin_scope" => self.begin_scope_before(
+                node,
+                scope_id.ok_or_else(|| {
+                    FormatterError::Query(
+                        "@begin_scope requires a #scope_id! predicate".into(),
+                        None,
+                    )
+                })?,
+            ),
+            "end_scope" => self.end_scope_after(
+                node,
+                scope_id.ok_or_else(|| {
+                    FormatterError::Query("@end_scope requires a #scope_id! predicate".into(), None)
+                })?,
+            ),
+            // Scoped softlines
+            "append_empty_scoped_softline" => {
+                let id = self.next_id();
+                self.append(
+                    Atom::ScopedSoftline {
+                        id,
+                        scope_id: scope_id
+                            .ok_or_else(|| {
+                                FormatterError::Query(
+                                    "@append_empty_scoped_softline requires a #scope_id! predicate"
+                                        .into(),
+                                    None,
+                                )
+                            })?
+                            .to_string(),
+                        spaced: false,
+                    },
+                    node,
+                )
+            }
+            "append_spaced_scoped_softline" => {
+                let id = self.next_id();
+                self.append(
+                    Atom::ScopedSoftline {
+                        id,
+                        scope_id: scope_id
+                            .ok_or_else(|| {
+                                FormatterError::Query(
+                                    "@append_spaced_scoped_softline requires a #scope_id! predicate"
+                                        .into(),
+                                    None,
+                                )
+                            })?
+                            .to_string(),
+                        spaced: true,
+                    },
+                    node,
+                )
+            }
+            "prepend_empty_scoped_softline" => {
+                let id = self.next_id();
+                self.prepend(
+                    Atom::ScopedSoftline {
+                        id,
+                        scope_id: scope_id
+                            .ok_or_else(|| {
+                                FormatterError::Query(
+                                    "@prepend_empty_scoped_softline requires a #scope_id! predicate"
+                                        .into(),
+                                    None,
+                                )
+                            })?
+                            .to_string(),
+                        spaced: false,
+                    },
+                    node,
+                )
+            }
+            "prepend_spaced_scoped_softline" => {
+                let id = self.next_id();
+                self.prepend(
+                    Atom::ScopedSoftline {
+                        id,
+                        scope_id: scope_id
+                            .ok_or_else(|| {
+                                FormatterError::Query(
+                                    "@prepend_spaced_scoped_softline requires a #scope_id! predicate"
+                                        .into(),
+                                    None,
+                                )
+                            })?
+                            .to_string(),
+                        spaced: true,
+                    },
+                    node,
+                )
+            }
             // Return a query parsing error on unknown capture names
             unknown => {
                 return Err(FormatterError::Query(
@@ -231,6 +335,43 @@ impl AtomCollection {
         }
     }
 
+    fn begin_scope_before(&mut self, node: Node, scope_id: &str) {
+        let target_node = first_leaf(node);
+
+        // If this is a child of a node that we have deemed as a leaf node
+        // (e.g. a character in a string), we need to use that node id
+        // instead.
+        let target_node = self.parent_leaf_node(target_node);
+
+        log::debug!("Begin scope {scope_id:?} before node {:?}", target_node,);
+
+        self.scope_begin
+            .entry(target_node.id())
+            .and_modify(|(_, scope_ids)| scope_ids.push(String::from(scope_id)))
+            .or_insert_with(|| {
+                (
+                    target_node.start_position().row,
+                    vec![String::from(scope_id)],
+                )
+            });
+    }
+
+    fn end_scope_after(&mut self, node: Node, scope_id: &str) {
+        let target_node = last_leaf(node);
+
+        // If this is a child of a node that we have deemed as a leaf node
+        // (e.g. a character in a string), we need to use that node id
+        // instead.
+        let target_node = self.parent_leaf_node(target_node);
+
+        log::debug!("End scope {scope_id:?} after node {:?}", target_node,);
+
+        self.scope_end
+            .entry(target_node.id())
+            .and_modify(|(_, scope_ids)| scope_ids.push(String::from(scope_id)))
+            .or_insert_with(|| (target_node.end_position().row, vec![String::from(scope_id)]));
+    }
+
     // TODO: The frequent lookup of this is inefficient, and needs to be optimized.
     fn parent_leaf_node<'a>(&self, node: Node<'a>) -> Node<'a> {
         let mut n = node;
@@ -278,11 +419,117 @@ impl AtomCollection {
         }
     }
 
+    /// This function expands ScopedSoftline atoms depending on whether the context
+    // containing them is multiline.
+    // It does two passes over the atom collection: the first one associates each ScopedSoftline
+    // to its scope, and decides what to replace them with when the scope ends.
+    // The second pass applies the modifications to the atoms.
+    fn post_process_scopes(&mut self) {
+        type ScopeId = String;
+        type LineIndex = usize;
+        type ScopedNodeId = usize;
+        // `opened_scopes` maintains stacks of opened scopes,
+        // the line at which they started,
+        // and the list of ScopedSoftline they contain.
+        let mut opened_scopes: HashMap<&ScopeId, Vec<(LineIndex, Vec<&Atom>)>> = HashMap::new();
+        // We can't process ScopedSoftlines in-place as we encounter them in the list of
+        // atoms: we need to know when their encompassing scope ends to decide what to
+        // replace them with. Instead of in-place modifications, we associate a replacement
+        // atom to each ScopedSoftline atom (identified by their `id` field), then apply
+        // the modifications in a second pass over the atoms.
+        let mut modifications: HashMap<ScopedNodeId, Option<Atom>> = HashMap::new();
+
+        for atom in &self.atoms {
+            if let Atom::Leaf { id, .. } = atom {
+                // Begin a new scope
+                if let Some((line_start, scope_ids)) = self.scope_begin.get(id) {
+                    for scope_id in scope_ids {
+                        opened_scopes
+                            .entry(scope_id)
+                            .or_insert_with(Vec::new)
+                            .push((*line_start, Vec::new()));
+                    }
+                }
+                // End a scope, and register the ScopedSoftline transformations
+                // in `modifications`
+                if let Some((line_end, scope_ids)) = self.scope_end.get(id) {
+                    for scope_id in scope_ids {
+                        if let Some((line_start, atoms)) = opened_scopes
+                            .get_mut(scope_id)
+                            .map(Vec::pop)
+                            .unwrap_or(None)
+                        {
+                            let multiline = line_start != *line_end;
+                            for atom in atoms {
+                                if let Atom::ScopedSoftline { id, spaced, .. } = atom {
+                                    let new_atom = if multiline {
+                                        Some(Atom::Hardline)
+                                    } else if *spaced {
+                                        Some(Atom::Space)
+                                    } else {
+                                        None
+                                    };
+                                    modifications.insert(*id, new_atom);
+                                }
+                            }
+                        } else {
+                            log::warn!("Closing unopened scope {scope_id:?}")
+                        }
+                    }
+                }
+            // Register the ScopedSoftline in the correct scope
+            } else if let Atom::ScopedSoftline { scope_id, .. } = atom {
+                if let Some((_, vec)) = opened_scopes
+                    .get_mut(&scope_id)
+                    .map(|v| v.last_mut())
+                    .unwrap_or(None)
+                {
+                    vec.push(atom)
+                } else {
+                    log::warn!("Found scoped softline {:?} outside of its scope", atom)
+                }
+            }
+        }
+        let still_opened: Vec<&String> = opened_scopes
+            .into_iter()
+            .filter_map(|(scope_id, vec)| if vec.is_empty() { None } else { Some(scope_id) })
+            .collect();
+        if !still_opened.is_empty() {
+            log::warn!("Some scopes have been left opened: {:?}", still_opened)
+        }
+
+        // Apply modifications.
+        // For performance reasons, skip this step if there are no modifications to make
+        if !modifications.is_empty() || !still_opened.is_empty() {
+            let new_atoms = self
+                .atoms
+                .iter()
+                .filter_map(|atom| {
+                    if let Atom::ScopedSoftline { id, .. } = atom {
+                        if let Some(atom_option) = modifications.remove(id) {
+                            atom_option
+                        } else {
+                            log::warn!(
+                                "Found scoped softline {:?}, but was unable to replace it.",
+                                atom
+                            );
+                            None
+                        }
+                    } else {
+                        Some(atom.clone())
+                    }
+                })
+                .collect();
+            self.atoms = new_atoms
+        }
+    }
+
     // This function merges the spaces, new lines and blank lines.
     // If there are several tokens of different kind one after the other,
     // the blank line is kept over the new line which itself is kept over the space.
     // Furthermore, this function put the indentation delimiters before any space/line atom.
     pub fn post_process(&mut self) {
+        self.post_process_scopes();
         let mut new_vec: Vec<Atom> = Vec::new();
         for next in &(self.atoms) {
             if let Some(prev_var) = new_vec.last() {
@@ -300,6 +547,11 @@ impl AtomCollection {
         }
         ensure_final_hardline(&mut new_vec);
         self.atoms = new_vec;
+    }
+
+    fn next_id(&mut self) -> usize {
+        self.counter += 1;
+        self.counter
     }
 }
 
