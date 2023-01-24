@@ -252,7 +252,7 @@
     ; Commands
     (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
     ; Contexts
-    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
   ]
 )
 
@@ -264,7 +264,7 @@
     ; Commands
     (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
     ; Contexts
-    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
   ]
 )
 
@@ -276,7 +276,7 @@
     ; Commands
     (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
     ; Contexts
-    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
   ]
 )
 
@@ -290,7 +290,7 @@
     ; Commands
     (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
     ; Contexts
-    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
   ]
 )
 
@@ -304,7 +304,7 @@
     ; Commands
     (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
     ; Contexts
-    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
   ]
 )
 
@@ -317,7 +317,7 @@
     ; Commands
     (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
     ; Contexts
-    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
   ]
 )
 
@@ -332,7 +332,7 @@
     ; Commands
     (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
     ; Contexts
-    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
   ]
 )
 
@@ -345,7 +345,7 @@
     ; Commands
     (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
     ; Contexts
-    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
   ]
 )
 
@@ -357,7 +357,7 @@
     ; Commands
     (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
     ; Contexts
-    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
   ]
 )
 
@@ -369,7 +369,7 @@
     ; Commands
     (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
     ; Contexts
-    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
   ]
 )
 
@@ -593,14 +593,17 @@
 
 ;; Variable Declaration, Assignment and Expansion
 
+; NOTE It would be nice to convert (simple_expansion) nodes into
+; (expansion) nodes by inserting "delimiters" in appropriate places.
+; This doesn't appear to currently be possible (see Issue #187).
+
 ; NOTE Assignment only gets a new line when not part of a declaration;
 ; that is, all the contexts in which units of execution can appear.
 ; Hence the queries for this are defined above. (My kingdom for a
 ; negative anchor!)
 
-; Declaration on a new line
-; FIXME We may not need this any more
-; FIXME ; (declaration_command) @prepend_hardline
+; Declarations always end with a new line
+(declaration_command) @append_hardline
 
 ; Multiple variables can be exported (and assigned) at once
 (declaration_command
@@ -613,14 +616,3 @@
 (command
   (variable_assignment) @append_space
 )
-
-; NOTE The (simple_expansion), for `$foo`, and (expansion), for `${foo}`
-; and friends, node types exist. We consider them as leaves (see above).
-; However, it would be _really_ nice if we could write a query that
-; converts all (simple_expansions) into (expansions). It can almost be
-; done with delimiters, but it doesn't quite work :( For example:
-;
-; (simple_expansion (variable_name) @prepend_delimiter (#delimiter! "{"))
-; (simple_expansion (variable_name) @append_delimiter (#delimiter! "}"))
-;
-; See https://github.com/tweag/topiary/pull/179#discussion_r1073202151
