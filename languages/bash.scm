@@ -262,7 +262,7 @@
 ; * Top-level
 ; * Multi-line compound statements and subshells
 ; * In any branch of a conditional
-; * In any branch of a switch statement
+; * In any branch of a case statement
 ; * Within loops
 ; * Multi-line command substitutions
 ;
@@ -300,7 +300,7 @@
 ; FIXME ;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
 ; FIXME ; )
 ; FIXME ;
-; FIXME ; ; NOTE Single-line switch branches are a thing; hence the softline
+; FIXME ; ; NOTE Single-line case branches are a thing; hence the softline
 ; FIXME ; (case_item
 ; FIXME ;   .
 ; FIXME ;   _
@@ -452,39 +452,34 @@
    right: _ @prepend_space
 )
 
-;; Switch Statements
+;; Case Statements
 
-; New line after switch statement
-(case_statement) @append_hardline
-
-; New line after "in" and start indent block
+; Indentation block between the "in" and the "esac"
 (case_statement
   .
+  "case" . _ .  "in" @append_hardline @append_indent_start
   _
-  "in" @append_hardline @append_indent_start
-)
+  "esac" @prepend_hardline @prepend_indent_end
+  .
+) @append_hardline
 
-; New (soft)line after switch branch and start indent block
+; New (soft)line after branch, which starts an indentation block up
+; until its end
 (case_item
   ")" @append_spaced_softline @append_indent_start
-)
+) @append_indent_end
 
-; Ensure switch branch terminators appear on their own line, in a
-; multi-line context; or, at least, push the next switch branch on to a
+; Ensure case branch terminators appear on their own line, in a
+; multi-line context; or, at least, push the next case branch on to a
 ; new line in a single-line context
-; NOTE The terminator is optional in the final condition
+; NOTE The terminator is optional in the final condition, which is why
+; we deal with closing the indent block above
 (case_item
   [
     ";;"
     ";;&"
     ";&"
   ] @prepend_empty_softline @append_hardline
-)
-
-; Finish indent blocks after switch branches and at the "esac"
-(case_item) @append_indent_end
-(case_statement
-  "esac" @prepend_indent_end
   .
 )
 
