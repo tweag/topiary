@@ -179,9 +179,7 @@
 (compound_statement
   .
   "{" @append_spaced_softline @append_indent_start
-)
-
-(compound_statement
+  _
   "}" @prepend_spaced_softline @prepend_indent_end
   .
 )
@@ -189,9 +187,7 @@
 (subshell
   .
   "(" @append_spaced_softline @append_indent_start
-)
-
-(subshell
+  _
   ")" @prepend_spaced_softline @prepend_indent_end
   .
 )
@@ -233,35 +229,55 @@
 ;   but are treated as such to isolate them from their declaration
 ;   context; see Variables section, below)
 
-; When a "command" is followed by another "command", it should be
-; interposed by a new line (a softline, for the sake of single-line
-; compound statements and subshells). This, however, is only true in the
+; We care about the line spacing of "commands" that appear in any of the
 ; following contexts:
 ;
 ; * Top-level statements
 ; * Multi-line compound statements and subshells
-; * In any branch of a conditional or case statement
+; * Any branch of a conditional or case statement
 ; * Loop bodies
 ; * Multi-line command substitutions
+;
+; We address each context individually, as there's no way to isolate the
+; exceptional contexts, where no line spacing is required.
+;
+; When a "command" is followed by another "command" or context, it
+; should be interposed by a new (soft)line, for the sake of single-line
+; compound statements and subshells.
 
 (program
   [(command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)] @append_hardline
   .
-  [(command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)]
+  [
+    ; Commands
+    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
+    ; Contexts
+    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+  ]
 )
 
 ; NOTE Single-line compound statements are a thing; hence the softline
 (compound_statement
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_spaced_softline
   .
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)]
+  [
+    ; Commands
+    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
+    ; Contexts
+    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+  ]
 )
 
 ; NOTE Single-line subshells are a thing; hence the softline
 (subshell
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_spaced_softline
   .
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)]
+  [
+    ; Commands
+    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
+    ; Contexts
+    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+  ]
 )
 
 (if_statement
@@ -270,7 +286,12 @@
   "then"
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)]
+  [
+    ; Commands
+    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
+    ; Contexts
+    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+  ]
 )
 
 (elif_clause
@@ -279,7 +300,12 @@
   "then"
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)]
+  [
+    ; Commands
+    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
+    ; Contexts
+    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+  ]
 )
 
 (else_clause
@@ -287,7 +313,12 @@
   "else"
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)]
+  [
+    ; Commands
+    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
+    ; Contexts
+    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+  ]
 )
 
 ; NOTE Single-line case branches are a thing; hence the softline
@@ -297,7 +328,12 @@
   ")"
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_spaced_softline
   .
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)]
+  [
+    ; Commands
+    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
+    ; Contexts
+    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+  ]
 )
 
 (do_group
@@ -305,21 +341,36 @@
   "do"
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)]
+  [
+    ; Commands
+    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
+    ; Contexts
+    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+  ]
 )
 
 ; NOTE Single-line command substitutions are a thing; hence the softline
 (command_substitution
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_empty_softline
   .
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)]
+  [
+    ; Commands
+    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
+    ; Contexts
+    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+  ]
 )
 
 ; NOTE Single-line command substitutions are a thing; hence the softline
 (command_substitution
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_empty_softline
   .
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)]
+  [
+    ; Commands
+    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
+    ; Contexts
+    (c_style_for_statement) (case_statement) (for_statement) (function_definition) (if_statement) (while_statement)
+  ]
 )
 
 ; Surround command list and pipeline delimiters with spaces
@@ -379,7 +430,7 @@
 
 ;; Redirections
 
-; Insert a space before all redirections, but _not_ after the operator
+; Insert a space before all redirection operators, but _not_ after
 (redirected_statement
   redirect: _* @prepend_space
 )
@@ -528,17 +579,13 @@
 ; NOTE Much of the formatting work for function definitions is done by
 ; whatever already-defined queries apply to the function body (e.g.,
 ; (compound_statement), etc.). All we do here is ensure functions get
-; their own line and put a space between its name and the body.
-; FIXME We may not need this any more
-; FIXME ; (function_definition) @prepend_hardline
+; a space between its name and body, a new line afterwards and deleting
+; the redundant "function" keyword, if it exists in the input.
 
 (function_definition
-  body: _ @prepend_space
+  body: _ @prepend_space @append_hardline
 )
 
-; NOTE The "function" keyword in function definitions is optional and
-; thus usually considered redundant. Therefore we delete it, if it's
-; present in the input.
 (function_definition
   .
   "function" @delete
