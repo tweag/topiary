@@ -112,17 +112,14 @@
 ; FIXME ;   ]
 ; FIXME ; )
 
-; Surround keywords with spaces
+; Append a space to the following keywords and delimiters
 [
+  ";"
   "case"
   "declare"
   "do"
-  "done"
   "elif"
-  "else"
-  "esac"
   "export"
-  "fi"
   "for"
   "if"
   "in"
@@ -133,7 +130,12 @@
   "typeset"
   "until"
   "while"
-] @append_space @prepend_space
+] @append_space
+
+; Prepend a space to intra-statment keywords
+[
+  "in"
+] @prepend_space
 
 ;; Comments
 
@@ -196,21 +198,65 @@
 
 ;; Commands
 
-; NOTE "Command" is an epithet for a "unit of execution":
-; * Simple commands (e.g., binaries, builtins, functions, etc.)
-; * Command lists
-; * Command pipelines
-; * Compound statements
-; * Subshells
-; * Redirection statements (NOTE these aren't "units of execution" in
-;   their own right, but are treated as such due to how the grammar
+; "Command" is an epithet for, broadly speaking, a "unit of execution".
+; It is such a pervasive and general concept in Bash that we need to
+; take care when considering the context. For example, the condition in
+; an if statement or while loop is a command, but we don't want to
+; insert a new line in these cases.
+;
+; In terms of the grammar, the following nodes should be considered
+; "commands":
+;
+; * (command)
+;   Simple commands (e.g., binaries, builtins, functions, etc.)
+;
+; * (list)
+;   Command lists (i.e., "commands" sequenced by && and ||)
+;
+; * (pipeline)
+;   Command pipelines (i.e., "commands" sequenced by | and |&)
+;
+; * (subshell)
+;   Subshells (i.e., arbitrary code enclosed within parentheses)
+;
+; * (compound_statement)
+;   Compound statements (i.e., arbitrary code enclosed within
+;   curly-parentheses)
+;
+; * (redirected_statement)
+;   IO redirection (NOTE These aren't semantically "units of execution"
+;   in their own right, but are treated as such due to how the grammar
 ;   organises them as parent nodes of such units)
-; * Variable assignment (NOTE these aren't "units of execution" at all,
+;
+; * (variable_assignment)
+;   Variable assignment (NOTE These aren't "units of execution" at all,
 ;   but are treated as such to isolate them from their declaration
 ;   context; see Variables section, below)
-;
-; That is, per the grammar:
-;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)]
+
+; When a "command" is followed by another "command", it should be
+; interposed by a softline, for the sake of single-line compound
+; statements and subshells.
+(
+  [
+    (command)
+    (list)
+    (pipeline)
+    (subshell)
+    (compound_statement)
+    (redirected_statement)
+    (variable_assignment)
+  ] @append_empty_softline
+  .
+  [
+    (command)
+    (list)
+    (pipeline)
+    (subshell)
+    (compound_statement)
+    (redirected_statement)
+    (variable_assignment)
+  ]
+)
 
 ; One command per line in the following contexts:
 ; * Top-level
@@ -220,66 +266,63 @@
 ; * Within loops
 ; * Multi-line command substitutions
 ;
-; NOTE Because "command" is such a pervasive and general concept, each
-; context needs to be individually enumerated to account for exceptions;
-; the primary of which being the condition in if statements.
-(program
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
-)
-
-; NOTE Single-line compound statements are a thing; hence the softline
-(compound_statement
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_spaced_softline
-)
-
-; NOTE Single-line subshells are a thing; hence the softline
-(subshell
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_spaced_softline
-)
-
-(if_statement
-  .
-  _
-  "then"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
-)
-
-(elif_clause
-  .
-  _
-  "then"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
-)
-
-(else_clause
-  .
-  "else"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
-)
-
-; NOTE Single-line switch branches are a thing; hence the softline
-(case_item
-  .
-  _
-  ")"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_spaced_softline
-)
-
-(do_group
-  .
-  "do"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
-)
-
-; NOTE Single-line command substitutions are a thing; hence the softline
-(command_substitution
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_empty_softline
-)
-
-; NOTE Single-line command substitutions are a thing; hence the softline
-(command_substitution
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_empty_softline
-)
+; FIXME ; (program
+; FIXME ;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
+; FIXME ; )
+; FIXME ;
+; FIXME ; ; NOTE Single-line compound statements are a thing; hence the softline
+; FIXME ; (compound_statement
+; FIXME ;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_spaced_softline
+; FIXME ; )
+; FIXME ;
+; FIXME ; ; NOTE Single-line subshells are a thing; hence the softline
+; FIXME ; (subshell
+; FIXME ;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_spaced_softline
+; FIXME ; )
+; FIXME ;
+; FIXME ; (if_statement
+; FIXME ;   .
+; FIXME ;   _
+; FIXME ;   "then"
+; FIXME ;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
+; FIXME ; )
+; FIXME ;
+; FIXME ; (elif_clause
+; FIXME ;   .
+; FIXME ;   _
+; FIXME ;   "then"
+; FIXME ;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
+; FIXME ; )
+; FIXME ;
+; FIXME ; (else_clause
+; FIXME ;   .
+; FIXME ;   "else"
+; FIXME ;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
+; FIXME ; )
+; FIXME ;
+; FIXME ; ; NOTE Single-line switch branches are a thing; hence the softline
+; FIXME ; (case_item
+; FIXME ;   .
+; FIXME ;   _
+; FIXME ;   ")"
+; FIXME ;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_spaced_softline
+; FIXME ; )
+; FIXME ;
+; FIXME ; (do_group
+; FIXME ;   .
+; FIXME ;   "do"
+; FIXME ;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
+; FIXME ; )
+; FIXME ;
+; FIXME ; ; NOTE Single-line command substitutions are a thing; hence the softline
+; FIXME ; (command_substitution
+; FIXME ;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_empty_softline
+; FIXME ; )
+; FIXME ;
+; FIXME ; ; NOTE Single-line command substitutions are a thing; hence the softline
+; FIXME ; (command_substitution
+; FIXME ;   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_empty_softline
+; FIXME ; )
 
 ; Surround command list and pipeline delimiters with spaces
 ; NOTE These queries could be subsumed into the list of symbols that are
@@ -459,31 +502,29 @@
 (do_group
   .
   "do" @append_hardline @append_indent_start
-)
-
-(do_group
-  "done" @prepend_indent_end @append_hardline
+  _
+  "done" @prepend_hardline @prepend_indent_end
   .
-)
+) @append_hardline
 
 ; Ensure the word list is delimited by spaces in classic for loops
 (for_statement
   value: _* @prepend_space
 )
 
-; Ensure the loop condition is pleasantly spaced in C-style for loops
+; Surround the loop condition with spaces in C-style for loops
 (c_style_for_statement
   initializer: _ @prepend_space
-  condition: _ @prepend_space
-  update: _ @prepend_space @append_space
+  update: _ @append_space
 )
 
 ; Keep the loop construct and the "do" on the same line,
-; inserting a delimiter when necessary
+; inserting a spaced delimiter when necessary
+; FIXME Why does the space need to be explicitly inserted?
 (_
   ";"* @do_nothing
   .
-  (do_group) @prepend_delimiter
+  (do_group) @prepend_delimiter @prepend_space
 
   (#delimiter! ";")
 )
