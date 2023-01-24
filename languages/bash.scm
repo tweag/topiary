@@ -132,7 +132,7 @@
   "while"
 ] @append_space
 
-; Prepend a space to intra-statment keywords
+; Prepend a space to intra-statement keywords
 [
   "in"
 ] @prepend_space
@@ -534,14 +534,6 @@
 )
 
 ;; Loops
-
-; Start loops on a new line
-; FIXME We may not need this any more
-; FIXME ; [
-; FIXME ;   (c_style_for_statement)
-; FIXME ;   (for_statement)
-; FIXME ;   (while_statement)
-; FIXME ; ] @prepend_hardline
 
 ; Indentation block between the "do" and the "done"
 (do_group
