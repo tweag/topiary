@@ -18,7 +18,7 @@ directory:
 cargo install --path .
 ```
 
-See the [Contributing](#contributing) section for details on setting up
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details on setting up
 a development environment.
 
 ### Usage
