@@ -593,9 +593,7 @@
     "struct"
     "then"
     "with"
-    "->"
     "{"
-    ":"
     ";"
   ] @append_spaced_softline
   .
@@ -615,9 +613,7 @@
     "struct"
     "then"
     "with"
-    "->"
     "{"
-    ":"
     ";"
   ]
   .
@@ -626,6 +622,36 @@
   (attribute_id) @append_spaced_softline
   .
   (comment)* @do_nothing
+)
+
+; ":" must not always be followed by a softline, we explicitly enumerate
+; the contexts where it must happen
+(value_specification
+  ":" @append_spaced_softline
+)
+(module_binding
+  ":" @append_spaced_softline
+)
+(field_declaration
+  ":" @append_spaced_softline
+)
+(typed_label
+  ":" @append_spaced_softline
+)
+(constructor_declaration
+  ":" @append_spaced_softline
+)
+
+; "->" must not always be followed by a softline, we explicitly enumerate
+; the contexts where it must happen
+(fun_expression
+  "->" @append_spaced_softline
+)
+(match_case
+  "->" @append_spaced_softline
+)
+(constructor_declaration
+  "->" @append_spaced_softline
 )
 
 ; Always put softlines before these:
@@ -700,6 +726,7 @@
     (application_expression)
     (class_body_type)
     (if_expression)
+    (function_type)
     (let_expression)
     (object_expression)
     (product_expression)
@@ -983,7 +1010,18 @@
   .
 )
 (let_binding
-  (parameter) @prepend_input_softline
+  .
+  (_) @begin_scope
+  "=" @end_scope
+  (#scope_id! "let_binding_before_equal")
+)
+(let_binding
+  (parameter) @prepend_spaced_scoped_softline
+  (#scope_id! "let_binding_before_equal")
+)
+(let_binding
+  ":" @append_spaced_scoped_softline
+  (#scope_id! "let_binding_before_equal")
 )
 
 ; Indent and allow softlines in anonymous function definitions, such as
@@ -1000,7 +1038,14 @@
   .
 )
 (fun_expression
-  (parameter) @prepend_input_softline
+  .
+  "fun" @begin_scope
+  "->" @end_scope
+  (#scope_id! "fun_expr_before_arrow")
+)
+(fun_expression
+  (parameter) @prepend_spaced_scoped_softline
+  (#scope_id! "fun_expr_before_arrow")
 )
 
 ; Indent and allow softlines in tuples, such as
@@ -1013,14 +1058,65 @@
 (parenthesized_expression
   .
   "(" @append_empty_softline
-  .
   (product_expression) @prepend_indent_start @append_indent_end
-  .
   ")" @prepend_empty_softline
   .
 )
+; Parenthesis are optional when using tuples, so scopes must be tied
+; to the `product_expression` inside.
+; Product expressions are nested grammar elements, which means that the syntax tree of
+; 1, 2, 3
+; is
+; {Node product_expression}
+;   {Node product_expression}
+;     {Node number}
+;     {Node ,}
+;     {Node number}
+;   {Node ,}
+;   {Node number}
+; We only want to define a scope around the outermost `product_expression`,
+; which is the one that *isn't* followed by a comma.
+(
+  (product_expression) @begin_scope @end_scope
+  .
+  ","? @do_nothing
+  (#scope_id! "tuple")
+)
 (product_expression
-  "," @append_spaced_softline
+  "," @append_spaced_scoped_softline
+  (#scope_id! "tuple")
+)
+
+; Allow softlines in function types, such as
+; type t =
+;   a ->
+;   (b -> c) ->
+;   d ->
+;   e
+; Function types are nested grammar elements, which means that the syntax tree of
+; a -> b -> c
+; is
+; {Node function_type}
+;   {Node type_constructor_path}
+;     {Node type_constructor}
+;   {Node ->}
+;   {Node function_type}
+;     {Node type_constructor_path}
+;       {Node type_constructor}
+;     {Node ->}
+;     {Node type_constructor_path}
+;       {Node type_constructor}
+; We only want to define a scope around the outermost `function_type` node,
+; which is the one that *isn't* preceded by an arrow.
+(
+  "->"? @do_nothing
+  .
+  (function_type) @begin_scope @end_scope
+  (#scope_id! "function_type")
+)
+(function_type
+  "->" @append_spaced_scoped_softline
+  (#scope_id! "function_type")
 )
 
 ; Indent and add softlines in lists, such as

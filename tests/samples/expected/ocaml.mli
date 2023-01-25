@@ -5598,3 +5598,10 @@ sig
 
   val check_storage_limit : context -> storage_limit: Z.t -> unit tzresult
 end
+
+(* Playing with nested structures *)
+type foo =
+a ->
+(b -> c) ->
+d ->
+e
