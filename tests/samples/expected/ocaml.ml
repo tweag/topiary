@@ -657,8 +657,7 @@ module Inner2 = struct
       inherit ['a] Inner1.poppable
     end
 
-  class ['a] stack_impl:
-  ['a] stack =
+  class ['a] stack_impl: ['a] stack =
     object
       inherit ['a] Inner1.poppable as super
 
@@ -750,10 +749,20 @@ let _ =
   let open Printf in
   sprintf "hello world"
 
+(* Playing with nested structures *)
 let _ =
   (
     1,
     2,
     3,
     4
+  )
+
+let _ =
+  (
+    1,
+    2,
+    (3, 4),
+    5,
+    6
   )

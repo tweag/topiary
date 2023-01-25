@@ -739,9 +739,13 @@ let _ =
   let open Printf in
   sprintf "hello world"
 
+(* Playing with nested structures *)
 let _ =
-  ( 1
-  , 2
+  ( 1, 2
   , 3
   , 4
   )
+
+let _ =
+  (1, 2, (3, 4),
+  5, 6)
