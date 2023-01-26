@@ -427,10 +427,15 @@
 (herestring_redirect (_) @prepend_space)
 
 ; Ensure heredocs start on a new line, after their start marker, and
-; there is a new line after their end marker
-; NOTE This is a syntactic requirement
+; there is a new line after their end marker, when followed by any named
+; node. (NOTE This may need some refinement...)
+; NOTE These are a syntactic requirements
 (heredoc_start) @append_hardline
-(heredoc_body) @append_hardline
+(
+  (heredoc_body) @append_hardline
+  .
+  (_)
+)
 
 ;; Conditionals
 
