@@ -258,7 +258,7 @@
 
 ; NOTE Single-line compound statements are a thing; hence the softline
 (compound_statement
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_empty_softline
   .
   [
     ; Commands
@@ -270,7 +270,7 @@
 
 ; NOTE Single-line subshells are a thing; hence the softline
 (subshell
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_empty_softline
   .
   [
     ; Commands
@@ -326,7 +326,7 @@
   .
   _
   ")"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_spaced_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_empty_softline
   .
   [
     ; Commands
@@ -352,18 +352,6 @@
 ; NOTE Single-line command substitutions are a thing; hence the softline
 (command_substitution
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_empty_softline
-  .
-  [
-    ; Commands
-    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
-    ; Contexts
-    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
-  ]
-)
-
-; NOTE Single-line command substitutions are a thing; hence the softline
-(command_substitution
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @prepend_empty_softline
   .
   [
     ; Commands
