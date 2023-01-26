@@ -2,8 +2,13 @@
 
 # Here is a comment
 do_a_thing
-produce | consume
+produce | consume # here's a comment
+something
 
+a=123 # comment
+
+# a different comment
+# that spans multiple lines
 if some_command
 then
 do_something

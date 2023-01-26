@@ -149,14 +149,42 @@
 ; 2. All comments must end with a new line.
 ; 3. Comments can be interposed by blank lines, if they exist in the
 ;    input (i.e., blank lines shouldn't be engineered elsewhere).
-; 4. A run of standalone comments (i.e., without anything, including
-;    blank lines, interposing) should be kept together.
-; 5. Trailing comments should only appear after "units of execution" or
-;    variable declarations/assignment. (This is despite it being
-;    syntactically valid to put them elsewhere.)
+; 4. A comment can never change flavour (i.e., standalone to trailing,
+;    or vice versa).
+; 5. Trailing comments should only appear after "units of execution"
+;    (see Commands section, below) or variable declarations/assignment.
+;    (This is despite it being syntactically valid to put them
+;    elsewhere.)
 
-; FIXME
+; Rule 1: See @leaf rule, above
+
+; Rule 2
 (comment) @append_hardline
+
+; Rule 3: See @allow_blank_line_before rule, above, plus the below to
+; account for standalone comments following trailing comments
+(
+  ; Context: Unit of execution or variable
+  [(command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (declaration_command) (variable_assignment)]
+  .
+  (comment)
+  .
+  (comment) @prepend_hardline
+)
+
+; Rule 4: We only have to protect against the case of a standalone
+; comment, after a statement, being slurped on to that statement's line
+; and becoming a trailing comment.
+; FIXME This case cannot be distinguished by the grammar. There may be
+; another way to express it...
+
+; Rule 5
+(
+  ; Context: Unit of execution or variable
+  [(command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (declaration_command) (variable_assignment)]
+  .
+  (comment) @prepend_space
+)
 
 ;; Compound Statements and Subshells
 
