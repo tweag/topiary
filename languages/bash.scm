@@ -39,78 +39,72 @@
   (while_statement)
 ] @allow_blank_line_before
 
-; Insert a new line after multi-line syntactic blocks or, for where
-; single-line variants exists, after the "closing" subnodes (the
-; specificity is to avoid targeting the single-line context)
-; FIXME ; [
-; FIXME ;   (if_statement)
-; FIXME ;   (case_statement)
-; FIXME ;   (do_group)
-; FIXME ; ] @append_hardline
-; FIXME ;
-; FIXME ; (subshell
-; FIXME ;   ")" @append_empty_softline
-; FIXME ;   .
-; FIXME ; )
-; FIXME ;
-; FIXME ; (compound_statement
-; FIXME ;   "}" @append_empty_softline
-; FIXME ;   .
-; FIXME ; )
+; Insert a new line before multi-line syntactic blocks, regardless of
+; context
+[
+  (c_style_for_statement)
+  (case_statement)
+  (for_statement)
+  (function_definition)
+  (if_statement)
+  (while_statement)
+] @prepend_hardline
 
-; A run of "units of execution" (see below, sans variables which are
-; special) and function definitions should be followed by a new line,
-; before a multi-line syntactic block or variable.
-; FIXME ; (
-; FIXME ;   [
-; FIXME ;     (command)
-; FIXME ;     (compound_statement)
-; FIXME ;     (function_definition)
-; FIXME ;     (list)
-; FIXME ;     (pipeline)
-; FIXME ;     (redirected_statement)
-; FIXME ;     (subshell)
-; FIXME ;   ] @append_empty_softline
-; FIXME ;   .
-; FIXME ;   [
-; FIXME ;     (c_style_for_statement)
-; FIXME ;     (case_statement)
-; FIXME ;     (compound_statement)
-; FIXME ;     (declaration_command)
-; FIXME ;     (for_statement)
-; FIXME ;     (function_definition)
-; FIXME ;     (if_statement)
-; FIXME ;     (subshell)
-; FIXME ;     (variable_assignment)
-; FIXME ;     (while_statement)
-; FIXME ;   ]
-; FIXME ; )
+; Subshells and compound statements should have a new line inserted
+; before them when they are top-level constructs. Beyond that level, the
+; extra spacing makes the code overly sparse. (This is also a pragmatic
+; choice: as we have to avoid the exception of function definitions, the
+; list of complementary contexts we'd have to enumerate queries over is
+; rather large!)
+(program
+  [
+    (compound_statement)
+    (subshell)
+  ] @prepend_hardline
+)
 
-; A run of variable declarations and assignments should be followed by a
-; new line, before anything else
-; FIXME ; (
-; FIXME ;   [
-; FIXME ;     (declaration_command)
-; FIXME ;     (variable_assignment)
-; FIXME ;   ] @append_hardline
-; FIXME ;   .
-; FIXME ;   [
-; FIXME ;     (c_style_for_statement)
-; FIXME ;     (case_statement)
-; FIXME ;     (command)
-; FIXME ;     (compound_statement)
-; FIXME ;     (compound_statement)
-; FIXME ;     (for_statement)
-; FIXME ;     (function_definition)
-; FIXME ;     (if_statement)
-; FIXME ;     (list)
-; FIXME ;     (pipeline)
-; FIXME ;     (redirected_statement)
-; FIXME ;     (subshell)
-; FIXME ;     (subshell)
-; FIXME ;     (while_statement)
-; FIXME ;   ]
-; FIXME ; )
+; A run of "units of execution" (see Commands section, below; sans
+; variables which are special) should be interposed by a new line, after
+; a multi-line syntactic block or variable.
+(
+  [
+    (c_style_for_statement)
+    (case_statement)
+    (declaration_command)
+    (for_statement)
+    (function_definition)
+    (if_statement)
+    (variable_assignment)
+    (while_statement)
+  ]
+  .
+  ; Commands (sans variables)
+  [(command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement)] @prepend_hardline
+)
+
+; A run of variable declarations and assignments should be interposed by
+; a new line, after almost anything else. This makes them stand out.
+(
+  [
+    (c_style_for_statement)
+    (case_statement)
+    (command)
+    (compound_statement)
+    (for_statement)
+    (function_definition)
+    (if_statement)
+    (list)
+    (pipeline)
+    (redirected_statement)
+    (subshell)
+    (while_statement)
+  ]
+  .
+  [
+    (declaration_command)
+    (variable_assignment)
+  ] @prepend_hardline
+)
 
 ; Append a space to the following keywords and delimiters
 [
@@ -243,7 +237,8 @@
 ;
 ; When a "command" is followed by another "command" or context, it
 ; should be interposed by a new (soft)line, for the sake of single-line
-; compound statements and subshells.
+; compound statements and subshells. (NOTE The ((foo) @bar . (foo))
+; query pattern is to avoid applying @bar to trailing elements.)
 
 (program
   [(command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)] @append_hardline
@@ -566,6 +561,15 @@
 ; (compound_statement), etc.). All we do here is ensure functions get
 ; a space between its name and body, a new line afterwards and deleting
 ; the redundant "function" keyword, if it exists in the input.
+
+; NOTE Technically speaking, a function body can be _any_ compound. For
+; example, this is valid Bash:
+;
+;   my_function() for x in $@; do echo $x; done
+;
+; However, this form is never seen in the wild and the Tree Sitter Bash
+; grammar won't even parse it. It only accepts subshells, compound
+; statements and test commands as function bodies.
 
 (function_definition
   body: _ @prepend_space @append_hardline
