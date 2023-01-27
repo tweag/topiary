@@ -451,13 +451,18 @@
 
 ; Ensure heredocs start on a new line, after their start marker, and
 ; there is a new line after their end marker, when followed by any named
-; node. (NOTE This may need some refinement...)
+; node. (NOTE This may still need refinement...)
 ; NOTE These are a syntactic requirements
 (heredoc_start) @append_hardline
+
+; NOTE Anecdotally, queries that target the (heredoc_body) node act
+; differently, dependant upon expansions existing in the heredoc. Hence
+; this query, that targets any following named node, rather than simply
+; appending a new line to any heredoc (which doesn't work).
 (
-  (heredoc_body) @append_hardline
+  (heredoc_body)
   .
-  (_)
+  (_) @prepend_hardline
 )
 
 ;; Conditionals
