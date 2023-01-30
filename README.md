@@ -527,6 +527,86 @@ rule is what's important; the results of which are demonstrated below:
 }
 ```
 
+### Custom scopes and softlines
+
+So far, we've expanded softlines into line breaks depending on whether the CST node they are associated to is multiline. Sometimes, CST nodes define scopes that are either too big or too small for our needs.
+For instance, consider this piece of OCaml code:
+```ocaml
+(1,2,
+3)
+```
+Its CST is the following:
+```
+{Node parenthesized_expression (0, 0) - (1, 2)} - Named: true
+  {Node ( (0, 0) - (0, 1)} - Named: false
+  {Node product_expression (0, 1) - (1, 1)} - Named: true
+    {Node product_expression (0, 1) - (0, 4)} - Named: true
+      {Node number (0, 1) - (0, 2)} - Named: true
+      {Node , (0, 2) - (0, 3)} - Named: false
+      {Node number (0, 3) - (0, 4)} - Named: true
+    {Node , (0, 4) - (0, 5)} - Named: false
+    {Node number (1, 0) - (1, 1)} - Named: true
+  {Node ) (1, 1) - (1, 2)} - Named: false
+```
+
+We would want to add a line break after the first comma, but because the CST structure is nested, the node containing this comma (`product_expression (0, 1) - (0, 4)`) is *not* multiline.
+Only the top-level node `product_expression (0, 1) - (1, 1)` is multiline.
+
+To solve this issue, we introduce user-defined scopes and softlines.
+
+#### `@begin_scope`, `@end_scope`
+
+`@begin_scope` and `@end_scope` tags are used to define custom scopes. In conjunction with the `#scope_id!` predicate, they define scopes that can span multiple CST nodes, or only part of one.
+For instance, this scope matches anything between parenthesis in a `parenthesized_expression`:
+
+```scheme
+(parenthesized_expression
+  "(" @begin_scope
+  ")" @end_scope
+  (#scope_id! "tuple")
+)
+```
+
+#### Scoped softlines
+We have four predicates that insert softlines in custom scopes, in conjunction with the `#scope_id!` predicate:
+* `@prepend_empty_scoped_softline`
+* `@prepend_spaced_scoped_softline`
+* `@append_empty_scoped_softline`
+* `@append_spaced_scoped_softline`
+
+When one of these scoped softlines is used, their behavior depends on the innermost encompassing scope with the corresponding `scope_id`. If that scope is multiline, the softline expands into a line break. In any other regard, they behave as their non-`scoped` counterparts.
+
+#### Minimal example
+This Tree-sitter query:
+```scheme
+(#language! ocaml)
+
+(parenthesized_expression
+  "(" @begin_scope @append_empty_softline @append_indent_start
+  ")" @end_scope @prepend_empty_softline @prepend_indent_end
+  (#scope_id! "tuple")
+)
+
+(product_expression
+  "," @append_spaced_scoped_softline
+  (#scope_id! "tuple")
+)
+```
+formats this piece of code:
+```ocaml
+(1,2,
+3)
+```
+as
+```ocaml
+(
+  1,
+  2,
+  3
+)
+```
+while the single-lined `(1, 2, 3)` is kept as is.
+
 ## Suggested workflow
 
 In order to work productively on query files, the following is one suggested way to work:
