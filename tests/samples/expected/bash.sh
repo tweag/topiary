@@ -58,7 +58,6 @@ esac
 {
   here
   is
-
   { a; nested; compound; }
 }
 
@@ -69,7 +68,6 @@ fi
 (
   here
   is
-
   ( a; nested; subshell )
 )
 
@@ -81,12 +79,10 @@ fi
 
 (
   one
-
   {
     inside
     the
   }
-
   other
 )
 
@@ -134,3 +130,4 @@ export xyzzy=$(
   something
   another_thing --foo
 )
+
