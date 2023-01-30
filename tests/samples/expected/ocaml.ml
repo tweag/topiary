@@ -573,6 +573,13 @@ let large_const =
     (long_argument_4 : int) ->
     val
 
+let _ =
+  [
+    1;
+    2;
+    3
+  ]
+
 (* Showcase the usage of operator bindings *)
 let greetings =
   let (let*) = Option.bind
@@ -588,11 +595,11 @@ let greetings =
   Some (msg1 ^ msg2)
 
 (* Some pattern-matching *)
-let hd::_ = [1, 2, 3]
+let hd::_ = [1; 2; 3]
 
 let Some message = Some "message"
 
-let [1, snd] = [1, 2]
+let [1; snd] = [1; 2]
 
 type a = int
 and b = float

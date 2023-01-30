@@ -434,6 +434,7 @@
   [
     ; Don't add any space just before these.
     ","
+    ";"
     "."
     ".."
     ")"
@@ -1020,6 +1021,27 @@
 )
 (product_expression
   "," @append_spaced_softline
+)
+
+; Indent and add softlines in lists, such as
+; let _ =
+;   [
+;     long_value_1;
+;     long_value_2;
+;     long_value_3;
+;   ]
+(list_expression
+  .
+  "[" @append_indent_start @append_empty_softline
+  "]" @prepend_indent_end @prepend_empty_softline
+  .
+)
+
+(list_pattern
+  .
+  "[" @append_indent_start @append_empty_softline
+  "]" @prepend_indent_end @prepend_empty_softline
+  .
 )
 
 ; Try block formatting
