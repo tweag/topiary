@@ -5,6 +5,7 @@ do_a_thing
 produce | consume # here's a comment
 something
 
+# comment
 a=123 # comment
 
 # a different comment
@@ -126,12 +127,12 @@ fi
 
 {
   cat <<EOF
-This shouldn't be indented
+This shouldn't be indented ${foo}
 ...nor this
 EOF
 }
 
-readonly a=$(foo | bar || baz --quux 2>&1)
+readonly a="$(foo | bar || baz --quux 2>&1)"
 foo <(bar||baz --something) | tee >(quux)
 
 export xyzzy=$(
