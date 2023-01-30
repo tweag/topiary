@@ -38,3 +38,15 @@ labels:
   - name: "merge-queue"
     color: 0e8a16
     description: "merge on green CI"
+  - name: "language: ocaml"
+    color: f8451f
+    description: "OCaml formatting issues"
+  - name: "language: rust"
+    color: f8451f
+    description: "Rust formatting issues"
+  - name: "language: bash"
+    color: f8451f
+    description: "Bash formatting issues"
+  - name: "language: nickel"
+    color: f8451f
+    description: "Nickel formatting issues"
