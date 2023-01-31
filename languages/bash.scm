@@ -357,13 +357,18 @@
 )
 
 ; Multi-line command substitutions become an indent block
+; NOTE This is a bit of a hack! We _have_ to append softlines,
+; otherwise command substitutions enclosed within a string will force
+; that new line to the start of the string, which can result in
+; syntactically incorrect output (see Issue 201). Thus we target the
+; node immediately before the closing parenthesis.
 (command_substitution
   .
-  (_) @prepend_empty_softline @prepend_indent_start
-)
-
-(command_substitution
-  ")" @prepend_empty_softline @prepend_indent_end
+  "$(" @append_empty_softline @append_indent_start
+  _
+  (_) @append_empty_softline @append_indent_end
+  .
+  ")"
   .
 )
 
