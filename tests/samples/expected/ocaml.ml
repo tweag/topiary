@@ -577,7 +577,7 @@ let _ =
   [
     1;
     2;
-    3
+    3;
   ]
 
 (* Showcase the usage of operator bindings *)
