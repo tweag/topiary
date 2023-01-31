@@ -316,23 +316,17 @@
   "\n"
 )
 
-; Surround command list and pipeline delimiters with spaces
-; NOTE The context here may be irrelevant -- i.e., these operators
-; should always be surrounded by spaces -- but they're kept here,
-; separately, in anticipation of line continuation support in multi-line
-; contexts.
+; Spaces between named nodes and command list/pipeline delimiters
 (list
-  [
-    "&&"
-    "||"
-  ] @append_space @prepend_space
+  [(_) "&&" "||"] @append_space
+  .
+  _
 )
 
 (pipeline
-  [
-    "|"
-    "|&"
-  ] @append_space @prepend_space
+  [(_) "|" "|&" ] @append_space
+  .
+  _
 )
 
 ; Prepend the asynchronous operator with a space
@@ -344,13 +338,15 @@
   "&" @prepend_space
 )
 
-; Space between command line arguments
+; Spaces between command and its arguments
 ; NOTE If we treat (command) as a leaf node, then commands are formatted
 ; as is and the below will be ignored. On balance, I think keeping this
 ; rule, rather than deferring to the input, is the better choice
 ; (although it's not without its problems; e.g., see Issue #172).
 (command
-  argument: _* @prepend_space
+  (_) @append_space
+  .
+  (_)
 )
 
 ; Ensure the negation operator is surrounded by spaces
@@ -373,9 +369,12 @@
 
 ;; Redirections
 
-; Insert a space before all redirection operators, but _not_ after
+; Spaces between command and any redirections (NOTE this will not insert
+; a space between the redirection operator and its destination)
 (redirected_statement
-  redirect: _* @prepend_space
+  (_) @append_space
+  .
+  (_)
 )
 
 ; ...with the exceptions of herestrings, that are spaced
