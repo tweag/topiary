@@ -7,6 +7,7 @@
 [
   (static_string)
   (str_chunks_single)
+  (str_chunks_multi)
 ] @leaf
 
 ; Allow blank line before
@@ -78,15 +79,17 @@
     "!="
     "&&"
     "||"
-  ]
-) @prepend_space @append_space
+  ] @prepend_space @append_space
+)
 
 (let_expr
+  (let_in_block) @append_spaced_softline
+)
+
+(let_in_block
   "=" @append_spaced_softline @append_indent_start
   .
   t1: (_) @append_indent_end @append_spaced_softline
-  .
-  "in" @prepend_spaced_softline @append_spaced_softline
 )
 
 (fun_expr
@@ -113,6 +116,12 @@
   t1: (term) @append_spaced_softline @append_indent_end
   "else" @append_indent_start @append_spaced_softline
   t2: (term) @append_indent_end
+)
+
+(
+  (infix_b_op_6
+    "&"
+  ) @prepend_spaced_softline
 )
 
 (forall

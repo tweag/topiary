@@ -84,7 +84,7 @@
     # Try passing `false` to `not`, or to use the identity function (replacing `!x`
     # by `x`) to see contract errors appear.
     let not | AlwaysTrue -> AlwaysFalse = fun x => !x in
-    not true,
+    not true ,
 
   simple-contracts_simple-contract-div =
     # /!\ THIS EXAMPLE IS EXPECTED TO FAIL
