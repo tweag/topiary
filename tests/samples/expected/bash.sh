@@ -142,13 +142,12 @@ fi
 EOF
 }
 
-readonly a= "$(foo | bar || baz --quux 2>&1)"
+readonly a="$(foo | bar || baz --quux 2>&1)"
 
 foo <(bar || baz --something) | tee >(quux)
 
 export xyzzy=$(
   something
   another_thing --foo
-
 )
 
