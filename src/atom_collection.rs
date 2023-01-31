@@ -85,6 +85,20 @@ impl AtomCollection {
 
                 self.append(space, node);
             }
+            "append_multiline_delimiter" => self.append(
+                Atom::MultilineOnlyLiteral(
+                    delimiter
+                        .ok_or_else(|| {
+                            FormatterError::Query(
+                                "@append_multiline_delimiter requires a #delimiter! predicate"
+                                    .into(),
+                                None,
+                            )
+                        })?
+                        .to_string(),
+                ),
+                node,
+            ),
             "append_space" => self.append(Atom::Space, node),
             "append_spaced_softline" => self.append(Atom::Softline { spaced: true }, node),
             "prepend_delimiter" => self.prepend(
@@ -113,6 +127,20 @@ impl AtomCollection {
 
                 self.prepend(space, node);
             }
+            "prepend_multiline_delimiter" => self.prepend(
+                Atom::MultilineOnlyLiteral(
+                    delimiter
+                        .ok_or_else(|| {
+                            FormatterError::Query(
+                                "@prepend_multiline_delimiter requires a #delimiter! predicate"
+                                    .into(),
+                                None,
+                            )
+                        })?
+                        .to_string(),
+                ),
+                node,
+            ),
             "prepend_space" => self.prepend(Atom::Space, node),
             "prepend_spaced_softline" => self.prepend(Atom::Softline { spaced: true }, node),
             // Skip over leafs
@@ -195,7 +223,7 @@ impl AtomCollection {
     }
 
     fn prepend(&mut self, atom: Atom, node: Node) {
-        if let Some(atom) = self.expand_softline(atom, node) {
+        if let Some(atom) = self.expand_multiline(atom, node) {
             // TODO: Pre-populate these
             let target_node = first_leaf(node);
 
@@ -214,7 +242,7 @@ impl AtomCollection {
     }
 
     fn append(&mut self, atom: Atom, node: Node) {
-        if let Some(atom) = self.expand_softline(atom, node) {
+        if let Some(atom) = self.expand_multiline(atom, node) {
             let target_node = last_leaf(node);
 
             // If this is a child of a node that we have deemed as a leaf node
@@ -246,7 +274,7 @@ impl AtomCollection {
         node
     }
 
-    fn expand_softline(&self, atom: Atom, node: Node) -> Option<Atom> {
+    fn expand_multiline(&self, atom: Atom, node: Node) -> Option<Atom> {
         if let Atom::Softline { spaced } = atom {
             if let Some(parent) = node.parent() {
                 let parent_id = parent.id();
@@ -267,6 +295,25 @@ impl AtomCollection {
                         parent
                     );
                     Some(Atom::Space)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        } else if let Atom::MultilineOnlyLiteral(literal) = atom {
+            if let Some(parent) = node.parent() {
+                let parent_id = parent.id();
+
+                if self.multi_line_nodes.contains(&parent_id) {
+                    log::debug!(
+                        "Expanding multiline literal {:?} in node {:?} with parent {}: {:?}",
+                        literal,
+                        node,
+                        parent_id,
+                        parent
+                    );
+                    Some(Atom::Literal(literal))
                 } else {
                     None
                 }
