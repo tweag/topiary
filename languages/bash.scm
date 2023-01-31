@@ -362,6 +362,9 @@
 ; that new line to the start of the string, which can result in
 ; syntactically incorrect output (see Issue 201). Thus we target the
 ; node immediately before the closing parenthesis.
+; FIXME If there is only a single named child within a multi-line
+; command substitution, then -- for reasons -- the new line will not be
+; appended after the $(. The output remains syntactically correct.
 (command_substitution
   .
   "$(" @append_empty_softline @append_indent_start
