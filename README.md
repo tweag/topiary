@@ -15,8 +15,11 @@ The project can be built and installed with Cargo from the repository
 directory:
 
 ```bash
+export TOPIARY_LANGUAGE_DIR="$(pwd)/languages"
 cargo install --path .
 ```
+
+The `TOPIARY_LANGUAGE_DIR` variable can be set either at compile time or runtime. It should point to the directory where Topiary's language query files (`.scm`) are located.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for details on setting up
 a development environment.
