@@ -65,25 +65,26 @@ impl AtomCollection {
     ) -> FormatterResult<()> {
         log::debug!("Resolving {name}");
 
+        let requires_delimiter = || {
+            delimiter.ok_or_else(|| {
+                FormatterError::Query(format!("@{name} requires a #delimiter! predicate"), None)
+            })
+        };
+        let requires_scope_id = || {
+            scope_id.ok_or_else(|| {
+                FormatterError::Query(format!("@{name} requires a #scope_id! predicate"), None)
+            })
+        };
+
         match name {
             "allow_blank_line_before" => {
                 if self.blank_lines_before.contains(&node.id()) {
                     self.prepend(Atom::Blankline, node);
                 }
             }
-            "append_delimiter" => self.append(
-                Atom::Literal(
-                    delimiter
-                        .ok_or_else(|| {
-                            FormatterError::Query(
-                                "@append_delimiter requires a #delimiter! predicate".into(),
-                                None,
-                            )
-                        })?
-                        .to_string(),
-                ),
-                node,
-            ),
+            "append_delimiter" => {
+                self.append(Atom::Literal(requires_delimiter()?.to_string()), node)
+            }
             "append_empty_softline" => self.append(Atom::Softline { spaced: false }, node),
             "append_hardline" => self.append(Atom::Hardline, node),
             "append_indent_start" => self.append(Atom::IndentStart, node),
@@ -98,34 +99,14 @@ impl AtomCollection {
                 self.append(space, node);
             }
             "append_multiline_delimiter" => self.append(
-                Atom::MultilineOnlyLiteral(
-                    delimiter
-                        .ok_or_else(|| {
-                            FormatterError::Query(
-                                "@append_multiline_delimiter requires a #delimiter! predicate"
-                                    .into(),
-                                None,
-                            )
-                        })?
-                        .to_string(),
-                ),
+                Atom::MultilineOnlyLiteral(requires_delimiter()?.to_string()),
                 node,
             ),
             "append_space" => self.append(Atom::Space, node),
             "append_spaced_softline" => self.append(Atom::Softline { spaced: true }, node),
-            "prepend_delimiter" => self.prepend(
-                Atom::Literal(
-                    delimiter
-                        .ok_or_else(|| {
-                            FormatterError::Query(
-                                "@prepend_delimiter requires a #delimiter! predicate".into(),
-                                None,
-                            )
-                        })?
-                        .to_string(),
-                ),
-                node,
-            ),
+            "prepend_delimiter" => {
+                self.prepend(Atom::Literal(requires_delimiter()?.to_string()), node)
+            }
             "prepend_empty_softline" => self.prepend(Atom::Softline { spaced: false }, node),
             "prepend_hardline" => self.prepend(Atom::Hardline, node),
             "prepend_indent_start" => self.prepend(Atom::IndentStart, node),
@@ -140,17 +121,7 @@ impl AtomCollection {
                 self.prepend(space, node);
             }
             "prepend_multiline_delimiter" => self.prepend(
-                Atom::MultilineOnlyLiteral(
-                    delimiter
-                        .ok_or_else(|| {
-                            FormatterError::Query(
-                                "@prepend_multiline_delimiter requires a #delimiter! predicate"
-                                    .into(),
-                                None,
-                            )
-                        })?
-                        .to_string(),
-                ),
+                Atom::MultilineOnlyLiteral(requires_delimiter()?.to_string()),
                 node,
             ),
             "prepend_space" => self.prepend(Atom::Space, node),
@@ -163,36 +134,15 @@ impl AtomCollection {
                 self.append(Atom::DeleteEnd, node)
             }
             // Scope manipulation
-            "begin_scope" => self.begin_scope_before(
-                node,
-                scope_id.ok_or_else(|| {
-                    FormatterError::Query(
-                        "@begin_scope requires a #scope_id! predicate".into(),
-                        None,
-                    )
-                })?,
-            ),
-            "end_scope" => self.end_scope_after(
-                node,
-                scope_id.ok_or_else(|| {
-                    FormatterError::Query("@end_scope requires a #scope_id! predicate".into(), None)
-                })?,
-            ),
+            "begin_scope" => self.begin_scope_before(node, requires_scope_id()?),
+            "end_scope" => self.end_scope_after(node, requires_scope_id()?),
             // Scoped softlines
             "append_empty_scoped_softline" => {
                 let id = self.next_id();
                 self.append(
                     Atom::ScopedSoftline {
                         id,
-                        scope_id: scope_id
-                            .ok_or_else(|| {
-                                FormatterError::Query(
-                                    "@append_empty_scoped_softline requires a #scope_id! predicate"
-                                        .into(),
-                                    None,
-                                )
-                            })?
-                            .to_string(),
+                        scope_id: requires_scope_id()?.to_string(),
                         spaced: false,
                     },
                     node,
@@ -203,15 +153,7 @@ impl AtomCollection {
                 self.append(
                     Atom::ScopedSoftline {
                         id,
-                        scope_id: scope_id
-                            .ok_or_else(|| {
-                                FormatterError::Query(
-                                    "@append_spaced_scoped_softline requires a #scope_id! predicate"
-                                        .into(),
-                                    None,
-                                )
-                            })?
-                            .to_string(),
+                        scope_id: requires_scope_id()?.to_string(),
                         spaced: true,
                     },
                     node,
@@ -222,15 +164,7 @@ impl AtomCollection {
                 self.prepend(
                     Atom::ScopedSoftline {
                         id,
-                        scope_id: scope_id
-                            .ok_or_else(|| {
-                                FormatterError::Query(
-                                    "@prepend_empty_scoped_softline requires a #scope_id! predicate"
-                                        .into(),
-                                    None,
-                                )
-                            })?
-                            .to_string(),
+                        scope_id: requires_scope_id()?.to_string(),
                         spaced: false,
                     },
                     node,
@@ -241,15 +175,7 @@ impl AtomCollection {
                 self.prepend(
                     Atom::ScopedSoftline {
                         id,
-                        scope_id: scope_id
-                            .ok_or_else(|| {
-                                FormatterError::Query(
-                                    "@prepend_spaced_scoped_softline requires a #scope_id! predicate"
-                                        .into(),
-                                    None,
-                                )
-                            })?
-                            .to_string(),
+                        scope_id: requires_scope_id()?.to_string(),
                         spaced: true,
                     },
                     node,
