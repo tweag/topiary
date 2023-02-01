@@ -79,7 +79,7 @@ fn run() -> FormatterResult<()> {
 
     let mut output: Box<dyn std::io::Write> = match args.output_file.as_deref() {
         Some("-") | None => Box::new(stdout()),
-        Some(file) => Box::new(BufWriter::new(File::open(file)?)),
+        Some(file) => Box::new(BufWriter::new(File::create(file)?)),
     };
 
     let language: Option<Language> = if let Some(language) = args.language {
