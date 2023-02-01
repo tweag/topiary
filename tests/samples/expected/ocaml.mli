@@ -66,8 +66,7 @@ type public_key_hash = Signature.Public_key_hash.t
 type signature = Signature.t
 
 (** This module re-exports definitions from {!Slot_repr}. *)
-module Slot:
-sig
+module Slot: sig
   type t
 
   type slot = t
@@ -84,8 +83,7 @@ sig
 
   val encoding : t Data_encoding.encoding
 
-  module Range:
-  sig
+  module Range: sig
     type t
 
     val create : min: int -> count: int -> t tzresult
@@ -103,15 +101,13 @@ sig
 
   module Set: Set.S with type elt = t
 
-  module Internal_for_tests:
-  sig
+  module Internal_for_tests: sig
     val of_int : int -> t tzresult
   end
 end
 
 (** This module re-exports definitions from {!Tez_repr}. *)
-module Tez:
-sig
+module Tez: sig
   type repr
 
   type t = Tez_tag of repr [@@ocaml.unboxed ]
@@ -156,8 +152,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Period_repr}. *)
-module Period:
-sig
+module Period: sig
   include BASIC_DATA
 
   type period = t
@@ -186,8 +181,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Time_repr}. *)
-module Timestamp:
-sig
+module Timestamp: sig
   include BASIC_DATA with type t = Time.t
 
   type time = t
@@ -218,8 +212,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Ratio_repr}. *)
-module Ratio:
-sig
+module Ratio: sig
   type t = { numerator: int; denominator: int; }
 
   val encoding : t Data_encoding.t
@@ -228,8 +221,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Raw_level_repr}. *)
-module Raw_level:
-sig
+module Raw_level: sig
   include BASIC_DATA
 
   type raw_level = t
@@ -254,8 +246,7 @@ sig
 
   module Map: Map.S with type key = raw_level
 
-  module Internal_for_tests:
-  sig
+  module Internal_for_tests: sig
     val add : raw_level -> int -> raw_level
 
     val sub : raw_level -> int -> raw_level option
@@ -263,8 +254,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Cycle_repr}. *)
-module Cycle:
-sig
+module Cycle: sig
   include BASIC_DATA
 
   type cycle = t
@@ -287,8 +277,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Round_repr}. *)
-module Round:
-sig
+module Round: sig
   (* A round represents an iteration of the single-shot consensus algorithm.
      This mostly simply re-exports [Round_repr]. See [Round_repr] for
      additional documentation of this module *)
@@ -331,8 +320,7 @@ sig
   (** See {!Round_repr.Durations.round_duration}. *)
   val round_duration : round_durations -> t -> Period.t
 
-  module Durations:
-  sig
+  module Durations: sig
     val create :
     first_round_duration: Period.t ->
     delay_increment_per_round: Period.t ->
@@ -374,8 +362,7 @@ sig
   val update : context -> t -> context tzresult Lwt.t
 end
 
-module Gas:
-sig
+module Gas: sig
   (** This module implements the gas subsystem of the context.
 
      Gas reflects the computational cost of each operation to limit
@@ -540,8 +527,7 @@ module Entrypoint: module type of Entrypoint_repr
 
 (** This module re-exports definitions from {!Script_repr} and
     {!Michelson_v1_primitives}. *)
-module Script:
-sig
+module Script: sig
   type error += Lazy_script_decode
 
   type prim = Michelson_v1_primitives.prim =
@@ -780,8 +766,7 @@ end
 
 (** This module re-exports definitions from {!Constants_repr} and
     {!Constants_storage}. *)
-module Constants:
-sig
+module Constants: sig
   (** Fixed constants *)
   type fixed
 
@@ -806,8 +791,7 @@ sig
   val sc_rollup_max_number_of_messages_per_level : Z.t
 
   (** Constants parameterized by context. See {!Constants_parametric_repr}. *)
-  module Parametric:
-  sig
+  module Parametric: sig
     type dal = {
       feature_enable: bool;
       number_of_slots: int;
@@ -907,8 +891,7 @@ sig
     val encoding : t Data_encoding.t
   end
 
-  module Generated:
-  sig
+  module Generated: sig
     type t = {
       consensus_threshold: int;
       baking_reward_fixed_portion: Tez.t;
@@ -1058,8 +1041,7 @@ sig
 end
 
 (** See the definitions inside the module. *)
-module Global_constants_storage:
-sig
+module Global_constants_storage: sig
   type error += Expression_too_deep
 
   type error += Expression_already_registered
@@ -1118,8 +1100,7 @@ sig
 
   (** This module discloses definitions that are only useful for tests and must
       not be used otherwise. *)
-  module Internal_for_tests:
-  sig
+  module Internal_for_tests: sig
     (** [node_too_large node] returns true if:
       - The number of sub-nodes in the [node]
         exceeds [Global_constants_storage.node_size_limit].
@@ -1161,15 +1142,13 @@ end
 
 (** This module discloses definitions that are only useful for tests and must
     not be used otherwise. *)
-module Internal_for_tests:
-sig
+module Internal_for_tests: sig
   val to_raw : context -> Raw_context.t
 end
 
 (** This module re-exports definitions from {!Level_repr} and
     {!Level_storage}. *)
-module Level:
-sig
+module Level: sig
   type t = private {
     level: Raw_level.t;
     level_position: int32;
@@ -1222,8 +1201,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Fitness_repr}. *)
-module Fitness:
-sig
+module Fitness: sig
   type error += Invalid_fitness | Wrong_fitness | Outdated_fitness
 
   type raw = Fitness.t
@@ -1262,8 +1240,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Nonce_storage}. *)
-module Nonce:
-sig
+module Nonce: sig
   type t
 
   type nonce = t
@@ -1291,8 +1268,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Seed_repr} and {!Seed_storage}. *)
-module Seed:
-sig
+module Seed: sig
   type seed
 
   val seed_encoding : seed Data_encoding.t
@@ -1342,11 +1318,9 @@ end
     memory when interacting with it.
     They are thus suitable for a Michelson contract, for instance, when there are a
     lot of bindings, but only a few items are accessed at each contract call. *)
-module Big_map:
-sig
+module Big_map: sig
   (** A big map is referenced in the storage by its identifier. *)
-  module Id:
-  sig
+  module Id: sig
     type t = Lazy_storage_kind.Big_map.Id.t
 
     val encoding : t Data_encoding.t
@@ -1415,11 +1389,9 @@ end
 
 (** This module re-exports definitions from {!Sapling_repr}, {!Sapling_storage}
     and {!Sapling_validator}. *)
-module Sapling:
-sig
+module Sapling: sig
   (** See {!Sapling_state.Id}. *)
-  module Id:
-  sig
+  module Id: sig
     type t
 
     val encoding : t Data_encoding.t
@@ -1444,8 +1416,7 @@ sig
 
   val diff_encoding : diff Data_encoding.t
 
-  module Memo_size:
-  sig
+  module Memo_size: sig
     type t
 
     val encoding : t Data_encoding.t
@@ -1510,8 +1481,7 @@ sig
 
   val diff_in_memory_size : diff -> Cache_memory_helpers.sint
 
-  module Legacy:
-  sig
+  module Legacy: sig
     type transaction = Sapling.UTXO.Legacy.transaction
 
     val transaction_encoding : transaction Data_encoding.t
@@ -1531,19 +1501,16 @@ sig
 end
 
 (** This module re-exports definitions from {!Lazy_storage_diff}. *)
-module Lazy_storage:
-sig
+module Lazy_storage: sig
   (** This module re-exports definitions from {!Lazy_storage_kind}. *)
-  module Kind:
-  sig
+  module Kind: sig
     type ('id , 'alloc , 'updates )t =
       | Big_map : (Big_map.Id.t , Big_map.alloc , Big_map.updates ) t
       | Sapling_state : (Sapling.Id.t , Sapling.alloc , Sapling.updates ) t
   end
 
   (** This module re-exports definitions from {!Lazy_storage_kind.IdSet}. *)
-  module IdSet:
-  sig
+  module IdSet: sig
     type t
 
     type 'acc fold_f = { f: 'i 'a 'u.('i , 'a , 'u ) Kind.t -> 'i -> 'acc -> 'acc; }
@@ -1588,8 +1555,7 @@ sig
 end
 
 (** See the definitions inside the module. *)
-module Origination_nonce:
-sig
+module Origination_nonce: sig
   (** See {!Raw_context.init_origination_nonce}. *)
   val init : context -> Operation_hash.t -> context
 
@@ -1598,8 +1564,7 @@ sig
 
   (** This module discloses definitions that are only useful for tests and must
       not be used otherwise. See {!Origination_nonce}. *)
-  module Internal_for_tests:
-  sig
+  module Internal_for_tests: sig
     type t
 
     val initial : Operation_hash.t -> t
@@ -1609,8 +1574,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Ticket_hash_repr}. *)
-module Ticket_hash:
-sig
+module Ticket_hash: sig
   type t
 
   val encoding : t Data_encoding.t
@@ -1645,8 +1609,7 @@ sig
 
   (** This module discloses definitions that are only useful for tests and must
       not be used otherwise. *)
-  module Internal_for_tests:
-  sig
+  module Internal_for_tests: sig
     val make_uncarbonated :
     ticketer: Script.node ->
     ty: Script.node ->
@@ -1657,8 +1620,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Manager_counter_repr}. *)
-module Manager_counter:
-sig
+module Manager_counter: sig
   include Compare.S
 
   val succ : t -> t
@@ -1667,13 +1629,11 @@ sig
 
   val encoding_for_RPCs : t Data_encoding.t
 
-  module Internal_for_injection:
-  sig
+  module Internal_for_injection: sig
     val of_string : string -> t option
   end
 
-  module Internal_for_tests:
-  sig
+  module Internal_for_tests: sig
     val of_int : int -> t
 
     val to_int : t -> int
@@ -1684,8 +1644,7 @@ end
 
 (** This module re-exports definitions from {!Contract_repr} and
     {!Contract_storage}. *)
-module Contract:
-sig
+module Contract: sig
   type t = Implicit of public_key_hash | Originated of Contract_hash.t
 
   (** Functions related to contracts address. *)
@@ -1810,8 +1769,7 @@ sig
   script: Script.t * Lazy_storage.diffs option ->
   context tzresult Lwt.t
 
-  module Legacy_big_map_diff:
-  sig
+  module Legacy_big_map_diff: sig
     type item = private
       | Update of
         {
@@ -1835,8 +1793,7 @@ sig
   end
 
   (** Functions for handling the delegate of a contract.*)
-  module Delegate:
-  sig
+  module Delegate: sig
     (** See {!Contract_delegate_storage.find}. *)
     val find : context -> t -> public_key_hash option tzresult Lwt.t
 
@@ -1849,8 +1806,7 @@ sig
 
   (** This module discloses definitions that are only useful for tests and must
       not be used otherwise. *)
-  module Internal_for_tests:
-  sig
+  module Internal_for_tests: sig
     (** See {!Contract_repr.originated_contract}. *)
     val originated_contract : Origination_nonce.Internal_for_tests.t -> t
 
@@ -1859,8 +1815,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Tx_rollup_level_repr}. *)
-module Tx_rollup_level:
-sig
+module Tx_rollup_level: sig
   include BASIC_DATA
 
   type level = t
@@ -1882,8 +1837,7 @@ end
 
 (** This module re-exports definitions from {!Tx_rollup_repr} and
     {!Tx_rollup_storage}. *)
-module Tx_rollup:
-sig
+module Tx_rollup: sig
   include BASIC_DATA
 
   val in_memory_size : t -> Cache_memory_helpers.sint
@@ -1906,16 +1860,14 @@ sig
 
   (** This module discloses definitions that are only useful for tests and must
       not be used otherwise. *)
-  module Internal_for_tests:
-  sig
+  module Internal_for_tests: sig
     (** See {!Tx_rollup_repr.originated_tx_rollup}. *)
     val originated_tx_rollup : Origination_nonce.Internal_for_tests.t -> t
   end
 end
 
 (** This module re-exports definitions from {!Tx_rollup_withdraw_repr}. *)
-module Tx_rollup_withdraw:
-sig
+module Tx_rollup_withdraw: sig
   type order = {
     claimer: public_key_hash;
     ticket_hash: Ticket_hash.t;
@@ -1929,8 +1881,7 @@ end
 
 (** This module re-exports definitions from
     {!Tx_rollup_withdraw_list_hash_repr}. *)
-module Tx_rollup_withdraw_list_hash:
-sig
+module Tx_rollup_withdraw_list_hash: sig
   include S.HASH
 
   val hash_uncarbonated : Tx_rollup_withdraw.t list -> t
@@ -1939,8 +1890,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Tx_rollup_message_result_repr}. *)
-module Tx_rollup_message_result:
-sig
+module Tx_rollup_message_result: sig
   type t = {
     context_hash: Context_hash.t;
     withdraw_list_hash: Tx_rollup_withdraw_list_hash.t;
@@ -1955,8 +1905,7 @@ end
 
 (** This module re-exports definitions from
     {!Tx_rollup_message_result_hash_repr}. *)
-module Tx_rollup_message_result_hash:
-sig
+module Tx_rollup_message_result_hash: sig
   include S.HASH
 
   val hash_uncarbonated : Tx_rollup_message_result.t -> t
@@ -1966,8 +1915,7 @@ end
 
 (** This module re-exports definitions from {!Tx_rollup_commitment_repr.Hash}.
 *)
-module Tx_rollup_commitment_hash:
-sig
+module Tx_rollup_commitment_hash: sig
   val commitment_hash : string
 
   include S.HASH
@@ -1975,8 +1923,7 @@ end
 
 (** This module re-exports definitions from {!Tx_rollup_state_repr}
     and {!Tx_rollup_state_storage}. *)
-module Tx_rollup_state:
-sig
+module Tx_rollup_state: sig
   type t
 
   val initial_state : pre_allocated_storage: Z.t -> t
@@ -2006,8 +1953,7 @@ sig
 
   (** This module discloses definitions that are only useful for tests and must
       not be used otherwise. *)
-  module Internal_for_tests:
-  sig
+  module Internal_for_tests: sig
     val make :
     ?burn_per_byte: Tez.t ->
     ?inbox_ema: int ->
@@ -2051,8 +1997,7 @@ end
 
 (** This module re-exports definitions from {!Tx_rollup_reveal_repr} and
     {!Tx_rollup_reveal_storage}. *)
-module Tx_rollup_reveal:
-sig
+module Tx_rollup_reveal: sig
   type t = {
     contents: Script.lazy_expr;
     ty: Script.lazy_expr;
@@ -2082,8 +2027,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Tx_rollup_message_repr}. *)
-module Tx_rollup_message:
-sig
+module Tx_rollup_message: sig
   type deposit = {
     sender: public_key_hash;
     destination: Tx_rollup_l2_address.Indexable.value;
@@ -2115,8 +2059,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Tx_rollup_message_hash_repr}. *)
-module Tx_rollup_message_hash:
-sig
+module Tx_rollup_message_hash: sig
   include S.HASH
 
   val hash_uncarbonated : Tx_rollup_message.t -> t
@@ -2124,10 +2067,8 @@ end
 
 (** This module re-exports definitions from {!Tx_rollup_inbox_repr} and
     {!Tx_rollup_inbox_storage}. *)
-module Tx_rollup_inbox:
-sig
-  module Merkle:
-  sig
+module Tx_rollup_inbox: sig
+  module Merkle: sig
     type root
 
     type path
@@ -2182,8 +2123,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Tx_rollup_commitment_repr}. *)
-module Tx_rollup_commitment:
-sig
+module Tx_rollup_commitment: sig
   module Merkle_hash: S.HASH
 
   module Merkle:
@@ -2198,8 +2138,7 @@ sig
     inbox_merkle_root: Tx_rollup_inbox.Merkle.root;
   }
 
-  module Compact:
-  sig
+  module Compact: sig
     type excerpt = {
       count: int;
       root: Merkle.h;
@@ -2215,8 +2154,7 @@ sig
     val hash : t -> Tx_rollup_commitment_hash.t
   end
 
-  module Submitted_commitment:
-  sig
+  module Submitted_commitment: sig
     type nonrec t = {
       commitment: Compact.t;
       commitment_hash: Tx_rollup_commitment_hash.t;
@@ -2228,8 +2166,7 @@ sig
     val encoding : t Data_encoding.t
   end
 
-  module Full:
-  sig
+  module Full: sig
     type t = Tx_rollup_message_result_hash.t list template
 
     val encoding : t Data_encoding.t
@@ -2322,8 +2259,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Tx_rollup_hash_builder}. *)
-module Tx_rollup_hash:
-sig
+module Tx_rollup_hash: sig
   val message_result :
   context ->
   Tx_rollup_message_result.t ->
@@ -2341,8 +2277,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Tx_rollup_errors_repr}. *)
-module Tx_rollup_errors:
-sig
+module Tx_rollup_errors: sig
   type error +=
     | Tx_rollup_already_exists of Tx_rollup.t
     | Tx_rollup_does_not_exist of Tx_rollup.t
@@ -2428,16 +2363,14 @@ end
     Use module [Sc_rollup] instead whenever possible.
     TODO : find a better way to resolve the circular dependency
            https://gitlab.com/tezos/tezos/-/issues/3147 *)
-module Sc_rollup_repr:
-sig
+module Sc_rollup_repr: sig
   module Address: S.HASH
 
   type t = Address.t
 end
 
 (** This module re-exports definitions from {!Bond_id_repr}. *)
-module Bond_id:
-sig
+module Bond_id: sig
   type t =
     | Tx_rollup_bond_id of Tx_rollup.t
     | Sc_rollup_bond_id of Sc_rollup_repr.t
@@ -2448,8 +2381,7 @@ sig
 
   (** This module discloses definitions that are only useful for tests and must
       not be used otherwise. *)
-  module Internal_for_tests:
-  sig
+  module Internal_for_tests: sig
     val fold_on_bond_ids :
     context ->
     Contract.t ->
@@ -2462,8 +2394,7 @@ end
 
 (** This module re-exports definitions from {!Zk_rollup_repr} and
     {!Zk_rollup_storage}. *)
-module Zk_rollup:
-sig
+module Zk_rollup: sig
   module Address: S.HASH
 
   type t = Address.t
@@ -2473,16 +2404,14 @@ sig
   val to_scalar : t -> scalar
 
   (** This module re-exports definitions from {!Zk_rollup_state_repr}. *)
-  module State:
-  sig
+  module State: sig
     type t = scalar array
 
     val encoding : t Data_encoding.t
   end
 
   (** This module re-exports definitions from {!Zk_rollup_account_repr}. *)
-  module Account:
-  sig
+  module Account: sig
     module SMap: Map.S with type key = string
 
     type static = {
@@ -2507,8 +2436,7 @@ sig
   end
 
   (** This module re-exports definitions from {!Zk_rollup_operation_repr}. *)
-  module Operation:
-  sig
+  module Operation: sig
     type price = { id: Ticket_hash.t; amount: Z.t; }
 
     type t = {
@@ -2524,15 +2452,13 @@ sig
     val to_scalar_array : t -> scalar array
   end
 
-  module Ticket:
-  sig
+  module Ticket: sig
     type t = { contents: Script.expr; ty: Script.expr; ticketer: Contract.t; }
 
     val encoding : t Data_encoding.t
   end
 
-  module Circuit_public_inputs:
-  sig
+  module Circuit_public_inputs: sig
     type pending_op_public_inputs = {
       old_state: State.t;
       new_state: State.t;
@@ -2563,8 +2489,7 @@ sig
     val to_scalar_array : t -> scalar array
   end
 
-  module Update:
-  sig
+  module Update: sig
     type op_pi = { new_state: State.t; fee: scalar; exit_validity: bool; }
 
     type private_inner_pi = { new_state: State.t; fees: scalar; }
@@ -2631,8 +2556,7 @@ sig
 
   val exists : context -> t -> (context * bool ) tzresult Lwt.t
 
-  module Errors:
-  sig
+  module Errors: sig
     type error +=
       | Deposit_as_external
       | Invalid_deposit_amount
@@ -2649,15 +2573,13 @@ sig
       | Pending_bound
   end
 
-  module Internal_for_tests:
-  sig
+  module Internal_for_tests: sig
     val originated_zk_rollup : Origination_nonce.Internal_for_tests.t -> t
   end
 end
 
 (** This module re-exports definitions from {!Receipt_repr}. *)
-module Receipt:
-sig
+module Receipt: sig
   type balance =
     | Contract of Contract.t
     | Block_fees
@@ -2703,8 +2625,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Delegate_consensus_key}. *)
-module Consensus_key:
-sig
+module Consensus_key: sig
   type pk = {
     delegate: Signature.Public_key_hash.t;
     consensus_pk: Signature.Public_key.t;
@@ -2726,8 +2647,7 @@ end
 (** This module re-exports definitions from {!Delegate_storage},
    {!Delegate_consensus_key}, {!Delegate_missed_endorsements_storage},
    {!Delegate_slashed_deposits_storage}, {!Delegate_cycles}. *)
-module Delegate:
-sig
+module Delegate: sig
   val check_not_tz4 : Signature.public_key_hash -> unit tzresult
 
   val frozen_deposits_limit :
@@ -2824,8 +2744,7 @@ sig
   val last_cycle_before_deactivation :
   context -> public_key_hash -> Cycle.t tzresult Lwt.t
 
-  module Consensus_key:
-  sig
+  module Consensus_key: sig
     val check_not_tz4 : Signature.public_key -> unit tzresult
 
     val active_pubkey :
@@ -2846,8 +2765,7 @@ end
 
 (** This module re-exports definitions from {!Voting_period_repr} and
     {!Voting_period_storage}. *)
-module Voting_period:
-sig
+module Voting_period: sig
   type kind = Proposal | Exploration | Cooldown | Promotion | Adoption
 
   val kind_encoding : kind Data_encoding.encoding
@@ -2889,8 +2807,7 @@ sig
 
   val get_rpc_succ_info : context -> info tzresult Lwt.t
 
-  module Testnet_dictator:
-  sig
+  module Testnet_dictator: sig
     (** See {!Voting_period_storage.Testnet_dictator.overwrite_current_kind}. *)
     val overwrite_current_kind :
     context -> Chain_id.t -> Voting_period_repr.kind -> context tzresult Lwt.t
@@ -2898,8 +2815,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Vote_repr} and {!Vote_storage}. *)
-module Vote:
-sig
+module Vote: sig
   type proposal = Protocol_hash.t
 
   (** See {!Vote_storage.get_delegate_proposal_count}. *)
@@ -3007,8 +2923,7 @@ sig
 end
 
 (** This module exposes definitions for the data-availability layer. *)
-module Dal:
-sig
+module Dal: sig
   type parameters = Dal.parameters = {
     redundancy_factor: int;
     page_size: int;
@@ -3023,8 +2938,7 @@ sig
   val number_of_slots : context -> int
 
   (** This module re-exports definitions from {!Dal_slot_index_repr}. *)
-  module Slot_index:
-  sig
+  module Slot_index: sig
     type t
 
     val pp : Format.formatter -> t -> unit
@@ -3052,8 +2966,7 @@ sig
 
   (** This module re-exports definitions from {!Dal_attestation_repr} and
       {!Raw_context.Dal}. *)
-  module Attestation:
-  sig
+  module Attestation: sig
     type t
 
     type operation = {
@@ -3096,14 +3009,12 @@ sig
 
   type slot_id = { published_level: Raw_level.t; index: Slot_index.t; }
 
-  module Page:
-  sig
+  module Page: sig
     type content = bytes
 
     val pages_per_slot : parameters -> int
 
-    module Index:
-    sig
+    module Index: sig
       type t = int
 
       val encoding : int Data_encoding.t
@@ -3130,11 +3041,9 @@ sig
 
   (** This module re-exports definitions from {!Dal_slot_repr},
       {!Dal_slot_storage} and {!Raw_context.Dal}. *)
-  module Slot:
-  sig
+  module Slot: sig
     (** This module re-exports definitions from {!Dal_slot_repr.Header}. *)
-    module Commitment:
-    sig
+    module Commitment: sig
       type t = Dal.commitment
 
       val encoding : t Data_encoding.t
@@ -3142,8 +3051,7 @@ sig
       val zero : t
     end
 
-    module Commitment_proof:
-    sig
+    module Commitment_proof: sig
       type t = Dal.commitment_proof
 
       val encoding : t Data_encoding.t
@@ -3151,8 +3059,7 @@ sig
       val zero : t
     end
 
-    module Header:
-    sig
+    module Header: sig
       type id = slot_id = { published_level: Raw_level.t; index: Slot_index.t; }
 
       type t = { id: id; commitment: Commitment.t; }
@@ -3179,9 +3086,7 @@ sig
     context -> (context * Attestation.t ) tzresult Lwt.t
   end
 
-  module Operations:
-  sig module Publish_slot_header:
-    sig
+  module Operations: sig module Publish_slot_header: sig
       type t = {
         published_level: Raw_level.t;
         slot_index: Slot_index.t;
@@ -3204,8 +3109,7 @@ sig
     end
   end
 
-  module Slots_history:
-  sig
+  module Slots_history: sig
     type t
 
     type hash
@@ -3235,15 +3139,13 @@ sig
     type proof
   end
 
-  module Slots_storage:
-  sig
+  module Slots_storage: sig
     val get_slot_headers_history : context -> Slots_history.t tzresult Lwt.t
   end
 end
 
 (** This module re-exports definitions from {!Dal_errors_repr}. *)
-module Dal_errors:
-sig
+module Dal_errors: sig
   (* DAL/FIXME: https://gitlab.com/tezos/tezos/-/issues/3168
      do not expose these errors and return them in functions
      from Dal_slot_repr or Dal_attestation_repr. *)
@@ -3294,11 +3196,9 @@ end
 
 (** This module re-exports definitions from {!Sc_rollup_storage} and
     {!Sc_rollup_repr}. *)
-module Sc_rollup:
-sig
+module Sc_rollup: sig
   (** See {!Sc_rollup_tick_repr}. *)
-  module Tick:
-  sig
+  module Tick: sig
     type t
 
     val initial : t
@@ -3338,8 +3238,7 @@ sig
 
   module Staker: S.SIGNATURE_PUBLIC_KEY_HASH with type t = public_key_hash
 
-  module State_hash:
-  sig
+  module State_hash: sig
     include S.HASH
 
     val context_hash_to_state_hash : Context_hash.t -> t
@@ -3352,8 +3251,7 @@ sig
   end
 
   (** See {!Sc_rollup_metadata_repr}. *)
-  module Metadata:
-  sig
+  module Metadata: sig
     type t = { address: rollup; origination_level: Raw_level.t; }
 
     val pp : Format.formatter -> t -> unit
@@ -3364,8 +3262,7 @@ sig
   end
 
   (** See {!Sc_rollup_inbox_message_repr}. *)
-  module Inbox_message:
-  sig
+  module Inbox_message: sig
     type internal_inbox_message =
       | Transfer of
         {
@@ -3401,8 +3298,7 @@ sig
     val hash_serialized_message : serialized -> Hash.t
   end
 
-  module Inbox_merkelized_payload_hashes:
-  sig
+  module Inbox_merkelized_payload_hashes: sig
     module Hash: S.HASH
 
     type t
@@ -3422,8 +3318,7 @@ sig
       payload: Inbox_message.serialized;
     }
 
-    module History:
-    sig
+    module History: sig
       include Bounded_history_repr.S with
       type key = Hash.t
       and type value = merkelized_and_payload
@@ -3446,8 +3341,7 @@ sig
 
     val verify_proof : proof -> (t * t ) tzresult
 
-    module Internal_for_tests:
-    sig
+    module Internal_for_tests: sig
       val find_predecessor_payload : History.t -> index: Z.t -> t -> t option
 
       val make_proof : t list -> proof
@@ -3498,8 +3392,7 @@ sig
 
   val pp_input_request : Format.formatter -> input_request -> unit
 
-  module Inbox:
-  sig
+  module Inbox: sig
     type t
 
     val pp : Format.formatter -> t -> unit
@@ -3597,8 +3490,7 @@ sig
     Raw_level.t ->
     t tzresult
 
-    module Internal_for_tests:
-    sig
+    module Internal_for_tests: sig
       val produce_inclusion_proof :
       (Hash.t -> history_proof option Lwt.t) ->
       history_proof ->
@@ -3626,11 +3518,9 @@ sig
     val get_inbox : context -> (t * context ) tzresult Lwt.t
   end
 
-  module Outbox:
-  sig
+  module Outbox: sig
     (** See {!Sc_rollup_outbox_message_repr}. *)
-    module Message:
-    sig
+    module Message: sig
       type transaction = {
         unparsed_parameters: Script.expr;
         destination: Contract_hash.t;
@@ -3666,8 +3556,7 @@ sig
 
   val output_encoding : output Data_encoding.t
 
-  module Dissection_chunk:
-  sig
+  module Dissection_chunk: sig
     type t = { state_hash: State_hash.t option; tick: Tick.t; }
 
     val equal : t -> t -> bool
@@ -3695,8 +3584,7 @@ sig
       | Dissection_invalid_successive_states_shape
   end
 
-  module PVM:
-  sig
+  module PVM: sig
     type boot_sector = string
 
     module type S = sig
@@ -3763,8 +3651,7 @@ sig
 
       val get_current_level : state -> Raw_level.t option Lwt.t
 
-      module Internal_for_tests:
-      sig
+      module Internal_for_tests: sig
         val insert_failure : state -> state Lwt.t
       end
     end
@@ -3778,8 +3665,7 @@ sig
     [@@unboxed ]
   end
 
-  module Kind:
-  sig
+  module Kind: sig
     type t = Example_arith | Wasm_2_0_0
 
     val encoding : t Data_encoding.t
@@ -3797,8 +3683,7 @@ sig
     val equal : t -> t -> bool
   end
 
-  module ArithPVM:
-  sig
+  module ArithPVM: sig
     module type P = sig
       module Tree:
       Context.TREE with type key = string list and type value = bytes
@@ -3825,8 +3710,7 @@ sig
       (proof * 'a ) option Lwt.t
     end
 
-    module Make (C: P) :
-    sig
+    module Make (C: P) : sig
       include PVM.S with
       type context = C.Tree.t
       and type state = C.tree
@@ -3856,8 +3740,7 @@ sig
     and type proof = Context.Proof.tree Context.Proof.t
   end
 
-  module Wasm_2_0_0PVM:
-  sig
+  module Wasm_2_0_0PVM: sig
     val ticks_per_snapshot : Z.t
 
     val outbox_validity_period : int32
@@ -3894,8 +3777,7 @@ sig
 
     module type Make_wasm = module type of Wasm_2_0_0.Make
 
-    module Make (Wasm_backend: Make_wasm) (C: P) :
-    sig
+    module Make (Wasm_backend: Make_wasm) (C: P) : sig
       include PVM.S with
       type context = C.Tree.t
       and type state = C.tree
@@ -3925,15 +3807,13 @@ sig
     val reference_initial_state_hash : State_hash.t
   end
 
-  module Number_of_ticks:
-  sig
+  module Number_of_ticks: sig
     include Bounded.S with type ocaml_type := int64
 
     val zero : t
   end
 
-  module Commitment:
-  sig
+  module Commitment: sig
     module Hash: S.HASH
 
     type t = {
@@ -3984,13 +3864,11 @@ sig
 
   val kind : context -> t -> (context * Kind.t ) tzresult Lwt.t
 
-  module Errors:
-  sig
+  module Errors: sig
     type error += Sc_rollup_does_not_exist of t
   end
 
-  module Proof:
-  sig
+  module Proof: sig
     type reveal_proof =
       | Raw_data_proof of string
       | Metadata_proof
@@ -4039,8 +3917,7 @@ sig
 
       val reveal : Sc_rollup_reveal_hash.t -> string option Lwt.t
 
-      module Inbox_with_history:
-      sig
+      module Inbox_with_history: sig
         val inbox : Inbox.history_proof
 
         val get_history : Inbox.Hash.t -> Inbox.history_proof option Lwt.t
@@ -4050,8 +3927,7 @@ sig
         Inbox_merkelized_payload_hashes.History.t Lwt.t
       end
 
-      module Dal_with_history:
-      sig
+      module Dal_with_history: sig
         val confirmed_slots_history : Dal.Slots_history.t
 
         val get_history :
@@ -4085,8 +3961,7 @@ sig
     serialized t tzresult Lwt.t
   end
 
-  module Game:
-  sig
+  module Game: sig
     type player = Alice | Bob
 
     val player_equal : player -> player -> bool
@@ -4124,8 +3999,7 @@ sig
 
     val pp : Format.formatter -> t -> unit
 
-    module Index:
-    sig
+    module Index: sig
       type t = private { alice: Staker.t; bob: Staker.t; }
 
       val encoding : t Data_encoding.t
@@ -4217,8 +4091,7 @@ sig
         }
       | Dissecting_during_final_move
 
-    module Internal_for_tests:
-    sig
+    module Internal_for_tests: sig
       val check_dissection :
       default_number_of_sections: int ->
       start_chunk: dissection_chunk ->
@@ -4228,8 +4101,7 @@ sig
     end
   end
 
-  module Stake_storage:
-  sig
+  module Stake_storage: sig
     val find_staker :
     context ->
     t ->
@@ -4259,8 +4131,7 @@ sig
     context -> t -> (Staker.t * Commitment.Hash.t option ) list tzresult Lwt.t
   end
 
-  module Refutation_storage:
-  sig
+  module Refutation_storage: sig
     type point = { commitment: Commitment.t; hash: Commitment.Hash.t; }
 
     type conflict_point = point * point
@@ -4315,8 +4186,7 @@ sig
     Game.game_result ->
     (Game.status * context * Receipt.balance_updates ) tzresult Lwt.t
 
-    module Internal_for_tests:
-    sig
+    module Internal_for_tests: sig
       val get_conflict_point :
       context ->
       t ->
@@ -4335,15 +4205,13 @@ sig
 
   (** This module discloses definitions that are only useful for tests and
     must not be used otherwise. *)
-  module Internal_for_tests:
-  sig
+  module Internal_for_tests: sig
     val originated_sc_rollup : Origination_nonce.Internal_for_tests.t -> t
   end
 end
 
 (** This module re-exports definitions from {!Destination_repr}. *)
-module Destination:
-sig
+module Destination: sig
   type t =
     | Contract of Contract.t
     | Tx_rollup of Tx_rollup.t
@@ -4370,8 +4238,7 @@ sig
 end
 
 (** See {!Block_payload_repr}. *)
-module Block_payload:
-sig
+module Block_payload: sig
   (** See {!Block_payload_repr.hash}. *)
   val hash :
   predecessor_hash: Block_hash.t ->
@@ -4381,8 +4248,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Block_header_repr}. *)
-module Block_header:
-sig
+module Block_header: sig
   type contents = {
     payload_hash: Block_payload_hash.t;
     payload_round: Round.t;
@@ -4408,8 +4274,7 @@ sig
 
   val of_watermark : Signature.watermark -> block_watermark option
 
-  module Proof_of_work:
-  sig
+  module Proof_of_work: sig
     val check_hash : Block_hash.t -> int64 -> bool
 
     val check_header_proof_of_work_stamp :
@@ -4485,16 +4350,14 @@ sig
 end
 
 (** This module re-exports definitions from {!Cache_repr}. *)
-module Cache:
-sig
+module Cache: sig
   type size = int
 
   type index = int
 
   type cache_nonce
 
-  module Admin:
-  sig
+  module Admin: sig
     type key
 
     type value
@@ -4560,8 +4423,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Lazy_storage_kind}. *)
-module Kind:
-sig
+module Kind: sig
   type preendorsement_consensus_kind = Preendorsement_consensus_kind
 
   type endorsement_consensus_kind = Endorsement_consensus_kind
@@ -4993,8 +4855,7 @@ type packed_operation = {
 val manager_kind : 'kind manager_operation -> 'kind Kind.manager
 
 (** This module re-exports definitions from {!Operation_repr}. *)
-module Operation:
-sig
+module Operation: sig
   type nonrec 'kind contents = 'kind contents
 
   type nonrec packed_contents = packed_contents
@@ -5065,8 +4926,7 @@ sig
 
   val equal : 'a operation -> 'b operation -> ('a , 'b ) eq option
 
-  module Encoding:
-  sig
+  module Encoding: sig
     type 'b case =
       | Case :
         {
@@ -5177,8 +5037,7 @@ sig
 
     val zk_rollup_update_case : Kind.zk_rollup_update Kind.manager case
 
-    module Manager_operations:
-    sig
+    module Manager_operations: sig
       type 'b case =
         | MCase :
           {
@@ -5263,8 +5122,7 @@ end
 
 (** This module re-exports definitions from {!Stake_storage},
     {!Delegate_storage} and {!Delegate}. *)
-module Stake_distribution:
-sig
+module Stake_distribution: sig
   val snapshot : context -> context tzresult Lwt.t
 
   val compute_snapshot_index :
@@ -5282,8 +5140,7 @@ end
 
 (** This module re-exports definitions from {!Commitment_repr} and,
     {!Commitment_storage}. *)
-module Commitment:
-sig
+module Commitment: sig
   type t = {
     blinded_public_key_hash: Blinded_public_key_hash.t;
     amount: Tez.tez;
@@ -5296,14 +5153,12 @@ sig
 end
 
 (** This module re-exports definitions from {!Bootstrap_storage}. *)
-module Bootstrap:
-sig
+module Bootstrap: sig
   val cycle_end : context -> Cycle.t -> context tzresult Lwt.t
 end
 
 (** This module re-exports definitions from {!Migration_repr}. *)
-module Migration:
-sig
+module Migration: sig
   type origination_result = {
     balance_updates: Receipt.balance_updates;
     originated_contracts: Contract_hash.t list;
@@ -5364,8 +5219,7 @@ val finalize :
 val current_context : context -> Context.t
 
 (** This module re-exports definitions from {!Parameters_repr}. *)
-module Parameters:
-sig
+module Parameters: sig
   type bootstrap_account = {
     public_key_hash: public_key_hash;
     public_key: public_key option;
@@ -5396,8 +5250,7 @@ end
 
 (** This module re-exports definitions from {!Liquidity_baking_repr} and
     {!Liquidity_baking_storage}. *)
-module Liquidity_baking:
-sig
+module Liquidity_baking: sig
   type liquidity_baking_toggle_vote = Liquidity_baking_repr.liquidity_baking_toggle_vote =
     | LB_on
     | LB_off
@@ -5408,8 +5261,7 @@ sig
 
   val get_cpmm_address : context -> Contract_hash.t tzresult Lwt.t
 
-  module Toggle_EMA:
-  sig
+  module Toggle_EMA: sig
     type t
 
     val zero : t
@@ -5427,8 +5279,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Ticket_storage}. *)
-module Ticket_balance:
-sig
+module Ticket_balance: sig
   type error +=
     | Negative_ticket_balance of { key: Ticket_hash.t; balance: Z.t; }
     | Used_storage_space_underflow
@@ -5444,23 +5295,20 @@ sig
 
   (** This module discloses definitions that are only useful for tests and
       must not be used otherwise. *)
-  module Internal_for_tests:
-  sig
+  module Internal_for_tests: sig
     val used_storage_space : context -> Z.t tzresult Lwt.t
 
     val paid_storage_space : context -> Z.t tzresult Lwt.t
   end
 end
 
-module First_level_of_protocol:
-sig
+module First_level_of_protocol: sig
   (** Get the level of the first block of this protocol. *)
   val get : context -> Raw_level.t tzresult Lwt.t
 end
 
 (** This module re-exports definitions from {!Raw_context.Consensus}. *)
-module Consensus:
-sig
+module Consensus: sig
   include Raw_context.CONSENSUS with
   type t := t
   and type slot := Slot.t
@@ -5483,8 +5331,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Token}. *)
-module Token:
-sig
+module Token: sig
   type container = [`Contract of Contract.t
   | `Collected_commitments of Blinded_public_key_hash.t
   | `Delegate_balance of public_key_hash
@@ -5535,8 +5382,7 @@ sig
 end
 
 (** This module re-exports definitions from {!Fees_storage}. *)
-module Fees:
-sig
+module Fees: sig
   val record_paid_storage_space :
   context -> Contract_hash.t -> (context * Z.t * Z.t ) tzresult Lwt.t
 

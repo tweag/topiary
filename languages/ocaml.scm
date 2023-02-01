@@ -630,7 +630,7 @@
   ":" @append_spaced_softline
 )
 (module_binding
-  ":" @append_spaced_softline
+  ":" @append_input_softline
 )
 (field_declaration
   ":" @append_spaced_softline
