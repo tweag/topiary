@@ -9,6 +9,7 @@ use crate::{FormatterError, FormatterResult};
 pub enum Language {
     Bash,
     Json,
+    Nickel,
     Ocaml,
     OcamlImplementation,
     OcamlInterface,
@@ -39,6 +40,7 @@ const EXTENSIONS: &[(Language, &[&str])] = &[
             "webmanifest",
         ],
     ),
+    (Language::Nickel, &["ncl"]),
     (Language::OcamlImplementation, &["ml"]),
     (Language::OcamlInterface, &["mli"]),
     (Language::Rust, &["rs"]),
@@ -50,6 +52,7 @@ impl Language {
         match s.to_lowercase().as_str() {
             "bash" => Ok(Language::Bash),
             "json" => Ok(Language::Json),
+            "nickel" => Ok(Language::Nickel),
             "ocaml" => Ok(Language::Ocaml),
             "ocaml-implementation" => Ok(Language::OcamlImplementation),
             "ocaml-interface" => Ok(Language::OcamlInterface),
@@ -90,6 +93,7 @@ impl Language {
         match language {
             Language::Bash => "bash",
             Language::Json => "json",
+            Language::Nickel => "nickel",
             Language::Ocaml => "ocaml",
             Language::OcamlImplementation => "ocaml",
             Language::OcamlInterface => "ocaml",
@@ -119,6 +123,7 @@ impl Language {
         match language {
             Language::Bash => vec![tree_sitter_bash::language()],
             Language::Json => vec![tree_sitter_json::language()],
+            Language::Nickel => vec![tree_sitter_nickel::language()],
             Language::Ocaml => vec![
                 tree_sitter_ocaml::language_ocaml(),
                 tree_sitter_ocaml::language_ocaml_interface(),
