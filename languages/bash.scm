@@ -316,23 +316,17 @@
   "\n"
 )
 
-; Surround command list and pipeline delimiters with spaces
-; NOTE The context here may be irrelevant -- i.e., these operators
-; should always be surrounded by spaces -- but they're kept here,
-; separately, in anticipation of line continuation support in multi-line
-; contexts.
+; Spaces between named nodes and command list/pipeline delimiters
 (list
-  [
-    "&&"
-    "||"
-  ] @append_space @prepend_space
+  [(_) "&&" "||"] @append_space
+  .
+  _
 )
 
 (pipeline
-  [
-    "|"
-    "|&"
-  ] @append_space @prepend_space
+  [(_) "|" "|&" ] @append_space
+  .
+  _
 )
 
 ; Prepend the asynchronous operator with a space
@@ -344,13 +338,15 @@
   "&" @prepend_space
 )
 
-; Space between command line arguments
+; Spaces between command and its arguments
 ; NOTE If we treat (command) as a leaf node, then commands are formatted
 ; as is and the below will be ignored. On balance, I think keeping this
 ; rule, rather than deferring to the input, is the better choice
 ; (although it's not without its problems; e.g., see Issue #172).
 (command
-  argument: _* @prepend_space
+  (_) @append_space
+  .
+  (_)
 )
 
 ; Ensure the negation operator is surrounded by spaces
@@ -361,21 +357,32 @@
 )
 
 ; Multi-line command substitutions become an indent block
+; NOTE This is a bit of a hack! We _have_ to append softlines,
+; otherwise command substitutions enclosed within a string will force
+; that new line to the start of the string, which can result in
+; syntactically incorrect output (see Issue 201). Thus we target the
+; node immediately before the closing parenthesis.
+; FIXME If there is only a single named child within a multi-line
+; command substitution, then -- for reasons -- the new line will not be
+; appended after the $(. The output remains syntactically correct.
 (command_substitution
   .
-  (_) @prepend_empty_softline @prepend_indent_start
-)
-
-(command_substitution
-  ")" @prepend_empty_softline @prepend_indent_end
+  "$(" @append_empty_softline @append_indent_start
+  _
+  (_) @append_empty_softline @append_indent_end
+  .
+  ")"
   .
 )
 
 ;; Redirections
 
-; Insert a space before all redirection operators, but _not_ after
+; Spaces between command and any redirections (NOTE this will not insert
+; a space between the redirection operator and its destination)
 (redirected_statement
-  redirect: _* @prepend_space
+  (_) @append_space
+  .
+  (_)
 )
 
 ; ...with the exceptions of herestrings, that are spaced
