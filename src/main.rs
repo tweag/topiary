@@ -1,10 +1,12 @@
 use clap::{ArgEnum, ArgGroup, Parser};
 use std::{
     error::Error,
+    ffi::OsString,
     fs::File,
     io::{stdin, stdout, BufReader, BufWriter},
     path::PathBuf,
 };
+use tempfile::NamedTempFile;
 use topiary::{formatter, FormatterResult, Language};
 
 #[derive(ArgEnum, Clone, Copy, Debug)]
@@ -27,6 +29,42 @@ impl From<SupportedLanguage> for Language {
             SupportedLanguage::Ocaml => Language::Ocaml,
             SupportedLanguage::OcamlImplementation => Language::OcamlImplementation,
             SupportedLanguage::OcamlInterface => Language::OcamlInterface,
+        }
+    }
+}
+
+enum OutputFile {
+    Stdout,
+    Disk {
+        staged: NamedTempFile,
+        output: OsString,
+    },
+}
+
+impl OutputFile {
+    fn new(path: Option<&str>) -> FormatterResult<Self> {
+        match path {
+            Some("-") | None => Ok(Self::Stdout),
+            Some(file) => Ok(Self::Disk {
+                staged: NamedTempFile::new()?,
+                output: file.into(),
+            }),
+        }
+    }
+
+    fn persist(self) -> FormatterResult<()> {
+        // NOTE Maybe it would be better to persist on Drop...or is that too magical?
+        if let Self::Disk { staged, output } = self {
+            staged.persist(output)?;
+        }
+
+        Ok(())
+    }
+
+    fn as_writable(&self) -> Box<dyn std::io::Write + '_> {
+        match self {
+            Self::Stdout => Box::new(stdout()),
+            Self::Disk { staged, .. } => Box::new(BufWriter::new(staged.as_file())),
         }
     }
 }
@@ -77,10 +115,7 @@ fn run() -> FormatterResult<()> {
         Some(file) => Box::new(BufReader::new(File::open(file)?)),
     };
 
-    let mut output: Box<dyn std::io::Write> = match args.output_file.as_deref() {
-        Some("-") | None => Box::new(stdout()),
-        Some(file) => Box::new(BufWriter::new(File::create(file)?)),
-    };
+    let output = OutputFile::new(args.output_file.as_deref())?;
 
     let language: Option<Language> = if let Some(language) = args.language {
         Some(language.into())
@@ -106,11 +141,13 @@ fn run() -> FormatterResult<()> {
 
     formatter(
         &mut input,
-        &mut output,
+        &mut output.as_writable(),
         &mut query,
         language,
         args.skip_idempotence,
     )?;
+
+    output.persist()?;
 
     Ok(())
 }
