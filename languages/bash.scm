@@ -149,14 +149,29 @@
 ; 2. All comments must end with a new line.
 ; 3. Comments can be interposed by blank lines, if they exist in the
 ;    input (i.e., blank lines shouldn't be engineered elsewhere).
-; 4. A run of standalone comments (i.e., without anything, including
-;    blank lines, interposing) should be kept together.
-; 5. Trailing comments should only appear after "units of execution" or
-;    variable declarations/assignment. (This is despite it being
-;    syntactically valid to put them elsewhere.)
+; 4. A comment can never change flavour (i.e., standalone to trailing,
+;    or vice versa).
+; 5. Trailing comments should be interposed by a space.
 
-; FIXME
+; Rule 1: See @leaf rule, above
+
+; Rule 2
 (comment) @append_hardline
+
+; Rule 3: See @allow_blank_line_before rule, above.
+; FIXME This doesn't quite get us what we want. It's close, but blank
+; lines between comments can get consumed.
+
+; Rule 4: We only have to protect against the case of a standalone
+; comment, after a statement, being slurped on to that statement's line
+; and becoming a trailing comment. That case is satisfied by Rule 5.
+
+; Rule 5
+(
+  (comment) @prepend_space
+  .
+  "\n"
+)
 
 ;; Compound Statements and Subshells
 
@@ -233,127 +248,72 @@
 ; * Multi-line command substitutions
 ;
 ; We address each context individually, as there's no way to isolate the
-; exceptional contexts, where no line spacing is required.
+; exceptional contexts, where no line spacing is required. When a
+; "command" is followed by a new line in the input, then the grammar
+; inserts an anonymous "\n" sibling node. We target these to achieve the
+; formatting we want.
 ;
-; When a "command" is followed by another "command" or context, it
-; should be interposed by a new (soft)line, for the sake of single-line
-; compound statements and subshells. (NOTE The ((foo) @bar . (foo))
-; query pattern is to avoid applying @bar to trailing elements.)
+; FIXME Adding @delete to the \n anonymous nodes removes the errant
+; trailing space. However, doing so breaks inter-block spacing and
+; (weirdly) de-indentation at the end of a non-terminated case branch.
 
 (program
   [(command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)] @append_hardline
   .
-  [
-    ; Commands
-    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
-    ; Contexts
-    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
-  ]
+  "\n"
 )
 
-; NOTE Single-line compound statements are a thing; hence the softline
 (compound_statement
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_empty_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
-  [
-    ; Commands
-    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
-    ; Contexts
-    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
-  ]
+  "\n"
 )
 
-; NOTE Single-line subshells are a thing; hence the softline
 (subshell
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_empty_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
-  [
-    ; Commands
-    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
-    ; Contexts
-    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
-  ]
+  "\n"
 )
 
 (if_statement
-  .
-  _
-  "then"
+  . _ "then"
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
-  [
-    ; Commands
-    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
-    ; Contexts
-    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
-  ]
+  "\n"
 )
 
 (elif_clause
-  .
-  _
-  "then"
+  . _ "then"
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
-  [
-    ; Commands
-    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
-    ; Contexts
-    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
-  ]
+  "\n"
 )
 
 (else_clause
-  .
-  "else"
+  . "else"
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
-  [
-    ; Commands
-    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
-    ; Contexts
-    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
-  ]
+  "\n"
 )
 
-; NOTE Single-line case branches are a thing; hence the softline
 (case_item
+  . _ ")"
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
-  _
-  ")"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_empty_softline
-  .
-  [
-    ; Commands
-    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
-    ; Contexts
-    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
-  ]
+  "\n"
 )
 
 (do_group
-  .
-  "do"
+  . "do"
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
-  [
-    ; Commands
-    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
-    ; Contexts
-    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
-  ]
+  "\n"
 )
 
-; NOTE Single-line command substitutions are a thing; hence the softline
 (command_substitution
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_empty_softline
+  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
-  [
-    ; Commands
-    (command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)
-    ; Contexts
-    (c_style_for_statement) (case_statement) (declaration_command) (for_statement) (function_definition) (if_statement) (while_statement)
-  ]
+  "\n"
 )
 
 ; Surround command list and pipeline delimiters with spaces
@@ -423,13 +383,19 @@
 
 ; Ensure heredocs start on a new line, after their start marker, and
 ; there is a new line after their end marker, when followed by any named
-; node. (NOTE This may need some refinement...)
+; node. (NOTE This may still need refinement...)
 ; NOTE These are a syntactic requirements
 (heredoc_start) @append_hardline
+
+; NOTE Anecdotally, queries that target the (heredoc_body) node act
+; differently, dependant upon expansions existing in the heredoc. Hence
+; this query, that prepends a new line to any following named node,
+; rather than simply appending a new line to any heredoc (which,
+; unexpectedly, doesn't work in the general sense).
 (
-  (heredoc_body) @append_hardline
+  (heredoc_body)
   .
-  (_)
+  (_) @prepend_hardline
 )
 
 ;; Conditionals
@@ -517,7 +483,7 @@
     ";;"
     ";;&"
     ";&"
-  ] @prepend_empty_softline @append_hardline
+  ] @append_hardline
   .
 )
 
