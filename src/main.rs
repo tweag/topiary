@@ -75,27 +75,27 @@ impl OutputFile {
 // Require at least one of --language, --query or --input-file (n.b., query > language > input)
 #[clap(group(ArgGroup::new("rule").multiple(true).required(true).args(&["query", "language", "input-file"]),))]
 struct Args {
+    /// Which query file to use
+    #[clap(short, long, display_order = 1)]
+    query: Option<PathBuf>,
+
+    /// Which language to parse and format
+    #[clap(short, long, arg_enum, display_order = 2)]
+    language: Option<SupportedLanguage>,
+
     /// Path to an input file. If omitted, or equal to "-", read from standard
     /// input.
-    #[clap(short = 'f', long, display_order = 1)]
+    #[clap(short = 'f', long, display_order = 3)]
     input_file: Option<String>,
 
     /// Path to an output file. If omitted, or equal to "-", write to standard
     /// output.
-    #[clap(short, long, display_order = 2)]
+    #[clap(short, long, display_order = 4)]
     output_file: Option<String>,
 
     /// Format the input file in place.
-    #[clap(short, long, display_order = 3)]
+    #[clap(short, long, display_order = 5)]
     in_place: bool,
-
-    /// Which query file to use
-    #[clap(short, long, display_order = 4)]
-    query: Option<PathBuf>,
-
-    /// Which language to parse and format
-    #[clap(short, long, arg_enum, display_order = 5)]
-    language: Option<SupportedLanguage>,
 
     /// Do not check that formatting twice gives the same output
     #[clap(short, long, display_order = 6)]

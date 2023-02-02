@@ -29,6 +29,12 @@ a development environment.
 
 Options:
 
+* `-q`, `--query <QUERY>`\
+  Which query file to use
+
+* `-l`, `--language <LANGUAGE>`\
+  Which language to parse and format [possible values: json, toml]
+
 * `-f`, `--input-file <INPUT_FILE>`\
   Path to an input file. If omitted, or equal to "-", read from standard
   input
@@ -40,12 +46,6 @@ Options:
 * `-i`, `--in-place`\
   Format the input file in place. (This has the effect of setting the
   output file equal to the input file.)
-
-* `-q`, `--query <QUERY>`\
-  Which query file to use
-
-* `-l`, `--language <LANGUAGE>`\
-  Which language to parse and format [possible values: json, toml]
 
 * `-s`, `--skip-idempotence`\
   Do not check that formatting twice gives the same output
