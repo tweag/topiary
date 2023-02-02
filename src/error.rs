@@ -31,9 +31,6 @@ pub enum FormatterError {
     /// Could not detect the input language from the (filename, Option<extension>)
     LanguageDetection(String, Option<ffi::OsString>),
 
-    /// Invalid CLI argument (post-clap processing)
-    InvalidArgument(String),
-
     /// Could not read the input.
     Reading(ReadingError),
 
@@ -84,9 +81,7 @@ impl fmt::Display for FormatterError {
             Self::Writing(_) => {
                 write!(f, "Writing error")
             }
-            Self::Internal(message, _)
-            | Self::Query(message, _)
-            | Self::InvalidArgument(message) => {
+            Self::Internal(message, _) | Self::Query(message, _) => {
                 write!(f, "{message}")
             }
             Self::LanguageDetection(filename, extension) => {
@@ -123,7 +118,6 @@ impl Error for FormatterError {
             Self::Parsing { .. } => None,
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::LanguageDetection(_, _) => None,
-            Self::InvalidArgument(_) => None,
             Self::Reading(ReadingError::Io(_, source)) => Some(source),
             Self::Reading(ReadingError::Utf8(source)) => Some(source),
             Self::Writing(WritingError::Fmt(source)) => Some(source),

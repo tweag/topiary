@@ -7,7 +7,7 @@ use std::{
     path::PathBuf,
 };
 use tempfile::NamedTempFile;
-use topiary::{formatter, FormatterError, FormatterResult, Language};
+use topiary::{formatter, FormatterResult, Language};
 
 #[derive(ArgEnum, Clone, Copy, Debug)]
 enum SupportedLanguage {
@@ -94,7 +94,7 @@ struct Args {
     output_file: Option<String>,
 
     /// Format the input file in place.
-    #[clap(short, long, display_order = 5)]
+    #[clap(short, long, display_order = 5, requires = "input-file")]
     in_place: bool,
 
     /// Do not check that formatting twice gives the same output
@@ -120,15 +120,12 @@ fn run() -> FormatterResult<()> {
         Some(file) => Box::new(BufReader::new(File::open(file)?)),
     };
 
+    // NOTE If --in-place is specified, it overrides --output-file
     let output = if args.in_place {
-        match args.input_file.as_deref() {
-            Some("-") | None => {
-                return Err(FormatterError::InvalidArgument("No input file".into()))
-            }
-
-            // NOTE If -i is specified, it overrides -o
-            input_file => OutputFile::new(input_file)?,
-        }
+        // NOTE Clap handles the case when no input file is specified. If the input file is
+        // explicitly set to stdin (i.e., -), then --in-place will set the output to stdout; which
+        // is not completely weird.
+        OutputFile::new(args.input_file.as_deref())?
     } else {
         OutputFile::new(args.output_file.as_deref())?
     };
