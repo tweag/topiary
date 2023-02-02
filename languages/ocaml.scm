@@ -784,31 +784,55 @@
 ;     mutable position : int [@default 0]; (* End-of-line comment *)
 ;     ...
 ;
-(
-  (field_declaration) @append_delimiter
-  .
+(record_declaration
   [
-    ";"
+    (field_declaration)
     (attribute)
-  ]* @do_nothing
-  (#delimiter! ";")
-)
-(
-  (field_declaration)
-  .
-  (attribute)+ @append_delimiter
+  ] @append_delimiter
   .
   ";"* @do_nothing
-  (#delimiter! ";")
-)
-(
-  (field_declaration)
   .
-  (attribute)*
-  .
-  (comment)+ @append_input_softline
+  (comment)*
   .
   ";"* @delete
+  .
+  [
+    "}"
+    (field_declaration)
+  ]
+  (#delimiter! ";")
+)
+
+; Allow multi-line attributes after field declaratioms, such as:
+; type t = {
+;   bar: float;
+;   foo: bool
+;     [@default false] (* a comment *)
+;     [@other tag] (* and another one *)
+;     [@and again] (* and another one *)
+;     [@and again]; (* and a last one *)
+; }
+(record_declaration
+  ; This query is just here to avoid closing an unopened scope
+  ; before the first field_declaration
+  (#scope_id! "field_declaration")
+  "{" @begin_scope
+)
+(record_declaration
+  (#scope_id! "field_declaration")
+  _ @end_scope
+  .
+  (field_declaration) @begin_scope
+)
+(record_declaration
+  (#scope_id! "field_declaration")
+  _ @end_scope
+  .
+  "}"
+)
+(record_declaration
+  (attribute) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
+  (#scope_id! "field_declaration")
 )
 
 ; Indenting. This will only do anything in multi-line blocks. In single-line
