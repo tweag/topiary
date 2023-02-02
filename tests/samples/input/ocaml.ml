@@ -735,6 +735,21 @@ type t =
   (** Boolean flags. *)
   }
 
+type t = {
+  foo: bool [@default false];
+  bar: int
+}
+
+type t = {
+  foo: bool;
+  bar: int [@default 0]
+}
+
+type t = {
+  foo: bool;
+  bar: int [@default 0] (* comment *);
+}
+
 let _ =
   let open Printf in
   sprintf "hello world"
