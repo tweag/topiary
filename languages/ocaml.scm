@@ -1164,6 +1164,26 @@
   .
 )
 
+; Allow softlines and indentation in functor definitions with many arguments, such as
+; module Lift
+;   (Credit: module type of CreditSignature)
+;   (Dance: module type of DanceSignature)
+;   (Tune: module type of TuneSignature)
+;   (Version: module type of VersionSignature)
+; = struct
+;   let foo = x
+; end
+(module_binding
+  (module_name) @append_indent_start @begin_scope
+  "=" @prepend_indent_end @end_scope
+  (#scope_id! "module_binding_before_equal")
+)
+(module_binding
+  (module_name) @append_empty_scoped_softline
+  (module_parameter) @append_spaced_scoped_softline
+  (#scope_id! "module_binding_before_equal")
+)
+
 ; Try block formatting
 ; A soft linebreak after the "try" (potentially "try%ppx") and one after the "with".
 (try_expression
