@@ -789,3 +789,13 @@ open Bar
 let _ =
   let open Baz in
   ()
+
+(* Multi-line functor signatures *)
+module Lift
+  (Credit: module type of CreditSignature)
+  (Dance: module type of DanceSignature)
+  (Tune: module type of TuneSignature)
+  (Version: module type of VersionSignature)
+= struct
+  let foo = x
+end
