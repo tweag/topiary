@@ -115,7 +115,6 @@
     "and"
     "as"
     "assert"
-    (attribute)
     "class"
     "downto"
     "else"
@@ -784,22 +783,22 @@
   ] @append_spaced_softline @prepend_spaced_softline
 )
 
-; Put a semicolon delimiter after field declarations, unless they already have
-; one, in which case we do nothing.
-; The semicolon always comes right after the declaration of the new field,
-; before any comment.
+; Put a semicolon delimiter after field declarations and potential ppx attributes,
+; unless they already have one, in which case we do nothing.
+; The semicolon always comes right after the declaration of the new field
+; and attributes, before any comment.
 ; Hence, if there is a comment between the field declaration and the associated ";",
 ; the semicolon is moved before the comment.
 ;
 ; type t =
-;   { mutable position : int (* End-of-line comment *);
+;   { mutable position : int [@default 0] (* End-of-line comment *);
 ;   ...
 ;
 ; is turned into
 ;
 ; type t =
 ;   {
-;     mutable position : int; (* End-of-line comment *)
+;     mutable position : int [@default 0]; (* End-of-line comment *)
 ;     ...
 ;
 (
@@ -807,19 +806,26 @@
   .
   [
     ";"
-    (comment)
+    (attribute)
   ]* @do_nothing
   (#delimiter! ";")
 )
 (
-  (field_declaration) @append_delimiter
+  (field_declaration)
+  .
+  (attribute)+ @append_delimiter
   .
   ";"* @do_nothing
+  (#delimiter! ";")
+)
+(
+  (field_declaration)
+  .
+  (attribute)*
   .
   (comment)+ @append_input_softline
   .
   ";"* @delete
-  (#delimiter! ";")
 )
 
 ; Indenting. This will only do anything in multi-line blocks. In single-line
