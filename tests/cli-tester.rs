@@ -1,5 +1,5 @@
 use assert_cmd::Command;
-use std::fs::File;
+use std::fs::{remove_file, File};
 use std::io::{Read, Write};
 use std::path::PathBuf;
 use tempfile::NamedTempFile;
@@ -8,7 +8,7 @@ use tempfile::NamedTempFile;
 const STATE: &str = "\"test\"";
 
 fn create_state() -> PathBuf {
-    let mut json = NamedTempFile::new().unwrap();
+    let mut json = NamedTempFile::new_in(".").unwrap();
     write!(json, "{STATE}").unwrap();
 
     json.keep().unwrap().1
@@ -39,6 +39,8 @@ fn test_no_clobber() {
 
     let output = read_state(&input_path);
     assert_eq!(output.trim(), STATE);
+
+    remove_file(&input_path).unwrap();
 }
 
 #[test]
@@ -57,6 +59,8 @@ fn test_in_place() {
 
     let output = read_state(&input_path);
     assert_eq!(output.trim(), STATE);
+
+    remove_file(&input_path).unwrap();
 }
 
 #[test]
