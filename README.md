@@ -23,8 +23,8 @@ a development environment.
 
 ### Usage
 
-    topiary [OPTIONS] <--language <LANGUAGE>
-                      |--query <QUERY>
+    topiary [OPTIONS] <--query <QUERY>
+                      |--language <LANGUAGE>
                       |--input-file <INPUT_FILE>>
 
 Options:

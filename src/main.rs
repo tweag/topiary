@@ -73,7 +73,7 @@ impl OutputFile {
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 // Require at least one of --language, --query or --input-file (n.b., query > language > input)
-#[clap(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "query", "input-file"]),))]
+#[clap(group(ArgGroup::new("rule").multiple(true).required(true).args(&["query", "language", "input-file"]),))]
 struct Args {
     /// Path to an input file. If omitted, or equal to "-", read from standard
     /// input.
