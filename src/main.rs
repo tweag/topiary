@@ -36,6 +36,8 @@ impl From<SupportedLanguage> for Language {
 enum OutputFile {
     Stdout,
     Disk {
+        // NOTE We stage to a file, rather than writing
+        // to memory (e.g., Vec<u8>), to ensure atomicity
         staged: NamedTempFile,
         output: OsString,
     },
@@ -53,7 +55,6 @@ impl OutputFile {
     }
 
     fn persist(self) -> FormatterResult<()> {
-        // NOTE Maybe it would be better to persist on Drop...or is that too magical?
         if let Self::Disk { staged, output } = self {
             staged.persist(output)?;
         }
