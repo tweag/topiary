@@ -86,7 +86,7 @@
 ; Also append line breaks after open_module, except when it's
 ; preceded by "let", because in this case it's in a let_open_expression.
 (
-  "let" @do_nothing
+  "let"? @do_nothing
   .
   (open_module) @append_hardline
   .
