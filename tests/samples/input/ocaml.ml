@@ -750,6 +750,18 @@ type t = {
   bar: int [@default 0] (* comment *);
 }
 
+(* A merry mess of ppx tags, comments, and misplaced semicolons *)
+type t = {
+  bar: float;
+  foo: bool [@default false] (* a comment *) [@other tag] (* and another one *)
+     [@and again] (* and another one *) [@and again] (* and a last one *);
+}
+type t = {
+  bar: float;
+  foo: bool [@default false] (* a comment *) [@other tag] (* and another one *)
+     [@and again] (* and another one *) [@and again] (* and a last one *)
+}
+
 let _ =
   let open Printf in
   sprintf "hello world"
