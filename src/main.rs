@@ -7,7 +7,7 @@ use std::{
     path::PathBuf,
 };
 use tempfile::NamedTempFile;
-use topiary::{formatter, FormatterResult, Language};
+use topiary::{formatter, FormatterError, FormatterResult, Language};
 
 #[derive(ArgEnum, Clone, Copy, Debug)]
 enum SupportedLanguage {
@@ -120,7 +120,18 @@ fn run() -> FormatterResult<()> {
         Some(file) => Box::new(BufReader::new(File::open(file)?)),
     };
 
-    let output = OutputFile::new(args.output_file.as_deref())?;
+    let output = if args.in_place {
+        match args.input_file.as_deref() {
+            Some("-") | None => {
+                return Err(FormatterError::InvalidArgument("No input file".into()))
+            }
+
+            // NOTE If -i is specified, it overrides -o
+            input_file => OutputFile::new(input_file)?,
+        }
+    } else {
+        OutputFile::new(args.output_file.as_deref())?
+    };
 
     let language: Option<Language> = if let Some(language) = args.language {
         Some(language.into())
