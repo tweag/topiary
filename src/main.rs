@@ -75,27 +75,31 @@ impl OutputFile {
 // Require at least one of --language, --query or --input-file (n.b., query > language > input)
 #[clap(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "query", "input-file"]),))]
 struct Args {
-    /// Which language to parse and format
-    #[clap(short, long, arg_enum)]
-    language: Option<SupportedLanguage>,
-
-    /// Which query file to use
-    #[clap(short, long)]
-    query: Option<PathBuf>,
-
-    /// Do not check that formatting twice gives the same output
-    #[clap(short, long)]
-    skip_idempotence: bool,
-
     /// Path to an input file. If omitted, or equal to "-", read from standard
     /// input.
-    #[clap(short, long)]
+    #[clap(short = 'f', long, display_order = 1)]
     input_file: Option<String>,
 
     /// Path to an output file. If omitted, or equal to "-", write to standard
     /// output.
-    #[clap(short, long)]
+    #[clap(short, long, display_order = 2)]
     output_file: Option<String>,
+
+    /// Format the input file in place.
+    #[clap(short, long, display_order = 3)]
+    in_place: bool,
+
+    /// Which query file to use
+    #[clap(short, long, display_order = 4)]
+    query: Option<PathBuf>,
+
+    /// Which language to parse and format
+    #[clap(short, long, arg_enum, display_order = 5)]
+    language: Option<SupportedLanguage>,
+
+    /// Do not check that formatting twice gives the same output
+    #[clap(short, long, display_order = 6)]
+    skip_idempotence: bool,
 }
 
 fn main() {

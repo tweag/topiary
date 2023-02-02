@@ -29,33 +29,37 @@ a development environment.
 
 Options:
 
-* `-h`, `--help`\
-  Print help information
-
-* `-i`, `--input-file <INPUT_FILE>`\
+* `-f`, `--input-file <INPUT_FILE>`\
   Path to an input file. If omitted, or equal to "-", read from standard
   input
-
-* `-l`, `--language <LANGUAGE>`\
-  Which language to parse and format [possible values: json, toml]
 
 * `-o`, `--output-file <OUTPUT_FILE>`\
   Path to an output file. If omitted, or equal to "-", write to standard
   output
 
+* `-i`, `--in-place`\
+  Format the input file in place. (This has the effect of setting the
+  output file equal to the input file.)
+
 * `-q`, `--query <QUERY>`\
   Which query file to use
 
+* `-l`, `--language <LANGUAGE>`\
+  Which language to parse and format [possible values: json, toml]
+
 * `-s`, `--skip-idempotence`\
   Do not check that formatting twice gives the same output
+
+* `-h`, `--help`\
+  Print help information
 
 * `-V`, `--version`\
   Print version information
 
 Language selection is based on precedence, in the following order:
+* A specified query file
 * A specified language
 * Detected from the input file's extension
-* A specified query file
 
 #### Example
 
