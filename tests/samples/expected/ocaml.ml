@@ -766,3 +766,11 @@ let _ =
     5,
     6
   )
+
+(* Open and let open *)
+open Foo
+open Bar
+
+let _ =
+  let open Baz in
+  ()
