@@ -158,3 +158,9 @@ impl From<fmt::Error> for FormatterError {
         FormatterError::Writing(WritingError::Fmt(e))
     }
 }
+
+impl From<tempfile::PersistError> for FormatterError {
+    fn from(e: tempfile::PersistError) -> Self {
+        FormatterError::Writing(WritingError::Io(e.error))
+    }
+}

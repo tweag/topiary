@@ -1,10 +1,12 @@
 use clap::{ArgEnum, ArgGroup, Parser};
 use std::{
     error::Error,
+    ffi::OsString,
     fs::File,
-    io::{stdin, stdout, BufReader, BufWriter},
+    io::{stdin, stdout, BufReader, BufWriter, Write},
     path::PathBuf,
 };
+use tempfile::NamedTempFile;
 use topiary::{formatter, FormatterResult, Language};
 
 #[derive(ArgEnum, Clone, Copy, Debug)]
@@ -31,32 +33,84 @@ impl From<SupportedLanguage> for Language {
     }
 }
 
+#[derive(Debug)]
+enum OutputFile {
+    Stdout,
+    Disk {
+        // NOTE We stage to a file, rather than writing
+        // to memory (e.g., Vec<u8>), to ensure atomicity
+        staged: NamedTempFile,
+        output: OsString,
+    },
+}
+
+impl OutputFile {
+    fn new(path: Option<&str>) -> FormatterResult<Self> {
+        match path {
+            Some("-") | None => Ok(Self::Stdout),
+            Some(file) => Ok(Self::Disk {
+                staged: NamedTempFile::new()?,
+                output: file.into(),
+            }),
+        }
+    }
+
+    // This function must be called to persist the output to disk
+    fn persist(self) -> FormatterResult<()> {
+        if let Self::Disk { staged, output } = self {
+            staged.persist(output)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl Write for OutputFile {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        match self {
+            Self::Stdout => stdout().write(buf),
+            Self::Disk { staged, .. } => staged.write(buf),
+        }
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        match self {
+            Self::Stdout => stdout().flush(),
+            Self::Disk { staged, .. } => staged.flush(),
+        }
+    }
+}
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
-// Require at least one of --language, --query or --input-file (n.b., query > language > input)
-#[clap(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "query", "input-file"]),))]
+// Require at least one of --language, --input-file or --query (n.b., language > input > query)
+#[clap(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "input-file", "query"]),))]
 struct Args {
     /// Which language to parse and format
-    #[clap(short, long, arg_enum)]
+    #[clap(short, long, arg_enum, display_order = 1)]
     language: Option<SupportedLanguage>,
-
-    /// Which query file to use
-    #[clap(short, long)]
-    query: Option<PathBuf>,
-
-    /// Do not check that formatting twice gives the same output
-    #[clap(short, long)]
-    skip_idempotence: bool,
 
     /// Path to an input file. If omitted, or equal to "-", read from standard
     /// input.
-    #[clap(short, long)]
+    #[clap(short = 'f', long, display_order = 2)]
     input_file: Option<String>,
+
+    /// Which query file to use
+    #[clap(short, long, display_order = 3)]
+    query: Option<PathBuf>,
 
     /// Path to an output file. If omitted, or equal to "-", write to standard
     /// output.
-    #[clap(short, long)]
+    #[clap(short, long, display_order = 4)]
     output_file: Option<String>,
+
+    /// Format the input file in place.
+    #[clap(short, long, requires = "input-file", display_order = 5)]
+    in_place: bool,
+
+    /// Do not check that formatting twice gives the same output
+    #[clap(short, long, display_order = 6)]
+    skip_idempotence: bool,
 }
 
 fn main() {
@@ -77,10 +131,15 @@ fn run() -> FormatterResult<()> {
         Some(file) => Box::new(BufReader::new(File::open(file)?)),
     };
 
-    let mut output: Box<dyn std::io::Write> = match args.output_file.as_deref() {
-        Some("-") | None => Box::new(stdout()),
-        Some(file) => Box::new(BufWriter::new(File::create(file)?)),
-    };
+    // NOTE If --in-place is specified, it overrides --output-file
+    let mut output = BufWriter::new(if args.in_place {
+        // NOTE Clap handles the case when no input file is specified. If the input file is
+        // explicitly set to stdin (i.e., -), then --in-place will set the output to stdout; which
+        // is not completely weird.
+        OutputFile::new(args.input_file.as_deref())?
+    } else {
+        OutputFile::new(args.output_file.as_deref())?
+    });
 
     let language: Option<Language> = if let Some(language) = args.language {
         Some(language.into())
@@ -111,6 +170,9 @@ fn run() -> FormatterResult<()> {
         language,
         args.skip_idempotence,
     )?;
+
+    // NOTE We should probably handle the potential for into_inner to fail
+    output.into_inner().unwrap().persist()?;
 
     Ok(())
 }

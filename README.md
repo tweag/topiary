@@ -27,30 +27,34 @@ a development environment.
 ### Usage
 
     topiary [OPTIONS] <--language <LANGUAGE>
-                      |--query <QUERY>
-                      |--input-file <INPUT_FILE>>
+                      |--input-file <INPUT_FILE>
+                      |--query <QUERY>>
 
 Options:
 
-* `-h`, `--help`\
-  Print help information
+* `-l`, `--language <LANGUAGE>`\
+  Which language to parse and format [possible values: json, toml]
 
-* `-i`, `--input-file <INPUT_FILE>`\
+* `-f`, `--input-file <INPUT_FILE>`\
   Path to an input file. If omitted, or equal to "-", read from standard
   input
 
-* `-l`, `--language <LANGUAGE>`\
-  Which language to parse and format [possible values: json, toml]
+* `-q`, `--query <QUERY>`\
+  Which query file to use
 
 * `-o`, `--output-file <OUTPUT_FILE>`\
   Path to an output file. If omitted, or equal to "-", write to standard
   output
 
-* `-q`, `--query <QUERY>`\
-  Which query file to use
+* `-i`, `--in-place`\
+  Format the input file in place. (This has the effect of setting the
+  output file equal to the input file.)
 
 * `-s`, `--skip-idempotence`\
   Do not check that formatting twice gives the same output
+
+* `-h`, `--help`\
+  Print help information
 
 * `-V`, `--version`\
   Print version information
