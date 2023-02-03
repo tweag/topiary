@@ -7,14 +7,14 @@ use std::{
 use tempfile::NamedTempFile;
 
 // Exemplar JSON state that won't be affected by the formatter
-const STATE: &str = "\"test\"";
+const JSON: &str = "\"test\"";
 
 struct State(NamedTempFile);
 
 impl State {
-    fn new() -> Self {
+    fn new(payload: &str) -> Self {
         let mut state = NamedTempFile::new().unwrap();
-        write!(state, "{STATE}").unwrap();
+        write!(state, "{payload}").unwrap();
 
         Self(state)
     }
@@ -35,8 +35,25 @@ impl State {
 }
 
 #[test]
+fn test_file_output() {
+    let output = State::new("");
+
+    let mut topiary = Command::cargo_bin("topiary").unwrap();
+    topiary
+        .arg("--language")
+        .arg("json")
+        .arg("--output-file")
+        .arg(output.path())
+        .write_stdin(JSON)
+        .assert()
+        .success();
+
+    assert_eq!(output.read().trim(), JSON);
+}
+
+#[test]
 fn test_no_clobber() {
-    let json = State::new();
+    let json = State::new(JSON);
     let input_path = json.path();
 
     let mut topiary = Command::cargo_bin("topiary").unwrap();
@@ -50,14 +67,14 @@ fn test_no_clobber() {
         .assert()
         .success();
 
-    // NOTE We only assume, here, that the state has been modified by the call to topiary. It may
+    // NOTE We only assume, here, that the state has been modified by the call to Topiary. It may
     // be worthwhile asserting (e.g., change in mtime, etc.).
-    assert_eq!(json.read().trim(), STATE);
+    assert_eq!(json.read().trim(), JSON);
 }
 
 #[test]
 fn test_in_place() {
-    let json = State::new();
+    let json = State::new(JSON);
     let input_path = json.path();
 
     let mut topiary = Command::cargo_bin("topiary").unwrap();
@@ -70,9 +87,9 @@ fn test_in_place() {
         .assert()
         .success();
 
-    // NOTE We only assume, here, that the state has been modified by the call to topiary. It may
+    // NOTE We only assume, here, that the state has been modified by the call to Topiary. It may
     // be worthwhile asserting (e.g., change in mtime, etc.).
-    assert_eq!(json.read().trim(), STATE);
+    assert_eq!(json.read().trim(), JSON);
 }
 
 #[test]
