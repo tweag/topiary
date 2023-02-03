@@ -426,11 +426,11 @@ let create foo : (module FOO) = (module struct let foo = foo end)
 module Foo = (val create "Issue #106")
 
 let _ =
-  let f x l = x::l in
+  let f x l = x :: l in
   f 120 [130]
 
 let topological_sort deps =
-  let to_graph _ deps graph = (deps.file, MSet.elements deps.deps)::graph in
+  let to_graph _ deps graph = (deps.file, MSet.elements deps.deps) :: graph in
   let graph = Hashtbl.fold to_graph deps [] in
   let rec explore path visited node =
     if List.mem node path then
@@ -448,8 +448,8 @@ let topological_sort deps =
               @@ Files_legacy.Files_error (ObjectFileNotFound (mk_mident node))
           | _ -> assert false
       in
-      node::List.fold_left
-        (explore (node::path))
+      node :: List.fold_left
+        (explore (node :: path))
         visited
         (List.map Files_legacy.get_file edges)
   in
@@ -595,7 +595,7 @@ let greetings =
   Some (msg1 ^ msg2)
 
 (* Some pattern-matching *)
-let hd::_ = [1; 2; 3]
+let hd :: _ = [1; 2; 3]
 
 let Some message = Some "message"
 
@@ -636,7 +636,7 @@ module Inner1 = struct
       val mutable list = ([]: 'a list)
 
       method push x =
-        list <- x::list
+        list <- x :: list
     end
 
   class virtual ['a] poppable =
@@ -645,7 +645,7 @@ module Inner1 = struct
 
       (* unsafe implementation *)
       method pop =
-        let result::rest = list in
+        let result :: rest = list in
         list <- rest;
         Some result
     end
@@ -664,7 +664,7 @@ module Inner2 = struct
       (* safe implementation *)
       method pop =
         match list with
-        | _::_ -> super#pop
+        | _ :: _ -> super#pop
         | _ -> None
     end
 end
