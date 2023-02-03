@@ -23,14 +23,11 @@ a development environment.
 
 ### Usage
 
-    topiary [OPTIONS] <--query <QUERY>
-                      |--language <LANGUAGE>
-                      |--input-file <INPUT_FILE>>
+    topiary [OPTIONS] <--language <LANGUAGE>
+                      |--input-file <INPUT_FILE>
+                      |--query <QUERY>>
 
 Options:
-
-* `-q`, `--query <QUERY>`\
-  Which query file to use
 
 * `-l`, `--language <LANGUAGE>`\
   Which language to parse and format [possible values: json, toml]
@@ -38,6 +35,9 @@ Options:
 * `-f`, `--input-file <INPUT_FILE>`\
   Path to an input file. If omitted, or equal to "-", read from standard
   input
+
+* `-q`, `--query <QUERY>`\
+  Which query file to use
 
 * `-o`, `--output-file <OUTPUT_FILE>`\
   Path to an output file. If omitted, or equal to "-", write to standard
@@ -57,9 +57,9 @@ Options:
   Print version information
 
 Language selection is based on precedence, in the following order:
-* A specified query file
 * A specified language
 * Detected from the input file's extension
+* A specified query file
 
 #### Example
 

@@ -72,21 +72,21 @@ impl OutputFile {
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
-// Require at least one of --language, --query or --input-file (n.b., query > language > input)
-#[clap(group(ArgGroup::new("rule").multiple(true).required(true).args(&["query", "language", "input-file"]),))]
+// Require at least one of --language, --input-file or --query (n.b., language > input > query)
+#[clap(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "input-file", "query"]),))]
 struct Args {
-    /// Which query file to use
-    #[clap(short, long, display_order = 1)]
-    query: Option<PathBuf>,
-
     /// Which language to parse and format
-    #[clap(short, long, arg_enum, display_order = 2)]
+    #[clap(short, long, arg_enum, display_order = 1)]
     language: Option<SupportedLanguage>,
 
     /// Path to an input file. If omitted, or equal to "-", read from standard
     /// input.
-    #[clap(short = 'f', long, display_order = 3)]
+    #[clap(short = 'f', long, display_order = 2)]
     input_file: Option<String>,
+
+    /// Which query file to use
+    #[clap(short, long, display_order = 3)]
+    query: Option<PathBuf>,
 
     /// Path to an output file. If omitted, or equal to "-", write to standard
     /// output.
@@ -94,7 +94,7 @@ struct Args {
     output_file: Option<String>,
 
     /// Format the input file in place.
-    #[clap(short, long, display_order = 5, requires = "input-file")]
+    #[clap(short, long, requires = "input-file", display_order = 5)]
     in_place: bool,
 
     /// Do not check that formatting twice gives the same output
