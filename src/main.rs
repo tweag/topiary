@@ -3,7 +3,7 @@ use std::{
     error::Error,
     ffi::OsString,
     fs::File,
-    io::{stdin, stdout, BufReader, BufWriter},
+    io::{stdin, stdout, BufReader, BufWriter, Write},
     path::PathBuf,
 };
 use tempfile::NamedTempFile;
@@ -33,6 +33,7 @@ impl From<SupportedLanguage> for Language {
     }
 }
 
+#[derive(Debug)]
 enum OutputFile {
     Stdout,
     Disk {
@@ -54,6 +55,7 @@ impl OutputFile {
         }
     }
 
+    // This function must be called to persist the output to disk
     fn persist(self) -> FormatterResult<()> {
         if let Self::Disk { staged, output } = self {
             staged.persist(output)?;
@@ -61,11 +63,20 @@ impl OutputFile {
 
         Ok(())
     }
+}
 
-    fn as_writable(&self) -> Box<dyn std::io::Write + '_> {
+impl Write for OutputFile {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         match self {
-            Self::Stdout => Box::new(stdout()),
-            Self::Disk { staged, .. } => Box::new(BufWriter::new(staged.as_file())),
+            Self::Stdout => stdout().write(buf),
+            Self::Disk { staged, .. } => staged.write(buf),
+        }
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        match self {
+            Self::Stdout => stdout().flush(),
+            Self::Disk { staged, .. } => staged.flush(),
         }
     }
 }
@@ -121,14 +132,14 @@ fn run() -> FormatterResult<()> {
     };
 
     // NOTE If --in-place is specified, it overrides --output-file
-    let output = if args.in_place {
+    let mut output = BufWriter::new(if args.in_place {
         // NOTE Clap handles the case when no input file is specified. If the input file is
         // explicitly set to stdin (i.e., -), then --in-place will set the output to stdout; which
         // is not completely weird.
         OutputFile::new(args.input_file.as_deref())?
     } else {
         OutputFile::new(args.output_file.as_deref())?
-    };
+    });
 
     let language: Option<Language> = if let Some(language) = args.language {
         Some(language.into())
@@ -154,13 +165,14 @@ fn run() -> FormatterResult<()> {
 
     formatter(
         &mut input,
-        &mut output.as_writable(),
+        &mut output,
         &mut query,
         language,
         args.skip_idempotence,
     )?;
 
-    output.persist()?;
+    // NOTE We should probably handle the potential for into_inner to fail
+    output.into_inner().unwrap().persist()?;
 
     Ok(())
 }
