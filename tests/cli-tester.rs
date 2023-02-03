@@ -1,30 +1,43 @@
 use assert_cmd::Command;
-use std::fs::{remove_file, File};
-use std::io::{Read, Write};
-use std::path::PathBuf;
+use std::{
+    fs::File,
+    io::{Read, Write},
+    path::Path,
+};
 use tempfile::NamedTempFile;
 
 // Exemplar JSON state that won't be affected by the formatter
 const STATE: &str = "\"test\"";
 
-fn create_state() -> PathBuf {
-    let mut json = NamedTempFile::new_in(".").unwrap();
-    write!(json, "{STATE}").unwrap();
+struct State(NamedTempFile);
 
-    json.keep().unwrap().1
-}
+impl State {
+    fn new() -> Self {
+        let mut state = NamedTempFile::new().unwrap();
+        write!(state, "{STATE}").unwrap();
 
-fn read_state(path: &PathBuf) -> String {
-    let mut file = File::open(path).unwrap();
-    let mut contents = String::new();
-    file.read_to_string(&mut contents).unwrap();
+        Self(state)
+    }
 
-    contents
+    fn path(&self) -> &Path {
+        self.0.path()
+    }
+
+    fn read(&self) -> String {
+        // For an in place edit, Topiary will remove the original file. As such, we can't use
+        // NamedTempFile::reopen, as the original no longer exists; we have to "reopen" it by path.
+        let mut file = File::open(self.path()).unwrap();
+        let mut contents = String::new();
+        file.read_to_string(&mut contents).unwrap();
+
+        contents
+    }
 }
 
 #[test]
 fn test_no_clobber() {
-    let input_path = create_state();
+    let json = State::new();
+    let input_path = json.path();
 
     let mut topiary = Command::cargo_bin("topiary").unwrap();
     topiary
@@ -37,15 +50,15 @@ fn test_no_clobber() {
         .assert()
         .success();
 
-    let output = read_state(&input_path);
-    assert_eq!(output.trim(), STATE);
-
-    remove_file(&input_path).unwrap();
+    // NOTE We only assume, here, that the state has been modified by the call to topiary. It may
+    // be worthwhile asserting (e.g., change in mtime, etc.).
+    assert_eq!(json.read().trim(), STATE);
 }
 
 #[test]
 fn test_in_place() {
-    let input_path = create_state();
+    let json = State::new();
+    let input_path = json.path();
 
     let mut topiary = Command::cargo_bin("topiary").unwrap();
     topiary
@@ -57,10 +70,9 @@ fn test_in_place() {
         .assert()
         .success();
 
-    let output = read_state(&input_path);
-    assert_eq!(output.trim(), STATE);
-
-    remove_file(&input_path).unwrap();
+    // NOTE We only assume, here, that the state has been modified by the call to topiary. It may
+    // be worthwhile asserting (e.g., change in mtime, etc.).
+    assert_eq!(json.read().trim(), STATE);
 }
 
 #[test]
