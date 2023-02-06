@@ -575,6 +575,9 @@ let [a; _; _] = [1; 2;
 let [|a; _; _|] = [|1; 2;
   3|]
 
+let _ = (let x = 42 in
+  x)
+
 (* Showcase the usage of operator bindings *)
 let greetings =
   let (let*) = Option.bind
