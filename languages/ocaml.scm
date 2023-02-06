@@ -165,6 +165,7 @@
     "+="
     ":="
     ":>"
+    "::"
   ] @append_space
   .
   "%"? @do_nothing
@@ -192,6 +193,7 @@
     "+="
     ":="
     ":>"
+    "::"
 ] @prepend_space
 
 ; let-like and and-like operators are only followed by a closing parenthesis
@@ -438,7 +440,6 @@
     ".."
     ")"
     "]"
-    "::"
   ]* @do_nothing
   .
   [
@@ -555,24 +556,6 @@
   "<" @append_space
   (_)*
   ">" @prepend_space
-)
-
-; Keep spacing around the list constructor if it is preceded by
-; a labeled argument, avoiding syntax errors.
-;
-; This is syntactically correct:
-;   foo ~arg :: []
-; This is not:
-;   foo ~arg::[]
-;
-; While both are correct if the argument is not labeled
-(
-  (application_expression
-    (labeled_argument)
-    .
-  )
-  .
-  "::" @prepend_space @append_space
 )
 
 ; Softlines. These become either a space or a newline, depending on whether we
