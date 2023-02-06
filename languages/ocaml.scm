@@ -558,25 +558,6 @@
   ">" @prepend_space
 )
 
-; NOTE This rule is redundant now that spacing is added around ::
-; Keep spacing around the list constructor if it is preceded by
-; a labeled argument, avoiding syntax errors.
-;
-; This is syntactically correct:
-;   foo ~arg :: []
-; This is not:
-;   foo ~arg::[]
-;
-; While both are correct if the argument is not labeled
-;(
-;  (application_expression
-;    (labeled_argument)
-;    .
-;  )
-;  .
-;  "::" @prepend_space @append_space
-;)
-
 ; Softlines. These become either a space or a newline, depending on whether we
 ; format their node as single-line or multi-line. If there is a comment
 ; following, we don't add anything, because they will have their own line break

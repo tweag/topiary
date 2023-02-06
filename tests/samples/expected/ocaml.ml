@@ -799,3 +799,7 @@ module Lift
 = struct
   let foo = x
 end
+
+(* Ensure labelled arguments are correctly spaced *)
+let _ =
+  foo ~arg :: []
