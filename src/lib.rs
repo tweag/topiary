@@ -14,7 +14,7 @@ use configuration::Configuration;
 pub use error::{FormatterError, ReadingError, WritingError};
 use itertools::Itertools;
 pub use language::Language;
-use pretty_assertions::assert_eq;
+use pretty_assertions::StrComparison;
 use std::io;
 
 mod atom_collection;
@@ -177,7 +177,7 @@ fn idempotence_check(
             Ok(())
         } else {
             log::error!("Failed idempotence check");
-            assert_eq!(content, reformatted);
+            log::error!("{}", StrComparison::new(content, &reformatted));
             Err(FormatterError::Idempotence)
         }
     };
