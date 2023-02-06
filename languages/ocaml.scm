@@ -350,13 +350,16 @@
   "type" @prepend_space
 )
 (
-  [
-    "("
-    "["
-  ]* @do_nothing
+  (_)
   .
   (type_variable) @prepend_space
 )
+(
+  (type_variable)
+  .
+  "." @append_space
+)
+
 (
   "("* @do_nothing
   .
@@ -536,6 +539,8 @@
 )
 (constructed_type
   (_) @append_space
+  .
+  ")"? @do_nothing
   .
   (_)
 )
