@@ -569,8 +569,11 @@ let large_const =
     (long_argument_4 : int) ->
     val
 
-let _ = [1; 2;
+let [a; _; _] = [1; 2;
   3]
+
+let [|a; _; _|] = [|1; 2;
+  3|]
 
 (* Showcase the usage of operator bindings *)
 let greetings =
