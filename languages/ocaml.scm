@@ -900,6 +900,12 @@
   ; well as the final non-named node, causing double indentation.
 )
 
+(value_specification
+  ":" @append_indent_start
+  (_) @append_indent_end
+  .
+)
+
 ; Make an indented block after "=" in
 ; * class[_type] bindings
 ; * method definitions
