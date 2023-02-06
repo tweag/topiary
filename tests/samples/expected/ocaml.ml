@@ -828,3 +828,7 @@ end
 (* Ensure labelled arguments are correctly spaced *)
 let _ =
   foo ~arg :: []
+
+(* Correct spacing inside parenthetical type definitions *)
+type query = (string * string list) list
+type x = ('any Slug.t -> bool) -> float
