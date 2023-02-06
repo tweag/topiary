@@ -1080,9 +1080,8 @@
 ;   )
 (parenthesized_expression
   .
-  "(" @append_empty_softline
-  (product_expression) @prepend_indent_start @append_indent_end
-  ")" @prepend_empty_softline
+  "(" @append_empty_softline @append_indent_start
+  ")" @prepend_indent_end @prepend_empty_softline
   .
 )
 ; Parenthesis are optional when using tuples, so scopes must be tied

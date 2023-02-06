@@ -587,6 +587,12 @@ let [|a; _; _|] =
     3;
   |]
 
+let _ =
+  (
+    let x = 42 in
+    x
+  )
+
 (* Showcase the usage of operator bindings *)
 let greetings =
   let (let*) = Option.bind
