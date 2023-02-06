@@ -3670,14 +3670,10 @@ module Sc_rollup : sig
       type proof
 
       val proof_encoding : proof Data_encoding.t
-
       val proof_before : proof -> State_hash.t
-
       val proof_after : proof -> State_hash.t
-
       val verify_proof :
         proof -> (tree -> (tree * 'a) Lwt.t) -> (tree * 'a) option Lwt.t
-
       val produce_proof :
         Tree.t ->
         tree ->

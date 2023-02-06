@@ -95,7 +95,10 @@
 
 ; Consecutive definitions must be separated by line breaks
 (
-  (value_definition) @append_hardline
+  [
+    (value_definition)
+    (value_specification)
+  ] @append_hardline
   .
   [
     (exception_definition)
@@ -105,6 +108,7 @@
     (open_module)
     (type_definition)
     (value_definition)
+    (value_specification)
   ]
 )
 
