@@ -1125,7 +1125,7 @@
   (#scope_id! "function_type")
 )
 
-; Indent and add softlines in lists, such as
+; Indent and add softlines in lists and arrays, such as
 ; let _ =
 ;   [
 ;     long_value_1;
@@ -1161,6 +1161,38 @@
   ";"? @do_nothing
   .
   "]"
+  .
+)
+
+(array_expression
+  .
+  "[|" @append_indent_start @append_empty_softline
+  "|]" @prepend_indent_end @prepend_empty_softline
+  .
+)
+(array_expression
+  (#delimiter! ";")
+  (_) @append_multiline_delimiter
+  .
+  ";"? @do_nothing
+  .
+  "|]"
+  .
+)
+
+(array_pattern
+  .
+  "[|" @append_indent_start @append_empty_softline
+  "|]" @prepend_indent_end @prepend_empty_softline
+  .
+)
+(array_pattern
+  (#delimiter! ";")
+  (_) @append_multiline_delimiter
+  .
+  ";"? @do_nothing
+  .
+  "|]"
   .
 )
 
