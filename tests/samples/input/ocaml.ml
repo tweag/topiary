@@ -557,7 +557,7 @@ let long_function
   (long_argument_1 : int)
   (long_argument_2 : int)
   (long_argument_3 : int)
-  (long_argument_4 : int) =
+  (long_argument_4 : int) : unit =
   ()
 
 let large_const =
@@ -566,7 +566,7 @@ let large_const =
     (long_argument_1 : int)
     (long_argument_2 : int)
     (long_argument_3 : int)
-    (long_argument_4 : int) ->
+    (long_argument_4 : int) : int ->
     val
 
 let [a; _; _] = [1; 2;

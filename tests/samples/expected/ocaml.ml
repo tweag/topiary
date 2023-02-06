@@ -550,27 +550,32 @@ let is_some_some = function
   | Some Some _ -> true
   | _ -> false
 
-let my_const :
-  type a b. a: a -> b: b -> a = fun ~a ~b -> a
+let my_const
+    : type a b. a: a -> b: b -> a
+  = fun ~a ~b -> a
 
 let my_id ~value = value
 
 let into_list ~value = my_id ~value :: []
 
 let long_function
-  (long_argument_1 : int)
-  (long_argument_2 : int)
-  (long_argument_3 : int)
-  (long_argument_4 : int) =
+    (long_argument_1 : int)
+    (long_argument_2 : int)
+    (long_argument_3 : int)
+    (long_argument_4 : int)
+    : unit
+  =
   ()
 
 let large_const =
   let val = 3 in
   fun
-    (long_argument_1 : int)
-    (long_argument_2 : int)
-    (long_argument_3 : int)
-    (long_argument_4 : int) ->
+      (long_argument_1 : int)
+      (long_argument_2 : int)
+      (long_argument_3 : int)
+      (long_argument_4 : int)
+      : int
+    ->
     val
 
 let [a; _; _] =

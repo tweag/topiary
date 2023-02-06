@@ -1021,14 +1021,17 @@
 
 ; Indent and allow softlines in multiline function definitions, such as
 ; let long_function
-;   (long_argument_1: int)
-;   (long_argument_2: int)
-;   (long_argument_3: int)
-;   (long_argument_4: int) =
-;   ()
+;     (long_argument_1: int)
+;     (long_argument_2: int)
+;     (long_argument_3: int)
+;     (long_argument_4: int)
+;     : int
+;   =
+;   42
 (let_binding
   .
-  (_) @append_indent_start
+  (_) @append_indent_start @append_indent_start
+  "=" @prepend_indent_end
   (_) @append_indent_end
   .
 )
@@ -1043,7 +1046,8 @@
   (#scope_id! "let_binding_before_equal")
 )
 (let_binding
-  ":" @append_spaced_scoped_softline
+  ":"? @prepend_spaced_scoped_softline
+  "=" @prepend_spaced_scoped_softline
   (#scope_id! "let_binding_before_equal")
 )
 
@@ -1056,7 +1060,8 @@
 ;   ()
 (fun_expression
   .
-  "fun" @append_indent_start
+  "fun" @append_indent_start @append_indent_start
+  "->" @prepend_indent_end
   (_) @append_indent_end
   .
 )
@@ -1068,6 +1073,11 @@
 )
 (fun_expression
   (parameter) @prepend_spaced_scoped_softline
+  (#scope_id! "fun_expr_before_arrow")
+)
+(fun_expression
+  ":"? @prepend_spaced_scoped_softline
+  "->" @prepend_spaced_scoped_softline
   (#scope_id! "fun_expr_before_arrow")
 )
 
