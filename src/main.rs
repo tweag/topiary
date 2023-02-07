@@ -171,8 +171,7 @@ fn run() -> FormatterResult<()> {
         args.skip_idempotence,
     )?;
 
-    // NOTE We should probably handle the potential for into_inner to fail
-    output.into_inner().unwrap().persist()?;
+    output.into_inner()?.persist()?;
 
     Ok(())
 }
