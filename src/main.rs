@@ -177,8 +177,8 @@ fn run() -> FormatterResult<()> {
 }
 
 fn print_error(e: &dyn Error) {
-    eprintln!("Error: {}", e);
+    log::error!("{e}");
     if let Some(source) = e.source() {
-        eprintln!("  Caused by: {}", source);
+        log::error!("Cause: {source}");
     }
 }
