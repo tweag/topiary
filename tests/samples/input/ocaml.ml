@@ -783,6 +783,12 @@ let _ =
   (1, 2, (3, 4),
   5, 6)
 
+let x = foo || foo
+  || bar || bar
+
+let x = foo; foo;
+  bar; bar
+
 (* Open and let open *)
 open Foo
 open Bar

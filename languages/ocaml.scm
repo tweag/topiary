@@ -1112,6 +1112,54 @@
   (#scope_id! "function_type")
 )
 
+; Allow softlines in infix expressions, such as
+; let b =
+;   foo
+;   || bar
+;   || baz
+
+; As above, infix expressions are nested grammar elements, so we must identify the
+; top-level one: it is the one that is not preceded by an infix operator.
+; We only consider the common logic operators, as not to mess with arithmetic expressions
+(
+  (infix_operator
+    [
+      "||"
+      "&&"
+    ]
+  )? @do_nothing
+  .
+  (infix_expression) @begin_scope @end_scope
+  (#scope_id! "infix_expression")
+)
+(infix_expression
+  (infix_operator
+    [
+      "||"
+      "&&"
+    ]
+  ) @prepend_spaced_scoped_softline
+  (#scope_id! "infix_expression")
+)
+
+; Allow softlines in sequences, such as
+; let b =
+;   foo;
+;   bar;
+;   baz
+; As above, sequences are nested grammar elements, so we must identify the
+; top-level one: it is the one that is not preceded by a ";".
+(
+  ";"? @do_nothing
+  .
+  (sequence_expression) @begin_scope @end_scope
+  (#scope_id! "sequence_expression")
+)
+(sequence_expression
+  ";" @append_spaced_scoped_softline
+  (#scope_id! "sequence_expression")
+)
+
 ; Indent and add softlines in lists and arrays, such as
 ; let _ =
 ;   [
