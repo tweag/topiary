@@ -350,14 +350,6 @@
   "type" @prepend_space
 )
 (
-  [
-    "("
-    "["
-  ]* @do_nothing
-  .
-  (type_variable) @prepend_space
-)
-(
   "("* @do_nothing
   .
   "val" @prepend_space
@@ -401,8 +393,6 @@
 ;   type a b. a: a -> b: b -> a =
 ;   fun ~a ~b -> a
 (polymorphic_type
-  (abstract_type)
-  .
   "." @append_space
 )
 
@@ -424,12 +414,15 @@
     (number)
     (parenthesized_expression)
     (parenthesized_pattern)
+    (polymorphic_variant_type)
     (quoted_string)
     (string)
     (tag)
+    (type_constructor)
     (type_constructor_path)
     (typed_expression)
     (type_variable)
+    (value_name)
     (value_path)
     (value_pattern)
     ")"
@@ -447,6 +440,7 @@
   ]* @do_nothing
   .
   [
+    (abstract_type)
     (boolean)
     (character)
     (class_name)
@@ -466,12 +460,15 @@
     (number)
     (parenthesized_expression)
     (parenthesized_pattern)
+    (polymorphic_variant_type)
     (prefix_expression)
     (quoted_string)
     (range_pattern)
     (string)
     (tag)
+    (type_constructor)
     (type_constructor_path)
+    (type_variable)
     (typed_expression)
     (value_name)
     (value_path)
@@ -515,41 +512,6 @@
   ":"
 )
 
-; Space is the application operator.
-; There should be a space between a function and its first argument,
-; as well as between all of its arguments.
-(application_expression
-  (_) @append_space
-  .
-  (_)
-)
-
-; There are various situation where type application can occur.
-; In each of them, we want to separate the arguments with spaces.
-(abstract_type
-  [
-    "type"
-    (type_constructor)
-  ] @append_space
-  .
-  (type_constructor)
-)
-(constructed_type
-  (_) @append_space
-  .
-  (_)
-)
-(type_binding
-  (_) @append_space
-  .
-  (_)
-)
-(constrain_type
-  (_) @append_space
-  .
-  (_)
-)
-
 ; Keep spacing between pointy brackets when used in object types.
 ;
 ; This is syntactically correct:
@@ -558,7 +520,6 @@
 ;   let obj_id (obj : <..>) = obj
 (object_type
   "<" @append_space
-  (_)*
   ">" @prepend_space
 )
 
