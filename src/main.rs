@@ -155,7 +155,7 @@ fn run() -> FormatterResult<()> {
         query
     } else if let Some(language) = language {
         // Deduce the query file from the language, if the argument is missing
-        Language::query_path(language)
+        Language::query_path(language)?
     } else {
         // Clap ensures we won't get here
         unreachable!();
