@@ -839,3 +839,10 @@ end
 (* Ensure labelled arguments are correctly spaced *)
 let _ =
   foo ~arg :: []
+
+(* Various spacing corner cases *)
+type query = (string * string list) list
+type x = ('any Slug.t -> bool) -> float
+let id (type s) (x : s) : s = x
+type foo = { a: 'a. ('a, mandatory) arg -> 'a; }
+type foo = (int, int) result
