@@ -46,7 +46,8 @@ let blit src srcoff dst dstoff len =
   if len < 0
     || srcoff < 0
     || srcoff > src.position - len
-    || dstoff < 0 || dstoff > (Bytes.length dst) - len then
+    || dstoff < 0
+    || dstoff > (Bytes.length dst) - len then
     invalid_arg "Buffer.blit"
   else
     Bytes.unsafe_blit src.buffer srcoff dst dstoff len
@@ -817,6 +818,18 @@ let _ =
     5,
     6
   )
+
+let x =
+  foo
+  || foo
+  || bar
+  || bar
+
+let x =
+  foo;
+  foo;
+  bar;
+  bar
 
 (* Open and let open *)
 open Foo
