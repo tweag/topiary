@@ -31,6 +31,24 @@
         checks = with code; {
           inherit app clippy fmt audit benchmark;
         };
+
+        ## For easy use in https://github.com/cachix/pre-commit-hooks.nix
+        lib.pre-commit-hook = {
+          enable = true;
+          name = "topiary";
+          description = "A general code formatter based on tree-sitter.";
+          entry = let
+            topiary-inplace = pkgs.writeShellApplication {
+              name = "topiary-inplace";
+              text = ''
+                for file; do
+                  ${code.app}/bin/topiary --in-place --input-file "$file"
+                done
+              '';
+            };
+          in "${topiary-inplace}/bin/topiary-inplace";
+          files = "(\\.json$)|(\\.toml$)|(\\.mli?$)";
+        };
       }
     );
 }
