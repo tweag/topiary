@@ -1534,7 +1534,8 @@ module Lazy_storage: sig
     | Remove
     | Update of { init: ('id, 'alloc) init; updates: 'updates; }
 
-  type diffs_item = private
+  type diffs_item =
+    private
     | Item :
       ('i, 'a, 'u) Lazy_storage_kind.t
       * 'i
@@ -1770,7 +1771,8 @@ module Contract: sig
     context tzresult Lwt.t
 
   module Legacy_big_map_diff: sig
-    type item = private
+    type item =
+      private
       | Update of
         {
           big_map: Z.t;
@@ -3661,7 +3663,8 @@ module Sc_rollup: sig
     and type proof = 'proof
     and type output_proof = 'output)
 
-    type t = Packed : ('state, 'proof, 'output) implementation -> t
+    type t =
+      Packed : ('state, 'proof, 'output) implementation -> t
     [@@unboxed ]
   end
 
@@ -4438,7 +4441,8 @@ module Kind: sig
 
   type vdf_revelation = Vdf_revelation_kind
 
-  type 'a double_consensus_operation_evidence = | Double_consensus_operation_evidence
+  type 'a double_consensus_operation_evidence =
+    | Double_consensus_operation_evidence
 
   type double_endorsement_evidence = endorsement_consensus_kind double_consensus_operation_evidence
 
@@ -4506,7 +4510,8 @@ module Kind: sig
 
   type sc_rollup_timeout = Sc_rollup_timeout_kind
 
-  type sc_rollup_execute_outbox_message = | Sc_rollup_execute_outbox_message_kind
+  type sc_rollup_execute_outbox_message =
+    | Sc_rollup_execute_outbox_message_kind
 
   type sc_rollup_recover_bond = Sc_rollup_recover_bond_kind
 
@@ -4835,13 +4840,16 @@ and _ manager_operation =
     } ->
       Kind.zk_rollup_update manager_operation
 
-type packed_manager_operation = | Manager : 'kind manager_operation -> packed_manager_operation
+type packed_manager_operation =
+  | Manager : 'kind manager_operation -> packed_manager_operation
 
 type packed_contents = Contents : 'kind contents -> packed_contents
 
-type packed_contents_list = | Contents_list : 'kind contents_list -> packed_contents_list
+type packed_contents_list =
+  | Contents_list : 'kind contents_list -> packed_contents_list
 
-type packed_protocol_data = | Operation_data : 'kind protocol_data -> packed_protocol_data
+type packed_protocol_data =
+  | Operation_data : 'kind protocol_data -> packed_protocol_data
 
 type packed_operation = {
   shell: Operation.shell_header;
@@ -5443,7 +5451,7 @@ end
 
 (* Playing with nested structures *)
 type foo =
-a ->
-(b -> c) ->
-d ->
-e
+  a ->
+  (b -> c) ->
+  d ->
+  e

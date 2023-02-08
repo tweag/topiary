@@ -797,6 +797,9 @@ type t = {
     [@and again]; (* and a last one *)
 }
 
+type controller =
+  | C : Slug.t -> controller
+
 let _ =
   let open Printf in
   sprintf "hello world"
