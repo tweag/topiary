@@ -116,7 +116,7 @@ impl Language {
         let query_file = Self::query_file_base_name(language);
 
         #[rustfmt::skip]
-        let potentials: Vec<Option<PathBuf>> = vec![
+        let potentials: [Option<PathBuf>; 3] = [
             std::env::var("TOPIARY_LANGUAGE_DIR").map(PathBuf::from).ok(),
             option_env!("TOPIARY_LANGUAGE_DIR").map(PathBuf::from),
             Some(PathBuf::from("./languages")),
