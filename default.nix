@@ -42,6 +42,15 @@ in
     postInstall = ''
       install -Dm444 languages/* -t $out/share/languages
     '';
+
+    # Set TOPIARY_LANGUAGE_DIR to the Nix store
+    # for the build
     TOPIARY_LANGUAGE_DIR = "${placeholder "out"}/share/languages";
+
+    # Set TOPIARY_LANGUAGE_DIR to the working directory
+    # in a development shell
+    shellHook = ''
+      export TOPIARY_LANGUAGE_DIR=$PWD/languages
+    '';
   });
 }
