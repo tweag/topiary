@@ -1,4 +1,4 @@
-use std::{error::Error, ffi, fmt, io, str, string};
+use std::{error::Error, ffi, fmt, io, marker, str, string};
 
 /// The various errors the formatter may return.
 #[derive(Debug)]
@@ -31,27 +31,15 @@ pub enum FormatterError {
     /// Could not detect the input language from the (filename, Option<extension>)
     LanguageDetection(String, Option<ffi::OsString>),
 
-    /// Could not read the input.
-    Reading(ReadingError),
-
-    /// Could not write the formatted output.
-    Writing(WritingError),
+    /// I/O-related errors
+    Io(IoError),
 }
 
-/// A subtype of `FormatterError::Reading`.
+/// A subtype of `FormatterError::Io`
 #[derive(Debug)]
-pub enum ReadingError {
-    Io(String, io::Error),
-    Utf8(str::Utf8Error),
-}
-
-/// A subtype of `FormatterError::Writing`.
-#[derive(Debug)]
-pub enum WritingError {
-    Fmt(fmt::Error),
-    IntoInner(io::IntoInnerError<io::BufWriter<Vec<u8>>>),
-    Io(io::Error),
-    FromUtf8(string::FromUtf8Error),
+pub enum IoError {
+    Filesystem(String, io::Error),
+    Generic(String, Option<Box<dyn Error>>),
 }
 
 impl fmt::Display for FormatterError {
@@ -64,6 +52,7 @@ impl fmt::Display for FormatterError {
                     "The formatter did not produce the same result when invoked twice (idempotence check).\n{please_log_message}"
                 )
             }
+
             Self::Parsing {
                 start_line,
                 start_column,
@@ -72,18 +61,7 @@ impl fmt::Display for FormatterError {
             } => {
                 write!(f, "Parsing error between line {start_line}, column {start_column} and line {end_line}, column {end_column}")
             }
-            Self::Reading(ReadingError::Io(message, _)) => {
-                write!(f, "{message}")
-            }
-            Self::Reading(ReadingError::Utf8(_)) => {
-                write!(f, "Input is not UTF8")
-            }
-            Self::Writing(_) => {
-                write!(f, "Writing error")
-            }
-            Self::Internal(message, _) | Self::Query(message, _) => {
-                write!(f, "{message}")
-            }
+
             Self::LanguageDetection(filename, extension) => {
                 let file: String = match filename.as_str() {
                     "-" => "from standard input".into(),
@@ -100,11 +78,19 @@ impl fmt::Display for FormatterError {
                     ),
                 }
             }
+
             Self::Formatting(_err) => {
                 write!(
                     f,
                     "The formatter failed when trying to format the code twice (idempotence check).\nThis probably means that the formatter produced invalid code.\n{please_log_message}"
                 )
+            }
+
+            Self::Internal(message, _)
+            | Self::Query(message, _)
+            | Self::Io(IoError::Filesystem(message, _))
+            | Self::Io(IoError::Generic(message, _)) => {
+                write!(f, "{message}")
             }
         }
     }
@@ -118,49 +104,73 @@ impl Error for FormatterError {
             Self::Parsing { .. } => None,
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::LanguageDetection(_, _) => None,
-            Self::Reading(ReadingError::Io(_, source)) => Some(source),
-            Self::Reading(ReadingError::Utf8(source)) => Some(source),
-            Self::Writing(WritingError::Fmt(source)) => Some(source),
-            Self::Writing(WritingError::FromUtf8(source)) => Some(source),
-            Self::Writing(WritingError::IntoInner(source)) => Some(source),
-            Self::Writing(WritingError::Io(source)) => Some(source),
+            Self::Io(IoError::Filesystem(_, source)) => Some(source),
+            Self::Io(IoError::Generic(_, Some(source))) => Some(source.as_ref()),
+            Self::Io(IoError::Generic(_, None)) => None,
             Self::Formatting(err) => Some(err),
         }
     }
 }
 
-impl From<str::Utf8Error> for FormatterError {
-    fn from(e: str::Utf8Error) -> Self {
-        FormatterError::Reading(ReadingError::Utf8(e))
-    }
-}
-
 impl From<io::Error> for FormatterError {
     fn from(e: io::Error) -> Self {
-        FormatterError::Writing(WritingError::Io(e))
-    }
-}
+        match e.kind() {
+            io::ErrorKind::NotFound => {
+                FormatterError::Io(IoError::Filesystem("File not found".into(), e))
+            }
 
-impl From<string::FromUtf8Error> for FormatterError {
-    fn from(e: string::FromUtf8Error) -> Self {
-        FormatterError::Writing(WritingError::FromUtf8(e))
-    }
-}
-
-impl From<io::IntoInnerError<io::BufWriter<Vec<u8>>>> for FormatterError {
-    fn from(e: io::IntoInnerError<io::BufWriter<Vec<u8>>>) -> Self {
-        FormatterError::Writing(WritingError::IntoInner(e))
-    }
-}
-
-impl From<fmt::Error> for FormatterError {
-    fn from(e: fmt::Error) -> Self {
-        FormatterError::Writing(WritingError::Fmt(e))
+            _ => FormatterError::Io(IoError::Filesystem(
+                "Could not read or write to file".into(),
+                e,
+            )),
+        }
     }
 }
 
 impl From<tempfile::PersistError> for FormatterError {
     fn from(e: tempfile::PersistError) -> Self {
-        FormatterError::Writing(WritingError::Io(e.error))
+        FormatterError::Io(IoError::Filesystem(
+            "Could not persist output to disk".into(),
+            e.error,
+        ))
+    }
+}
+
+impl From<str::Utf8Error> for FormatterError {
+    fn from(e: str::Utf8Error) -> Self {
+        FormatterError::Io(IoError::Generic(
+            "Input is not valid UTF-8".into(),
+            Some(Box::new(e)),
+        ))
+    }
+}
+
+impl From<string::FromUtf8Error> for FormatterError {
+    fn from(e: string::FromUtf8Error) -> Self {
+        FormatterError::Io(IoError::Generic(
+            "Input is not valid UTF-8".into(),
+            Some(Box::new(e)),
+        ))
+    }
+}
+
+impl From<fmt::Error> for FormatterError {
+    fn from(e: fmt::Error) -> Self {
+        FormatterError::Io(IoError::Generic(
+            "Failed to format output".into(),
+            Some(Box::new(e)),
+        ))
+    }
+}
+
+impl<W> From<io::IntoInnerError<W>> for FormatterError
+where
+    W: io::Write + fmt::Debug + marker::Send + 'static,
+{
+    fn from(e: io::IntoInnerError<W>) -> Self {
+        FormatterError::Io(IoError::Generic(
+            "Cannot flush internal buffer".into(),
+            Some(Box::new(e)),
+        ))
     }
 }

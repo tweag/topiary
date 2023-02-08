@@ -155,7 +155,7 @@ fn run() -> FormatterResult<()> {
         query
     } else if let Some(language) = language {
         // Deduce the query file from the language, if the argument is missing
-        Language::query_path(language)
+        Language::query_path(language)?
     } else {
         // Clap ensures we won't get here
         unreachable!();
@@ -171,15 +171,14 @@ fn run() -> FormatterResult<()> {
         args.skip_idempotence,
     )?;
 
-    // NOTE We should probably handle the potential for into_inner to fail
-    output.into_inner().unwrap().persist()?;
+    output.into_inner()?.persist()?;
 
     Ok(())
 }
 
 fn print_error(e: &dyn Error) {
-    eprintln!("Error: {}", e);
+    log::error!("{e}");
     if let Some(source) = e.source() {
-        eprintln!("  Caused by: {}", source);
+        log::error!("Cause: {source}");
     }
 }
