@@ -40,7 +40,6 @@ fn test_file_output() {
 
     let mut topiary = Command::cargo_bin("topiary").unwrap();
     topiary
-        .env("TOPIARY_LANGUAGE_DIR", "languages")
         .arg("--language")
         .arg("json")
         .arg("--output-file")
@@ -59,7 +58,6 @@ fn test_no_clobber() {
 
     let mut topiary = Command::cargo_bin("topiary").unwrap();
     topiary
-        .env("TOPIARY_LANGUAGE_DIR", "languages")
         .arg("--language")
         .arg("json")
         .arg("--input-file")
@@ -81,7 +79,6 @@ fn test_in_place() {
 
     let mut topiary = Command::cargo_bin("topiary").unwrap();
     topiary
-        .env("TOPIARY_LANGUAGE_DIR", "languages")
         .arg("--language")
         .arg("json")
         .arg("--input-file")
@@ -99,7 +96,6 @@ fn test_in_place() {
 fn test_in_place_no_input() {
     let mut topiary = Command::cargo_bin("topiary").unwrap();
     topiary
-        .env("TOPIARY_LANGUAGE_DIR", "languages")
         .arg("--language")
         .arg("json")
         .arg("--in-place")

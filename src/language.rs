@@ -1,8 +1,9 @@
 // use std::env::var;
 use std::ffi::OsString;
+use std::io;
 use std::path::{Path, PathBuf};
 
-use crate::{FormatterError, FormatterResult};
+use crate::{FormatterError, FormatterResult, IoError};
 
 /// The languages that we support with query files.
 #[derive(Clone, Copy, Debug)]
@@ -102,21 +103,36 @@ impl Language {
         }
     }
 
-    pub fn query_path(language: Language) -> PathBuf {
+    pub fn query_path(language: Language) -> FormatterResult<PathBuf> {
+        // We test 3 different locations for query files, in the following priority order,
+        // returning the first that exists:
+        //
+        // 1. Under the TOPIARY_LANGUAGE_DIR env variable at runtime;
+        // 2. Under the TOPIARY_LANGUAGE_DIR env variable at build time;
+        // 3. Under the "./languages" subdirectory.
+        //
+        // If all of these fail, we return an I/O error.
+
         let query_file = Self::query_file_base_name(language);
 
-        // We test 3 different locations for query files, and stop
-        // at the first which works:
-        // * the TOPIARY_LANGUAGE_DIR env variable at runtime,
-        // * the TOPIARY_LANGUAGE_DIR env variable at compile time,
-        // * the "languages" subdirectory of the running directory.
-        PathBuf::from(
-            std::env::var("TOPIARY_LANGUAGE_DIR")
-                .ok()
-                .or(option_env!("TOPIARY_LANGUAGE_DIR").map(String::from))
-                .unwrap_or_else(|| "languages".into()),
-        )
-        .join(format!("{query_file}.scm"))
+        #[rustfmt::skip]
+        let potentials: [Option<PathBuf>; 3] = [
+            std::env::var("TOPIARY_LANGUAGE_DIR").map(PathBuf::from).ok(),
+            option_env!("TOPIARY_LANGUAGE_DIR").map(PathBuf::from),
+            Some(PathBuf::from("./languages")),
+        ];
+
+        potentials
+            .into_iter()
+            .flatten()
+            .map(|path| path.join(format!("{query_file}.scm")))
+            .find(|path| path.exists())
+            .ok_or_else(|| {
+                FormatterError::Io(IoError::Filesystem(
+                    "Language query file could not be found".into(),
+                    io::Error::from(io::ErrorKind::NotFound),
+                ))
+            })
     }
 
     pub fn grammars(language: Language) -> Vec<tree_sitter::Language> {

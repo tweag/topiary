@@ -11,7 +11,7 @@
 //! [GitHub](https://github.com/tweag/topiary).
 
 use configuration::Configuration;
-pub use error::{FormatterError, ReadingError, WritingError};
+pub use error::{FormatterError, IoError};
 use itertools::Itertools;
 pub use language::Language;
 use pretty_assertions::StrComparison;
@@ -117,10 +117,16 @@ pub fn formatter(
     skip_idempotence: bool,
 ) -> FormatterResult<()> {
     let content = read_input(input).map_err(|e| {
-        FormatterError::Reading(ReadingError::Io("Failed to read input content".into(), e))
+        FormatterError::Io(IoError::Filesystem(
+            "Failed to read input contents".into(),
+            e,
+        ))
     })?;
     let query = read_input(query).map_err(|e| {
-        FormatterError::Reading(ReadingError::Io("Failed to read query content".into(), e))
+        FormatterError::Io(IoError::Filesystem(
+            "Failed to read query contents".into(),
+            e,
+        ))
     })?;
 
     let mut configuration = Configuration::parse(&query)?;
