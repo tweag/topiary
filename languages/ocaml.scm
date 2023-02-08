@@ -1173,15 +1173,6 @@
   "]" @prepend_indent_end @prepend_empty_softline
   .
 )
-(list_expression
-  (#delimiter! ";")
-  (_) @append_multiline_delimiter
-  .
-  ";"? @do_nothing
-  .
-  "]"
-  .
-)
 
 (list_pattern
   .
@@ -1189,15 +1180,6 @@
   "]" @prepend_indent_end @prepend_empty_softline
   .
 )
-(list_pattern
-  (#delimiter! ";")
-  (_) @append_multiline_delimiter
-  .
-  ";"? @do_nothing
-  .
-  "]"
-  .
-)
 
 (array_expression
   .
@@ -1205,29 +1187,11 @@
   "|]" @prepend_indent_end @prepend_empty_softline
   .
 )
-(array_expression
-  (#delimiter! ";")
-  (_) @append_multiline_delimiter
-  .
-  ";"? @do_nothing
-  .
-  "|]"
-  .
-)
 
 (array_pattern
   .
   "[|" @append_indent_start @append_empty_softline
   "|]" @prepend_indent_end @prepend_empty_softline
-  .
-)
-(array_pattern
-  (#delimiter! ";")
-  (_) @append_multiline_delimiter
-  .
-  ";"? @do_nothing
-  .
-  "|]"
   .
 )
 
