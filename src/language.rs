@@ -104,9 +104,8 @@ impl Language {
     }
 
     pub fn query_path(language: Language) -> FormatterResult<PathBuf> {
-        let query_file = Self::query_file_base_name(language);
-
-        // We test 3 different locations for query files, and stop at the first which exists:
+        // We test 3 different locations for query files, in the following priority order,
+        // returning the first that exists:
         //
         // 1. Under the TOPIARY_LANGUAGE_DIR env variable at runtime;
         // 2. Under the TOPIARY_LANGUAGE_DIR env variable at build time;
@@ -114,25 +113,26 @@ impl Language {
         //
         // If all of these fail, we return an I/O error.
 
+        let query_file = Self::query_file_base_name(language);
+
+        #[rustfmt::skip]
         let potentials: Vec<Option<PathBuf>> = vec![
-            std::env::var("TOPIARY_LANGUAGE_DIR")
-                .map(PathBuf::from)
-                .ok(),
+            std::env::var("TOPIARY_LANGUAGE_DIR").map(PathBuf::from).ok(),
             option_env!("TOPIARY_LANGUAGE_DIR").map(PathBuf::from),
             Some(PathBuf::from("./languages")),
         ];
 
-        for potential in potentials.into_iter().flatten() {
-            let query = potential.join(format!("{query_file}.scm"));
-            if query.exists() {
-                return Ok(query);
-            }
-        }
-
-        Err(FormatterError::Io(IoError::Filesystem(
-            "Query file could not be found".into(),
-            io::Error::from(io::ErrorKind::NotFound),
-        )))
+        potentials
+            .into_iter()
+            .flatten()
+            .map(|path| path.join(format!("{query_file}.scm")))
+            .find(|path| path.exists())
+            .ok_or_else(|| {
+                FormatterError::Io(IoError::Filesystem(
+                    "Language query file could not be found".into(),
+                    io::Error::from(io::ErrorKind::NotFound),
+                ))
+            })
     }
 
     pub fn grammars(language: Language) -> Vec<tree_sitter::Language> {
