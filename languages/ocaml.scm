@@ -1086,13 +1086,25 @@
 )
 
 ; Make an indented block where a function type arrow starts. Only for the root
-; level, not for each arrow.
+; level of constructed types and PPX extensions, not for each arrow.
 ;
 ; (?used_slot:bool ref ->
 ;   Longident.t loc ->
 ;   Path.t * Env.t)
 ;
+; let h =
+;   [%madcast: float ->
+;     bool]
+;
 (constructed_type
+  (function_type
+    "->" @append_indent_start
+    (_) @append_indent_end
+    .
+  )
+)
+
+(attribute_payload
   (function_type
     "->" @append_indent_start
     (_) @append_indent_end
