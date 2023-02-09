@@ -6,6 +6,25 @@ Topiary aims to be a uniform formatter for simple languages, as part of
 the [Tree-sitter] ecosystem. It is named after the art of clipping or
 trimming trees into fantastic shapes.
 
+## Motivation
+
+The style in which code is written has, historically, been mostly left
+to personal choice. Of course, this is subjective by definition and has
+led to many wasted hours reviewing formatting choices, rather than the
+code itself. Prescribed style guides were an early solution to this,
+spawning tools that lint a developer's formatting and ultimately leading
+to automatic formatters. The latter were popularised by
+[`gofmt`][gofmt], whose developers had the insight that "good enough"
+uniform formatting, imposed on a codebase, with no scope for subjective
+adjustment, largely resolves these problems.
+
+Topiary follows this trend by aspiring to be a "universal formatter
+engine", which allows developers to not only automatically format their
+codebases with a uniform style, but to define that style for new
+languages using a [simple DSL][tree-sitter-query]. This allows for the
+rapid prototyping of formatters, providing a [Tree-sitter
+grammar][tree-sitter-parsers] is defined for that language.
+
 ## Getting Started
 
 ### Installing
@@ -771,6 +790,7 @@ of choice open in another.
 
 [ci-badge]: https://github.com/tweag/topiary/actions/workflows/ci.yml/badge.svg
 [contributing]: CONTRIBUTING.md
+[gofmt]: https://pkg.go.dev/cmd/gofmt
 [tree-sitter-parsers]: https://tree-sitter.github.io/tree-sitter/#available-parsers
 [tree-sitter-query]: https://tree-sitter.github.io/tree-sitter/using-parsers#pattern-matching-with-queries
 [tree-sitter]: https://tree-sitter.github.io/tree-sitter/
