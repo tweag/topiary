@@ -145,7 +145,7 @@ pub fn formatter(
     // Pretty-print atoms
     log::info!("Pretty-print output");
     let rendered = pretty::render(&atoms[..], configuration.indent_level)?;
-    let trimmed = trim_trailing_spaces(&rendered);
+    let trimmed = trim_whitespace(&rendered);
 
     if !skip_idempotence {
         idempotence_check(&trimmed, &query, language)?
@@ -162,8 +162,11 @@ fn read_input(input: &mut dyn io::Read) -> Result<String, io::Error> {
     Ok(content)
 }
 
-fn trim_trailing_spaces(s: &str) -> String {
-    Itertools::intersperse(s.split('\n').map(|line| line.trim_end()), "\n").collect::<String>()
+fn trim_whitespace(s: &str) -> String {
+    // Trim whitespace from the end of each line,
+    // then trim any leading/trailing new lines,
+    // finally reinstate the new line at EOF.
+    format!("{}\n", s.lines().map(str::trim_end).join("\n").trim())
 }
 
 fn idempotence_check(

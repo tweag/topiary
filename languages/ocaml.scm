@@ -405,7 +405,9 @@
     (class_type_path)
     (constructed_type)
     (constructor_path)
+    (extension)
     (field_get_expression)
+    (hash_type)
     (labeled_argument)
     ; equivalence class
       (extended_module_path)
@@ -665,7 +667,7 @@
   (and_operator) @prepend_spaced_softline
 )
 
-; There a large class of terms which should be separated from "=" by a soft lineb break.
+; There is a large class of terms which should be separated from "=" by a soft line break.
 (
   "=" @append_spaced_softline
   .
@@ -682,6 +684,7 @@
     (set_expression)
     (typed_expression)
     (value_path)
+    (variant_declaration)
   ]
 )
 
@@ -800,13 +803,6 @@
   (#scope_id! "field_declaration")
 )
 
-; Indenting. This will only do anything in multi-line blocks. In single-line
-; blocks they do nothing.
-
-(
-  (variant_declaration) @prepend_indent_start @append_indent_end
-)
-
 ; Start an indented block after these
 [
   "begin"
@@ -868,9 +864,11 @@
 )
 
 ; Make an indented block after "=" in
-; * class[_type] bindings
-; * method definitions
+; * class bindings
+; * class_type bindings
 ; * instance variable definitions
+; * method definitions
+; * type bindings
 
 (class_binding
   "=" @append_indent_start
@@ -882,14 +880,35 @@
   (_) @append_indent_end
 )
 
+(instance_variable_definition
+  "=" @append_indent_start
+  (_) @append_indent_end
+)
+
 (method_definition
   "=" @append_indent_start
   (_) @append_indent_end
 )
 
-(instance_variable_definition
-  "=" @append_indent_start
-  (_) @append_indent_end
+; Don't indent for record types nor polymorphic variant types:
+; they are already indented, and we don't process double indentation well enough
+(type_binding
+  [
+    "="
+    "+="
+  ] @append_indent_start
+  .
+  [
+    (constructed_type)
+    (function_type)
+    (hash_type)
+    (object_type)
+    (parenthesized_type)
+    (tuple_type)
+    (type_constructor_path)
+    (type_variable)
+    (variant_declaration)
+  ] @append_indent_end
 )
 
 ; Make an indented block after "of" or ":" in constructor declarations
@@ -1142,22 +1161,55 @@
   (#scope_id! "infix_expression")
 )
 
-; Allow softlines in sequences, such as
+; Allow softlines in sequences and ppx sequences, such as
 ; let b =
 ;   foo;
 ;   bar;
 ;   baz
 ; As above, sequences are nested grammar elements, so we must identify the
-; top-level one: it is the one that is not preceded by a ";".
+; top-level one: it is the one that is not preceded by a ";" (or ";%foo" for ppx sequences).
 (
   ";"? @do_nothing
   .
-  (sequence_expression) @begin_scope @end_scope
+  (sequence_expression
+    .
+    _
+    .
+    ";"
+    .
+    "%"? @do_nothing
+  ) @begin_scope @end_scope
   (#scope_id! "sequence_expression")
 )
 (sequence_expression
   ";" @append_spaced_scoped_softline
   (#scope_id! "sequence_expression")
+)
+
+(
+  ";"?
+  .
+  "%"? @do_nothing
+  .
+  (attribute_id)?
+  .
+  (sequence_expression
+    .
+    _
+    .
+    ";"
+    .
+    "%"
+  ) @begin_scope @end_scope
+  (#scope_id! "ppx_sequence_expression")
+)
+(sequence_expression
+  ";"
+  .
+  "%"
+  .
+  (attribute_id) @append_spaced_scoped_softline
+  (#scope_id! "ppx_sequence_expression")
 )
 
 ; Indent and add softlines in lists and arrays, such as

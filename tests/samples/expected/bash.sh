@@ -150,4 +150,3 @@ export xyzzy=$(
   something
   another_thing --foo
 )
-

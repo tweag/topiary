@@ -747,6 +747,23 @@ let _ =
   | Rn -> en
   | _ -> def
 
+let x = foo;%lwt bar
+
+let x =
+  foo;%lwt
+  bar;%lwt
+  baz;%lwt
+  qux
+
+let x =
+  foo
+    bar;%lwt
+  baz
+
+let x = function
+  | [%type: [%t? foo] option] ->
+    bar
+
 let _ = 12 [@deprecated "12 is deprecated, use 13 instead"]
 
 let _ =
@@ -797,9 +814,14 @@ type t = {
     [@and again]; (* and a last one *)
 }
 
+type controller =
+  | C : Slug.t -> controller
+
 let _ =
   let open Printf in
   sprintf "hello world"
+
+let foo : #x y z = bar
 
 (* Playing with nested structures *)
 let _ =
