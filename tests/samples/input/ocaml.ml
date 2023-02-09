@@ -578,6 +578,18 @@ let [|a; _; _|] = [|1; 2;
 let _ = (let x = 42 in
   x)
 
+let _ =
+  let foo =
+    fun x -> x
+  in
+  foo
+
+let _ =
+  let foo =
+    function true -> false | false -> true
+  in
+  foo
+
 (* Showcase the usage of operator bindings *)
 let greetings =
   let (let*) = Option.bind

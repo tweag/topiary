@@ -693,6 +693,69 @@
   ]* @do_nothing
 )
 
+; We chose not to add a line break between `=` and the
+; `fun` or `function` keywords, but in order to keep the multi-lined-ness
+; we must add a softline after the arrow. We need custom scopes to do this,
+; since the node which contains the arrow may be single-line.
+;
+; This turns
+;
+; let foo =
+;   fun x -> x
+; in
+; bar
+;
+; into
+;
+; let foo = fun x ->
+;   x
+; in
+; bar
+(let_binding
+  "=" @begin_scope
+  .
+  (fun_expression
+    "->" @append_spaced_scoped_softline
+  ) @end_scope
+  (#scope_id! "fun_definiton")
+)
+
+; The same as above holds for single-line `function`.
+;
+; This turns
+; let foo =
+;   function true -> false | false -> true
+; in
+; bar
+;
+; into
+;
+; let foo = function
+;   true -> false
+;   | false -> true
+; in
+; bar
+(let_binding
+  "=" @begin_scope
+  .
+  (function_expression
+    "function" @append_spaced_scoped_softline
+  ) @end_scope
+  (#scope_id! "function_definiton")
+)
+(
+  "|"* @do_nothing
+  .
+  (match_case) @prepend_spaced_scoped_softline
+  (#scope_id! "function_definiton")
+)
+(
+  "|"* @prepend_spaced_scoped_softline
+  .
+  (match_case)
+  (#scope_id! "function_definiton")
+)
+
 (value_definition
   (and_operator) @prepend_spaced_softline
 )
