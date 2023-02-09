@@ -915,3 +915,8 @@ let x =
   [%expr function
     | false -> 0.
     | true -> 1.]
+
+(* Indentation of multi-line types in PPX syntax *)
+let h =
+  [%madcast: float ->
+    bool]
