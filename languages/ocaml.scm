@@ -536,7 +536,6 @@
   [
     "begin"
     "do"
-    "else"
     "in"
     "of"
     "struct"
@@ -556,7 +555,6 @@
   [
     "begin"
     "do"
-    "else"
     "in"
     "of"
     "struct"
@@ -571,6 +569,30 @@
   (attribute_id) @append_spaced_softline
   .
   (comment)* @do_nothing
+)
+
+; only add softlines after "else" if it's not part of an "else if" construction
+(
+  "else" @append_spaced_softline
+  .
+  [
+    (comment)
+    (if_expression)
+    "%"
+  ]? @do_nothing
+)
+
+(
+  "else"
+  .
+  "%"
+  .
+  (attribute_id) @append_spaced_softline
+  .
+  [
+    (comment)
+    (if_expression)
+  ]? @do_nothing
 )
 
 ; ":" must not always be followed by a softline, we explicitly enumerate
@@ -807,7 +829,6 @@
 [
   "begin"
   "do"
-  "else"
   "object"
   "sig"
   "struct"
@@ -836,12 +857,17 @@
   "}" @prepend_indent_end
 )
 
+; Only indent after "else" if it's not an "else if" construction
+(
+  (else_clause
+    "else" @append_indent_start
+    (if_expression)? @do_nothing
+  ) @append_indent_end
+)
+
 ; End the indented block after these
 (
-  [
-    (else_clause)
-    (then_clause)
-  ] @append_indent_end
+  (then_clause) @append_indent_end
 )
 
 ; Make an indented block after ":" in typed expressions
