@@ -63,6 +63,26 @@ Topiary has been created with the following goals in mind:
   * Afford simple integration with other developer tools, such as
     editors and language servers.
 
+## Language Support
+<!-- Update this section as necessary on new developments/releases -->
+
+[For now][topiary-issue4], the Tree-sitter grammars for the languages
+that Topiary targets are statically linked. The formatting styles for
+these languages come in two levels of maturity: supported (i.e., exposed
+as a command line flag) and experimental (i.e., subject to change and/or
+not yet production-ready).
+
+#### Supported
+* OCaml (both implementations and interfaces)
+* JSON
+* TOML
+
+#### Experimental
+
+* Rust
+* Bash
+* [Nickel][nickel]
+
 ## Getting Started
 
 ### Installing
@@ -829,6 +849,8 @@ of choice open in another.
 [ci-badge]: https://github.com/tweag/topiary/actions/workflows/ci.yml/badge.svg
 [contributing]: CONTRIBUTING.md
 [gofmt]: https://pkg.go.dev/cmd/gofmt
+[nickel]: https://nickel-lang.org/
+[topiary-issue4]: https://github.com/tweag/topiary/issues/4
 [tree-sitter-parsers]: https://tree-sitter.github.io/tree-sitter/#available-parsers
 [tree-sitter-query]: https://tree-sitter.github.io/tree-sitter/using-parsers#pattern-matching-with-queries
 [tree-sitter]: https://tree-sitter.github.io/tree-sitter/
