@@ -844,3 +844,8 @@ type x = ('any Slug.t -> bool) -> float
 let id (type s) (x : s) : s = x
 type foo = { a : 'a. ('a, mandatory) arg -> 'a; }
 type foo = (int, int) result
+
+(* exotic types *)
+type (+'meth, 'prefix, 'params, 'query, 'input, 'output) service =
+  ('meth, 'prefix, 'params, 'query, 'input, 'output, error) raw
+  constraint 'meth = [< meth]
