@@ -804,6 +804,8 @@ let _ =
   let open Printf in
   sprintf "hello world"
 
+let foo : #x y z = bar
+
 (* Playing with nested structures *)
 let _ =
   (
