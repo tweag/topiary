@@ -405,6 +405,7 @@
     (class_type_path)
     (constructed_type)
     (constructor_path)
+    (extension)
     (field_get_expression)
     (hash_type)
     (labeled_argument)
@@ -1160,22 +1161,55 @@
   (#scope_id! "infix_expression")
 )
 
-; Allow softlines in sequences, such as
+; Allow softlines in sequences and ppx sequences, such as
 ; let b =
 ;   foo;
 ;   bar;
 ;   baz
 ; As above, sequences are nested grammar elements, so we must identify the
-; top-level one: it is the one that is not preceded by a ";".
+; top-level one: it is the one that is not preceded by a ";" (or ";%foo" for ppx sequences).
 (
   ";"? @do_nothing
   .
-  (sequence_expression) @begin_scope @end_scope
+  (sequence_expression
+    .
+    _
+    .
+    ";"
+    .
+    "%"? @do_nothing
+  ) @begin_scope @end_scope
   (#scope_id! "sequence_expression")
 )
 (sequence_expression
   ";" @append_spaced_scoped_softline
   (#scope_id! "sequence_expression")
+)
+
+(
+  ";"?
+  .
+  "%"? @do_nothing
+  .
+  (attribute_id)?
+  .
+  (sequence_expression
+    .
+    _
+    .
+    ";"
+    .
+    "%"
+  ) @begin_scope @end_scope
+  (#scope_id! "ppx_sequence_expression")
+)
+(sequence_expression
+  ";"
+  .
+  "%"
+  .
+  (attribute_id) @append_spaced_scoped_softline
+  (#scope_id! "ppx_sequence_expression")
 )
 
 ; Indent and add softlines in lists and arrays, such as

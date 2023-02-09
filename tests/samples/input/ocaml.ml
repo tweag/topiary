@@ -725,6 +725,21 @@ let _ = match%sedlex lexbuf with
   | Rn -> en
   | _  -> def
 
+let x = foo;%lwt bar
+
+let x =
+  foo;%lwt bar;%lwt
+  baz;%lwt qux
+
+let x =
+  foo
+    bar;%lwt
+  baz
+
+let x = function
+  | [%type: [%t? foo] option] ->
+    bar
+
 let _ = 12 [@deprecated "12 is deprecated, use 13 instead"]
 
 let _ = "some string"
