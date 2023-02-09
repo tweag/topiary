@@ -406,6 +406,7 @@
     (constructed_type)
     (constructor_path)
     (field_get_expression)
+    (hash_type)
     (labeled_argument)
     ; equivalence class
       (extended_module_path)
