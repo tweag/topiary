@@ -25,6 +25,44 @@ languages using a [simple DSL][tree-sitter-query]. This allows for the
 rapid prototyping of formatters, providing a [Tree-sitter
 grammar][tree-sitter-parsers] is defined for that language.
 
+## Design Principles
+
+Topiary has been created with the following goals in mind:
+
+* To target languages for which a [Tree-sitter
+  grammar][tree-sitter-parsers] exist; whether officially supported by
+  the Tree-sitter project, or otherwise.
+
+* To support a handful of languages, with "one true formatting style"
+  for each, where no de facto formatter exists. These supported
+  formatting styles must:
+
+  * Be compatible with attested formatting styles used for that language
+    in the wild.
+
+  * Be faithful to the author's intent, in terms of line spacing.
+
+  * Result in minimal diffs.
+
+  * Be idempotent. That is, formatting of already-formatted code doesn't
+    change anything.
+
+* Code must be written in such a way that it's easy to modify and
+  maintain.
+
+* Code and formatting styles must be well-tested and robust, so that the
+  formatter can be used in large projects.
+
+* For end users -- i.e., not formatting style developers -- the
+  formatter should:
+
+  * Not permit any subjective configuration.
+
+  * Run efficiently.
+
+  * Afford simple integration with other developer tools, such as
+    editors and language servers.
+
 ## Getting Started
 
 ### Installing
