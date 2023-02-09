@@ -550,7 +550,8 @@ let is_some_some = function
 
 let my_const
     : type a b. a: a -> b: b -> a
-  = fun ~a ~b -> a
+  = fun ~a ~b ->
+    a
 
 let my_id ~value = value
 
@@ -595,6 +596,19 @@ let _ =
     let x = 42 in
     x
   )
+
+let _ =
+  let foo = fun x ->
+      x
+  in
+  foo
+
+let _ =
+  let foo = function
+    true -> false
+    | false -> true
+  in
+  foo
 
 (* Showcase the usage of operator bindings *)
 let greetings =
