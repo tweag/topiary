@@ -1,6 +1,6 @@
 # Topiary
 
-![CI Status](https://github.com/tweag/topiary/actions/workflows/ci.yml/badge.svg)
+![CI Status][ci-badge]
 
 Topiary aims to be a uniform formatter for simple languages, as part of
 the [Tree-sitter] ecosystem. It is named after the art of clipping or
@@ -769,6 +769,7 @@ of choice open in another.
 
 <!-- Links -->
 
+[ci-badge]: https://github.com/tweag/topiary/actions/workflows/ci.yml/badge.svg
 [contributing]: CONTRIBUTING.md
 [tree-sitter-parsers]: https://tree-sitter.github.io/tree-sitter/#available-parsers
 [tree-sitter-query]: https://tree-sitter.github.io/tree-sitter/using-parsers#pattern-matching-with-queries
