@@ -4444,9 +4444,11 @@ module Kind: sig
   type 'a double_consensus_operation_evidence =
     | Double_consensus_operation_evidence
 
-  type double_endorsement_evidence = endorsement_consensus_kind double_consensus_operation_evidence
+  type double_endorsement_evidence =
+    endorsement_consensus_kind double_consensus_operation_evidence
 
-  type double_preendorsement_evidence = preendorsement_consensus_kind double_consensus_operation_evidence
+  type double_preendorsement_evidence =
+    preendorsement_consensus_kind double_consensus_operation_evidence
 
   type double_baking_evidence = Double_baking_evidence_kind
 
@@ -4890,7 +4892,8 @@ module Operation: sig
 
   val contents_list_encoding : packed_contents_list Data_encoding.t
 
-  type 'kind t = 'kind operation = {
+  type 'kind t =
+    'kind operation = {
     shell: Operation.shell_header;
     protocol_data: 'kind protocol_data;
   }
@@ -5372,15 +5375,15 @@ module Token: sig
   val transfer_n :
     ?origin: Receipt.update_origin ->
     context ->
-    ([<source] * Tez.t) list ->
-    [<sink] ->
+    ([< source] * Tez.t) list ->
+    [< sink] ->
     (context * Receipt.balance_updates) tzresult Lwt.t
 
   val transfer :
     ?origin: Receipt.update_origin ->
     context ->
-    [<source] ->
-    [<sink] ->
+    [< source] ->
+    [< sink] ->
     Tez.t ->
     (context * Receipt.balance_updates) tzresult Lwt.t
 end

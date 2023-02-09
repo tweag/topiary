@@ -120,6 +120,7 @@
     "as"
     "assert"
     "class"
+    "constraint"
     "downto"
     "else"
     "exception"
@@ -170,6 +171,8 @@
     ":="
     ":>"
     "::"
+    "[>"
+    "[<"
   ] @append_space
   .
   "%"? @do_nothing
@@ -178,6 +181,7 @@
 ; Those keywords are not expected to come right after an open parenthesis.
 [
     "as"
+    "constraint"
     "do"
     "done"
     "downto"
@@ -571,6 +575,10 @@
   (comment)* @do_nothing
 )
 
+(type_binding
+  (type_constraint) @prepend_spaced_softline
+)
+
 ; only add softlines after "else" if it's not part of an "else if" construction
 (
   "else" @append_spaced_softline
@@ -696,6 +704,7 @@
   [
     (application_expression)
     (class_body_type)
+    (constructed_type)
     (if_expression)
     (function_type)
     (let_expression)
@@ -935,6 +944,28 @@
     (type_variable)
     (variant_declaration)
   ] @append_indent_end
+  .
+  (type_constraint)? @do_nothing
+)
+(type_binding
+  [
+    "="
+    "+="
+  ] @append_indent_start
+  .
+  [
+    (constructed_type)
+    (function_type)
+    (hash_type)
+    (object_type)
+    (parenthesized_type)
+    (tuple_type)
+    (type_constructor_path)
+    (type_variable)
+    (variant_declaration)
+  ]
+  .
+  (type_constraint) @append_indent_end
 )
 
 ; Make an indented block after "of" or ":" in constructor declarations
