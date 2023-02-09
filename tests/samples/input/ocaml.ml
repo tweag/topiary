@@ -827,6 +827,13 @@ module Lift
   let foo = x
 end
 
+module MOption:
+  functor (A: SERIALISABLE) -> SERIALISABLE with
+  type t = A.t option
+
+module MUnit: SERIALISABLE with
+  type t = unit
+
 (* Ensure labelled arguments are correctly spaced *)
 let _ =
   foo ~arg :: []

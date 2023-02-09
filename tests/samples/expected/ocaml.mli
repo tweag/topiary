@@ -377,8 +377,8 @@ module Gas: sig
   *)
 
   module Arith:
-  Fixed_point_repr.Safe with
-  type 'a t = private Saturation_repr.may_saturate Saturation_repr.t
+    Fixed_point_repr.Safe with
+    type 'a t = private Saturation_repr.may_saturate Saturation_repr.t
 
   (** For maintenance operations or for testing, gas can be
      [Unaccounted]. Otherwise, the computation is [Limited] by the
@@ -2129,9 +2129,9 @@ module Tx_rollup_commitment: sig
   module Merkle_hash: S.HASH
 
   module Merkle:
-  Merkle_list.T with
-  type elt = Tx_rollup_message_result_hash.t
-  and type h = Merkle_hash.t
+    Merkle_list.T with
+    type elt = Tx_rollup_message_result_hash.t
+    and type h = Merkle_hash.t
 
   type 'a template = {
     level: Tx_rollup_level.t;
@@ -3127,7 +3127,7 @@ module Dal: sig
     val hash : t -> hash
 
     module History_cache:
-    Bounded_history_repr.S with type key = hash and type value = t
+      Bounded_history_repr.S with type key = hash and type value = t
 
     val add_confirmed_slot_headers_no_cache :
       t -> Slot.Header.t list -> t tzresult
@@ -3416,9 +3416,9 @@ module Sc_rollup: sig
     module Hash: S.HASH
 
     module History:
-    Bounded_history_repr.S with
-    type key = Hash.t
-    and type value = history_proof
+      Bounded_history_repr.S with
+      type key = Hash.t
+      and type value = history_proof
 
     type serialized_proof
 
@@ -3689,7 +3689,7 @@ module Sc_rollup: sig
   module ArithPVM: sig
     module type P = sig
       module Tree:
-      Context.TREE with type key = string list and type value = bytes
+        Context.TREE with type key = string list and type value = bytes
 
       type tree = Tree.tree
 
@@ -3733,10 +3733,10 @@ module Sc_rollup: sig
     val reference_initial_state_hash : State_hash.t
 
     module Protocol_implementation:
-    PVM.S with
-    type context = Context.t
-    and type state = Context.tree
-    and type proof = Context.Proof.tree Context.Proof.t
+      PVM.S with
+      type context = Context.t
+      and type state = Context.tree
+      and type proof = Context.Proof.tree Context.Proof.t
   end
 
   module Wasm_2_0_0PVM: sig
@@ -3752,7 +3752,7 @@ module Sc_rollup: sig
 
     module type P = sig
       module Tree:
-      Context.TREE with type key = string list and type value = bytes
+        Context.TREE with type key = string list and type value = bytes
 
       type tree = Tree.tree
 
@@ -3798,10 +3798,10 @@ module Sc_rollup: sig
     end
 
     module Protocol_implementation:
-    PVM.S with
-    type context = Context.t
-    and type state = Context.tree
-    and type proof = Context.Proof.tree Context.Proof.t
+      PVM.S with
+      type context = Context.t
+      and type state = Context.tree
+      and type proof = Context.Proof.tree Context.Proof.t
 
     val reference_initial_state_hash : State_hash.t
   end
