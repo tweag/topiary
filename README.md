@@ -7,10 +7,10 @@ the [Tree-sitter] ecosystem. It is named after the art of clipping or
 trimming trees into fantastic shapes.
 
 Topiary is designed for formatter authors and formatter users. Authors
-can create a formatter for a language without necessarily having to
-write their own parser. Users benefit from uniform code style and,
-potentially, the convenience of using a single formatter tool across
-their code repositories, despite spanning multiple languages.
+can create a formatter for a language without having to write their own
+parser. Users benefit from uniform code style and, potentially, the
+convenience of using a single formatter tool across multiple languages
+over their codebases.
 
 ## Motivation
 
