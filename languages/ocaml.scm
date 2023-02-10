@@ -1086,11 +1086,15 @@
 )
 
 ; Make an indented block where a function type arrow starts. Only for the root
-; level, not for each arrow.
+; level of constructed types and PPX extensions, not for each arrow.
 ;
 ; (?used_slot:bool ref ->
 ;   Longident.t loc ->
 ;   Path.t * Env.t)
+;
+; let h =
+;   [%madcast: float ->
+;     bool]
 ;
 (constructed_type
   (function_type
@@ -1099,6 +1103,21 @@
     .
   )
 )
+
+(attribute_payload
+  (function_type
+    "->" @append_indent_start
+    (_) @append_indent_end
+    .
+  )
+)
+
+; Make an indented block where a function/match starts in PPX syntax.
+; NOTE This is probably a bit of a hack...
+(expression_item
+  .
+  (_) @prepend_indent_start
+) @append_indent_end
 
 ; Indent and add softlines in multiline application expressions, such as
 ; let _ =
