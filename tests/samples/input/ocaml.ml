@@ -877,3 +877,11 @@ let x =
   [%expr function
     | false -> 0.
     | true -> 1.]
+
+(* New line for structures in module definitions if they appear in the input *)
+module MFloat : SERIALISABLE
+  with type t = float =
+struct
+  type t = float [@@deriving yojson]
+  let _key = "float"
+end

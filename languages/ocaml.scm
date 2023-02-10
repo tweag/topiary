@@ -1409,6 +1409,14 @@
   (#scope_id! "module_binding_before_equal")
 )
 
+; Input softline after an equals sign that is followed by a structure
+; in a module binding
+(module_binding
+  "=" @append_input_softline
+  .
+  (structure)
+)
+
 ; Try block formatting
 ; A soft linebreak after the "try" (potentially "try%ppx") and one after the "with".
 (try_expression
