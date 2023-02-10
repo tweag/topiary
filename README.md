@@ -6,6 +6,12 @@ Topiary aims to be a uniform formatter for simple languages, as part of
 the [Tree-sitter] ecosystem. It is named after the art of clipping or
 trimming trees into fantastic shapes.
 
+Topiary is designed for formatter authors and formatter users. Authors
+can create a formatter for a language without necessarily having to
+write their own parser. Users benefit from uniform code style and,
+potentially, the convenience of using a single formatter tool across
+their code repositories, despite spanning multiple languages.
+
 ## Motivation
 
 The style in which code is written has, historically, been mostly left
@@ -14,9 +20,9 @@ led to many wasted hours reviewing formatting choices, rather than the
 code itself. Prescribed style guides were an early solution to this,
 spawning tools that lint a developer's formatting and ultimately leading
 to automatic formatters. The latter were popularised by
-[`gofmt`][gofmt], whose developers had the insight that "good enough"
-uniform formatting, imposed on a codebase, with no scope for subjective
-adjustment, largely resolves these problems.
+[`gofmt`][gofmt], whose developers had [the insight][gofmt-slides] that
+"good enough" uniform formatting, imposed on a codebase, with no scope
+for subjective adjustment, largely resolves these problems.
 
 Topiary follows this trend by aspiring to be a "universal formatter
 engine", which allows developers to not only automatically format their
@@ -29,34 +35,32 @@ grammar][tree-sitter-parsers] is defined for that language.
 
 Topiary has been created with the following goals in mind:
 
-* To target languages for which a [Tree-sitter
-  grammar][tree-sitter-parsers] exist; whether officially supported by
-  the Tree-sitter project, or otherwise.
+* Use [Tree-sitter] for parsing, so to avoid writing yet another grammar
+  for a formatter.
 
-* To support a handful of languages, with "one true formatting style"
-  for each, where no de facto formatter exists. These supported
-  formatting styles must:
+* Bundle formatting styles for a handful of languages where no de facto
+  formatter exists. These supported formatting styles must:
 
   * Be compatible with attested formatting styles used for that language
     in the wild.
 
-  * Be faithful to the author's intent, in terms of line spacing.
+  * Be faithful to the author's intent: If code has been written such
+    that it spans multiple lines, that decision is preserved.
 
-  * Result in minimal diffs.
+  * Minimise changes between commits such that diffs focus mainly on the
+    code that's changed, rather that superficial artefacts.
 
   * Be idempotent. That is, formatting of already-formatted code doesn't
     change anything.
 
-* Code must be written in such a way that it's easy to modify and
-  maintain.
-
 * Code and formatting styles must be well-tested and robust, so that the
   formatter can be used in large projects.
 
-* For end users -- i.e., not formatting style developers -- the
-  formatter should:
+* For end users -- i.e., not formatting style authors -- the formatter
+  should:
 
-  * Not permit any subjective configuration.
+  * Prescribe a formatting style that, while customisable, is uniform
+    and "good enough" for their codebase.
 
   * Run efficiently.
 
@@ -68,20 +72,28 @@ Topiary has been created with the following goals in mind:
 
 [For now][topiary-issue4], the Tree-sitter grammars for the languages
 that Topiary targets are statically linked. The formatting styles for
-these languages come in two levels of maturity: supported (i.e., exposed
-as a command line flag) and experimental (i.e., subject to change and/or
-not yet production-ready).
+these languages come in two levels of maturity: supported and
+experimental.
 
 #### Supported
-* OCaml (both implementations and interfaces)
-* JSON
-* TOML
+
+These language formatting styles cover their target language and fulfil
+Topiary's stated design goals. They are exposed, in Topiary, through a
+command line flag.
+
+* [OCaml] (both implementations and interfaces)
+* [JSON]
+* [TOML]
 
 #### Experimental
 
-* Rust
-* Bash
-* [Nickel][nickel]
+These languages formatting styles are subject to change and/or not yet
+considered production-ready. They can be accessed in Topiary by
+specifying the path to their query files.
+
+* [Rust]
+* [Bash]
+* [Nickel]
 
 ## Getting Started
 
@@ -846,11 +858,17 @@ of choice open in another.
 
 <!-- Links -->
 
+[bash]: https://www.gnu.org/software/bash
 [ci-badge]: https://github.com/tweag/topiary/actions/workflows/ci.yml/badge.svg
 [contributing]: CONTRIBUTING.md
+[gofmt-slides]: https://go.dev/talks/2015/gofmt-en.slide#1
 [gofmt]: https://pkg.go.dev/cmd/gofmt
-[nickel]: https://nickel-lang.org/
+[json]: https://www.json.org
+[nickel]: https://nickel-lang.org
+[ocaml]: https://ocaml.org
+[rust]: https://www.rust-lang.org
+[toml]: https://toml.io
 [topiary-issue4]: https://github.com/tweag/topiary/issues/4
 [tree-sitter-parsers]: https://tree-sitter.github.io/tree-sitter/#available-parsers
 [tree-sitter-query]: https://tree-sitter.github.io/tree-sitter/using-parsers#pattern-matching-with-queries
-[tree-sitter]: https://tree-sitter.github.io/tree-sitter/
+[tree-sitter]: https://tree-sitter.github.io/tree-sitter
