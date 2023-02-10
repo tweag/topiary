@@ -235,12 +235,10 @@ let closing = function
 let advance_to_closing opening closing k s start =
   let rec advance k i lim =
     if i >= lim then raise Not_found
-    else
-      if s.[i] = opening then advance (k + 1) (i + 1) lim
-      else
-        if s.[i] = closing then
-          if k = 0 then i else advance (k - 1) (i + 1) lim
-        else advance k (i + 1) lim
+    else if s.[i] = opening then advance (k + 1) (i + 1) lim
+    else if s.[i] = closing then
+      if k = 0 then i else advance (k - 1) (i + 1) lim
+    else advance k (i + 1) lim
   in
   advance k start (String.length s)
 
@@ -295,8 +293,7 @@ let add_substitute b f s =
           add_char b current;
           subst current (i + 1)
       end
-    else
-      if previous = '\\' then add_char b previous
+    else if previous = '\\' then add_char b previous
   in
   subst ' ' 0
 
@@ -871,6 +868,13 @@ module Lift
   let foo = x
 end
 
+module MOption:
+  functor (A: SERIALISABLE) -> SERIALISABLE with
+  type t = A.t option
+
+module MUnit: SERIALISABLE with
+  type t = unit
+
 (* Ensure labelled arguments are correctly spaced *)
 let _ =
   foo ~arg :: []
@@ -881,3 +885,8 @@ type x = ('any Slug.t -> bool) -> float
 let id (type s) (x : s) : s = x
 type foo = { a: 'a. ('a, mandatory) arg -> 'a; }
 type foo = (int, int) result
+
+(* exotic types *)
+type (+'meth, 'prefix, 'params, 'query, 'input, 'output) service =
+  ('meth, 'prefix, 'params, 'query, 'input, 'output, error) raw
+  constraint 'meth = [< meth]

@@ -120,6 +120,7 @@
     "as"
     "assert"
     "class"
+    "constraint"
     "downto"
     "else"
     "exception"
@@ -170,6 +171,8 @@
     ":="
     ":>"
     "::"
+    "[>"
+    "[<"
   ] @append_space
   .
   "%"? @do_nothing
@@ -178,6 +181,7 @@
 ; Those keywords are not expected to come right after an open parenthesis.
 [
     "as"
+    "constraint"
     "do"
     "done"
     "downto"
@@ -536,7 +540,6 @@
   [
     "begin"
     "do"
-    "else"
     "in"
     "of"
     "struct"
@@ -556,7 +559,6 @@
   [
     "begin"
     "do"
-    "else"
     "in"
     "of"
     "struct"
@@ -571,6 +573,34 @@
   (attribute_id) @append_spaced_softline
   .
   (comment)* @do_nothing
+)
+
+(type_binding
+  (type_constraint) @prepend_spaced_softline
+)
+
+; only add softlines after "else" if it's not part of an "else if" construction
+(
+  "else" @append_spaced_softline
+  .
+  [
+    (comment)
+    (if_expression)
+    "%"
+  ]? @do_nothing
+)
+
+(
+  "else"
+  .
+  "%"
+  .
+  (attribute_id) @append_spaced_softline
+  .
+  [
+    (comment)
+    (if_expression)
+  ]? @do_nothing
 )
 
 ; ":" must not always be followed by a softline, we explicitly enumerate
@@ -674,6 +704,7 @@
   [
     (application_expression)
     (class_body_type)
+    (constructed_type)
     (if_expression)
     (function_type)
     (let_expression)
@@ -807,7 +838,6 @@
 [
   "begin"
   "do"
-  "else"
   "object"
   "sig"
   "struct"
@@ -836,12 +866,17 @@
   "}" @prepend_indent_end
 )
 
+; Only indent after "else" if it's not an "else if" construction
+(
+  (else_clause
+    "else" @append_indent_start
+    (if_expression)? @do_nothing
+  ) @append_indent_end
+)
+
 ; End the indented block after these
 (
-  [
-    (else_clause)
-    (then_clause)
-  ] @append_indent_end
+  (then_clause) @append_indent_end
 )
 
 ; Make an indented block after ":" in typed expressions
@@ -909,6 +944,28 @@
     (type_variable)
     (variant_declaration)
   ] @append_indent_end
+  .
+  (type_constraint)? @do_nothing
+)
+(type_binding
+  [
+    "="
+    "+="
+  ] @append_indent_start
+  .
+  [
+    (constructed_type)
+    (function_type)
+    (hash_type)
+    (object_type)
+    (parenthesized_type)
+    (tuple_type)
+    (type_constructor_path)
+    (type_variable)
+    (variant_declaration)
+  ]
+  .
+  (type_constraint) @append_indent_end
 )
 
 ; Make an indented block after "of" or ":" in constructor declarations
@@ -1260,6 +1317,20 @@
   (module_name) @append_indent_start @begin_scope
   "=" @prepend_indent_end @end_scope
   (#scope_id! "module_binding_before_equal")
+)
+; if a module binding has no equal sign, everything enters the scope
+(module_binding
+  (#scope_id! "module_binding_before_equal")
+  (module_name) @append_indent_start @begin_scope
+  "="? @do_nothing
+  [
+    (signature)? @do_nothing
+    [
+      (functor_type)
+      (module_type_constraint)
+    ] @append_indent_end @end_scope
+  ]
+  .
 )
 (module_binding
   (module_name) @append_empty_scoped_softline
