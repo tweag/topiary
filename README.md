@@ -35,11 +35,11 @@ grammar][tree-sitter-parsers] is defined for that language.
 
 Topiary has been created with the following goals in mind:
 
-* Use [Tree-sitter] for parsing, so to avoid writing yet another grammar
+* Use [Tree-sitter] for parsing, to avoid writing yet another grammar
   for a formatter.
 
-* Bundle formatting styles for a handful of languages where no de facto
-  formatter exists. These supported formatting styles must:
+* For bundled formatting styles -- for a handful of languages where no
+  de facto formatter exists -- to meet the following constraints:
 
   * Be compatible with attested formatting styles used for that language
     in the wild.
@@ -77,9 +77,9 @@ experimental.
 
 #### Supported
 
-These language formatting styles cover their target language and fulfil
-Topiary's stated design goals. They are exposed, in Topiary, through a
-command line flag.
+These formatting styles cover their target language and fulfil Topiary's
+stated design goals. They are exposed, in Topiary, through a command
+line flag.
 
 * [OCaml] (both implementations and interfaces)
 * [JSON]
@@ -87,7 +87,7 @@ command line flag.
 
 #### Experimental
 
-These languages formatting styles are subject to change and/or not yet
+These languages' formatting styles are subject to change and/or not yet
 considered production-ready. They can be accessed in Topiary by
 specifying the path to their query files.
 
@@ -258,7 +258,7 @@ to indent a block whenever `@append_indent_start` or
 `@prepend_indent_start` is processed. If it is omitted, it defaults to
 two spaces.
 
-### @allow_blank_line_before
+### `@allow_blank_line_before`
 
 The matched nodes will be allowed to have a blank line before them, if
 specified in the input. For any other nodes, blank lines will be
@@ -274,7 +274,7 @@ removed.
 ] @allow_blank_line_before
 ```
 
-### @append_delimiter / @prepend_delimiter
+### `@append_delimiter` / `@prepend_delimiter`
 
 The matched nodes will have a delimiter appended to them. The delimiter
 must be specified using the predicate `#delimiter!`.
@@ -301,7 +301,7 @@ not activate.
 Note that `@append_delimiter` is the same as `@append_space` when the
 delimiter is set to `" "` (i.e., a space).
 
-### @append_multiline_delimiter / @prepend_multiline_delimiter
+### `@append_multiline_delimiter` / `@prepend_multiline_delimiter`
 
 The matched nodes will have a multi-line-only delimiter appended to
 them. It will be printed only in multi-line nodes, and omitted in
@@ -328,7 +328,7 @@ activated and prevent the other instructions in the query (the
 `@append_multiline_delimiter`, here) from applying. Likewise, if the
 node is single-line, the delimiter will not be appended either.
 
-### @append_empty_softline / @prepend_empty_softline
+### `@append_empty_softline` / `@prepend_empty_softline`
 
 The matched nodes will have an empty softline appended or prepended to
 them. This will be expanded to a newline for multi-line nodes and to
@@ -344,7 +344,7 @@ nothing for single-line nodes.
 )
 ```
 
-### @append_hardline / @prepend_hardline
+### `@append_hardline` / `@prepend_hardline`
 
 The matched nodes will have a newline appended or prepended to them.
 
@@ -359,7 +359,7 @@ The matched nodes will have a newline appended or prepended to them.
 )
 ```
 
-### @append_indent_start / @prepend_indent_start
+### `@append_indent_start` / `@prepend_indent_start`
 
 The matched nodes will trigger indentation before or after them. This
 will only apply to lines following, until an indentation end is
@@ -380,7 +380,7 @@ important that all indentation starts and ends are balanced.
 ] @append_indent_start
 ```
 
-### @append_indent_end / @prepend_indent_end
+### `@append_indent_end` / `@prepend_indent_end`
 
 The matched nodes will trigger that indentation ends before or after
 them.
@@ -401,7 +401,7 @@ them.
 ] @append_indent_end
 ```
 
-### @append_input_softline / @prepend_input_softline
+### `@append_input_softline` / `@prepend_input_softline`
 
 The matched nodes will have an input softline appended or prepended to
 them. An input softline is a newline if the node has a newline in front
@@ -423,7 +423,7 @@ of it in the input document, otherwise it is a space.
 )
 ```
 
-### @append_space / @prepend_space
+### `@append_space` / `@prepend_space`
 
 The matched nodes will have a space appended or prepended to them. Note
 that this is the same as `@append_delimiter` / `@prepend_delimiter`,
@@ -439,7 +439,7 @@ with space as delimiter.
 ] @append_space
 ```
 
-### @append_spaced_softline / @prepend_spaced_softline
+### `@append_spaced_softline` / `@prepend_spaced_softline`
 
 The matched nodes will have a spaced softline appended or prepended to
 them. This will be expanded to a newline for multi-line nodes and to a
@@ -463,7 +463,7 @@ space for single-line nodes.
 )
 ```
 
-### @delete
+### `@delete`
 
 Remove the matched node from the output.
 
@@ -479,7 +479,7 @@ Remove the matched node from the output.
 )
 ```
 
-### @do_nothing
+### `@do_nothing`
 
 If any of the captures in a query match are `@do_nothing`, then the
 match will be ignored.
