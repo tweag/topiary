@@ -909,7 +909,7 @@ type (+'meth, 'prefix, 'params, 'query, 'input, 'output) service =
 (* Indentation of multi-line types in PPX syntax *)
 let h =
   [%madcast: float ->
-      bool
+    bool
   ]
 
 (* Indentation of function cases in PPX syntax *)
