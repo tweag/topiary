@@ -866,3 +866,9 @@ type (+'meth, 'prefix, 'params, 'query, 'input, 'output) service =
 let h =
   [%madcast: float ->
     bool]
+
+(* Indentation of function cases in PPX syntax *)
+let x =
+  [%expr function
+    | false -> 0.
+    | true -> 1.]
