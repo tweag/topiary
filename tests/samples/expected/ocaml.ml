@@ -872,6 +872,11 @@ let _ =
   let open Baz in
   ()
 
+(* let module *)
+let x =
+  let module IMap = Map.Make(Int) in
+  IMap.empty
+
 (* Multi-line functor signatures *)
 module Lift
   (Credit: module type of CreditSignature)
