@@ -856,6 +856,29 @@ to find the bundled integration test input file for the given language.
 For example, the playground can be run in a tmux pane, with your editor
 of choice open in another.
 
+## Related Tools
+
+### Tree-Sitter Specific
+
+* [Syntax Tree Playground][tree-sitter-playground]: An interactive
+  playground for experimenting with Tree-sitter and its query language.
+
+### Meta-Formatters
+
+* [treefmt]: A formatter orchestrator, which unifies formatters under a
+  common interface.
+
+### Related Formatters
+
+* [ocamlformat]: A formatter for OCaml.
+* [ocp-indent]: A tool to indent OCaml code.
+* [Ormolu]: A formatter for Haskell that follows similar design
+  principles as Topiary.
+* [prettier]: A formatter with support for multiple (web-development
+  related) languages.
+* [rustfmt]: A formatter for Rust.
+* [shfmt]: A parser, formatter and interpreter for Bash et al.
+
 <!-- Links -->
 
 [bash]: https://www.gnu.org/software/bash
@@ -866,9 +889,17 @@ of choice open in another.
 [json]: https://www.json.org
 [nickel]: https://nickel-lang.org
 [ocaml]: https://ocaml.org
+[ocamlformat]: https://github.com/ocaml-ppx/ocamlformat
+[ocp-indent]: https://www.typerex.org/ocp-indent.html
+[ormolu]: https://github.com/tweag/ormolu
+[prettier]: https://prettier.io/
 [rust]: https://www.rust-lang.org
+[rustfmt]: https://rust-lang.github.io/rustfmt
+[shfmt]: https://github.com/mvdan/sh
 [toml]: https://toml.io
 [topiary-issue4]: https://github.com/tweag/topiary/issues/4
 [tree-sitter-parsers]: https://tree-sitter.github.io/tree-sitter/#available-parsers
+[tree-sitter-playground]: https://tree-sitter.github.io/tree-sitter/playground
 [tree-sitter-query]: https://tree-sitter.github.io/tree-sitter/using-parsers#pattern-matching-with-queries
 [tree-sitter]: https://tree-sitter.github.io/tree-sitter
+[treefmt]: https://github.com/numtide/treefmt
