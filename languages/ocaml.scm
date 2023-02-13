@@ -1102,6 +1102,12 @@
   )
 )
 
+; Make an indented block where a function/match starts in PPX syntax.
+(extension
+  "[%" @append_indent_start
+  "]" @prepend_indent_end @prepend_empty_softline
+)
+
 ; Indent and add softlines in multiline application expressions, such as
 ; let _ =
 ;   long_function

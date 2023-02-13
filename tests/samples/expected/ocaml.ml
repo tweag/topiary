@@ -747,10 +747,11 @@ let _ = [%sedlex.regexp R]
 
 let _ =
   [%sedlex
-  match lexbuf with
-  | R1 -> e1
-  | Rn -> en
-  | _ -> def]
+    match lexbuf with
+    | R1 -> e1
+    | Rn -> en
+    | _ -> def
+  ]
 
 let _ =
   match%sedlex lexbuf with
@@ -909,3 +910,16 @@ type foo = (int, int) result
 type (+'meth, 'prefix, 'params, 'query, 'input, 'output) service =
   ('meth, 'prefix, 'params, 'query, 'input, 'output, error) raw
   constraint 'meth = [< meth]
+
+(* Indentation of multi-line types in PPX syntax *)
+let h =
+  [%madcast: float ->
+    bool
+  ]
+
+(* Indentation of function cases in PPX syntax *)
+let x =
+  [%expr function
+    | false -> 0.
+    | true -> 1.
+  ]
