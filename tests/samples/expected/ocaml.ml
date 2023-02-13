@@ -750,7 +750,8 @@ let _ =
     match lexbuf with
     | R1 -> e1
     | Rn -> en
-    | _ -> def]
+    | _ -> def
+  ]
 
 let _ =
   match%sedlex lexbuf with
@@ -908,10 +909,12 @@ type (+'meth, 'prefix, 'params, 'query, 'input, 'output) service =
 (* Indentation of multi-line types in PPX syntax *)
 let h =
   [%madcast: float ->
-    bool]
+      bool
+  ]
 
 (* Indentation of function cases in PPX syntax *)
 let x =
   [%expr function
     | false -> 0.
-    | true -> 1.]
+    | true -> 1.
+  ]
