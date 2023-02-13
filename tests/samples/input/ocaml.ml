@@ -768,6 +768,12 @@ type t =
   (** Boolean flags. *)
   }
 
+let _ =
+  { verbose = 0
+  ; loggers = "foo"
+  ; bflags = StrMap.empty
+  }
+
 type t = {
   foo: bool [@default false];
   bar: int
