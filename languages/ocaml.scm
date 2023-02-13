@@ -81,6 +81,8 @@
     (type_definition)
   ] @append_hardline
   .
+  "in"? @do_nothing
+  .
   (comment)* @do_nothing
 )
 ; Also append line breaks after open_module, except when it's
