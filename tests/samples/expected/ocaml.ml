@@ -33,7 +33,7 @@ let create n =
   let n = if n < 1 then 1 else n in
   let n = if n > Sys.max_string_length then Sys.max_string_length else n in
   let s = Bytes.create n in
-  { buffer = s; position = 0; length = n; initial_buffer = s }
+  { buffer = s; position = 0; length = n; initial_buffer = s; }
 
 let contents b = Bytes.sub_string b.buffer 0 b.position
 let to_bytes b = Bytes.sub b.buffer 0 b.position
@@ -645,7 +645,7 @@ World
 |external}
 let _ =
   {
-    my_string = quoted_string ^ quoted_string_multiline_with_id
+    my_string = quoted_string ^ quoted_string_multiline_with_id;
   }
 
 (* Tags in pattern matching *)
@@ -791,6 +791,13 @@ type t = {
   bflags: bool StrMap.t;
   (** Boolean flags. *)
 }
+
+let _ =
+  {
+    verbose = 0;
+    loggers = "foo";
+    bflags = StrMap.empty;
+  }
 
 type t = {
   foo: bool [@default false];

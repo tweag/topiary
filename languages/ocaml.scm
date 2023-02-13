@@ -897,6 +897,49 @@
   (#scope_id! "field_declaration")
 )
 
+; Duplicate the same logic as above for record *expressions*
+(record_expression
+  [
+    (field_expression)
+    (attribute)
+  ] @append_delimiter
+  .
+  ";"* @do_nothing
+  .
+  (comment)*
+  .
+  ";"* @delete
+  .
+  [
+    "}"
+    (field_expression)
+  ]
+  (#delimiter! ";")
+)
+
+(record_expression
+  ; This query is just here to avoid closing an unopened scope
+  ; before the first field_expression
+  (#scope_id! "field_expression")
+  "{" @begin_scope
+)
+(record_expression
+  (#scope_id! "field_expression")
+  _ @end_scope
+  .
+  (field_expression) @begin_scope
+)
+(record_expression
+  (#scope_id! "field_expression")
+  _ @end_scope
+  .
+  "}"
+)
+(record_expression
+  (attribute) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
+  (#scope_id! "field_expression")
+)
+
 ; Start an indented block after these
 [
   "begin"
