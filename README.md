@@ -863,19 +863,23 @@ of choice open in another.
 * [Syntax Tree Playground][tree-sitter-playground]: An interactive
   playground for experimenting with Tree-sitter and its query language.
 
-### Meta-Formatters
+### Meta and Multi-Language Formatters
 
-* [treefmt]: A formatter orchestrator, which unifies formatters under a
-  common interface.
+* [format-all]: A formatter orchestrator for Emacs.
+* [null-ls.nvim]: An LSP framework for Neovim that facilitates formatter
+  orchestration.
+* [prettier]: A formatter with support for multiple (web-development
+  related) languages.
+* [treefmt]: A general formatter orchestrator, which unifies formatters
+  under a common interface.
 
 ### Related Formatters
 
+* [gofmt]: A (_the_) formatter for Go.
 * [ocamlformat]: A formatter for OCaml.
 * [ocp-indent]: A tool to indent OCaml code.
 * [Ormolu]: A formatter for Haskell that follows similar design
   principles as Topiary.
-* [prettier]: A formatter with support for multiple (web-development
-  related) languages.
 * [rustfmt]: A formatter for Rust.
 * [shfmt]: A parser, formatter and interpreter for Bash et al.
 
@@ -884,10 +888,12 @@ of choice open in another.
 [bash]: https://www.gnu.org/software/bash
 [ci-badge]: https://github.com/tweag/topiary/actions/workflows/ci.yml/badge.svg
 [contributing]: CONTRIBUTING.md
+[format-all]: https://melpa.org/#/format-all
 [gofmt-slides]: https://go.dev/talks/2015/gofmt-en.slide#1
 [gofmt]: https://pkg.go.dev/cmd/gofmt
 [json]: https://www.json.org
 [nickel]: https://nickel-lang.org
+[null-ls.nvim]: https://github.com/jose-elias-alvarez/null-ls.nvim
 [ocaml]: https://ocaml.org
 [ocamlformat]: https://github.com/ocaml-ppx/ocamlformat
 [ocp-indent]: https://www.typerex.org/ocp-indent.html
