@@ -1386,35 +1386,25 @@
 ; end
 (module_binding
   (module_name) @append_indent_start @begin_scope
-  "=" @prepend_indent_end @end_scope
+  "=" @prepend_empty_scoped_softline @prepend_indent_end @end_scope
   (#scope_id! "module_binding_before_equal")
 )
 ; if a module binding has no equal sign, everything enters the scope
 (module_binding
   (#scope_id! "module_binding_before_equal")
   (module_name) @append_indent_start @begin_scope
-  "="? @do_nothing
   [
-    (signature)? @do_nothing
     [
       (functor_type)
       (module_type_constraint)
     ] @append_indent_end @end_scope
   ]
-  .
+  "="? @do_nothing
 )
 (module_binding
   (module_name) @append_empty_scoped_softline
   (module_parameter) @append_spaced_scoped_softline
   (#scope_id! "module_binding_before_equal")
-)
-
-; Input softline after an equals sign that is followed by a structure
-; in a module binding
-(module_binding
-  "=" @append_input_softline
-  .
-  (structure)
 )
 
 ; Try block formatting

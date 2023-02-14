@@ -926,8 +926,8 @@ let x =
 
 (* New line for structures in module definitions if they appear in the input *)
 module MFloat: SERIALISABLE with
-    type t = float =
-struct
+  type t = float
+= struct
   type t = float [@@deriving yojson]
   let _key = "float"
 end
