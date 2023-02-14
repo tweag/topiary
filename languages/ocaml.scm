@@ -1437,11 +1437,9 @@
   (#scope_id! "module_binding_before_equal")
   (module_name) @append_indent_start @begin_scope
   [
-    [
-      (functor_type)
-      (module_type_constraint)
-    ] @append_indent_end @end_scope
-  ]
+    (functor_type)
+    (module_type_constraint)
+  ] @append_indent_end @end_scope
   "="? @do_nothing
 )
 (module_binding

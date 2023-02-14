@@ -931,7 +931,7 @@ let x =
     | true -> 1.
   ]
 
-(* New line for structures in module definitions if they appear in the input *)
+(* New line for structures in module definitions *)
 module MFloat: SERIALISABLE with
   type t = float
 = struct
