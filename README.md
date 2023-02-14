@@ -8,9 +8,10 @@ trimming trees into fantastic shapes.
 
 Topiary is designed for formatter authors and formatter users. Authors
 can create a formatter for a language without having to write their own
-parser. Users benefit from uniform code style and, potentially, the
-convenience of using a single formatter tool across multiple languages
-over their codebases.
+formatting engine or even their own parser. Users benefit from uniform
+code style and, potentially, the convenience of using a single formatter
+tool, across multiple languages over their codebases, each with
+comparable styles applied.
 
 ## Motivation
 
@@ -21,14 +22,14 @@ code itself. Prescribed style guides were an early solution to this,
 spawning tools that lint a developer's formatting and ultimately leading
 to automatic formatters. The latter were popularised by
 [`gofmt`][gofmt], whose developers had [the insight][gofmt-slides] that
-"good enough" uniform formatting, imposed on a codebase, with no scope
-for subjective adjustment, largely resolves these problems.
+"good enough" uniform formatting, imposed on a codebase, largely
+resolves these problems.
 
 Topiary follows this trend by aspiring to be a "universal formatter
 engine", which allows developers to not only automatically format their
 codebases with a uniform style, but to define that style for new
 languages using a [simple DSL][tree-sitter-query]. This allows for the
-rapid prototyping of formatters, providing a [Tree-sitter
+fast development of formatters, providing a [Tree-sitter
 grammar][tree-sitter-parsers] is defined for that language.
 
 ## Design Principles
@@ -38,17 +39,19 @@ Topiary has been created with the following goals in mind:
 * Use [Tree-sitter] for parsing, to avoid writing yet another grammar
   for a formatter.
 
-* For bundled formatting styles -- for a handful of languages where no
-  de facto formatter exists -- to meet the following constraints:
+* For bundled formatting styles to meet the following constraints:
 
   * Be compatible with attested formatting styles used for that language
     in the wild.
 
-  * Be faithful to the author's intent: If code has been written such
+  * Be faithful to the author's intent: if code has been written such
     that it spans multiple lines, that decision is preserved.
 
   * Minimise changes between commits such that diffs focus mainly on the
-    code that's changed, rather that superficial artefacts.
+    code that's changed, rather that superficial artefacts. That is, a
+    change on one line won't influence others, while the formatting
+    won't force you to make later, cosmetic changes when you modify your
+    code.
 
   * Be idempotent. That is, formatting of already-formatted code doesn't
     change anything.
@@ -875,12 +878,13 @@ of choice open in another.
 
 ### Related Formatters
 
-* [gofmt]: A (_the_) formatter for Go.
+* [gofmt]: The de facto standard formatter for Go, and major source of
+  inspiration for the style of our formatters.
 * [ocamlformat]: A formatter for OCaml.
 * [ocp-indent]: A tool to indent OCaml code.
-* [Ormolu]: A formatter for Haskell that follows similar design
+* [Ormolu]: Our formatter for Haskell, which follows similar design
   principles as Topiary.
-* [rustfmt]: A formatter for Rust.
+* [rustfmt]: The de facto standard formatter for Rust.
 * [shfmt]: A parser, formatter and interpreter for Bash et al.
 
 <!-- Links -->
