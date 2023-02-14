@@ -73,9 +73,6 @@
   [
     (exception_definition)
     (external)
-    ; equivalence class
-      (include_module)
-      (include_module_type)
     (module_definition)
     (module_type_definition)
     (type_definition)
@@ -93,6 +90,28 @@
   (open_module) @append_hardline
   .
   (comment)* @do_nothing
+)
+
+; Append line break after module include, except if it's alone in a single-lined struct
+(
+  [
+    ; equivalence class
+    (include_module)
+    (include_module_type)
+  ] @append_hardline
+  .
+  "end"? @do_nothing
+)
+(structure
+  "struct"
+  .
+  [
+    ; equivalence class
+    (include_module)
+    (include_module_type)
+  ] @append_spaced_softline
+  .
+  "end"
 )
 
 ; Consecutive definitions must be separated by line breaks
