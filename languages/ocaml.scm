@@ -1451,19 +1451,16 @@
   "=" @prepend_empty_scoped_softline @prepend_indent_end @end_scope
   (#scope_id! "module_binding_before_equal")
 )
-; if a module binding has no equal sign, everything enters the scope
+; if a module binding has no equal sign and isn't just a signature, everything enters the scope
 (module_binding
   (#scope_id! "module_binding_before_equal")
   (module_name) @append_indent_start @begin_scope
-  [
-    (functor_type)
-    (module_type_constraint)
-  ] @append_indent_end @end_scope
   "="? @do_nothing
-)
+  (signature)? @do_nothing
+) @append_indent_end @end_scope
 (module_binding
   (module_name) @append_empty_scoped_softline
-  (module_parameter) @append_spaced_scoped_softline
+  (module_parameter) @prepend_spaced_scoped_softline
   (#scope_id! "module_binding_before_equal")
 )
 
