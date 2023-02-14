@@ -33,7 +33,7 @@ let create n =
   let n = if n < 1 then 1 else n in
   let n = if n > Sys.max_string_length then Sys.max_string_length else n in
   let s = Bytes.create n in
-  { buffer = s; position = 0; length = n; initial_buffer = s }
+  { buffer = s; position = 0; length = n; initial_buffer = s; }
 
 let contents b = Bytes.sub_string b.buffer 0 b.position
 let to_bytes b = Bytes.sub b.buffer 0 b.position
@@ -550,7 +550,8 @@ let is_some_some = function
 
 let my_const
     : type a b. a: a -> b: b -> a
-  = fun ~a ~b -> a
+  = fun ~a ~b ->
+    a
 
 let my_id ~value = value
 
@@ -596,6 +597,19 @@ let _ =
     x
   )
 
+let _ =
+  let foo = fun x ->
+      x
+  in
+  foo
+
+let _ =
+  let foo = function
+    true -> false
+    | false -> true
+  in
+  foo
+
 (* Showcase the usage of operator bindings *)
 let greetings =
   let (let*) = Option.bind
@@ -631,7 +645,7 @@ World
 |external}
 let _ =
   {
-    my_string = quoted_string ^ quoted_string_multiline_with_id
+    my_string = quoted_string ^ quoted_string_multiline_with_id;
   }
 
 (* Tags in pattern matching *)
@@ -733,10 +747,11 @@ let _ = [%sedlex.regexp R]
 
 let _ =
   [%sedlex
-  match lexbuf with
-  | R1 -> e1
-  | Rn -> en
-  | _ -> def]
+    match lexbuf with
+    | R1 -> e1
+    | Rn -> en
+    | _ -> def
+  ]
 
 let _ =
   match%sedlex lexbuf with
@@ -777,6 +792,13 @@ type t = {
   bflags: bool StrMap.t;
   (** Boolean flags. *)
 }
+
+let _ =
+  {
+    verbose = 0;
+    loggers = "foo";
+    bflags = StrMap.empty;
+  }
 
 type t = {
   foo: bool [@default false];
@@ -858,6 +880,11 @@ let _ =
   let open Baz in
   ()
 
+(* let module *)
+let x =
+  let module IMap = Map.Make(Int) in
+  IMap.empty
+
 (* Multi-line functor signatures *)
 module Lift
   (Credit: module type of CreditSignature)
@@ -890,3 +917,24 @@ type foo = (int, int) result
 type (+'meth, 'prefix, 'params, 'query, 'input, 'output) service =
   ('meth, 'prefix, 'params, 'query, 'input, 'output, error) raw
   constraint 'meth = [< meth]
+
+(* Indentation of multi-line types in PPX syntax *)
+let h =
+  [%madcast: float ->
+    bool
+  ]
+
+(* Indentation of function cases in PPX syntax *)
+let x =
+  [%expr function
+    | false -> 0.
+    | true -> 1.
+  ]
+
+(* New line for structures in module definitions *)
+module MFloat: SERIALISABLE with
+  type t = float
+= struct
+  type t = float [@@deriving yojson]
+  let _key = "float"
+end

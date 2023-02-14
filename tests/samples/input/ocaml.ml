@@ -578,6 +578,18 @@ let [|a; _; _|] = [|1; 2;
 let _ = (let x = 42 in
   x)
 
+let _ =
+  let foo =
+    fun x -> x
+  in
+  foo
+
+let _ =
+  let foo =
+    function true -> false | false -> true
+  in
+  foo
+
 (* Showcase the usage of operator bindings *)
 let greetings =
   let (let*) = Option.bind
@@ -756,6 +768,12 @@ type t =
   (** Boolean flags. *)
   }
 
+let _ =
+  { verbose = 0
+  ; loggers = "foo"
+  ; bflags = StrMap.empty
+  }
+
 type t = {
   foo: bool [@default false];
   bar: int
@@ -817,6 +835,11 @@ let _ =
   let open Baz in
   ()
 
+(* let module *)
+let x =
+  let module IMap = Map.Make(Int) in
+  IMap.empty
+
 (* Multi-line functor signatures *)
 module Lift
   (Credit: module type of CreditSignature)
@@ -849,3 +872,22 @@ type foo = (int, int) result
 type (+'meth, 'prefix, 'params, 'query, 'input, 'output) service =
   ('meth, 'prefix, 'params, 'query, 'input, 'output, error) raw
   constraint 'meth = [< meth]
+
+(* Indentation of multi-line types in PPX syntax *)
+let h =
+  [%madcast: float ->
+    bool]
+
+(* Indentation of function cases in PPX syntax *)
+let x =
+  [%expr function
+    | false -> 0.
+    | true -> 1.]
+
+(* New line for structures in module definitions *)
+module MFloat : SERIALISABLE
+  with type t = float =
+struct
+  type t = float [@@deriving yojson]
+  let _key = "float"
+end

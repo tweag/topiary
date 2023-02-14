@@ -81,6 +81,8 @@
     (type_definition)
   ] @append_hardline
   .
+  "in"? @do_nothing
+  .
   (comment)* @do_nothing
 )
 ; Also append line breaks after open_module, except when it's
@@ -693,6 +695,69 @@
   ]* @do_nothing
 )
 
+; We chose not to add a line break between `=` and the
+; `fun` or `function` keywords, but in order to keep the multi-lined-ness
+; we must add a softline after the arrow. We need custom scopes to do this,
+; since the node which contains the arrow may be single-line.
+;
+; This turns
+;
+; let foo =
+;   fun x -> x
+; in
+; bar
+;
+; into
+;
+; let foo = fun x ->
+;   x
+; in
+; bar
+(let_binding
+  "=" @begin_scope
+  .
+  (fun_expression
+    "->" @append_spaced_scoped_softline
+  ) @end_scope
+  (#scope_id! "fun_definiton")
+)
+
+; The same as above holds for single-line `function`.
+;
+; This turns
+; let foo =
+;   function true -> false | false -> true
+; in
+; bar
+;
+; into
+;
+; let foo = function
+;   true -> false
+;   | false -> true
+; in
+; bar
+(let_binding
+  "=" @begin_scope
+  .
+  (function_expression
+    "function" @append_spaced_scoped_softline
+  ) @end_scope
+  (#scope_id! "function_definiton")
+)
+(
+  "|"* @do_nothing
+  .
+  (match_case) @prepend_spaced_scoped_softline
+  (#scope_id! "function_definiton")
+)
+(
+  "|"* @prepend_spaced_scoped_softline
+  .
+  (match_case)
+  (#scope_id! "function_definiton")
+)
+
 (value_definition
   (and_operator) @prepend_spaced_softline
 )
@@ -832,6 +897,49 @@
 (record_declaration
   (attribute) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
   (#scope_id! "field_declaration")
+)
+
+; Duplicate the same logic as above for record *expressions*
+(record_expression
+  [
+    (field_expression)
+    (attribute)
+  ] @append_delimiter
+  .
+  ";"* @do_nothing
+  .
+  (comment)*
+  .
+  ";"* @delete
+  .
+  [
+    "}"
+    (field_expression)
+  ]
+  (#delimiter! ";")
+)
+
+(record_expression
+  ; This query is just here to avoid closing an unopened scope
+  ; before the first field_expression
+  (#scope_id! "field_expression")
+  "{" @begin_scope
+)
+(record_expression
+  (#scope_id! "field_expression")
+  _ @end_scope
+  .
+  (field_expression) @begin_scope
+)
+(record_expression
+  (#scope_id! "field_expression")
+  _ @end_scope
+  .
+  "}"
+)
+(record_expression
+  (attribute) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
+  (#scope_id! "field_expression")
 )
 
 ; Start an indented block after these
@@ -1035,6 +1143,12 @@
     (_) @append_indent_end
     .
   )
+)
+
+; Make an indented block where a function/match starts in PPX syntax.
+(extension
+  "[%" @append_indent_start
+  "]" @prepend_indent_end @prepend_empty_softline
 )
 
 ; Indent and add softlines in multiline application expressions, such as
@@ -1315,22 +1429,18 @@
 ; end
 (module_binding
   (module_name) @append_indent_start @begin_scope
-  "=" @prepend_indent_end @end_scope
+  "=" @prepend_empty_scoped_softline @prepend_indent_end @end_scope
   (#scope_id! "module_binding_before_equal")
 )
 ; if a module binding has no equal sign, everything enters the scope
 (module_binding
   (#scope_id! "module_binding_before_equal")
   (module_name) @append_indent_start @begin_scope
-  "="? @do_nothing
   [
-    (signature)? @do_nothing
-    [
-      (functor_type)
-      (module_type_constraint)
-    ] @append_indent_end @end_scope
-  ]
-  .
+    (functor_type)
+    (module_type_constraint)
+  ] @append_indent_end @end_scope
+  "="? @do_nothing
 )
 (module_binding
   (module_name) @append_empty_scoped_softline
