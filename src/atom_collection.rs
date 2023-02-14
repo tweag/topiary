@@ -411,6 +411,12 @@ impl AtomCollection {
         // atom to each ScopedSoftline atom (identified by their `id` field), then apply
         // the modifications in a second pass over the atoms.
         let mut modifications: HashMap<ScopedNodeId, Option<Atom>> = HashMap::new();
+        // `force_apply_modifications` keeps track of whether something has gone wrong in the
+        // post-processing (e.g. closing an unopened scope, finding a scoped atom outside
+        // of its scope). If we detect any error, we don't skip the "Apply modifications" part
+        // of the processing, even if the `modifications` map is empty. This is to ensure we will
+        // get rid of misplaced scoped atoms.
+        let mut force_apply_modifications = false;
 
         for atom in &self.atoms {
             if let Atom::Leaf { id, .. } = atom {
@@ -446,7 +452,8 @@ impl AtomCollection {
                                 }
                             }
                         } else {
-                            log::warn!("Closing unopened scope {scope_id:?}")
+                            log::warn!("Closing unopened scope {scope_id:?}");
+                            force_apply_modifications = true;
                         }
                     }
                 }
@@ -459,7 +466,8 @@ impl AtomCollection {
                 {
                     vec.push(atom)
                 } else {
-                    log::warn!("Found scoped softline {:?} outside of its scope", atom)
+                    log::warn!("Found scoped softline {:?} outside of its scope", atom);
+                    force_apply_modifications = true;
                 }
             }
         }
@@ -468,12 +476,13 @@ impl AtomCollection {
             .filter_map(|(scope_id, vec)| if vec.is_empty() { None } else { Some(scope_id) })
             .collect();
         if !still_opened.is_empty() {
-            log::warn!("Some scopes have been left opened: {:?}", still_opened)
+            log::warn!("Some scopes have been left opened: {:?}", still_opened);
+            force_apply_modifications = true;
         }
 
         // Apply modifications.
         // For performance reasons, skip this step if there are no modifications to make
-        if !modifications.is_empty() || !still_opened.is_empty() {
+        if !modifications.is_empty() || force_apply_modifications {
             let new_atoms = self
                 .atoms
                 .iter()
