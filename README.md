@@ -863,8 +863,11 @@ of choice open in another.
 
 ### Tree-Sitter Specific
 
-* [Syntax Tree Playground][tree-sitter-playground]: An interactive
-  playground for experimenting with Tree-sitter and its query language.
+* [Syntax Tree Playground][tree-sitter-playground]: An interactive,
+  online playground for experimenting with Tree-sitter and its query
+  language.
+* [Neovim Treesitter Playground][nvim-treesitter]: A Tree-sitter
+  playground plugin for Neovim.
 
 ### Meta and Multi-Language Formatters
 
@@ -898,6 +901,7 @@ of choice open in another.
 [json]: https://www.json.org
 [nickel]: https://nickel-lang.org
 [null-ls.nvim]: https://github.com/jose-elias-alvarez/null-ls.nvim
+[nvim-treesitter]: https://github.com/nvim-treesitter/playground
 [ocaml]: https://ocaml.org
 [ocamlformat]: https://github.com/ocaml-ppx/ocamlformat
 [ocp-indent]: https://www.typerex.org/ocp-indent.html
