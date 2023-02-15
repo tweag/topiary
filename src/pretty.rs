@@ -29,7 +29,17 @@ fn atoms_to_doc<'a>(
                 Atom::Empty => RcDoc::text(""),
                 &Atom::Hardline => RcDoc::hardline()
                     .append(RcDoc::concat(repeat(RcDoc::space()).take(*indent_level))),
-                Atom::Leaf { content, .. } => RcDoc::text(content.trim_end()),
+                Atom::Leaf {
+                    content,
+                    single_line_no_indent,
+                    ..
+                } => {
+                    if *single_line_no_indent {
+                        RcDoc::hardline().append(RcDoc::text(content.trim_end()))
+                    } else {
+                        RcDoc::text(content.trim_end())
+                    }
+                }
                 Atom::Literal(s) => RcDoc::text(s),
                 Atom::MultilineOnlyLiteral { .. } => unreachable!(),
                 Atom::IndentEnd => unreachable!(),
