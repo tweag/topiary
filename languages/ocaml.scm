@@ -73,9 +73,6 @@
   [
     (exception_definition)
     (external)
-    ; equivalence class
-      (include_module)
-      (include_module_type)
     (module_definition)
     (module_type_definition)
     (type_definition)
@@ -93,6 +90,28 @@
   (open_module) @append_hardline
   .
   (comment)* @do_nothing
+)
+
+; Append line break after module include, except if it's alone in a single-lined struct
+(
+  [
+    ; equivalence class
+    (include_module)
+    (include_module_type)
+  ] @append_hardline
+  .
+  "end"? @do_nothing
+)
+(structure
+  "struct"
+  .
+  [
+    ; equivalence class
+    (include_module)
+    (include_module_type)
+  ] @append_spaced_softline
+  .
+  "end"
 )
 
 ; Consecutive definitions must be separated by line breaks
@@ -1432,19 +1451,16 @@
   "=" @prepend_empty_scoped_softline @prepend_indent_end @end_scope
   (#scope_id! "module_binding_before_equal")
 )
-; if a module binding has no equal sign, everything enters the scope
+; if a module binding has no equal sign and isn't just a signature, everything enters the scope
 (module_binding
   (#scope_id! "module_binding_before_equal")
   (module_name) @append_indent_start @begin_scope
-  [
-    (functor_type)
-    (module_type_constraint)
-  ] @append_indent_end @end_scope
   "="? @do_nothing
-)
+  (signature)? @do_nothing
+) @append_indent_end @end_scope
 (module_binding
   (module_name) @append_empty_scoped_softline
-  (module_parameter) @append_spaced_scoped_softline
+  (module_parameter) @prepend_spaced_scoped_softline
   (#scope_id! "module_binding_before_equal")
 )
 

@@ -891,3 +891,6 @@ struct
   type t = float [@@deriving yojson]
   let _key = "float"
 end
+
+module Make (R : sig end)
+  (S : sig end) (T : sig end)

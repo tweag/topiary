@@ -5394,3 +5394,5 @@ type foo =
 a ->
 (b -> c) ->
 d -> e
+
+include module type of (struct include Time end)
