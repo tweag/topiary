@@ -943,3 +943,9 @@ module Make
   (R: sig end)
   (S: sig end)
   (T: sig end)
+
+(* Showcase usage of line number directive. Line breaks could be improved. *)
+module Foo = struct
+  val bar
+# 1 "v1/pervasives.mli"
+end

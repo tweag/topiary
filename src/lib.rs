@@ -48,6 +48,8 @@ pub enum Atom {
     Leaf {
         content: String,
         id: usize,
+        // marks the leaf to be printed on a single line, with no indentation
+        single_line_no_indent: bool,
     },
     /// Represents a literal string, such as a semicolon.
     Literal(String),

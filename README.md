@@ -362,6 +362,18 @@ The matched nodes will have a newline appended or prepended to them.
 )
 ```
 
+### `@single_line_no_indent`
+
+The matched node will be printed alone, on a single line, with no indentation.
+
+#### Example
+
+```scheme
+(#language! ocaml)
+; line number directives must be alone on their line, and can't be indented
+(line_number_directive) @single_line_no_indent
+```
+
 ### `@append_indent_start` / `@prepend_indent_start`
 
 The matched nodes will trigger indentation before or after them. This
