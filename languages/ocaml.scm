@@ -571,6 +571,7 @@
   ] @append_spaced_softline
   .
   [
+    (attribute)
     (comment)
     "%"
   ]* @do_nothing
@@ -849,12 +850,8 @@
   ] @append_spaced_softline @prepend_spaced_softline
 )
 
-; Put a semicolon delimiter after field declarations and potential ppx attributes,
-; unless they already have one, in which case we do nothing.
-; The semicolon always comes right after the declaration of the new field
-; and attributes, before any comment.
-; Hence, if there is a comment between the field declaration and the associated ";",
-; the semicolon is moved before the comment.
+; Move semicolon delimiters just after field declarations,
+; before any attributes and comments.
 ;
 ; type t =
 ;   { mutable position : int [@default 0] (* End-of-line comment *);
@@ -864,26 +861,23 @@
 ;
 ; type t =
 ;   {
-;     mutable position : int [@default 0]; (* End-of-line comment *)
+;     mutable position : int; [@default 0] (* End-of-line comment *)
 ;     ...
 ;
 (record_declaration
+  (field_declaration) @append_delimiter
+  .
   [
-    (field_declaration)
+    (comment)
     (attribute)
-  ] @append_delimiter
+  ]*
   .
-  ";"* @do_nothing
-  .
-  (comment)*
-  .
-  ";"* @delete
-  .
-  [
-    "}"
-    (field_declaration)
-  ]
+  ";" @delete
   (#delimiter! ";")
+)
+
+(record_declaration
+  (field_declaration) @prepend_spaced_softline
 )
 
 ; Allow multi-line attributes after field declaratioms, such as:
@@ -896,20 +890,22 @@
 ;     [@and again]; (* and a last one *)
 ; }
 (record_declaration
-  ; This query is just here to avoid closing an unopened scope
-  ; before the first field_declaration
   (#scope_id! "field_declaration")
-  "{" @begin_scope
-)
-(record_declaration
-  (#scope_id! "field_declaration")
-  _ @end_scope
+  [
+    (field_declaration)
+    (attribute)
+    (comment)
+  ]? @end_scope
   .
   (field_declaration) @begin_scope
 )
 (record_declaration
   (#scope_id! "field_declaration")
-  _ @end_scope
+  [
+    (field_declaration)
+    (attribute)
+    (comment)
+  ] @end_scope
   .
   "}"
 )
@@ -920,39 +916,38 @@
 
 ; Duplicate the same logic as above for record *expressions*
 (record_expression
+  (field_expression) @append_delimiter
+  .
   [
-    (field_expression)
+    (comment)
     (attribute)
-  ] @append_delimiter
+  ]*
   .
-  ";"* @do_nothing
-  .
-  (comment)*
-  .
-  ";"* @delete
-  .
-  [
-    "}"
-    (field_expression)
-  ]
+  ";" @delete
   (#delimiter! ";")
 )
 
 (record_expression
-  ; This query is just here to avoid closing an unopened scope
-  ; before the first field_expression
-  (#scope_id! "field_expression")
-  "{" @begin_scope
+  (field_expression) @prepend_spaced_softline
 )
+
 (record_expression
   (#scope_id! "field_expression")
-  _ @end_scope
+  [
+    (field_expression)
+    (attribute)
+    (comment)
+  ]? @end_scope
   .
   (field_expression) @begin_scope
 )
 (record_expression
   (#scope_id! "field_expression")
-  _ @end_scope
+  [
+    (field_expression)
+    (attribute)
+    (comment)
+  ] @end_scope
   .
   "}"
 )
