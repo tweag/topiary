@@ -776,6 +776,10 @@ let x = function
   | [%type: [%t? foo] option] ->
     bar
 
+let _ =
+  foo <- { slug; };
+  bar
+
 let _ = 12 [@deprecated "12 is deprecated, use 13 instead"]
 
 let _ =
