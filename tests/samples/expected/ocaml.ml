@@ -964,3 +964,21 @@ module Foo = struct
   val bar
 # 1 "v1/pervasives.mli"
 end
+
+(* Nested match cases *)
+let foo = function
+  | x ->
+    (
+      try foo with _ -> None
+    )
+
+let f = function
+  | None -> ()
+  | Some x ->
+    (match x with None -> () | Some _ -> ())
+
+let foo = function
+  | Some _ ->
+    (function true -> false | false -> true)
+  | None ->
+    (function true -> true | false -> false)
