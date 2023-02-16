@@ -801,6 +801,12 @@ type t = {
      [@and again] (* and another one *) [@and again] (* and a last one *)
 }
 
+type message = {
+  raw_level : int32;
+  message_counter : Z.t; [@printer Z.pp_print]
+  payload : bytes;
+}
+
 type controller =
   | C : Slug.t -> controller
 
@@ -826,6 +832,10 @@ let x = foo || foo
 
 let x = foo; foo;
   bar; bar
+
+let _ = {
+  foo = let bar = baz in bar
+}
 
 (* Open and let open *)
 open Foo
