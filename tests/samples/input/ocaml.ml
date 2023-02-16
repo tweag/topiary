@@ -752,6 +752,10 @@ let x = function
   | [%type: [%t? foo] option] ->
     bar
 
+let _ =
+  foo <- { slug; };
+  bar
+
 let _ = 12 [@deprecated "12 is deprecated, use 13 instead"]
 
 let _ = "some string"
@@ -801,6 +805,12 @@ type t = {
      [@and again] (* and another one *) [@and again] (* and a last one *)
 }
 
+type message = {
+  raw_level : int32;
+  message_counter : Z.t; [@printer Z.pp_print]
+  payload : bytes;
+}
+
 type controller =
   | C : Slug.t -> controller
 
@@ -826,6 +836,10 @@ let x = foo || foo
 
 let x = foo; foo;
   bar; bar
+
+let _ = {
+  foo = let bar = baz in bar
+}
 
 (* Open and let open *)
 open Foo
@@ -894,3 +908,26 @@ end
 
 module Make (R : sig end)
   (S : sig end) (T : sig end)
+
+(* Showcase usage of line number directive. Line breaks could be improved. *)
+module Foo = struct
+  val bar
+
+# 1 "v1/pervasives.mli"
+end
+
+(* Nested match cases *)
+let foo = function
+  | x -> (
+    try foo with _ -> None )
+
+let f = function
+  | None -> ()
+  | Some x ->
+    (match x with None -> () | Some _ -> ())
+
+let foo = function
+  | Some _ ->
+    (function true -> false | false -> true)
+  | None ->
+    (function true -> true | false -> false)

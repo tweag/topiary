@@ -213,7 +213,7 @@ end
 
 (** This module re-exports definitions from {!Ratio_repr}. *)
 module Ratio: sig
-  type t = { numerator: int; denominator: int; }
+  type t = { numerator: int; denominator: int }
 
   val encoding : t Data_encoding.t
 
@@ -383,7 +383,7 @@ module Gas: sig
   (** For maintenance operations or for testing, gas can be
      [Unaccounted]. Otherwise, the computation is [Limited] by the
      [remaining] gas in the context. *)
-  type t = private Unaccounted | Limited of { remaining: Arith.fp; }
+  type t = private Unaccounted | Limited of { remaining: Arith.fp }
 
   val encoding : t Data_encoding.encoding
 
@@ -703,7 +703,7 @@ module Script: sig
 
   type node = location michelson_node
 
-  type t = { code: lazy_expr; storage: lazy_expr; }
+  type t = { code: lazy_expr; storage: lazy_expr }
 
   val location_encoding : location Data_encoding.t
 
@@ -1033,7 +1033,7 @@ module Constants: sig
   val zk_rollup_min_pending_to_process : context -> int
 
   (** All constants: fixed and parametric *)
-  type t = private { fixed: fixed; parametric: Parametric.t; }
+  type t = private { fixed: fixed; parametric: Parametric.t }
 
   val all : context -> t
 
@@ -1247,7 +1247,7 @@ module Nonce: sig
 
   val encoding : nonce Data_encoding.t
 
-  type unrevealed = { nonce_hash: Nonce_hash.t; delegate: public_key_hash; }
+  type unrevealed = { nonce_hash: Nonce_hash.t; delegate: public_key_hash }
 
   val record_hash : context -> unrevealed -> context tzresult Lwt.t
 
@@ -1282,7 +1282,7 @@ module Seed: sig
   type vdf_setup = Vdf.discriminant * Vdf.challenge
 
   type error +=
-    | Unknown of { oldest: Cycle.t; cycle: Cycle.t; latest: Cycle.t; }
+    | Unknown of { oldest: Cycle.t; cycle: Cycle.t; latest: Cycle.t }
     | Already_accepted
     | Unverified_vdf
     | Too_early_revelation
@@ -1304,7 +1304,7 @@ module Seed: sig
   (* RPC *)
   type seed_computation_status =
     | Nonce_revelation_stage
-    | Vdf_revelation_stage of { seed_discriminant: seed; seed_challenge: seed; }
+    | Vdf_revelation_stage of { seed_discriminant: seed; seed_challenge: seed }
     | Computation_finished
 
   val for_cycle : context -> Cycle.t -> seed tzresult Lwt.t
@@ -1384,7 +1384,7 @@ module Big_map: sig
   type updates = update list
 
   (** The types of keys and values in a big map. *)
-  type alloc = { key_type: Script_repr.expr; value_type: Script_repr.expr; }
+  type alloc = { key_type: Script_repr.expr; value_type: Script_repr.expr }
 end
 
 (** This module re-exports definitions from {!Sapling_repr}, {!Sapling_storage}
@@ -1430,7 +1430,7 @@ module Sapling: sig
     val in_memory_size : t -> Cache_memory_helpers.sint
   end
 
-  type state = private { id: Id.t option; diff: diff; memo_size: Memo_size.t; }
+  type state = private { id: Id.t option; diff: diff; memo_size: Memo_size.t }
 
   (**
     Returns a [state] with fields filled accordingly.
@@ -1473,7 +1473,7 @@ module Sapling: sig
     (context * (Int64.t * state) option) tzresult Lwt.t
 
   (** See {!Lazy_storage_kind.Sapling_state.alloc}. *)
-  type alloc = { memo_size: Memo_size.t; }
+  type alloc = { memo_size: Memo_size.t }
 
   type updates = diff
 
@@ -1513,7 +1513,7 @@ module Lazy_storage: sig
   module IdSet: sig
     type t
 
-    type 'acc fold_f = { f: 'i 'a 'u. ('i, 'a, 'u) Kind.t -> 'i -> 'acc -> 'acc; }
+    type 'acc fold_f = { f: 'i 'a 'u. ('i, 'a, 'u) Kind.t -> 'i -> 'acc -> 'acc }
 
     val empty : t
 
@@ -1528,11 +1528,11 @@ module Lazy_storage: sig
     val fold_all : 'acc fold_f -> t -> 'acc -> 'acc
   end
 
-  type ('id, 'alloc) init = Existing | Copy of { src: 'id; } | Alloc of 'alloc
+  type ('id, 'alloc) init = Existing | Copy of { src: 'id } | Alloc of 'alloc
 
   type ('id, 'alloc, 'updates) diff =
     | Remove
-    | Update of { init: ('id, 'alloc) init; updates: 'updates; }
+    | Update of { init: ('id, 'alloc) init; updates: 'updates }
 
   type diffs_item =
     private
@@ -1781,7 +1781,7 @@ module Contract: sig
           diff_value: Script.expr option;
         }
       | Clear of Z.t
-      | Copy of { src: Z.t; dst: Z.t; }
+      | Copy of { src: Z.t; dst: Z.t }
       | Alloc of
         {
           big_map: Z.t;
@@ -2088,7 +2088,7 @@ module Tx_rollup_inbox: sig
     val path_depth : path -> int
   end
 
-  type t = { inbox_length: int; cumulated_size: int; merkle_root: Merkle.root; }
+  type t = { inbox_length: int; cumulated_size: int; merkle_root: Merkle.root }
 
   val size : Z.t
 
@@ -2283,7 +2283,7 @@ module Tx_rollup_errors: sig
   type error +=
     | Tx_rollup_already_exists of Tx_rollup.t
     | Tx_rollup_does_not_exist of Tx_rollup.t
-    | Submit_batch_burn_exceeded of { burn: Tez.t; limit: Tez.t; }
+    | Submit_batch_burn_exceeded of { burn: Tez.t; limit: Tez.t }
     | Inbox_does_not_exist of Tx_rollup.t * Tx_rollup_level.t
     | Inbox_size_would_exceed_limit of Tx_rollup.t
     | Inbox_count_would_exceed_limit of Tx_rollup.t
@@ -2325,7 +2325,7 @@ module Tx_rollup_errors: sig
         provided: int;
         limit: int;
       }
-    | Wrong_message_path of { expected: Tx_rollup_inbox.Merkle.root; }
+    | Wrong_message_path of { expected: Tx_rollup_inbox.Merkle.root }
     | No_finalized_commitment_for_level of
       {
         level: Tx_rollup_level.t;
@@ -2429,7 +2429,7 @@ module Zk_rollup: sig
       used_l2_operations_storage_space: Z.t;
     }
 
-    type t = { static: static; dynamic: dynamic; }
+    type t = { static: static; dynamic: dynamic }
 
     val encoding : t Data_encoding.t
 
@@ -2439,7 +2439,7 @@ module Zk_rollup: sig
 
   (** This module re-exports definitions from {!Zk_rollup_operation_repr}. *)
   module Operation: sig
-    type price = { id: Ticket_hash.t; amount: Z.t; }
+    type price = { id: Ticket_hash.t; amount: Z.t }
 
     type t = {
       op_code: int;
@@ -2455,7 +2455,7 @@ module Zk_rollup: sig
   end
 
   module Ticket: sig
-    type t = { contents: Script.expr; ty: Script.expr; ticketer: Contract.t; }
+    type t = { contents: Script.expr; ty: Script.expr; ticketer: Contract.t }
 
     val encoding : t Data_encoding.t
   end
@@ -2492,11 +2492,11 @@ module Zk_rollup: sig
   end
 
   module Update: sig
-    type op_pi = { new_state: State.t; fee: scalar; exit_validity: bool; }
+    type op_pi = { new_state: State.t; fee: scalar; exit_validity: bool }
 
-    type private_inner_pi = { new_state: State.t; fees: scalar; }
+    type private_inner_pi = { new_state: State.t; fees: scalar }
 
-    type fee_pi = { new_state: State.t; }
+    type fee_pi = { new_state: State.t }
 
     type t = {
       pending_pis: (string * op_pi) list;
@@ -2509,8 +2509,8 @@ module Zk_rollup: sig
   end
 
   type pending_list =
-    | Empty of { next_index: int64; }
-    | Pending of { next_index: int64; length: int; }
+    | Empty of { next_index: int64 }
+    | Pending of { next_index: int64; length: int }
 
   val pending_list_encoding : pending_list Data_encoding.t
 
@@ -2727,7 +2727,7 @@ module Delegate: sig
     endorsing_power: int ->
     context tzresult Lwt.t
 
-  type deposits = { initial_amount: Tez.t; current_amount: Tez.t; }
+  type deposits = { initial_amount: Tez.t; current_amount: Tez.t }
 
   val frozen_deposits : context -> public_key_hash -> deposits tzresult Lwt.t
 
@@ -2799,7 +2799,7 @@ module Voting_period: sig
 
   val is_last_block : context -> bool tzresult Lwt.t
 
-  type info = { voting_period: t; position: int32; remaining: int32; }
+  type info = { voting_period: t; position: int32; remaining: int32 }
 
   val info_encoding : info Data_encoding.t
 
@@ -2877,7 +2877,7 @@ module Vote: sig
 
   val ballot_encoding : ballot Data_encoding.t
 
-  type ballots = { yay: int64; nay: int64; pass: int64; }
+  type ballots = { yay: int64; nay: int64; pass: int64 }
 
   (** See {!Vote_storage.ballots_zero}. *)
   val ballots_zero : ballots
@@ -3009,7 +3009,7 @@ module Dal: sig
     val init_committee : context -> committee -> context
   end
 
-  type slot_id = { published_level: Raw_level.t; index: Slot_index.t; }
+  type slot_id = { published_level: Raw_level.t; index: Slot_index.t }
 
   module Page: sig
     type content = bytes
@@ -3028,7 +3028,7 @@ module Dal: sig
       val equal : int -> int -> bool
     end
 
-    type t = { slot_id: slot_id; page_index: Index.t; }
+    type t = { slot_id: slot_id; page_index: Index.t }
 
     val content_encoding : content Data_encoding.t
 
@@ -3062,9 +3062,9 @@ module Dal: sig
     end
 
     module Header: sig
-      type id = slot_id = { published_level: Raw_level.t; index: Slot_index.t; }
+      type id = slot_id = { published_level: Raw_level.t; index: Slot_index.t }
 
-      type t = { id: id; commitment: Commitment.t; }
+      type t = { id: id; commitment: Commitment.t }
 
       val id_encoding : id Data_encoding.t
 
@@ -3154,7 +3154,7 @@ module Dal_errors: sig
   type error +=
     | Dal_feature_disabled
     | Dal_slot_index_above_hard_limit
-    | Dal_attestation_unexpected_size of { expected: int; got: int; }
+    | Dal_attestation_unexpected_size of { expected: int; got: int }
     | Dal_publish_slot_header_future_level of
       {
         provided: Raw_level.t;
@@ -3170,9 +3170,9 @@ module Dal_errors: sig
         given: Dal.Slot_index.t;
         maximum: Dal.Slot_index.t;
       }
-    | Dal_publish_slot_header_candidate_with_low_fees of { proposed_fees: Tez.t; }
-    | Dal_attestation_size_limit_exceeded of { maximum_size: int; got: int; }
-    | Dal_publish_slot_header_duplicate of { slot_header: Dal.Slot.Header.t; }
+    | Dal_publish_slot_header_candidate_with_low_fees of { proposed_fees: Tez.t }
+    | Dal_attestation_size_limit_exceeded of { maximum_size: int; got: int }
+    | Dal_publish_slot_header_duplicate of { slot_header: Dal.Slot.Header.t }
     | Dal_publish_slot_header_invalid_proof of
       {
         commitment: Dal.Slot.Commitment.t;
@@ -3193,7 +3193,7 @@ module Dal_errors: sig
         current: Raw_level.t;
         given: Raw_level.t;
       }
-    | Dal_cryptobox_error of { explanation: string; }
+    | Dal_cryptobox_error of { explanation: string }
 end
 
 (** This module re-exports definitions from {!Sc_rollup_storage} and
@@ -3254,7 +3254,7 @@ module Sc_rollup: sig
 
   (** See {!Sc_rollup_metadata_repr}. *)
   module Metadata: sig
-    type t = { address: rollup; origination_level: Raw_level.t; }
+    type t = { address: rollup; origination_level: Raw_level.t }
 
     val pp : Format.formatter -> t -> unit
 
@@ -3529,7 +3529,7 @@ module Sc_rollup: sig
         entrypoint: Entrypoint.t;
       }
 
-      type t = Atomic_transaction_batch of { transactions: transaction list; }
+      type t = Atomic_transaction_batch of { transactions: transaction list }
 
       type serialized
 
@@ -3559,14 +3559,14 @@ module Sc_rollup: sig
   val output_encoding : output Data_encoding.t
 
   module Dissection_chunk: sig
-    type t = { state_hash: State_hash.t option; tick: Tick.t; }
+    type t = { state_hash: State_hash.t option; tick: Tick.t }
 
     val equal : t -> t -> bool
 
     val pp : Format.formatter -> t -> unit
 
     type error +=
-      | Dissection_number_of_sections_mismatch of { expected: Z.t; given: Z.t; }
+      | Dissection_number_of_sections_mismatch of { expected: Z.t; given: Z.t }
       | Dissection_invalid_number_of_sections of Z.t
       | Dissection_start_hash_mismatch of
         {
@@ -3833,7 +3833,7 @@ module Sc_rollup: sig
     val genesis_commitment :
       origination_level: Raw_level.t -> genesis_state_hash: State_hash.t -> t
 
-    type genesis_info = { level: Raw_level.t; commitment_hash: Hash.t; }
+    type genesis_info = { level: Raw_level.t; commitment_hash: Hash.t }
 
     val genesis_info_encoding : genesis_info Data_encoding.t
 
@@ -3887,7 +3887,7 @@ module Sc_rollup: sig
       | Reveal_proof of reveal_proof
       | First_inbox_message
 
-    type 'proof t = { pvm_step: 'proof; input_proof: input_proof option; }
+    type 'proof t = { pvm_step: 'proof; input_proof: input_proof option }
 
     type serialized = private string
 
@@ -3999,7 +3999,7 @@ module Sc_rollup: sig
     val pp : Format.formatter -> t -> unit
 
     module Index: sig
-      type t = private { alice: Staker.t; bob: Staker.t; }
+      type t = private { alice: Staker.t; bob: Staker.t }
 
       val encoding : t Data_encoding.t
 
@@ -4020,7 +4020,7 @@ module Sc_rollup: sig
           player_commitment_hash: Commitment.Hash.t;
           opponent_commitment_hash: Commitment.Hash.t;
         }
-      | Move of { choice: Tick.t; step: step; }
+      | Move of { choice: Tick.t; step: step }
 
     val refutation_encoding : refutation Data_encoding.t
 
@@ -4032,7 +4032,7 @@ module Sc_rollup: sig
 
     val reason_encoding : reason Data_encoding.t
 
-    type game_result = Loser of { reason: reason; loser: Staker.t; } | Draw
+    type game_result = Loser of { reason: reason; loser: Staker.t } | Draw
 
     val pp_game_result : Format.formatter -> game_result -> unit
 
@@ -4066,7 +4066,7 @@ module Sc_rollup: sig
       choice: Tick.t ->
       (game_result, t) Either.t tzresult Lwt.t
 
-    type timeout = { alice: int; bob: int; last_turn_level: Raw_level.t; }
+    type timeout = { alice: int; bob: int; last_turn_level: Raw_level.t }
 
     val timeout_encoding : timeout Data_encoding.t
 
@@ -4131,7 +4131,7 @@ module Sc_rollup: sig
   end
 
   module Refutation_storage: sig
-    type point = { commitment: Commitment.t; hash: Commitment.Hash.t; }
+    type point = { commitment: Commitment.t; hash: Commitment.Hash.t }
 
     type conflict_point = point * point
 
@@ -4257,9 +4257,9 @@ module Block_header: sig
     Liquidity_baking_repr.liquidity_baking_toggle_vote;
   }
 
-  type protocol_data = { contents: contents; signature: signature; }
+  type protocol_data = { contents: contents; signature: signature }
 
-  type t = { shell: Block_header.shell_header; protocol_data: protocol_data; }
+  type t = { shell: Block_header.shell_header; protocol_data: protocol_data }
 
   type block_header = t
 
@@ -4886,7 +4886,7 @@ module Operation: sig
   val unsigned_encoding :
     (Operation.shell_header * packed_contents_list) Data_encoding.t
 
-  type raw = Operation.t = { shell: Operation.shell_header; proto: bytes; }
+  type raw = Operation.t = { shell: Operation.shell_header; proto: bytes }
 
   val raw_encoding : raw Data_encoding.t
 
@@ -5288,7 +5288,7 @@ end
 (** This module re-exports definitions from {!Ticket_storage}. *)
 module Ticket_balance: sig
   type error +=
-    | Negative_ticket_balance of { key: Ticket_hash.t; balance: Z.t; }
+    | Negative_ticket_balance of { key: Ticket_hash.t; balance: Z.t }
     | Used_storage_space_underflow
 
   val adjust_balance :

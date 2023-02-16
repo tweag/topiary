@@ -19,7 +19,7 @@ type t = {
   mutable buffer: bytes;
   mutable position: int; (* End-of-line comment *)
   mutable length: int;
-  initial_buffer: bytes;
+  initial_buffer: bytes
 }
 (* Invariants: all parts of the code preserve the invariants that:
    - [0 <= b.position <= b.length]
@@ -33,7 +33,7 @@ let create n =
   let n = if n < 1 then 1 else n in
   let n = if n > Sys.max_string_length then Sys.max_string_length else n in
   let s = Bytes.create n in
-  { buffer = s; position = 0; length = n; initial_buffer = s; }
+  { buffer = s; position = 0; length = n; initial_buffer = s }
 
 let contents b = Bytes.sub_string b.buffer 0 b.position
 let to_bytes b = Bytes.sub b.buffer 0 b.position
@@ -645,7 +645,7 @@ World
 |external}
 let _ =
   {
-    my_string = quoted_string ^ quoted_string_multiline_with_id;
+    my_string = quoted_string ^ quoted_string_multiline_with_id
   }
 
 (* Tags in pattern matching *)
@@ -776,6 +776,10 @@ let x = function
   | [%type: [%t? foo] option] ->
     bar
 
+let _ =
+  foo <- { slug; };
+  bar
+
 let _ = 12 [@deprecated "12 is deprecated, use 13 instead"]
 
 let _ =
@@ -789,7 +793,7 @@ type t = {
   (** Verbosity level. *)
   loggers: string;
   (** Loggers enabled. *)
-  bflags: bool StrMap.t;
+  bflags: bool StrMap.t
   (** Boolean flags. *)
 }
 
@@ -797,32 +801,32 @@ let _ =
   {
     verbose = 0;
     loggers = "foo";
-    bflags = StrMap.empty;
+    bflags = StrMap.empty
   }
 
 type t = {
-  foo: bool [@default false];
-  bar: int;
+  foo: bool; [@default false]
+  bar: int
 }
 
 type t = {
   foo: bool;
-  bar: int [@default 0];
+  bar: int [@default 0]
 }
 
 type t = {
   foo: bool;
-  bar: int [@default 0]; (* comment *)
+  bar: int; [@default 0] (* comment *)
 }
 
 (* A merry mess of ppx tags, comments, and misplaced semicolons *)
 type t = {
   bar: float;
-  foo: bool
+  foo: bool;
     [@default false] (* a comment *)
     [@other tag] (* and another one *)
     [@and again] (* and another one *)
-    [@and again]; (* and a last one *)
+    [@and again] (* and a last one *)
 }
 type t = {
   bar: float;
@@ -830,7 +834,13 @@ type t = {
     [@default false] (* a comment *)
     [@other tag] (* and another one *)
     [@and again] (* and another one *)
-    [@and again]; (* and a last one *)
+    [@and again] (* and a last one *)
+}
+
+type message = {
+  raw_level: int32;
+  message_counter: Z.t; [@printer Z.pp_print]
+  payload: bytes;
 }
 
 type controller =
@@ -871,6 +881,11 @@ let x =
   foo;
   bar;
   bar
+
+let _ =
+  {
+    foo = let bar = baz in bar
+  }
 
 (* Open and let open *)
 open Foo
@@ -943,3 +958,27 @@ module Make
   (R: sig end)
   (S: sig end)
   (T: sig end)
+
+(* Showcase usage of line number directive. Line breaks could be improved. *)
+module Foo = struct
+  val bar
+# 1 "v1/pervasives.mli"
+end
+
+(* Nested match cases *)
+let foo = function
+  | x ->
+    (
+      try foo with _ -> None
+    )
+
+let f = function
+  | None -> ()
+  | Some x ->
+    (match x with None -> () | Some _ -> ())
+
+let foo = function
+  | Some _ ->
+    (function true -> false | false -> true)
+  | None ->
+    (function true -> true | false -> false)

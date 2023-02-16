@@ -48,7 +48,7 @@ Topiary has been created with the following goals in mind:
     that it spans multiple lines, that decision is preserved.
 
   * Minimise changes between commits such that diffs focus mainly on the
-    code that's changed, rather that superficial artefacts. That is, a
+    code that's changed, rather than superficial artefacts. That is, a
     change on one line won't influence others, while the formatting
     won't force you to make later, cosmetic changes when you modify your
     code.
@@ -378,6 +378,18 @@ The matched nodes will have a newline appended or prepended to them.
   .
   (value_definition)
 )
+```
+
+### `@single_line_no_indent`
+
+The matched node will be printed alone, on a single line, with no indentation.
+
+#### Example
+
+```scheme
+(#language! ocaml)
+; line number directives must be alone on their line, and can't be indented
+(line_number_directive) @single_line_no_indent
 ```
 
 ### `@append_indent_start` / `@prepend_indent_start`

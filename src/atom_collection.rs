@@ -181,6 +181,22 @@ impl AtomCollection {
                     node,
                 )
             }
+            // Mark a leaf to be printed on an single line, with no indentation
+            "single_line_no_indent" => {
+                self.atoms = self
+                    .atoms
+                    .iter()
+                    .map(|atom| match atom {
+                        Atom::Leaf { content, id, .. } if *id == node.id() => Atom::Leaf {
+                            content: content.to_string(),
+                            id: *id,
+                            single_line_no_indent: true,
+                        },
+                        _ => atom.clone(),
+                    })
+                    .collect();
+                self.append(Atom::Hardline, node)
+            }
             // Return a query parsing error on unknown capture names
             unknown => {
                 return Err(FormatterError::Query(
@@ -242,6 +258,7 @@ impl AtomCollection {
             self.atoms.push(Atom::Leaf {
                 content: String::from(node.utf8_text(source)?),
                 id,
+                single_line_no_indent: false,
             });
         } else {
             for child in node.children(&mut node.walk()) {
