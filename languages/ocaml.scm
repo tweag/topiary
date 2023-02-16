@@ -315,11 +315,6 @@
 (
   "("* @do_nothing
   .
-  "match" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
   "method" @prepend_space
 )
 (
@@ -665,11 +660,14 @@
   (else_clause)
   (infix_operator)
   (item_attribute)
-  (match_expression)
   "*"
   "|"
   "}"
 ] @prepend_spaced_softline
+
+[
+  (match_expression)
+] @prepend_empty_softline
 
 ; Softline before the first match case
 ;
@@ -767,13 +765,17 @@
   ) @end_scope
   (#scope_id! "function_definiton")
 )
-(
+(parenthesized_expression
+  (function_expression) @begin_scope @end_scope
+  (#scope_id! "function_definiton")
+)
+(function_expression
   "|"* @do_nothing
   .
   (match_case) @prepend_spaced_scoped_softline
   (#scope_id! "function_definiton")
 )
-(
+(function_expression
   "|"* @prepend_spaced_scoped_softline
   .
   (match_case)
