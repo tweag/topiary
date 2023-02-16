@@ -1,85 +1,15 @@
-use clap::{ArgEnum, ArgGroup, Parser};
+mod output;
+mod supported;
+
+use crate::{output::OutputFile, supported::SupportedLanguage};
+use clap::{ArgGroup, Parser};
 use std::{
     error::Error,
-    ffi::OsString,
     fs::File,
-    io::{stdin, stdout, BufReader, BufWriter, Write},
+    io::{stdin, BufReader, BufWriter},
     path::PathBuf,
 };
-use tempfile::NamedTempFile;
 use topiary::{formatter, FormatterResult, Language};
-
-#[derive(ArgEnum, Clone, Copy, Debug)]
-enum SupportedLanguage {
-    Json,
-    Toml,
-    Ocaml,
-    OcamlImplementation,
-    OcamlInterface,
-    // Any other entries in crate::Language are experimental and won't be
-    // exposed in the CLI. They can be accessed using --query language/foo.scm
-    // instead.
-}
-
-impl From<SupportedLanguage> for Language {
-    fn from(language: SupportedLanguage) -> Self {
-        match language {
-            SupportedLanguage::Json => Language::Json,
-            SupportedLanguage::Toml => Language::Toml,
-            SupportedLanguage::Ocaml => Language::Ocaml,
-            SupportedLanguage::OcamlImplementation => Language::OcamlImplementation,
-            SupportedLanguage::OcamlInterface => Language::OcamlInterface,
-        }
-    }
-}
-
-#[derive(Debug)]
-enum OutputFile {
-    Stdout,
-    Disk {
-        // NOTE We stage to a file, rather than writing
-        // to memory (e.g., Vec<u8>), to ensure atomicity
-        staged: NamedTempFile,
-        output: OsString,
-    },
-}
-
-impl OutputFile {
-    fn new(path: Option<&str>) -> FormatterResult<Self> {
-        match path {
-            Some("-") | None => Ok(Self::Stdout),
-            Some(file) => Ok(Self::Disk {
-                staged: NamedTempFile::new()?,
-                output: file.into(),
-            }),
-        }
-    }
-
-    // This function must be called to persist the output to disk
-    fn persist(self) -> FormatterResult<()> {
-        if let Self::Disk { staged, output } = self {
-            staged.persist(output)?;
-        }
-
-        Ok(())
-    }
-}
-
-impl Write for OutputFile {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        match self {
-            Self::Stdout => stdout().write(buf),
-            Self::Disk { staged, .. } => staged.write(buf),
-        }
-    }
-
-    fn flush(&mut self) -> std::io::Result<()> {
-        match self {
-            Self::Stdout => stdout().flush(),
-            Self::Disk { staged, .. } => staged.flush(),
-        }
-    }
-}
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]

@@ -48,7 +48,7 @@ Topiary has been created with the following goals in mind:
     that it spans multiple lines, that decision is preserved.
 
   * Minimise changes between commits such that diffs focus mainly on the
-    code that's changed, rather that superficial artefacts. That is, a
+    code that's changed, rather than superficial artefacts. That is, a
     change on one line won't influence others, while the formatting
     won't force you to make later, cosmetic changes when you modify your
     code.
