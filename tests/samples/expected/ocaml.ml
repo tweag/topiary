@@ -982,3 +982,11 @@ let foo = function
     (function true -> false | false -> true)
   | None ->
     (function true -> true | false -> false)
+
+(* set expressions *)
+let _ =
+  x <-
+    if foo then
+      bar
+    else
+      baz

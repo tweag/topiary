@@ -1483,6 +1483,11 @@
   .
 )
 
+; Formatting set expressions
+(set_expression
+  "<-" @append_spaced_softline @append_indent_start
+) @append_indent_end
+
 ; Input softlines before and after all comments. This means that the input
 ; decides if a comment should have line breaks before or after. But don't put a
 ; softline directly in front of commas or semicolons.
