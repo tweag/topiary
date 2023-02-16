@@ -1,7 +1,8 @@
+mod error;
 mod output;
 mod supported;
 
-use crate::{output::OutputFile, supported::SupportedLanguage};
+use crate::{error::CLIResult, output::OutputFile, supported::SupportedLanguage};
 use clap::{ArgGroup, Parser};
 use std::{
     error::Error,
@@ -9,7 +10,7 @@ use std::{
     io::{stdin, BufReader, BufWriter},
     path::PathBuf,
 };
-use topiary::{formatter, FormatterResult, Language};
+use topiary::{formatter, Language};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -50,7 +51,7 @@ fn main() {
     }
 }
 
-fn run() -> FormatterResult<()> {
+fn run() -> CLIResult<()> {
     env_logger::init();
     let args = Args::parse();
 

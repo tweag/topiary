@@ -1,4 +1,4 @@
-use std::{error::Error, ffi, fmt, io, marker, str, string};
+use std::{error::Error, ffi, fmt, io, str, string};
 
 /// The various errors the formatter may return.
 #[derive(Debug)]
@@ -38,6 +38,8 @@ pub enum FormatterError {
 /// A subtype of `FormatterError::Io`
 #[derive(Debug)]
 pub enum IoError {
+    // NOTE Filesystem-based IO errors _ought_ to become a thing of the past, once the library and
+    // binary code have been completely separated (see Issue #303).
     Filesystem(String, io::Error),
     Generic(String, Option<Box<dyn Error>>),
 }
@@ -112,6 +114,8 @@ impl Error for FormatterError {
     }
 }
 
+// NOTE Filesystem-based IO errors _ought_ to become a thing of the past, once the library and
+// binary code have been completely separated (see Issue #303).
 impl From<io::Error> for FormatterError {
     fn from(e: io::Error) -> Self {
         match e.kind() {
@@ -124,15 +128,6 @@ impl From<io::Error> for FormatterError {
                 e,
             )),
         }
-    }
-}
-
-impl From<tempfile::PersistError> for FormatterError {
-    fn from(e: tempfile::PersistError) -> Self {
-        FormatterError::Io(IoError::Filesystem(
-            "Could not persist output to disk".into(),
-            e.error,
-        ))
     }
 }
 
@@ -163,9 +158,10 @@ impl From<fmt::Error> for FormatterError {
     }
 }
 
+// We only have to deal with io::BufWriter<Vec<u8>>, but the genericised code is clearer
 impl<W> From<io::IntoInnerError<W>> for FormatterError
 where
-    W: io::Write + fmt::Debug + marker::Send + 'static,
+    W: io::Write + fmt::Debug + Send + 'static,
 {
     fn from(e: io::IntoInnerError<W>) -> Self {
         FormatterError::Io(IoError::Generic(

@@ -1,9 +1,9 @@
+use crate::error::CLIResult;
 use std::{
     ffi::OsString,
     io::{stdout, Write},
 };
 use tempfile::NamedTempFile;
-use topiary::FormatterResult;
 
 #[derive(Debug)]
 pub enum OutputFile {
@@ -17,7 +17,7 @@ pub enum OutputFile {
 }
 
 impl OutputFile {
-    pub fn new(path: Option<&str>) -> FormatterResult<Self> {
+    pub fn new(path: Option<&str>) -> CLIResult<Self> {
         match path {
             Some("-") | None => Ok(Self::Stdout),
             Some(file) => Ok(Self::Disk {
@@ -28,7 +28,7 @@ impl OutputFile {
     }
 
     // This function must be called to persist the output to disk
-    pub fn persist(self) -> FormatterResult<()> {
+    pub fn persist(self) -> CLIResult<()> {
         if let Self::Disk { staged, output } = self {
             staged.persist(output)?;
         }
