@@ -1,16 +1,8 @@
 use std::fmt::Write;
 
-use crate::{Atom, FormatterResult};
+use crate::{Atom, FormatterError, FormatterResult};
 
 pub fn render(atoms: &[Atom], indent_offset: usize) -> FormatterResult<String> {
-    let rendered = atoms_to_str(atoms, indent_offset);
-    Ok(rendered)
-}
-
-fn atoms_to_str(
-    atoms: &[Atom],
-    indent_offset: usize,
-) -> String {
     let mut buffer = String::new();
     let mut indent_level = 0;
 
@@ -20,9 +12,16 @@ fn atoms_to_str(
             Atom::Empty => String::new(),
             Atom::Hardline => format!("\n{}", " ".repeat(indent_level)),
             Atom::IndentEnd => {
-                indent_level -= indent_offset;
-                String::new()
-            },
+                if indent_offset > indent_level {
+                    return Err(FormatterError::Query(
+                        "Trying to close an unopened indentation block".into(),
+                        None,
+                    ));
+                } else {
+                    indent_level -= indent_offset;
+                    String::new()
+                }
+            }
             Atom::IndentStart => {
                 indent_level += indent_offset;
                 String::new()
@@ -43,9 +42,17 @@ fn atoms_to_str(
             Atom::Literal(s) => s.to_string(),
             Atom::Space => " ".to_string(),
             // All other atom kinds should have been post-processed at that point
-            _ => unreachable!(),
+            other => {
+                return Err(FormatterError::Internal(
+                    format!(
+                        "Found atom that should have been removed before rendering: {:?}",
+                        other
+                    ),
+                    None,
+                ))
+            }
         };
         write!(buffer, "{}", extra)?;
     }
-    buffer
+    Ok(buffer)
 }
