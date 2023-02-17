@@ -7,25 +7,26 @@ pub fn render(atoms: &[Atom], indent_offset: usize) -> FormatterResult<String> {
     let mut indent_level = 0;
 
     for atom in atoms {
-        let extra = match atom {
-            Atom::Blankline => format!("\n\n{}", " ".repeat(indent_level)),
-            Atom::Empty => String::new(),
-            Atom::Hardline => format!("\n{}", " ".repeat(indent_level)),
+        match atom {
+            Atom::Blankline => write!(buffer, "\n\n{}", " ".repeat(indent_level))?,
+
+            Atom::Empty => (),
+
+            Atom::Hardline => write!(buffer, "\n{}", " ".repeat(indent_level))?,
+
             Atom::IndentEnd => {
                 if indent_offset > indent_level {
                     return Err(FormatterError::Query(
                         "Trying to close an unopened indentation block".into(),
                         None,
                     ));
-                } else {
-                    indent_level -= indent_offset;
-                    String::new()
                 }
+
+                indent_level -= indent_offset;
             }
-            Atom::IndentStart => {
-                indent_level += indent_offset;
-                String::new()
-            }
+
+            Atom::IndentStart => indent_level += indent_offset,
+
             Atom::Leaf {
                 content,
                 single_line_no_indent,
@@ -34,13 +35,15 @@ pub fn render(atoms: &[Atom], indent_offset: usize) -> FormatterResult<String> {
                 if *single_line_no_indent {
                     // The line break after the content has been previously added
                     // as a `Hardline` in the atom stream.
-                    format!("\n{}", content.trim_end())
-                } else {
-                    content.trim_end().to_string()
+                    writeln!(buffer)?;
                 }
+                write!(buffer, "{}", content.trim_end())?
             }
-            Atom::Literal(s) => s.to_string(),
-            Atom::Space => " ".to_string(),
+
+            Atom::Literal(s) => write!(buffer, "{s}")?,
+
+            Atom::Space => write!(buffer, " ")?,
+
             // All other atom kinds should have been post-processed at that point
             other => {
                 return Err(FormatterError::Internal(
@@ -52,7 +55,7 @@ pub fn render(atoms: &[Atom], indent_offset: usize) -> FormatterResult<String> {
                 ))
             }
         };
-        write!(buffer, "{}", extra)?;
     }
+
     Ok(buffer)
 }
