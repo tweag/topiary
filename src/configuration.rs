@@ -1,11 +1,88 @@
+/// We need a "quick-and-dirty" grammar to parse the query language and extract the configuration
+/// predicates that exist only at the root level, throwing away everything else.
 use crate::{language::Language, FormatterError, FormatterResult};
-use regex::Regex;
+
+use nom::{
+    branch::alt,
+    bytes::complete::{escaped, tag},
+    character::complete::{alpha1, anychar, char, digit1, one_of, space1},
+    combinator::map_res,
+    sequence::{delimited, preceded},
+    IResult,
+};
+
+struct Directive<'a> {
+    predicate: Value<'a>,
+    value: Value<'a>,
+}
+
+enum Value<'a> {
+    Numeric(usize),
+    Symbol(&'a str),
+    Text(String),
+}
+
+/// ROOT := (WS* [DIRECTIVE RULE COMMENT])* WS*
+fn root(input: &str) -> IResult<&str, Vec<Directive>> {
+    todo!()
+}
+
+/// DIRECTIVE := "(#" IDENTIFIER "!" WS+ (IDENTIFIER | STRING | NUMBER) ")"
+fn directive(input: &str) -> IResult<&str, Option<Directive>> {
+    let (remaining, _) = tag("(#")(input)?;
+    let (remaining, predicate) = identifier(remaining)?;
+    let (remaining, value) = preceded(space1, alt((identifier, string, number)))(remaining)?;
+    let (remaining, _) = tag(")")(remaining)?;
+
+    Ok((remaining, Some(Directive { predicate, value })))
+}
+
+/// IDENTIFIER := ALPHA ["-" "_" ALPHA]*
+fn identifier(input: &str) -> IResult<&str, Value> {
+    todo!();
+}
+
+/// STRING := "\"" ANY+ "\""
+fn string(input: &str) -> IResult<&str, Value> {
+    // FIXME This needs work
+    let (remaining, value) = delimited(
+        char('\"'),
+        escaped(anychar, '\\', one_of(r#""nt\"#)),
+        char('\"'),
+    )(input)?;
+
+    Ok((remaining, Value::Text(value.into())))
+}
+
+/// NUMBER := DIGIT+
+fn number(input: &str) -> IResult<&str, Value> {
+    let (remaining, value) = map_res(digit1, str::parse)(input)?;
+    Ok((remaining, Value::Numeric(value)))
+}
+
+/// RULE := (ALTERNATION | CAPTURE) (WS+ TAG)*
+/// COMMENT := ";" ANY* LF
+/// ALTERNATION := "[" ANY+ "]"
+/// CAPTURE := "(" ANY+ ")"
+/// TAG := "@" IDENTIFIER
 
 pub struct Configuration {
     pub language: Language,
     pub indent_level: usize,
 }
 
+impl TryFrom<&str> for Configuration {
+    type Error = FormatterError;
+
+    fn try_from(query: &str) -> FormatterResult<Self> {
+        let mut language: Option<Language> = None;
+        let mut indent_level: usize = 2;
+
+        todo!()
+    }
+}
+
+/*
 impl Configuration {
     pub fn parse(query: &str) -> FormatterResult<Self> {
         let mut language: Option<Language> = None;
@@ -78,3 +155,4 @@ impl Configuration {
         }
     }
 }
+*/
