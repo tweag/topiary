@@ -1,4 +1,4 @@
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 
 use tree_sitter::Node;
 
@@ -9,7 +9,7 @@ pub struct AtomCollection {
     atoms: Vec<Atom>,
     prepend: HashMap<usize, Vec<Atom>>,
     append: HashMap<usize, Vec<Atom>>,
-    specified_leaf_nodes: BTreeSet<usize>,
+    specified_leaf_nodes: HashSet<usize>,
     parent_leaf_nodes: HashMap<usize, usize>,
     multi_line_nodes: HashSet<usize>,
     blank_lines_before: HashSet<usize>,
@@ -30,7 +30,7 @@ impl AtomCollection {
     pub fn collect_leafs(
         root: Node,
         source: &[u8],
-        specified_leaf_nodes: BTreeSet<usize>,
+        specified_leaf_nodes: HashSet<usize>,
     ) -> FormatterResult<AtomCollection> {
         // Detect user specified line breaks
         let multi_line_nodes = detect_multi_line_nodes(root);

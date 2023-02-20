@@ -2,10 +2,19 @@ use crate::atom_collection::AtomCollection;
 use crate::error::FormatterError;
 use crate::language::Language;
 use crate::FormatterResult;
-use std::collections::BTreeSet;
+use std::collections::HashSet;
 use tree_sitter::{
-    Node, Parser, Query, QueryCapture, QueryCursor, QueryPredicate, QueryPredicateArg, Tree,
+    Node, Parser, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate, QueryPredicateArg,
+    Tree,
 };
+
+#[derive(Debug)]
+// A struct to statically store the public fields of query match results,
+// to avoid running queries twice.
+struct LocalQueryMatch<'a> {
+    pattern_index: usize,
+    captures: Vec<QueryCapture<'a>>,
+}
 
 pub fn apply_query(
     input_content: &str,
@@ -19,14 +28,25 @@ pub fn apply_query(
     let query = Query::new(grammar, query_content)
         .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
 
-    // Find the ids of all tree-sitter nodes that were identified as a leaf
-    // We want to avoid recursing into them in the collect_leafs function.
-    // TODO: Doesn't need to be ordered, can be just a HashSet.
-    let specified_leaf_nodes: BTreeSet<usize> = collect_leaf_ids(&query, root, source);
-
     // Match queries
     let mut cursor = QueryCursor::new();
-    let matches = cursor.matches(&query, root, source);
+    let mut matches: Vec<LocalQueryMatch> = Vec::new();
+    for QueryMatch {
+        pattern_index,
+        captures,
+        ..
+    } in cursor.matches(&query, root, source)
+    {
+        let local_captures: Vec<QueryCapture> = captures.to_vec();
+        matches.push(LocalQueryMatch {
+            pattern_index,
+            captures: local_captures,
+        })
+    }
+
+    // Find the ids of all tree-sitter nodes that were identified as a leaf
+    // We want to avoid recursing into them in the collect_leafs function.
+    let specified_leaf_nodes: HashSet<usize> = collect_leaf_ids(&matches, query.capture_names());
 
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
     let mut atoms = AtomCollection::collect_leafs(root, source, specified_leaf_nodes)?;
@@ -67,7 +87,7 @@ pub fn apply_query(
         }
 
         for c in m.captures {
-            let name = capture_name(&query, c);
+            let name = capture_name(&query, &c);
             atoms.resolve_capture(name, c.node, delimiter.as_deref(), scope_id.as_deref())?;
         }
     }
@@ -136,16 +156,12 @@ fn check_for_error_nodes(node: Node) -> FormatterResult<()> {
     Ok(())
 }
 
-fn collect_leaf_ids<'a>(query: &Query, root: Node, source: &'a [u8]) -> BTreeSet<usize> {
-    let mut ids = BTreeSet::new();
-
-    // TODO: Should probably use the same cursor as above
-    let mut cursor = QueryCursor::new();
-    let matches = cursor.matches(query, root, source);
+fn collect_leaf_ids(matches: &Vec<LocalQueryMatch>, capture_names: &[String]) -> HashSet<usize> {
+    let mut ids = HashSet::new();
 
     for m in matches {
-        for c in m.captures {
-            if query.capture_names()[c.index as usize] == "leaf" {
+        for c in &m.captures {
+            if capture_names[c.index as usize] == "leaf" {
                 ids.insert(c.node.id());
             }
         }
