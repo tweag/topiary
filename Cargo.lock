@@ -773,6 +773,7 @@ dependencies = [
  "tree-sitter-json",
  "tree-sitter-nickel",
  "tree-sitter-ocaml",
+ "tree-sitter-query",
  "tree-sitter-rust",
  "tree-sitter-toml",
 ]
@@ -819,6 +820,15 @@ dependencies = [
 name = "tree-sitter-ocaml"
 version = "0.20.1"
 source = "git+https://github.com/tree-sitter/tree-sitter-ocaml#f1106bf834703f1f2f795da1a3b5f8f40174ffcc"
+dependencies = [
+ "cc",
+ "tree-sitter",
+]
+
+[[package]]
+name = "tree-sitter-query"
+version = "0.0.1"
+source = "git+https://github.com/nvim-treesitter/tree-sitter-query#0717de07078a20a8608c98ad5f26c208949d0e15"
 dependencies = [
  "cc",
  "tree-sitter",

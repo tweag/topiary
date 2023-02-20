@@ -25,6 +25,9 @@ tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml" }
 tree-sitter-bash = { git = "https://github.com/tree-sitter/tree-sitter-bash" }
 tree-sitter-nickel = { git = "https://github.com/nickel-lang/tree-sitter-nickel" }
 
+# NOTE This is required by Topiary, so must remain statically linked
+tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-query" }
+
 [dev-dependencies]
 assert_cmd = "2.0"
 criterion = "0.4"
