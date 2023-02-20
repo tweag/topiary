@@ -10,7 +10,7 @@ static PRAGMA_QUERY: &str = r#"
 #[derive(Debug)]
 struct Pragma<'a> {
     predicate: &'a str,
-    value: &'a str, // TODO Optional values
+    value: Option<&'a str>,
 }
 
 #[derive(Debug)]
@@ -61,13 +61,17 @@ impl<'a> IntoIterator for Pragmata<'a> {
                     .unwrap();
 
                 // We take the entirety of the "parameters" field, which
-                // can be post-processed if necessary
-                // TODO Optional value
-                let value = node
+                // can be post-processed if necessary. NOTE If the value
+                // is an empty string, then there was no value.
+                let value = match node
                     .child_by_field_name("parameters")
                     .unwrap()
                     .utf8_text(source)
-                    .unwrap();
+                    .unwrap()
+                {
+                    "" => None,
+                    value => Some(value),
+                };
 
                 Pragma { predicate, value }
             })
