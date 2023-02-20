@@ -1,4 +1,5 @@
 use crate::{language::Language, FormatterError, FormatterResult};
+use std::str::FromStr;
 
 struct Directive<'a> {
     predicate: Value<'a>,
@@ -16,10 +17,10 @@ pub struct Configuration {
     pub indent_level: usize,
 }
 
-impl TryFrom<&str> for Configuration {
-    type Error = FormatterError;
+impl FromStr for Configuration {
+    type Err = FormatterError;
 
-    fn try_from(query: &str) -> FormatterResult<Self> {
+    fn from_str(query: &str) -> FormatterResult<Self> {
         let mut language: Option<Language> = None;
         let mut indent_level: usize = 2;
 
