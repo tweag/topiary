@@ -10,6 +10,7 @@ pub struct AtomCollection {
     prepend: HashMap<usize, Vec<Atom>>,
     append: HashMap<usize, Vec<Atom>>,
     specified_leaf_nodes: BTreeSet<usize>,
+    parent_leaf_nodes: HashMap<usize, usize>,
     multi_line_nodes: HashSet<usize>,
     blank_lines_before: HashSet<usize>,
     line_break_before: HashSet<usize>,
@@ -41,6 +42,7 @@ impl AtomCollection {
             prepend: HashMap::new(),
             append: HashMap::new(),
             specified_leaf_nodes,
+            parent_leaf_nodes: HashMap::new(),
             multi_line_nodes,
             blank_lines_before,
             line_break_before,
@@ -237,6 +239,13 @@ impl AtomCollection {
         self.atoms = expanded;
     }
 
+    fn mark_leaf_parent(&mut self, node: Node, parent_id: usize) {
+        self.parent_leaf_nodes.insert(node.id(), parent_id);
+        for child in node.children(&mut node.walk()) {
+            self.mark_leaf_parent(child, parent_id)
+        }
+    }
+
     fn collect_leafs_inner(
         &mut self,
         node: Node,
@@ -260,6 +269,8 @@ impl AtomCollection {
                 id,
                 single_line_no_indent: false,
             });
+            // Mark all sub-nodes as having this node as a "leaf parent"
+            self.mark_leaf_parent(node, node.id())
         } else {
             for child in node.children(&mut node.walk()) {
                 self.collect_leafs_inner(child, source, &parent_ids, level + 1)?;
@@ -277,12 +288,12 @@ impl AtomCollection {
             // If this is a child of a node that we have deemed as a leaf node
             // (e.g. a character in a string), we need to use that node id
             // instead.
-            let target_node = self.parent_leaf_node(target_node);
+            let target_node_id = self.parent_leaf_node(target_node);
 
             log::debug!("Prepending {atom:?} to node {:?}", target_node,);
 
             self.prepend
-                .entry(target_node.id())
+                .entry(target_node_id)
                 .and_modify(|atoms| atoms.push(atom.clone()))
                 .or_insert_with(|| vec![atom]);
         }
@@ -295,12 +306,12 @@ impl AtomCollection {
             // If this is a child of a node that we have deemed as a leaf node
             // (e.g. a character in a string), we need to use that node id
             // instead.
-            let target_node = self.parent_leaf_node(target_node);
+            let target_node_id = self.parent_leaf_node(target_node);
 
             log::debug!("Appending {atom:?} to node {:?}", target_node,);
 
             self.append
-                .entry(target_node.id())
+                .entry(target_node_id)
                 .and_modify(|atoms| atoms.push(atom.clone()))
                 .or_insert_with(|| vec![atom]);
         }
@@ -312,12 +323,12 @@ impl AtomCollection {
         // If this is a child of a node that we have deemed as a leaf node
         // (e.g. a character in a string), we need to use that node id
         // instead.
-        let target_node = self.parent_leaf_node(target_node);
+        let target_node_id = self.parent_leaf_node(target_node);
 
         log::debug!("Begin scope {scope_id:?} before node {:?}", target_node,);
 
         self.scope_begin
-            .entry(target_node.id())
+            .entry(target_node_id)
             .and_modify(|(_, scope_ids)| scope_ids.push(String::from(scope_id)))
             .or_insert_with(|| {
                 (
@@ -333,29 +344,22 @@ impl AtomCollection {
         // If this is a child of a node that we have deemed as a leaf node
         // (e.g. a character in a string), we need to use that node id
         // instead.
-        let target_node = self.parent_leaf_node(target_node);
+        let target_node_id = self.parent_leaf_node(target_node);
 
         log::debug!("End scope {scope_id:?} after node {:?}", target_node,);
 
         self.scope_end
-            .entry(target_node.id())
+            .entry(target_node_id)
             .and_modify(|(_, scope_ids)| scope_ids.push(String::from(scope_id)))
             .or_insert_with(|| (target_node.end_position().row, vec![String::from(scope_id)]));
     }
 
-    // TODO: The frequent lookup of this is inefficient, and needs to be optimized.
-    fn parent_leaf_node<'a>(&self, node: Node<'a>) -> Node<'a> {
-        let mut n = node;
-
-        while let Some(parent) = n.parent() {
-            n = parent;
-
-            if self.specified_leaf_nodes.contains(&n.id()) {
-                return n;
-            }
+    fn parent_leaf_node(&mut self, node: Node) -> usize {
+        if let Some(id) = self.parent_leaf_nodes.get(&node.id()) {
+            *id
+        } else {
+            node.id()
         }
-
-        node
     }
 
     fn expand_multiline(&self, atom: Atom, node: Node) -> Option<Atom> {
