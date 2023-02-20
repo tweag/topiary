@@ -35,10 +35,10 @@ impl Configuration {
                     if let Some(arg) = arguments.next() {
                         language = Some(Language::new(arg)?);
                     } else {
-                        Err(FormatterError::Query(
+                        return Err(FormatterError::Query(
                             "The #language! configuration predicate must have a parameter".into(),
                             None,
-                        ))?
+                        ));
                     }
                 }
                 "indent-level" => {
@@ -52,17 +52,19 @@ impl Configuration {
                             )
                         })?;
                     } else {
-                        Err(FormatterError::Query(
+                        return Err(FormatterError::Query(
                             "The #indent-level! configuration predicate must have a parameter"
                                 .into(),
                             None,
-                        ))?
+                        ));
                     }
                 }
-                _ => Err(FormatterError::Query(
-                    format!("Unknown configuration predicate '{predicate}'"),
-                    None,
-                ))?,
+                _ => {
+                    return Err(FormatterError::Query(
+                        format!("Unknown configuration predicate '{predicate}'"),
+                        None,
+                    ))
+                }
             };
         }
 
