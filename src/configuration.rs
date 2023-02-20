@@ -1,15 +1,77 @@
 use crate::{language::Language, FormatterError, FormatterResult};
 use std::str::FromStr;
+use tree_sitter::{Parser, Query, QueryCursor};
 
-struct Directive<'a> {
-    predicate: Value<'a>,
-    value: Value<'a>,
+/// Language pragmata are root-level predicates, which can be extracted with a simple query
+static PRAGMA_QUERY: &str = r#"
+    (program (predicate) @pragma)
+"#;
+
+#[derive(Debug)]
+struct Pragma<'a> {
+    predicate: &'a str,
+    value: &'a str, // TODO Optional values
 }
 
-enum Value<'a> {
-    Numeric(usize),
-    Symbol(&'a str),
-    Text(String),
+#[derive(Debug)]
+struct Pragmata<'a> {
+    source: &'a str,
+}
+
+impl<'a> From<&'a str> for Pragmata<'a> {
+    fn from(source: &'a str) -> Self {
+        Self { source }
+    }
+}
+
+impl<'a> IntoIterator for Pragmata<'a> {
+    type Item = &'a Pragma<'a>;
+    type IntoIter = std::iter::Map; // FIXME
+
+    fn into_iter(self) -> Self::IntoIter {
+        let source = self.source.as_bytes();
+        let language = tree_sitter_query::language();
+
+        let mut parser = Parser::new();
+        parser.set_language(language).unwrap();
+
+        // Parse the source to find the root node
+        let tree = parser.parse(source, None).unwrap();
+        let root = tree.root_node();
+
+        let query = Query::new(language, PRAGMA_QUERY).unwrap();
+        let mut cursor = QueryCursor::new();
+
+        cursor
+            .captures(&query, root, source)
+            .flat_map(|captures| captures.0.captures)
+            .map(|capture| {
+                // Convert the captured predicate node into a Pragma
+                let node = capture.node;
+
+                // The predicate name is under the "name" field, which
+                // consists of two sibling tokens: the "#" sigil and
+                // the name itself.
+                let predicate = node
+                    .child_by_field_name("name")
+                    .unwrap()
+                    .next_sibling()
+                    .unwrap()
+                    .utf8_text(source)
+                    .unwrap();
+
+                // We take the entirety of the "parameters" field, which
+                // can be post-processed if necessary
+                // TODO Optional value
+                let value = node
+                    .child_by_field_name("parameters")
+                    .unwrap()
+                    .utf8_text(source)
+                    .unwrap();
+
+                Pragma { predicate, value }
+            })
+    }
 }
 
 pub struct Configuration {
@@ -24,71 +86,43 @@ impl FromStr for Configuration {
         let mut language: Option<Language> = None;
         let mut indent_level: usize = 2;
 
-        todo!()
-    }
-}
-
-/*
-impl Configuration {
-    pub fn parse(query: &str) -> FormatterResult<Self> {
-        let mut language: Option<Language> = None;
-        let mut indent_level: usize = 2;
-
-        // Match lines beginning with a predicate like this:
-        // (#language! rust)
-        // (#indent-level! 4)
-        // (#foo! 1 2 bar)
-        let regex =
-            Regex::new(r"(?m)^\(#(?P<predicate>.*?)!\s+(?P<arguments>.*?)\)").expect("valid regex");
-
-        for capture in regex.captures_iter(query) {
-            let predicate = capture
-                .name("predicate")
-                .expect("predicate capture group")
-                .as_str();
-            let mut arguments = capture
-                .name("arguments")
-                .expect("arguments capture group")
-                .as_str()
-                .split(' ');
-            log::info!("Predicate: {predicate} -  Arguments: {arguments:?}");
-
+        let pragmata = Pragmata::from(query);
+        for Pragma { predicate, value } in pragmata {
             match predicate {
-                "language" => {
-                    if let Some(arg) = arguments.next() {
-                        language = Some(Language::new(arg)?);
+                &"language" => {
+                    if let Some(value) = value {
+                        language = Some(Language::new(value)?);
                     } else {
                         return Err(FormatterError::Query(
-                            "The #language! configuration predicate must have a parameter".into(),
+                            "The #language! pragma must have a parameter".into(),
                             None,
                         ));
                     }
                 }
-                "indent-level" => {
-                    if let Some(arg) = arguments.next() {
-                        indent_level = arg.parse::<usize>().map_err(|_| {
+
+                &"indent-level" => {
+                    if let Some(value) = value {
+                        indent_level = value.parse().map_err(|_| {
                             FormatterError::Query(
-                                format!(
-                                    "The #indent-level! parameter must be a positive integer, but got '{arg}'"
-                                ),
+                                format!("The #indent-level! pragma expects a positive integer, but got '{value}'"),
                                 None,
                             )
                         })?;
                     } else {
                         return Err(FormatterError::Query(
-                            "The #indent-level! configuration predicate must have a parameter"
-                                .into(),
+                            "The #indent-level! pragma must have a parameter".into(),
                             None,
                         ));
                     }
                 }
+
                 _ => {
                     return Err(FormatterError::Query(
-                        format!("Unknown configuration predicate '{predicate}'"),
+                        format!("Unknown pragma '#{predicate}!'"),
                         None,
                     ))
                 }
-            };
+            }
         }
 
         if let Some(language) = language {
@@ -97,8 +131,10 @@ impl Configuration {
                 indent_level,
             })
         } else {
-            Err(FormatterError::Query("The query file must configure a language using the #language! configuration predicate".into(), None))
+            Err(FormatterError::Query(
+                "The query file must set a language using the #language! pragma".into(),
+                None,
+            ))
         }
     }
 }
-*/
