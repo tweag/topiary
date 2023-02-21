@@ -1,63 +1,101 @@
-use crate::{language::Language, FormatterError, FormatterResult};
 use std::str::FromStr;
-use tree_sitter::{Parser, Query, QueryCursor};
 
-/// Language pragmata are root-level predicates, which can be extracted with a simple query
+use ouroboros::self_referencing;
+use tree_sitter::{Parser, Query, QueryCapture, QueryCaptures, QueryCursor, QueryMatch, Tree};
+
+use crate::{language::Language, FormatterError, FormatterResult};
+
+/// Language pragmata are root-level predicates,
+/// which can be extracted with a simple Tree-Sitter query
 static PRAGMA_QUERY: &str = r#"
     (program (predicate) @pragma)
 "#;
 
-#[derive(Debug)]
 struct Pragma<'a> {
     predicate: &'a str,
     value: Option<&'a str>,
 }
 
-#[derive(Debug)]
 struct Pragmata<'a> {
-    source: &'a str,
+    source: &'a [u8],
+}
+
+#[self_referencing]
+struct PragmataIter<'a> {
+    source: &'a [u8],
+    tree: Tree,
+    cursor: QueryCursor,
+    query: Query,
+
+    #[borrows(mut cursor, query, tree, source)]
+    #[covariant]
+    captures: QueryCaptures<'this, 'this, &'this [u8]>,
 }
 
 impl<'a> From<&'a str> for Pragmata<'a> {
     fn from(source: &'a str) -> Self {
+        let source = source.as_bytes();
         Self { source }
     }
 }
 
 impl<'a> IntoIterator for Pragmata<'a> {
-    type Item = &'a Pragma<'a>;
-    type IntoIter = std::iter::Map; // FIXME
+    type Item = Pragma<'a>;
+    type IntoIter = PragmataIter<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let source = self.source.as_bytes();
+        let source = self.source;
         let language = tree_sitter_query::language();
 
         let mut parser = Parser::new();
         parser.set_language(language).unwrap();
-
-        // Parse the source to find the root node
         let tree = parser.parse(source, None).unwrap();
-        let root = tree.root_node();
 
         let query = Query::new(language, PRAGMA_QUERY).unwrap();
-        let mut cursor = QueryCursor::new();
+        let cursor = QueryCursor::new();
 
-        cursor
-            .captures(&query, root, source)
-            .flat_map(|captures| captures.0.captures)
-            .map(|capture| {
+        PragmataIterBuilder {
+            source,
+            tree,
+            cursor,
+            query,
+
+            captures_builder: |cursor, query, tree, source| {
+                cursor.captures(query, tree.root_node(), source)
+            },
+        }
+        .build()
+    }
+}
+
+impl<'a> Iterator for PragmataIter<'a> {
+    type Item = Pragma<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.with_mut(|fields| {
+            if let Some((
+                QueryMatch {
+                    // The query will ensure there is exactly one
+                    // capture in the match; of which, we only care
+                    // about the node
+                    captures: [QueryCapture { node, .. }, ..],
+                    ..
+                },
+                _,
+            )) = fields.captures.next()
+            {
                 // Convert the captured predicate node into a Pragma
-                let node = capture.node;
+                // NOTE We can safely unwrap _most_ of the time...
 
                 // The predicate name is under the "name" field, which
-                // consists of two sibling tokens: the "#" sigil and
-                // the name itself.
+                // consists of two sibling tokens: the "#" sigil and the
+                // name itself.
                 let predicate = node
                     .child_by_field_name("name")
                     .unwrap()
                     .next_sibling()
                     .unwrap()
-                    .utf8_text(source)
+                    .utf8_text(fields.source)
                     .unwrap();
 
                 // We take the entirety of the "parameters" field, which
@@ -66,15 +104,18 @@ impl<'a> IntoIterator for Pragmata<'a> {
                 let value = match node
                     .child_by_field_name("parameters")
                     .unwrap()
-                    .utf8_text(source)
+                    .utf8_text(fields.source)
                     .unwrap()
                 {
                     "" => None,
                     value => Some(value),
                 };
 
-                Pragma { predicate, value }
-            })
+                return Some(Pragma { predicate, value });
+            }
+
+            None
+        })
     }
 }
 
@@ -93,7 +134,7 @@ impl FromStr for Configuration {
         let pragmata = Pragmata::from(query);
         for Pragma { predicate, value } in pragmata {
             match predicate {
-                &"language" => {
+                "language" => {
                     if let Some(value) = value {
                         language = Some(Language::new(value)?);
                     } else {
@@ -104,7 +145,7 @@ impl FromStr for Configuration {
                     }
                 }
 
-                &"indent-level" => {
+                "indent-level" => {
                     if let Some(value) = value {
                         indent_level = value.parse().map_err(|_| {
                             FormatterError::Query(
