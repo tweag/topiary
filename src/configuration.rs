@@ -5,6 +5,9 @@ use tree_sitter::{Parser, Query, QueryCapture, QueryCaptures, QueryCursor, Query
 
 use crate::{language::Language, FormatterError, FormatterResult};
 
+/// Default indentation level (number of spaces)
+static DEFAULT_INDENT_LEVEL: usize = 2;
+
 /// Language pragmata are root-level predicates,
 /// which can be extracted with a simple Tree-Sitter query
 static PRAGMA_QUERY: &str = r#"
@@ -40,7 +43,7 @@ impl<'a> From<&'a str> for Pragmata<'a> {
 }
 
 impl<'a> IntoIterator for Pragmata<'a> {
-    type Item = Pragma<'a>;
+    type Item = FormatterResult<Pragma<'a>>;
     type IntoIter = PragmataIter<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -69,7 +72,7 @@ impl<'a> IntoIterator for Pragmata<'a> {
 }
 
 impl<'a> Iterator for PragmataIter<'a> {
-    type Item = Pragma<'a>;
+    type Item = FormatterResult<Pragma<'a>>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.with_mut(|fields| {
@@ -111,7 +114,7 @@ impl<'a> Iterator for PragmataIter<'a> {
                     value => Some(value),
                 };
 
-                return Some(Pragma { predicate, value });
+                return Some(Ok(Pragma { predicate, value }));
             }
 
             None
@@ -119,6 +122,7 @@ impl<'a> Iterator for PragmataIter<'a> {
     }
 }
 
+/// Language query configuration from parsed pragmata
 pub struct Configuration {
     pub language: Language,
     pub indent_level: usize,
@@ -129,13 +133,20 @@ impl FromStr for Configuration {
 
     fn from_str(query: &str) -> FormatterResult<Self> {
         let mut language: Option<Language> = None;
-        let mut indent_level: usize = 2;
+        let mut indent_level: Option<usize> = None;
 
         let pragmata = Pragmata::from(query);
-        for Pragma { predicate, value } in pragmata {
+        for pragma in pragmata {
+            let Pragma { predicate, value } = pragma?;
+            log::info!("Pragma: {predicate}, Arguments: {value:?}");
+
             match predicate {
                 "language" => {
                     if let Some(value) = value {
+                        if language.is_some() {
+                            log::warn!("The #language! pragma has already been set");
+                        }
+
                         language = Some(Language::new(value)?);
                     } else {
                         return Err(FormatterError::Query(
@@ -147,12 +158,16 @@ impl FromStr for Configuration {
 
                 "indent-level" => {
                     if let Some(value) = value {
-                        indent_level = value.parse().map_err(|_| {
+                        if indent_level.is_some() {
+                            log::warn!("The #indent-level! pragma has already been set");
+                        }
+
+                        indent_level = Some(value.parse().map_err(|_| {
                             FormatterError::Query(
                                 format!("The #indent-level! pragma expects a positive integer, but got '{value}'"),
                                 None,
                             )
-                        })?;
+                        })?);
                     } else {
                         return Err(FormatterError::Query(
                             "The #indent-level! pragma must have a parameter".into(),
@@ -173,7 +188,7 @@ impl FromStr for Configuration {
         if let Some(language) = language {
             Ok(Configuration {
                 language,
-                indent_level,
+                indent_level: indent_level.unwrap_or(DEFAULT_INDENT_LEVEL),
             })
         } else {
             Err(FormatterError::Query(
