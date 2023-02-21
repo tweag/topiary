@@ -88,35 +88,58 @@ impl<'a> Iterator for PragmataIter<'a> {
             )) = fields.captures.next()
             {
                 // Convert the captured predicate node into a Pragma
-                // NOTE We can safely unwrap _most_ of the time...
+                // NOTE It would be nice to implement this as TryFrom,
+                // but I can't get the lifetime annotations right...
+
+                // This should never happen... :P
+                let parse_error = || {
+                    FormatterError::Query("Could not parse pragma at node: {node:?}".into(), None)
+                };
 
                 // The predicate name is under the "name" field, which
                 // consists of two sibling tokens: the "#" sigil and the
                 // name itself.
-                let predicate = node
-                    .child_by_field_name("name")
-                    .unwrap()
-                    .next_sibling()
-                    .unwrap()
-                    .utf8_text(fields.source)
-                    .unwrap();
+                let predicate = (|| -> FormatterResult<&str> {
+                    Ok(node
+                        .child_by_field_name("name")
+                        .ok_or_else(parse_error)?
+                        .next_sibling()
+                        .ok_or_else(parse_error)?
+                        .utf8_text(fields.source)?)
+                })();
+
+                if let Err(error) = predicate {
+                    return Some(Err(error));
+                }
 
                 // We take the entirety of the "parameters" field, which
-                // can be post-processed if necessary. NOTE If the value
-                // is an empty string, then there was no value.
-                let value = match node
-                    .child_by_field_name("parameters")
-                    .unwrap()
-                    .utf8_text(fields.source)
-                    .unwrap()
-                {
-                    "" => None,
-                    value => Some(value),
-                };
+                // can be post-processed if necessary.
+                let value = (|| -> FormatterResult<Option<&str>> {
+                    Ok(
+                        match node
+                            .child_by_field_name("parameters")
+                            .ok_or_else(parse_error)?
+                            .utf8_text(fields.source)?
+                        {
+                            // NOTE If the parsed value is an empty
+                            // string, then there was no value.
+                            "" => None,
+                            value => Some(value),
+                        },
+                    )
+                })();
 
-                return Some(Ok(Pragma { predicate, value }));
+                if let Err(error) = value {
+                    return Some(Err(error));
+                }
+
+                return Some(Ok(Pragma {
+                    predicate: predicate.unwrap(),
+                    value: value.unwrap(),
+                }));
             }
 
+            // Stop iteration
             None
         })
     }
