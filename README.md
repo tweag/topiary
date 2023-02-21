@@ -252,12 +252,12 @@ this:
 (#indent-level! 4)
 ```
 
-The `#language!` predicate must be included in any query file and
-dictates which language to parse. The queries themselves will refer to
-node types that are specific to this language.
+The `#language!` pragma must be included in any query file and dictates
+which language to parse. The queries themselves will refer to node types
+that are specific to this language.
 
-The `#indent-level!` predicate is optional and controls how many spaces
-to indent a block whenever `@append_indent_start` or
+The `#indent-level!` pragma is optional and controls how many spaces to
+indent a block whenever `@append_indent_start` or
 `@prepend_indent_start` is processed. If it is omitted, it defaults to
 two spaces.
 
