@@ -8,8 +8,11 @@ use crate::{language::Language, FormatterError, FormatterResult};
 /// Default indentation level (number of spaces)
 static DEFAULT_INDENT_LEVEL: usize = 2;
 
-/// Language pragmata are root-level predicates,
-/// which can be extracted with a simple Tree-Sitter query
+/// Language pragmata are root-level predicates, which can be extracted
+/// with a simple Tree-Sitter query.
+///
+/// NOTE It _may_ have been easier to use Tree-sitter's
+/// `Query::general_predicates` instead. Live and learn.
 static PRAGMA_QUERY: &str = r#"
     (program (predicate) @pragma)
 "#;
