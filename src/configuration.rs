@@ -224,3 +224,58 @@ impl FromStr for Configuration {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::{Configuration, FormatterResult, Language, Pragma, Pragmata};
+
+    #[test]
+    fn pragma_extraction() -> FormatterResult<()> {
+        let src = r#"
+            (#root-pragma1! value)  ; This should be extracted
+            (#root-pragma2!)        ; This should be extracted
+
+            (rule (#predicate!)     ; This should be ignored
+            (#predicate! foo bar))  ; This should be ignored
+        "#;
+
+        let mut pragmata = Pragmata::from(src).into_iter();
+
+        let Pragma { predicate, value } = pragmata.next().unwrap()?;
+        assert_eq!(predicate, "root-pragma1");
+        assert_eq!(value, Some("value"));
+
+        let Pragma { predicate, value } = pragmata.next().unwrap()?;
+        assert_eq!(predicate, "root-pragma2");
+        assert_eq!(value, None);
+
+        let pragma = pragmata.next();
+        assert!(pragma.is_none());
+
+        Ok(())
+    }
+
+    #[test]
+    fn good_configuration() -> FormatterResult<()> {
+        let src = r#"
+            (#language! rust)
+            (#indent-level! 4)
+        "#;
+
+        let Configuration {
+            language,
+            indent_level,
+        } = src.parse()?;
+
+        assert_eq!(language, Language::Rust);
+        assert_eq!(indent_level, 4);
+
+        Ok(())
+    }
+
+    #[test]
+    fn missing_language() {
+        let result = "".parse::<Configuration>();
+        assert!(result.is_err());
+    }
+}
