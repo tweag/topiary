@@ -204,9 +204,9 @@ impl FromStr for Configuration {
 
                 _ => {
                     return Err(FormatterError::Query(
-                        format!("Unknown pragma '#{predicate}!'"),
+                        format!("Unknown pragma in language query file: '#{predicate}!'"),
                         None,
-                    ))
+                    ));
                 }
             }
         }
