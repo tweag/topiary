@@ -45,9 +45,10 @@
   (exception_definition)
   (external)
   (floating_attribute)
-  ; equivalence class
-    (include_module)
-    (include_module_type)
+  ; start equivalence class
+  (include_module)
+  (include_module_type)
+  ; end equivalence class
   (inheritance_definition)
   (inheritance_specification)
   (instance_variable_definition)
@@ -98,9 +99,10 @@
 ; Append line break after module include, except if it's alone in a single-lined struct
 (
   [
-    ; equivalence class
+    ; start equivalence class
     (include_module)
     (include_module_type)
+    ; end equivalence class
   ] @append_hardline
   .
   "end"? @do_nothing
@@ -109,9 +111,10 @@
   "struct"
   .
   [
-    ; equivalence class
+    ; start equivalence class
     (include_module)
     (include_module_type)
+    ; end equivalence class
   ] @append_spaced_softline
   .
   "end"
@@ -203,28 +206,28 @@
 
 ; Those keywords are not expected to come right after an open parenthesis.
 [
-    "as"
-    "constraint"
-    "do"
-    "done"
-    "downto"
-    "else"
-    "in"
-    "nonrec"
-    "of"
-    "rec"
-    "then"
-    "to"
-    "virtual"
-    "when"
-    "with"
-    "|"
-    "->"
-    "<-"
-    "+="
-    ":="
-    ":>"
-    "::"
+  "as"
+  "constraint"
+  "do"
+  "done"
+  "downto"
+  "else"
+  "in"
+  "nonrec"
+  "of"
+  "rec"
+  "then"
+  "to"
+  "virtual"
+  "when"
+  "with"
+  "|"
+  "->"
+  "<-"
+  "+="
+  ":="
+  ":>"
+  "::"
 ] @prepend_space
 
 ; let-like and and-like operators are only followed by a closing parenthesis
@@ -431,10 +434,11 @@
     (field_get_expression)
     (hash_type)
     (labeled_argument)
-    ; equivalence class
-      (extended_module_path)
-      (module_path)
-      (module_type_path)
+    ; start equivalence class
+    (extended_module_path)
+    (module_path)
+    (module_type_path)
+    ; end equivalence class
     (number)
     (parenthesized_expression)
     (parenthesized_pattern)
@@ -477,10 +481,11 @@
     (field_get_expression)
     (local_open_pattern)
     (labeled_argument)
-    ; equivalence class
-      (extended_module_path)
-      (module_path)
-      (module_type_path)
+    ; start equivalence class
+    (extended_module_path)
+    (module_path)
+    (module_type_path)
+    ; end equivalence class
     (number)
     (parenthesized_expression)
     (parenthesized_pattern)
@@ -521,7 +526,6 @@
     ":"
   ] @append_space
 )
-
 
 ; Some kinds of colons should have a space in front.
 (
@@ -820,9 +824,10 @@
   [
     (value_specification)
     (type_definition)
-    ; equivalence class
-      (include_module)
-      (include_module_type)
+    ; start equivalence class
+    (include_module)
+    (include_module_type)
+    ; end equivalence class
   ] @append_spaced_softline
 )
 
@@ -1497,5 +1502,5 @@
 (
   (comment) @append_input_softline
   .
-  [ "," ";" ]* @do_nothing
+  ["," ";"]* @do_nothing
 )
