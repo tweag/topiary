@@ -16,6 +16,7 @@ pub enum Language {
     OcamlInterface,
     Rust,
     Toml,
+    TreeSitterQuery,
 }
 
 // NOTE This list of extension mappings is influenced by Wilfred Hughes' Difftastic
@@ -46,6 +47,7 @@ const EXTENSIONS: &[(Language, &[&str])] = &[
     (Language::OcamlInterface, &["mli"]),
     (Language::Rust, &["rs"]),
     (Language::Toml, &["toml"]),
+    (Language::TreeSitterQuery, &["scm"]),
 ];
 
 impl Language {
@@ -59,6 +61,7 @@ impl Language {
             "ocaml-interface" => Ok(Language::OcamlInterface),
             "rust" => Ok(Language::Rust),
             "toml" => Ok(Language::Toml),
+            "tree-sitter-query" => Ok(Language::TreeSitterQuery),
 
             _ => Err(FormatterError::Query(
                 format!("Unsupported language specified: '{s}'"),
@@ -100,6 +103,7 @@ impl Language {
             Language::OcamlInterface => "ocaml",
             Language::Rust => "rust",
             Language::Toml => "toml",
+            Language::TreeSitterQuery => "tree-sitter-query",
         }
     }
 
@@ -148,6 +152,7 @@ impl Language {
             Language::OcamlInterface => vec![tree_sitter_ocaml::language_ocaml_interface()],
             Language::Rust => vec![tree_sitter_rust::language()],
             Language::Toml => vec![tree_sitter_toml::language()],
+            Language::TreeSitterQuery => vec![tree_sitter_query::language()],
         }
     }
 }
