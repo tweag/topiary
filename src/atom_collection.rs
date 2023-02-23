@@ -135,6 +135,10 @@ impl AtomCollection {
                 self.prepend(Atom::DeleteBegin, node);
                 self.append(Atom::DeleteEnd, node)
             }
+            "singleline_delete" => {
+                self.prepend(Atom::SingleLineDeleteBegin, node);
+                self.append(Atom::SingleLineDeleteEnd, node)
+            }
             // Scope manipulation
             "begin_scope" => self.begin_scope_before(node, requires_scope_id()?),
             "end_scope" => self.end_scope_after(node, requires_scope_id()?),
@@ -402,6 +406,42 @@ impl AtomCollection {
                         parent
                     );
                     Some(Atom::Literal(literal))
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        } else if let Atom::SingleLineDeleteBegin = atom {
+            if let Some(parent) = node.parent() {
+                let parent_id = parent.id();
+
+                if !self.multi_line_nodes.contains(&parent_id) {
+                    log::debug!(
+                        "Expanding single-line delete begin in node {:?} with parent {}: {:?}",
+                        node,
+                        parent_id,
+                        parent
+                    );
+                    Some(Atom::DeleteBegin)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        } else if let Atom::SingleLineDeleteEnd = atom {
+            if let Some(parent) = node.parent() {
+                let parent_id = parent.id();
+
+                if !self.multi_line_nodes.contains(&parent_id) {
+                    log::debug!(
+                        "Expanding single-line delete end in node {:?} with parent {}: {:?}",
+                        node,
+                        parent_id,
+                        parent
+                    );
+                    Some(Atom::DeleteEnd)
                 } else {
                     None
                 }
