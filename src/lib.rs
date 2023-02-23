@@ -68,6 +68,9 @@ pub enum Atom {
     // it might happen that it contains several leaves.
     DeleteBegin,
     DeleteEnd,
+    /// Represents a segment to be deleted, only if the context is single-line
+    SingleLineDeleteBegin,
+    SingleLineDeleteEnd,
     /// Scoped commands
     // ScopedSoftline works together with the @open_scope and @end_scope query tags.
     // To decide if a scoped softline must be expanded into a hardline, we look at
