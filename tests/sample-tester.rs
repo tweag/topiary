@@ -1,7 +1,7 @@
 use pretty_assertions::assert_eq;
 use std::fs;
 use std::io::BufReader;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use test_log::test;
 use topiary::{formatter, Language};
 
@@ -14,17 +14,14 @@ fn input_output_tester() {
         let file = file.unwrap();
 
         let input_path = file.path();
-        let language =
-            Language::detect(input_path.to_str().unwrap()).unwrap_or_else(|err| panic!("{err}"));
+        let language: Language = input_path.try_into().unwrap();
 
         let expected_path = expected_dir.join(file.file_name());
         let expected = fs::read_to_string(expected_path).unwrap();
 
         let mut input = BufReader::new(fs::File::open(file.path()).unwrap());
         let mut output = Vec::new();
-        let query_path_base = Language::query_file_base_name(language);
-        let query_path = str::to_lowercase(format!("languages/{query_path_base}.scm").as_str());
-        let query = fs::read_to_string(query_path).unwrap();
+        let query = fs::read_to_string(PathBuf::try_from(language).unwrap()).unwrap();
         let mut query = query.as_bytes();
 
         formatter(&mut input, &mut output, &mut query, Some(language), true).unwrap();
@@ -48,9 +45,7 @@ fn formatted_query_tester() {
 
         let mut input = BufReader::new(fs::File::open(file.path()).unwrap());
         let mut output = Vec::new();
-        let query_path_base = Language::query_file_base_name(language);
-        let query_path = str::to_lowercase(format!("languages/{query_path_base}.scm").as_str());
-        let query = fs::read_to_string(query_path).unwrap();
+        let query = fs::read_to_string(PathBuf::try_from(language).unwrap()).unwrap();
         let mut query = query.as_bytes();
 
         formatter(&mut input, &mut output, &mut query, Some(language), true).unwrap();

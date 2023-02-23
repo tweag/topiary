@@ -1,7 +1,5 @@
-// use std::env::var;
-use std::ffi::OsString;
 use std::io;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use crate::{FormatterError, FormatterResult, IoError};
 
@@ -50,31 +48,91 @@ const EXTENSIONS: &[(Language, &[&str])] = &[
     (Language::TreeSitterQuery, &["scm"]),
 ];
 
-impl Language {
-    pub fn new(s: &str) -> FormatterResult<Self> {
-        match s.to_lowercase().as_str() {
-            "bash" => Ok(Language::Bash),
-            "json" => Ok(Language::Json),
-            "nickel" => Ok(Language::Nickel),
-            "ocaml" => Ok(Language::Ocaml),
-            "ocaml-implementation" => Ok(Language::OcamlImplementation),
-            "ocaml-interface" => Ok(Language::OcamlInterface),
-            "rust" => Ok(Language::Rust),
-            "toml" => Ok(Language::Toml),
-            "tree-sitter-query" => Ok(Language::TreeSitterQuery),
+/// Convert a string into a Language, if possible.
+impl TryFrom<&str> for Language {
+    type Error = FormatterError;
 
-            _ => Err(FormatterError::Query(
-                format!("Unsupported language specified: '{s}'"),
-                None,
-            )),
-        }
+    fn try_from(s: &str) -> FormatterResult<Self> {
+        Ok(match s.to_lowercase().as_str() {
+            "bash" => Language::Bash,
+            "json" => Language::Json,
+            "nickel" => Language::Nickel,
+            "ocaml" => Language::Ocaml,
+            "ocaml-implementation" => Language::OcamlImplementation,
+            "ocaml-interface" => Language::OcamlInterface,
+            "rust" => Language::Rust,
+            "toml" => Language::Toml,
+            "tree-sitter-query" => Language::TreeSitterQuery,
+
+            _ => {
+                return Err(FormatterError::Query(
+                    format!("Unsupported language specified: '{s}'"),
+                    None,
+                ))
+            }
+        })
     }
+}
 
-    pub fn detect(filename: &str) -> FormatterResult<Language> {
-        let filename: String = filename.into();
-        let extension: Option<OsString> = Path::new(&filename)
-            .extension()
-            .map(|ext| ext.to_os_string());
+/// Convert a Language into the canonical basename of its query file, under the most appropriate
+/// search path. We test 3 different locations for query files, in the following priority order,
+/// returning the first that exists:
+///
+/// 1. Under the TOPIARY_LANGUAGE_DIR environment variable at runtime;
+/// 2. Under the TOPIARY_LANGUAGE_DIR environment variable at build time;
+/// 3. Under the `./languages` subdirectory.
+///
+/// If all of these fail, we return an I/O error.
+///
+/// Note that different languages may map to the same query file, because their grammars produce
+/// similar trees, which can be formatted with the same queries.
+impl TryFrom<Language> for PathBuf {
+    type Error = FormatterError;
+
+    fn try_from(language: Language) -> FormatterResult<Self> {
+        let basename = Self::from(match language {
+            Language::Bash => "bash",
+            Language::Json => "json",
+            Language::Nickel => "nickel",
+            Language::Ocaml => "ocaml",
+            Language::OcamlImplementation => "ocaml",
+            Language::OcamlInterface => "ocaml",
+            Language::Rust => "rust",
+            Language::Toml => "toml",
+            Language::TreeSitterQuery => "tree-sitter-query",
+        })
+        .with_extension("scm");
+
+        #[rustfmt::skip]
+        let potentials: [Option<PathBuf>; 3] = [
+            std::env::var("TOPIARY_LANGUAGE_DIR").map(PathBuf::from).ok(),
+            option_env!("TOPIARY_LANGUAGE_DIR").map(PathBuf::from),
+            Some(PathBuf::from("./languages")),
+        ];
+
+        potentials
+            .into_iter()
+            .flatten()
+            .map(|path| path.join(&basename))
+            .find(|path| path.exists())
+            .ok_or_else(|| {
+                FormatterError::Io(IoError::Filesystem(
+                    "Language query file could not be found".into(),
+                    io::Error::from(io::ErrorKind::NotFound),
+                ))
+            })
+    }
+}
+
+/// Extract the extension from a Path and use it to detect the Language.
+///
+/// Note that, ideally, we'd like to TryFrom AsRef<Path>, but this collides with a blanket
+/// implementation in core :(
+impl TryFrom<PathBuf> for Language {
+    type Error = FormatterError;
+
+    fn try_from(path: PathBuf) -> FormatterResult<Self> {
+        let extension = path.extension().map(|ext| ext.to_string_lossy());
 
         if extension.is_some() {
             let extension = extension.as_deref().unwrap();
@@ -88,58 +146,19 @@ impl Language {
             }
         }
 
-        Err(FormatterError::LanguageDetection(filename, extension))
+        Err(FormatterError::LanguageDetection(
+            path.clone(),
+            extension.map(|v| v.into()),
+        ))
     }
+}
 
-    // Different languages may map to the same query file, because their grammars
-    // produce similar trees, which can be formatted with the same queries.
-    pub fn query_file_base_name(language: Language) -> &'static str {
-        match language {
-            Language::Bash => "bash",
-            Language::Json => "json",
-            Language::Nickel => "nickel",
-            Language::Ocaml => "ocaml",
-            Language::OcamlImplementation => "ocaml",
-            Language::OcamlInterface => "ocaml",
-            Language::Rust => "rust",
-            Language::Toml => "toml",
-            Language::TreeSitterQuery => "tree-sitter-query",
-        }
-    }
-
-    pub fn query_path(language: Language) -> FormatterResult<PathBuf> {
-        // We test 3 different locations for query files, in the following priority order,
-        // returning the first that exists:
-        //
-        // 1. Under the TOPIARY_LANGUAGE_DIR env variable at runtime;
-        // 2. Under the TOPIARY_LANGUAGE_DIR env variable at build time;
-        // 3. Under the "./languages" subdirectory.
-        //
-        // If all of these fail, we return an I/O error.
-
-        let query_file = Self::query_file_base_name(language);
-
-        #[rustfmt::skip]
-        let potentials: [Option<PathBuf>; 3] = [
-            std::env::var("TOPIARY_LANGUAGE_DIR").map(PathBuf::from).ok(),
-            option_env!("TOPIARY_LANGUAGE_DIR").map(PathBuf::from),
-            Some(PathBuf::from("./languages")),
-        ];
-
-        potentials
-            .into_iter()
-            .flatten()
-            .map(|path| path.join(format!("{query_file}.scm")))
-            .find(|path| path.exists())
-            .ok_or_else(|| {
-                FormatterError::Io(IoError::Filesystem(
-                    "Language query file could not be found".into(),
-                    io::Error::from(io::ErrorKind::NotFound),
-                ))
-            })
-    }
-
-    pub fn grammars(language: Language) -> Vec<tree_sitter::Language> {
+/// Convert a Language into a vector of supported Tree-sitter grammars, ordered by priority.
+///
+/// Note that, currently, all grammars are statically linked. This will change once dynamic linking
+/// is implemented (see Issue #4).
+impl From<Language> for Vec<tree_sitter::Language> {
+    fn from(language: Language) -> Self {
         match language {
             Language::Bash => vec![tree_sitter_bash::language()],
             Language::Json => vec![tree_sitter_json::language()],

@@ -75,7 +75,7 @@ fn run() -> CLIResult<()> {
     let language: Option<Language> = if let Some(language) = args.language {
         Some(language.into())
     } else if let Some(filename) = args.input_file.as_deref() {
-        Some(Language::detect(filename)?)
+        Some(PathBuf::from(filename).try_into()?)
     } else {
         // At this point, Clap ensures that args.query must be present.
         // We will read the language from the query file later.
@@ -86,7 +86,7 @@ fn run() -> CLIResult<()> {
         query
     } else if let Some(language) = language {
         // Deduce the query file from the language, if the argument is missing
-        Language::query_path(language)?
+        language.try_into()?
     } else {
         // Clap ensures we won't get here
         unreachable!();
