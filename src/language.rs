@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use crate::{FormatterError, FormatterResult, IoError};
 
 /// The languages that we support with query files.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Language {
     Bash,
     Json,
