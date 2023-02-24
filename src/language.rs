@@ -61,12 +61,12 @@ impl Language {
 
     /// Convenience alias to return the query file path for the Language.
     pub fn query_file(&self) -> FormatterResult<PathBuf> {
-        self.to_owned().try_into()
+        (*self).try_into()
     }
 
     /// Convenience alias to return the Tree-sitter grammars for the Language.
     pub fn grammars(&self) -> Vec<tree_sitter::Language> {
-        self.to_owned().into()
+        (*self).into()
     }
 }
 
@@ -156,9 +156,7 @@ impl TryFrom<PathBuf> for Language {
     fn try_from(path: PathBuf) -> FormatterResult<Self> {
         let extension = path.extension().map(|ext| ext.to_string_lossy());
 
-        if extension.is_some() {
-            let extension = extension.as_deref().unwrap();
-
+        if let Some(extension) = &extension {
             // NOTE This extension search is influenced by Wilfred Hughes' Difftastic
             // https://github.com/Wilfred/difftastic/blob/master/src/parse/guess_language.rs
             for (language, extensions) in EXTENSIONS {
