@@ -1,5 +1,5 @@
 use std::io;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::{FormatterError, FormatterResult, IoError};
 
@@ -47,6 +47,28 @@ const EXTENSIONS: &[(Language, &[&str])] = &[
     (Language::Toml, &["toml"]),
     (Language::TreeSitterQuery, &["scm"]),
 ];
+
+impl Language {
+    /// Convenience alias to create a Language from "magic strings".
+    pub fn new(s: &str) -> FormatterResult<Self> {
+        s.try_into()
+    }
+
+    /// Convenience alias to detect the Language from a Path-like value's extension.
+    pub fn detect<P: AsRef<Path>>(path: P) -> FormatterResult<Self> {
+        path.as_ref().to_path_buf().try_into()
+    }
+
+    /// Convenience alias to return the query file path for the Language.
+    pub fn query_file(&self) -> FormatterResult<PathBuf> {
+        self.to_owned().try_into()
+    }
+
+    /// Convenience alias to return the Tree-sitter grammars for the Language.
+    pub fn grammars(&self) -> Vec<tree_sitter::Language> {
+        self.to_owned().into()
+    }
+}
 
 /// Convert a string into a Language, if possible.
 impl TryFrom<&str> for Language {

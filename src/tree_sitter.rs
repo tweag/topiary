@@ -21,7 +21,7 @@ pub fn apply_query(
     query_content: &str,
     language: Language,
 ) -> FormatterResult<AtomCollection> {
-    let (tree, grammar) = parse(input_content, language.into())?;
+    let (tree, grammar) = parse(input_content, language.grammars())?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
     let query = Query::new(grammar, query_content)

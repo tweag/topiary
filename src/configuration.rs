@@ -173,7 +173,7 @@ impl FromStr for Configuration {
                             log::warn!("The #language! pragma has already been set");
                         }
 
-                        language = Some(value.try_into()?);
+                        language = Some(Language::new(value)?);
                     } else {
                         return Err(FormatterError::Query(
                             "The #language! pragma must have a parameter".into(),
