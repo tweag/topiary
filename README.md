@@ -97,6 +97,7 @@ specifying the path to their query files.
 * [Rust]
 * [Bash]
 * [Nickel]
+* [Tree Sitter Queries][tree-sitter-query]
 
 ## Getting Started
 
