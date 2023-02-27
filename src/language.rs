@@ -61,12 +61,12 @@ impl Language {
 
     /// Convenience alias to return the query file path for the Language.
     pub fn query_file(&self) -> FormatterResult<PathBuf> {
-        (*self).try_into()
+        self.try_into()
     }
 
     /// Convenience alias to return the Tree-sitter grammars for the Language.
     pub fn grammars(&self) -> Vec<tree_sitter::Language> {
-        (*self).into()
+        self.into()
     }
 }
 
@@ -108,10 +108,10 @@ impl TryFrom<&str> for Language {
 ///
 /// Note that different languages may map to the same query file, because their grammars produce
 /// similar trees, which can be formatted with the same queries.
-impl TryFrom<Language> for PathBuf {
+impl TryFrom<&Language> for PathBuf {
     type Error = FormatterError;
 
-    fn try_from(language: Language) -> FormatterResult<Self> {
+    fn try_from(language: &Language) -> FormatterResult<Self> {
         let basename = Self::from(match language {
             Language::Bash => "bash",
             Language::Json => "json",
@@ -177,8 +177,8 @@ impl TryFrom<PathBuf> for Language {
 ///
 /// Note that, currently, all grammars are statically linked. This will change once dynamic linking
 /// is implemented (see Issue #4).
-impl From<Language> for Vec<tree_sitter::Language> {
-    fn from(language: Language) -> Self {
+impl From<&Language> for Vec<tree_sitter::Language> {
+    fn from(language: &Language) -> Self {
         match language {
             Language::Bash => vec![tree_sitter_bash::language()],
             Language::Json => vec![tree_sitter_json::language()],
