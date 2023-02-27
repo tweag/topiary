@@ -86,7 +86,7 @@ fn run() -> CLIResult<()> {
         query
     } else if let Some(language) = language {
         // Deduce the query file from the language, if the argument is missing
-        Language::query_path(language)?
+        language.query_file()?
     } else {
         // Clap ensures we won't get here
         unreachable!();

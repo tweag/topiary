@@ -1,5 +1,3 @@
-// use std::env::var;
-use std::ffi::OsString;
 use std::io;
 use std::path::{Path, PathBuf};
 
@@ -51,50 +49,70 @@ const EXTENSIONS: &[(Language, &[&str])] = &[
 ];
 
 impl Language {
+    /// Convenience alias to create a Language from "magic strings".
     pub fn new(s: &str) -> FormatterResult<Self> {
-        match s.to_lowercase().as_str() {
-            "bash" => Ok(Language::Bash),
-            "json" => Ok(Language::Json),
-            "nickel" => Ok(Language::Nickel),
-            "ocaml" => Ok(Language::Ocaml),
-            "ocaml-implementation" => Ok(Language::OcamlImplementation),
-            "ocaml-interface" => Ok(Language::OcamlInterface),
-            "rust" => Ok(Language::Rust),
-            "toml" => Ok(Language::Toml),
-            "tree-sitter-query" => Ok(Language::TreeSitterQuery),
-
-            _ => Err(FormatterError::Query(
-                format!("Unsupported language specified: '{s}'"),
-                None,
-            )),
-        }
+        s.try_into()
     }
 
-    pub fn detect(filename: &str) -> FormatterResult<Language> {
-        let filename: String = filename.into();
-        let extension: Option<OsString> = Path::new(&filename)
-            .extension()
-            .map(|ext| ext.to_os_string());
+    /// Convenience alias to detect the Language from a Path-like value's extension.
+    pub fn detect<P: AsRef<Path>>(path: P) -> FormatterResult<Self> {
+        path.as_ref().to_path_buf().try_into()
+    }
 
-        if extension.is_some() {
-            let extension = extension.as_deref().unwrap();
+    /// Convenience alias to return the query file path for the Language.
+    pub fn query_file(&self) -> FormatterResult<PathBuf> {
+        self.try_into()
+    }
 
-            // NOTE This extension search is influenced by Wilfred Hughes' Difftastic
-            // https://github.com/Wilfred/difftastic/blob/master/src/parse/guess_language.rs
-            for (language, extensions) in EXTENSIONS {
-                if extensions.iter().any(|&candidate| candidate == extension) {
-                    return Ok(*language);
-                }
+    /// Convenience alias to return the Tree-sitter grammars for the Language.
+    pub fn grammars(&self) -> Vec<tree_sitter::Language> {
+        self.into()
+    }
+}
+
+/// Convert a string into a Language, if possible.
+impl TryFrom<&str> for Language {
+    type Error = FormatterError;
+
+    fn try_from(s: &str) -> FormatterResult<Self> {
+        Ok(match s.to_lowercase().as_str() {
+            "bash" => Language::Bash,
+            "json" => Language::Json,
+            "nickel" => Language::Nickel,
+            "ocaml" => Language::Ocaml,
+            "ocaml-implementation" => Language::OcamlImplementation,
+            "ocaml-interface" => Language::OcamlInterface,
+            "rust" => Language::Rust,
+            "toml" => Language::Toml,
+            "tree-sitter-query" => Language::TreeSitterQuery,
+
+            _ => {
+                return Err(FormatterError::Query(
+                    format!("Unsupported language specified: '{s}'"),
+                    None,
+                ))
             }
-        }
-
-        Err(FormatterError::LanguageDetection(filename, extension))
+        })
     }
+}
 
-    // Different languages may map to the same query file, because their grammars
-    // produce similar trees, which can be formatted with the same queries.
-    pub fn query_file_base_name(language: Language) -> &'static str {
-        match language {
+/// Convert a Language into the canonical basename of its query file, under the most appropriate
+/// search path. We test 3 different locations for query files, in the following priority order,
+/// returning the first that exists:
+///
+/// 1. Under the TOPIARY_LANGUAGE_DIR environment variable at runtime;
+/// 2. Under the TOPIARY_LANGUAGE_DIR environment variable at build time;
+/// 3. Under the `./languages` subdirectory.
+///
+/// If all of these fail, we return an I/O error.
+///
+/// Note that different languages may map to the same query file, because their grammars produce
+/// similar trees, which can be formatted with the same queries.
+impl TryFrom<&Language> for PathBuf {
+    type Error = FormatterError;
+
+    fn try_from(language: &Language) -> FormatterResult<Self> {
+        let basename = Self::from(match language {
             Language::Bash => "bash",
             Language::Json => "json",
             Language::Nickel => "nickel",
@@ -104,20 +122,8 @@ impl Language {
             Language::Rust => "rust",
             Language::Toml => "toml",
             Language::TreeSitterQuery => "tree-sitter-query",
-        }
-    }
-
-    pub fn query_path(language: Language) -> FormatterResult<PathBuf> {
-        // We test 3 different locations for query files, in the following priority order,
-        // returning the first that exists:
-        //
-        // 1. Under the TOPIARY_LANGUAGE_DIR env variable at runtime;
-        // 2. Under the TOPIARY_LANGUAGE_DIR env variable at build time;
-        // 3. Under the "./languages" subdirectory.
-        //
-        // If all of these fail, we return an I/O error.
-
-        let query_file = Self::query_file_base_name(language);
+        })
+        .with_extension("scm");
 
         #[rustfmt::skip]
         let potentials: [Option<PathBuf>; 3] = [
@@ -129,7 +135,7 @@ impl Language {
         potentials
             .into_iter()
             .flatten()
-            .map(|path| path.join(format!("{query_file}.scm")))
+            .map(|path| path.join(&basename))
             .find(|path| path.exists())
             .ok_or_else(|| {
                 FormatterError::Io(IoError::Filesystem(
@@ -138,8 +144,41 @@ impl Language {
                 ))
             })
     }
+}
 
-    pub fn grammars(language: Language) -> Vec<tree_sitter::Language> {
+/// Extract the extension from a Path and use it to detect the Language.
+///
+/// Note that, ideally, we'd like to TryFrom AsRef<Path>, but this collides with a blanket
+/// implementation in core :(
+impl TryFrom<PathBuf> for Language {
+    type Error = FormatterError;
+
+    fn try_from(path: PathBuf) -> FormatterResult<Self> {
+        let extension = path.extension().map(|ext| ext.to_string_lossy());
+
+        if let Some(extension) = &extension {
+            // NOTE This extension search is influenced by Wilfred Hughes' Difftastic
+            // https://github.com/Wilfred/difftastic/blob/master/src/parse/guess_language.rs
+            for (language, extensions) in EXTENSIONS {
+                if extensions.iter().any(|&candidate| candidate == extension) {
+                    return Ok(*language);
+                }
+            }
+        }
+
+        Err(FormatterError::LanguageDetection(
+            path.clone(),
+            extension.map(|v| v.into()),
+        ))
+    }
+}
+
+/// Convert a Language into a vector of supported Tree-sitter grammars, ordered by priority.
+///
+/// Note that, currently, all grammars are statically linked. This will change once dynamic linking
+/// is implemented (see Issue #4).
+impl From<&Language> for Vec<tree_sitter::Language> {
+    fn from(language: &Language) -> Self {
         match language {
             Language::Bash => vec![tree_sitter_bash::language()],
             Language::Json => vec![tree_sitter_json::language()],
