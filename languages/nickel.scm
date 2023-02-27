@@ -20,7 +20,7 @@
 (
   (comment) @append_input_softline
   .
-  [ "," ";" ]* @do_nothing
+  ["," ";"]* @do_nothing
 )
 
 ; Surround spaces

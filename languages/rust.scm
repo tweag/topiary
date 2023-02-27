@@ -66,7 +66,7 @@
 (
   (block_comment) @append_input_softline
   .
-  [ "," ";" ]* @do_nothing
+  ["," ";"]* @do_nothing
 )
 
 ; Append line breaks. If there is a comment following, we don't add anything,
@@ -101,7 +101,7 @@
     ";"
   ] @append_spaced_softline
   .
-  [ (block_comment) (line_comment) ]* @do_nothing
+  [(block_comment) (line_comment)]* @do_nothing
 )
 
 ; Prepend softlines before dots

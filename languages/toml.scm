@@ -28,13 +28,13 @@
 )
 
 (table
-  [ (bare_key) (dotted_key) ]
+  [(bare_key) (dotted_key)]
   .
   "]" @append_hardline
 )
 
 (table_array_element
-  [ (bare_key) (dotted_key) ]
+  [(bare_key) (dotted_key)]
   .
   "]]" @append_hardline
 )

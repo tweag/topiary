@@ -276,35 +276,43 @@
 )
 
 (if_statement
-  . _ "then"
+  .
+  _
+  "then"
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
   "\n"
 )
 
 (elif_clause
-  . _ "then"
+  .
+  _
+  "then"
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
   "\n"
 )
 
 (else_clause
-  . "else"
+  .
+  "else"
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
   "\n"
 )
 
 (case_item
-  . _ ")"
+  .
+  _
+  ")"
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
   "\n"
 )
 
 (do_group
-  . "do"
+  .
+  "do"
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
   .
   "\n"
@@ -324,7 +332,7 @@
 )
 
 (pipeline
-  [(_) "|" "|&" ] @append_space
+  [(_) "|" "|&"] @append_space
   .
   _
 )
@@ -418,7 +426,8 @@
 [
   (if_statement)
   (elif_clause)
-] "then" @append_hardline @append_indent_start
+]
+"then" @append_hardline @append_indent_start
 
 ; New line after "else" and start indent block
 (else_clause
@@ -442,7 +451,6 @@
   ";"* @do_nothing
   .
   "then" @prepend_delimiter @prepend_space
-
   (#delimiter! ";")
 )
 
@@ -459,8 +467,8 @@
 ; in the context of a (test_command); it does work in other contexts
 ; See https://github.com/tweag/topiary/pull/155#issuecomment-1364143677
 (binary_expression
-   left: _ @append_space
-   right: _ @prepend_space
+  left: _ @append_space
+  right: _ @prepend_space
 )
 
 ;; Case Statements
@@ -468,7 +476,11 @@
 ; Indentation block between the "in" and the "esac"
 (case_statement
   .
-  "case" . _ .  "in" @append_hardline @append_indent_start
+  "case"
+  .
+  _
+  .
+  "in" @append_hardline @append_indent_start
   _
   "esac" @prepend_hardline @prepend_indent_end
   .
@@ -523,7 +535,6 @@
   ";"* @do_nothing
   .
   (do_group) @prepend_delimiter @prepend_space
-
   (#delimiter! ";")
 )
 
