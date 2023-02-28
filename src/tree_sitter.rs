@@ -97,7 +97,7 @@ pub fn apply_query(
     Ok(atoms)
 }
 
-fn capture_name<'a, 'b>(query: &'a Query, capture: &'b QueryCapture) -> &'a str {
+fn capture_name<'a>(query: &'a Query, capture: &QueryCapture) -> &'a str {
     query.capture_names()[capture.index as usize].as_str()
 }
 
@@ -119,7 +119,7 @@ fn parse(
                 FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
             })?;
             let tree = parser
-                .parse(&content, None)
+                .parse(content, None)
                 .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))?;
             // Fail parsing if we don't get a complete syntax tree.
             check_for_error_nodes(tree.root_node())?;
