@@ -61,9 +61,9 @@ fn test_no_clobber() {
         .arg("--language")
         .arg("json")
         .arg("--input-file")
-        .arg(&input_path)
+        .arg(input_path)
         .arg("--output-file")
-        .arg(&input_path)
+        .arg(input_path)
         .assert()
         .success();
 
@@ -82,7 +82,7 @@ fn test_in_place() {
         .arg("--language")
         .arg("json")
         .arg("--input-file")
-        .arg(&input_path)
+        .arg(input_path)
         .arg("--in-place")
         .assert()
         .success();
