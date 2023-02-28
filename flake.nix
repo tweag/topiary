@@ -11,14 +11,20 @@
   };
   
   inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
+    crane = {
+      url = "github:ipetkov/crane";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     advisory-db = {
       url = "github:rustsec/advisory-db";
       flake = false;
     };
-    crane.url = "github:ipetkov/crane";
-    flake-utils.follows = "crane/flake-utils";
+
+    flake-utils.url = "github:numtide/flake-utils";
     nix-filter.url = "github:numtide/nix-filter";
-    nixpkgs.follows = "crane/nixpkgs";
   };
 
   outputs = inputs: with inputs;
