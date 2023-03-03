@@ -52,9 +52,10 @@ struct Args {
         short,
         long,
         value_enum,
-        alias("visualize"),
-        conflicts_with_all(&["in-place", "skip-idempotence"]),
-        default_missing_value("json"),
+        aliases = &["view", "visualize"],
+        value_name = "OUTPUT_FORMAT",
+        conflicts_with_all = &["in-place", "skip-idempotence"],
+        default_missing_value = "json",
         display_order = 6
     )]
     visualise: Option<Visualisation>,
