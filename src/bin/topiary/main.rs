@@ -1,14 +1,19 @@
 mod error;
 mod output;
 mod supported;
+mod visualise;
 
-use crate::{error::CLIResult, output::OutputFile, supported::SupportedLanguage};
-use clap::{ArgGroup, Parser};
 use std::{
     error::Error,
     fs::File,
     io::{stdin, BufReader, BufWriter},
     path::PathBuf,
+};
+
+use clap::{ArgGroup, Parser};
+
+use crate::{
+    error::CLIResult, output::OutputFile, supported::SupportedLanguage, visualise::Visualisation,
 };
 use topiary::{formatter, Language};
 
@@ -18,7 +23,7 @@ use topiary::{formatter, Language};
 #[clap(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "input-file", "query"]),))]
 struct Args {
     /// Which language to parse and format
-    #[clap(short, long, arg_enum, display_order = 1)]
+    #[clap(short, long, value_enum, display_order = 1)]
     language: Option<SupportedLanguage>,
 
     /// Path to an input file. If omitted, or equal to "-", read from standard
@@ -39,8 +44,20 @@ struct Args {
     #[clap(short, long, requires = "input-file", display_order = 5)]
     in_place: bool,
 
+    /// Visualise the syntax tree, rather than format.
+    #[clap(
+        short,
+        long,
+        value_enum,
+        alias("visualize"),
+        conflicts_with_all(&["in-place", "skip-idempotence"]),
+        default_missing_value("json"),
+        display_order = 6
+    )]
+    visualise: Option<Visualisation>,
+
     /// Do not check that formatting twice gives the same output
-    #[clap(short, long, display_order = 6)]
+    #[clap(short, long, display_order = 7)]
     skip_idempotence: bool,
 }
 
@@ -94,13 +111,18 @@ fn run() -> CLIResult<()> {
 
     let mut query = BufReader::new(File::open(query_path)?);
 
-    formatter(
-        &mut input,
-        &mut output,
-        &mut query,
-        language,
-        args.skip_idempotence,
-    )?;
+    if let Some(visualisation) = args.visualise {
+        eprintln!("{visualisation:?}");
+        todo!();
+    } else {
+        formatter(
+            &mut input,
+            &mut output,
+            &mut query,
+            language,
+            args.skip_idempotence,
+        )?;
+    }
 
     output.into_inner()?.persist()?;
 

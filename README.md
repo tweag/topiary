@@ -163,6 +163,10 @@ Options:
   Format the input file in place. (This has the effect of setting the
   output file equal to the input file.)
 
+* `-v`, `--visualise`\
+  Visualise the syntax tree, rather than format [possible values: `json`
+  (default)].
+
 * `-s`, `--skip-idempotence`\
   Do not check that formatting twice gives the same output.
 
