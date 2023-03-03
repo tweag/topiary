@@ -10,7 +10,7 @@
 //! More details can be found on
 //! [GitHub](https://github.com/tweag/topiary).
 
-use configuration::Configuration;
+pub use configuration::Configuration;
 pub use error::{FormatterError, IoError};
 use itertools::Itertools;
 pub use language::Language;
