@@ -685,6 +685,25 @@
   (match_case) @prepend_spaced_softline
 )
 
+; Allow (and enforce) the optional "|" before the first match case
+; if and only if the context is multi-line
+(
+  (match_case)? @do_nothing
+  .
+  "|" @singleline_delete
+  .
+  (match_case)
+)
+
+(
+  (match_case)? @do_nothing
+  .
+  "|"? @do_nothing
+  .
+  (match_case) @prepend_multiline_delimiter
+  (#delimiter! "| ") ; sic
+)
+
 ; Multi-line definitions must have a linebreak after "=" and before "in":
 ;
 ; let a =
