@@ -15,7 +15,7 @@ use clap::{ArgGroup, Parser};
 use crate::{
     error::CLIResult, output::OutputFile, supported::SupportedLanguage, visualise::Visualisation,
 };
-use topiary::{formatter, visualiser, Language};
+use topiary::{formatter, Language, Operation};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -112,23 +112,17 @@ fn run() -> CLIResult<()> {
 
     let mut query = BufReader::new(File::open(query_path)?);
 
-    if let Some(visualisation) = args.visualise {
-        visualiser(
-            &mut input,
-            &mut output,
-            &mut query,
-            language,
-            visualisation.into(),
-        )?;
+    let operation = if let Some(visualisation) = args.visualise {
+        Operation::Visualise {
+            output_format: visualisation.into(),
+        }
     } else {
-        formatter(
-            &mut input,
-            &mut output,
-            &mut query,
-            language,
-            args.skip_idempotence,
-        )?;
-    }
+        Operation::Format {
+            skip_idempotence: args.skip_idempotence,
+        }
+    };
+
+    formatter(&mut input, &mut output, &mut query, language, operation)?;
 
     output.into_inner()?.persist()?;
 

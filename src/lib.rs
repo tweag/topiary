@@ -10,13 +10,17 @@
 //! More details can be found on
 //! [GitHub](https://github.com/tweag/topiary).
 
-use configuration::Configuration;
-pub use error::{FormatterError, IoError};
-use itertools::Itertools;
-pub use language::Language;
-use pretty_assertions::StrComparison;
 use std::io;
-pub use visualise::{visualiser, Visualisation};
+
+use itertools::Itertools;
+use pretty_assertions::StrComparison;
+
+pub use crate::{
+    error::{FormatterError, IoError},
+    language::Language,
+    tree_sitter::Visualisation,
+};
+use configuration::Configuration;
 
 mod atom_collection;
 mod configuration;
@@ -24,7 +28,6 @@ mod error;
 mod language;
 mod pretty;
 mod tree_sitter;
-mod visualise;
 
 /// An atom represents a small piece of the output. We turn Tree-sitter nodes
 /// into atoms, and we add white-space atoms where appropriate. The final list
@@ -87,21 +90,27 @@ pub enum Atom {
 /// A convenience wrapper around `std::result::Result<T, FormatterError>`.
 pub type FormatterResult<T> = std::result::Result<T, FormatterError>;
 
-/// The function that takes an input and formats an output.
+/// Operations that can be performed by the formatter.
+pub enum Operation {
+    Format { skip_idempotence: bool },
+    Visualise { output_format: Visualisation },
+}
+
+/// The function that takes an input and formats, or visualises an output.
 ///
 /// # Examples
 ///
 /// ```
 /// use std::fs::File;
 /// use std::io::BufReader;
-/// use topiary::{formatter, FormatterError};
+/// use topiary::{formatter, FormatterError, Operation};
 ///
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
 /// let mut output = Vec::new();
 /// let mut query = BufReader::new(File::open("languages/json.scm").expect("query file"));
 ///
-/// match formatter(&mut input, &mut output, &mut query, None, false) {
+/// match formatter(&mut input, &mut output, &mut query, None, Operation::Format{ skip_idempotence: false }) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
@@ -118,7 +127,7 @@ pub fn formatter(
     output: &mut dyn io::Write,
     query: &mut dyn io::Read,
     language: Option<Language>,
-    skip_idempotence: bool,
+    operation: Operation,
 ) -> FormatterResult<()> {
     let content = read_input(input).map_err(|e| {
         FormatterError::Io(IoError::Filesystem(
@@ -139,23 +148,36 @@ pub fn formatter(
         configuration.language = l
     }
 
-    // All the work related to tree-sitter and the query is done here
-    log::info!("Apply Tree-sitter query");
-    let mut atoms = tree_sitter::apply_query(&content, &query, configuration.language)?;
+    match operation {
+        Operation::Format { skip_idempotence } => {
+            // All the work related to tree-sitter and the query is done here
+            log::info!("Apply Tree-sitter query");
+            let mut atoms = tree_sitter::apply_query(&content, &query, configuration.language)?;
 
-    // Various post-processing of whitespace
-    atoms.post_process();
+            // Various post-processing of whitespace
+            atoms.post_process();
 
-    // Pretty-print atoms
-    log::info!("Pretty-print output");
-    let rendered = pretty::render(&atoms[..], configuration.indent_level)?;
-    let trimmed = trim_whitespace(&rendered);
+            // Pretty-print atoms
+            log::info!("Pretty-print output");
+            let rendered = pretty::render(&atoms[..], configuration.indent_level)?;
+            let trimmed = trim_whitespace(&rendered);
 
-    if !skip_idempotence {
-        idempotence_check(&trimmed, &query, language)?
-    }
+            if !skip_idempotence {
+                idempotence_check(&trimmed, &query, language)?
+            }
 
-    write!(output, "{trimmed}")?;
+            write!(output, "{trimmed}")?;
+        }
+
+        Operation::Visualise { output_format } => {
+            let (tree, _) = tree_sitter::parse(&content, &configuration.language.grammars())?;
+            let root: tree_sitter::SyntaxNode = tree.root_node().into();
+
+            match output_format {
+                Visualisation::Json => serde_json::to_writer(output, &root)?,
+            };
+        }
+    };
 
     Ok(())
 }
@@ -184,7 +206,15 @@ fn idempotence_check(
     let mut query = query.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
     let do_steps = || -> Result<(), FormatterError> {
-        formatter(&mut input, &mut output, &mut query, language, true)?;
+        formatter(
+            &mut input,
+            &mut output,
+            &mut query,
+            language,
+            Operation::Format {
+                skip_idempotence: true,
+            },
+        )?;
         let reformatted = String::from_utf8(output.into_inner()?)?;
         if content == reformatted {
             Ok(())
@@ -215,7 +245,15 @@ fn parse_error_fails_formatting() {
     let mut input = "[ 1, % ]".as_bytes();
     let mut output = Vec::new();
     let mut query = "(#language! json)".as_bytes();
-    match formatter(&mut input, &mut output, &mut query, None, true) {
+    match formatter(
+        &mut input,
+        &mut output,
+        &mut query,
+        None,
+        Operation::Format {
+            skip_idempotence: true,
+        },
+    ) {
         Err(FormatterError::Parsing {
             start_line: 1,
             end_line: 1,

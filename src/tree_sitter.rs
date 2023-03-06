@@ -1,12 +1,69 @@
-use crate::atom_collection::AtomCollection;
-use crate::error::FormatterError;
-use crate::language::Language;
-use crate::FormatterResult;
 use std::collections::HashSet;
+
+use serde::Serialize;
 use tree_sitter::{
-    Node, Parser, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate, QueryPredicateArg,
-    Tree,
+    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate,
+    QueryPredicateArg, Tree,
 };
+
+use crate::{
+    atom_collection::AtomCollection, error::FormatterError, language::Language, FormatterResult,
+};
+
+/// Supported visualisation formats
+#[derive(Clone, Copy, Debug)]
+pub enum Visualisation {
+    Json,
+}
+
+// 1-based text position, derived from tree_sitter::Point, for the sake of serialisation.
+#[derive(Serialize)]
+struct Position {
+    row: usize,
+    column: usize,
+}
+
+impl From<Point> for Position {
+    fn from(point: Point) -> Self {
+        Self {
+            row: point.row + 1,
+            column: point.column + 1,
+        }
+    }
+}
+
+// Simplified syntactic node struct, for the sake of serialisation.
+#[derive(Serialize)]
+pub struct SyntaxNode {
+    kind: String,
+    is_named: bool,
+    is_extra: bool,
+    is_error: bool,
+    is_missing: bool,
+    start: Position,
+    end: Position,
+
+    children: Vec<SyntaxNode>,
+}
+
+impl From<Node<'_>> for SyntaxNode {
+    fn from(node: Node) -> Self {
+        let mut walker = node.walk();
+        let children = node.children(&mut walker).map(SyntaxNode::from).collect();
+
+        Self {
+            children,
+
+            kind: node.kind().into(),
+            is_named: node.is_named(),
+            is_extra: node.is_extra(),
+            is_error: node.is_error(),
+            is_missing: node.is_missing(),
+            start: node.start_position().into(),
+            end: node.end_position().into(),
+        }
+    }
+}
 
 #[derive(Debug)]
 // A struct to statically store the public fields of query match results,
@@ -21,7 +78,7 @@ pub fn apply_query(
     query_content: &str,
     language: Language,
 ) -> FormatterResult<AtomCollection> {
-    let (tree, grammar) = parse(input_content, language.grammars())?;
+    let (tree, grammar) = parse(input_content, &language.grammars())?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
     let query = Query::new(grammar, query_content)
@@ -107,9 +164,9 @@ fn capture_name<'a>(query: &'a Query, capture: &QueryCapture) -> &'a str {
 // this function tries to parse the data with every possible grammar.
 // It returns the syntax tree of the first grammar that succeeds, along with said grammar,
 // or the last error if all grammars fail.
-fn parse(
+pub fn parse(
     content: &str,
-    grammars: Vec<tree_sitter::Language>,
+    grammars: &[tree_sitter::Language],
 ) -> FormatterResult<(Tree, tree_sitter::Language)> {
     let mut parser = Parser::new();
     grammars
