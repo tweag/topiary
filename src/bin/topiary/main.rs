@@ -13,12 +13,9 @@ use std::{
 use clap::{ArgGroup, Parser};
 
 use crate::{
-    error::CLIResult,
-    output::OutputFile,
-    supported::SupportedLanguage,
-    visualise::{visualiser, Visualisation},
+    error::CLIResult, output::OutputFile, supported::SupportedLanguage, visualise::Visualisation,
 };
-use topiary::{formatter, Language};
+use topiary::{formatter, visualiser, Language};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -116,7 +113,13 @@ fn run() -> CLIResult<()> {
     let mut query = BufReader::new(File::open(query_path)?);
 
     if let Some(visualisation) = args.visualise {
-        visualiser(&mut input, &mut output, &mut query, language, visualisation)?;
+        visualiser(
+            &mut input,
+            &mut output,
+            &mut query,
+            language,
+            visualisation.into(),
+        )?;
     } else {
         formatter(
             &mut input,

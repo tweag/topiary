@@ -10,12 +10,13 @@
 //! More details can be found on
 //! [GitHub](https://github.com/tweag/topiary).
 
-pub use configuration::Configuration;
+use configuration::Configuration;
 pub use error::{FormatterError, IoError};
 use itertools::Itertools;
 pub use language::Language;
 use pretty_assertions::StrComparison;
 use std::io;
+pub use visualise::{visualiser, Visualisation};
 
 mod atom_collection;
 mod configuration;
@@ -23,6 +24,7 @@ mod error;
 mod language;
 mod pretty;
 mod tree_sitter;
+mod visualise;
 
 /// An atom represents a small piece of the output. We turn Tree-sitter nodes
 /// into atoms, and we add white-space atoms where appropriate. The final list

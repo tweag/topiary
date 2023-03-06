@@ -83,24 +83,3 @@ where
         )
     }
 }
-
-impl From<tree_sitter::LanguageError> for TopiaryError {
-    fn from(e: tree_sitter::LanguageError) -> Self {
-        Self::Bin(
-            "Could not assign grammar to parser".into(),
-            Some(CLIError::Generic(Box::new(e))),
-        )
-    }
-}
-
-impl From<serde_json::Error> for TopiaryError {
-    fn from(e: serde_json::Error) -> Self {
-        Self::Bin(
-            "Could not serialise JSON output".into(),
-            Some(match e.classify() {
-                serde_json::error::Category::Io => CLIError::IOError(e.into()),
-                _ => CLIError::Generic(Box::new(e)),
-            }),
-        )
-    }
-}

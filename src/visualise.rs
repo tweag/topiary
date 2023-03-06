@@ -1,12 +1,10 @@
 use std::io;
 
-use clap::ValueEnum;
 use serde::Serialize;
 
-use crate::error::{CLIResult, TopiaryError};
-use topiary::{Configuration, Language};
+use crate::{configuration::Configuration, FormatterError, FormatterResult, Language};
 
-#[derive(ValueEnum, Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Visualisation {
     Json,
 }
@@ -40,13 +38,15 @@ struct Node {
 }
 
 impl Node {
-    fn new(language: tree_sitter::Language, source: &str) -> CLIResult<Self> {
+    fn new(language: tree_sitter::Language, source: &str) -> FormatterResult<Self> {
         let mut parser = tree_sitter::Parser::new();
-        parser.set_language(language)?;
+        parser.set_language(language).map_err(|_| {
+            FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
+        })?;
 
         let tree = parser
             .parse(source, None)
-            .ok_or_else(|| TopiaryError::Bin("Could not parse input".into(), None))?;
+            .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))?;
 
         Ok(tree.root_node().into())
     }
@@ -77,7 +77,7 @@ pub fn visualiser(
     query: &mut dyn io::Read,
     language: Option<Language>,
     visualisation: Visualisation,
-) -> CLIResult<()> {
+) -> FormatterResult<()> {
     // Read the input source
     let mut source = String::new();
     input.read_to_string(&mut source)?;
@@ -105,12 +105,12 @@ pub fn visualiser(
     Ok(())
 }
 
-fn parse(grammars: &[tree_sitter::Language], source: &str) -> CLIResult<Node> {
+fn parse(grammars: &[tree_sitter::Language], source: &str) -> FormatterResult<Node> {
     grammars
         .iter()
         .map(|&grammar| Node::new(grammar, source))
         .fold(
-            Err(TopiaryError::Bin(
+            Err(FormatterError::Internal(
                 "No grammar found for language".into(),
                 None,
             )),
