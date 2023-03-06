@@ -439,7 +439,7 @@ let topological_sort deps =
         try
           List.assoc node graph
         with
-          Not_found ->
+          | Not_found ->
             if !ignore then []
             else
               raise
@@ -990,3 +990,17 @@ let _ =
       bar
     else
       baz
+
+(* various test cases for "|" rules *)
+let not = function
+  | true -> false
+  | false -> true
+
+let not x =
+  match x with
+  | false -> true
+  | true -> false
+
+let not = function true -> false | false -> true
+
+let not x = match x with true -> false | false -> true
