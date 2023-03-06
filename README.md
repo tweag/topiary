@@ -513,6 +513,24 @@ Remove the matched node from the output.
 )
 ```
 
+### `@singleline_delete`
+
+Remove the matched node from the output, online if the context is single-line.
+
+#### Example
+
+```scheme
+; Delete the optional "|" before the first match case
+; if the context is single-line
+(
+  (match_case)? @do_nothing
+  .
+  "|" @singleline_delete
+  .
+  (match_case)
+)
+```
+
 ### `@do_nothing`
 
 If any of the captures in a query match are `@do_nothing`, then the
