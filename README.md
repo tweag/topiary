@@ -118,6 +118,24 @@ files (`.scm`) are located. Otherwise, Topiary will fall back to the
 See [`CONTRIBUTING.md`][contributing] for details on setting up a
 development environment.
 
+### Setting up as pre-commit hook
+
+Topiary integrates seamlessly with [pre-commit-hooks.nix]: add Topiary as input
+to your flake and, in [pre-commit-hooks.nix]'s setup, use:
+
+``` nix
+pre-commit-check = nix-pre-commit-hooks.run {
+  hooks = {
+    nixfmt.enable = true; ## keep your normal hooks
+    ...
+    ## Add the following:
+    topiary = topiary.lib.${system}.pre-commit-hook;
+  };
+};
+```
+
+[pre-commit-hooks.nix]: https://github.com/cachix/pre-commit-hooks.nix
+
 ### Usage
 
     topiary [OPTIONS] <--language <LANGUAGE>
