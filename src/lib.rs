@@ -10,7 +10,7 @@
 //! More details can be found on
 //! [GitHub](https://github.com/tweag/topiary).
 
-use std::io;
+use std::{fmt, io};
 
 use itertools::Itertools;
 use pretty_assertions::StrComparison;
@@ -18,7 +18,7 @@ use pretty_assertions::StrComparison;
 pub use crate::{
     error::{FormatterError, IoError},
     language::Language,
-    tree_sitter::Visualisation,
+    tree_sitter::{SyntaxNode, Visualisation},
 };
 use configuration::Configuration;
 
@@ -174,9 +174,10 @@ pub fn formatter(
 
         Operation::Visualise { output_format } => {
             let (tree, _) = tree_sitter::parse(&content, configuration.language)?;
-            let root: tree_sitter::SyntaxNode = tree.root_node().into();
+            let root: SyntaxNode = tree.root_node().into();
 
             match output_format {
+                Visualisation::GraphViz => write_graphviz(output, &root)?,
                 Visualisation::Json => serde_json::to_writer(output, &root)?,
             };
         }
@@ -241,6 +242,33 @@ fn idempotence_check(
     } else {
         res
     }
+}
+
+// GraphViz output for our syntax tree
+impl fmt::Display for SyntaxNode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(
+            f,
+            "  {} [label=\"{}\"];",
+            self.id,
+            self.kind.escape_default()
+        )?;
+
+        for child in &self.children {
+            writeln!(f, "  {} -- {};", self.id, child.id)?;
+            write!(f, "{child}")?;
+        }
+
+        Ok(())
+    }
+}
+
+fn write_graphviz(output: &mut dyn io::Write, root: &SyntaxNode) -> FormatterResult<()> {
+    writeln!(output, "graph {{")?;
+    write!(output, "{root}")?;
+    writeln!(output, "}}")?;
+
+    Ok(())
 }
 
 #[test]
