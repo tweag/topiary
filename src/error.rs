@@ -26,7 +26,7 @@ pub enum FormatterError {
 
     /// There was an error in the query file. If this happened using our
     /// provided query files, it is a bug. Please log an issue.
-    Query(String, Option<tree_sitter::QueryError>),
+    Query(String, Option<tree_sitter_facade::QueryError>),
 
     /// Could not detect the input language from the (filename, Option<extension>)
     LanguageDetection(PathBuf, Option<String>),

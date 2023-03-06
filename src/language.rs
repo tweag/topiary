@@ -65,7 +65,7 @@ impl Language {
     }
 
     /// Convenience alias to return the Tree-sitter grammars for the Language.
-    pub fn grammars(&self) -> Vec<tree_sitter::Language> {
+    pub fn grammars(&self) -> Vec<tree_sitter_facade::Language> {
         self.into()
     }
 }
@@ -177,7 +177,7 @@ impl TryFrom<PathBuf> for Language {
 ///
 /// Note that, currently, all grammars are statically linked. This will change once dynamic linking
 /// is implemented (see Issue #4).
-impl From<&Language> for Vec<tree_sitter::Language> {
+impl From<&Language> for Vec<tree_sitter_facade::Language> {
     fn from(language: &Language) -> Self {
         match language {
             Language::Bash => vec![tree_sitter_bash::language()],

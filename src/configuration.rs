@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use ouroboros::self_referencing;
-use tree_sitter::{Parser, Query, QueryCapture, QueryCaptures, QueryCursor, QueryMatch, Tree};
+use tree_sitter_facade::{Parser, Query, Tree};
 
 use crate::{language::Language, FormatterError, FormatterResult};
 
@@ -26,16 +26,15 @@ struct Pragmata<'a> {
     source: &'a [u8],
 }
 
-#[self_referencing]
+//#[self_referencing]
 struct PragmataIter<'a> {
     source: &'a [u8],
     tree: Tree,
-    cursor: QueryCursor,
+    //cursor: QueryCursor,
     query: Query,
-
-    #[borrows(mut cursor, query, tree, source)]
-    #[covariant]
-    captures: QueryCaptures<'this, 'this, &'this [u8]>,
+    // #[borrows(mut cursor, query, tree, source)]
+    // #[covariant]
+    // captures: QueryCaptures<'this, 'this, &'this [u8]>,
 }
 
 impl<'a> From<&'a str> for Pragmata<'a> {
@@ -45,108 +44,108 @@ impl<'a> From<&'a str> for Pragmata<'a> {
     }
 }
 
-impl<'a> IntoIterator for Pragmata<'a> {
-    type Item = FormatterResult<Pragma<'a>>;
-    type IntoIter = PragmataIter<'a>;
+// impl<'a> IntoIterator for Pragmata<'a> {
+//     type Item = FormatterResult<Pragma<'a>>;
+//     type IntoIter = PragmataIter<'a>;
 
-    fn into_iter(self) -> Self::IntoIter {
-        let source = self.source;
-        let language = tree_sitter_query::language();
+//     fn into_iter(self) -> Self::IntoIter {
+//         let source = self.source;
+//         let language = tree_sitter_query::language();
 
-        let mut parser = Parser::new();
-        parser.set_language(language).unwrap();
-        let tree = parser.parse(source, None).unwrap();
+//         let mut parser = Parser::new();
+//         parser.set_language(language).unwrap();
+//         let tree = parser.parse(source, None).unwrap();
 
-        let query = Query::new(language, PRAGMA_QUERY).unwrap();
-        let cursor = QueryCursor::new();
+//         let query = Query::new(language, PRAGMA_QUERY).unwrap();
+//         let cursor = QueryCursor::new();
 
-        PragmataIterBuilder {
-            source,
-            tree,
-            cursor,
-            query,
+//         PragmataIterBuilder {
+//             source,
+//             tree,
+//             cursor,
+//             query,
 
-            captures_builder: |cursor, query, tree, source| {
-                cursor.captures(query, tree.root_node(), source)
-            },
-        }
-        .build()
-    }
-}
+//             captures_builder: |cursor, query, tree, source| {
+//                 cursor.captures(query, tree.root_node(), source)
+//             },
+//         }
+//         .build()
+//     }
+// }
 
-impl<'a> Iterator for PragmataIter<'a> {
-    type Item = FormatterResult<Pragma<'a>>;
+// impl<'a> Iterator for PragmataIter<'a> {
+//     type Item = FormatterResult<Pragma<'a>>;
 
-    fn next(&mut self) -> Option<Self::Item> {
-        self.with_mut(|fields| {
-            if let Some((
-                QueryMatch {
-                    // The query will ensure there is exactly one
-                    // capture in the match; of which, we only care
-                    // about the node
-                    captures: [QueryCapture { node, .. }, ..],
-                    ..
-                },
-                _,
-            )) = fields.captures.next()
-            {
-                // Convert the captured predicate node into a Pragma
-                // NOTE It would be nice to implement this as TryFrom,
-                // but I can't get the lifetime annotations right...
+//     fn next(&mut self) -> Option<Self::Item> {
+//         self.with_mut(|fields| {
+//             if let Some((
+//                 QueryMatch {
+//                     // The query will ensure there is exactly one
+//                     // capture in the match; of which, we only care
+//                     // about the node
+//                     captures: [QueryCapture { node, .. }, ..],
+//                     ..
+//                 },
+//                 _,
+//             )) = fields.captures.next()
+//             {
+//                 // Convert the captured predicate node into a Pragma
+//                 // NOTE It would be nice to implement this as TryFrom,
+//                 // but I can't get the lifetime annotations right...
 
-                // This should never happen... :P
-                let parse_error = || {
-                    FormatterError::Query("Could not parse pragma at node: {node:?}".into(), None)
-                };
+//                 // This should never happen... :P
+//                 let parse_error = || {
+//                     FormatterError::Query("Could not parse pragma at node: {node:?}".into(), None)
+//                 };
 
-                // The predicate name is under the "name" field, which
-                // consists of two sibling tokens: the "#" sigil and the
-                // name itself.
-                let predicate = (|| -> FormatterResult<&str> {
-                    Ok(node
-                        .child_by_field_name("name")
-                        .ok_or_else(parse_error)?
-                        .next_sibling()
-                        .ok_or_else(parse_error)?
-                        .utf8_text(fields.source)?)
-                })();
+//                 // The predicate name is under the "name" field, which
+//                 // consists of two sibling tokens: the "#" sigil and the
+//                 // name itself.
+//                 let predicate = (|| -> FormatterResult<&str> {
+//                     Ok(node
+//                         .child_by_field_name("name")
+//                         .ok_or_else(parse_error)?
+//                         .next_sibling()
+//                         .ok_or_else(parse_error)?
+//                         .utf8_text(fields.source)?)
+//                 })();
 
-                if let Err(error) = predicate {
-                    return Some(Err(error));
-                }
+//                 if let Err(error) = predicate {
+//                     return Some(Err(error));
+//                 }
 
-                // We take the entirety of the "parameters" field, which
-                // can be post-processed if necessary.
-                let value = (|| -> FormatterResult<Option<&str>> {
-                    Ok(
-                        match node
-                            .child_by_field_name("parameters")
-                            .ok_or_else(parse_error)?
-                            .utf8_text(fields.source)?
-                        {
-                            // NOTE If the parsed value is an empty
-                            // string, then there was no value.
-                            "" => None,
-                            value => Some(value),
-                        },
-                    )
-                })();
+//                 // We take the entirety of the "parameters" field, which
+//                 // can be post-processed if necessary.
+//                 let value = (|| -> FormatterResult<Option<&str>> {
+//                     Ok(
+//                         match node
+//                             .child_by_field_name("parameters")
+//                             .ok_or_else(parse_error)?
+//                             .utf8_text(fields.source)?
+//                         {
+//                             // NOTE If the parsed value is an empty
+//                             // string, then there was no value.
+//                             "" => None,
+//                             value => Some(value),
+//                         },
+//                     )
+//                 })();
 
-                if let Err(error) = value {
-                    return Some(Err(error));
-                }
+//                 if let Err(error) = value {
+//                     return Some(Err(error));
+//                 }
 
-                return Some(Ok(Pragma {
-                    predicate: predicate.unwrap(),
-                    value: value.unwrap(),
-                }));
-            }
+//                 return Some(Ok(Pragma {
+//                     predicate: predicate.unwrap(),
+//                     value: value.unwrap(),
+//                 }));
+//             }
 
-            // Stop iteration
-            None
-        })
-    }
-}
+//             // Stop iteration
+//             None
+//         })
+//     }
+// }
 
 /// Language query configuration from parsed pragmata
 pub struct Configuration {

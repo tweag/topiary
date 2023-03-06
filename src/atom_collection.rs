@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use tree_sitter::Node;
+use tree_sitter_facade::Node;
 
 use crate::{Atom, FormatterError, FormatterResult};
 

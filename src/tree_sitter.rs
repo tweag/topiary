@@ -5,6 +5,7 @@ use tree_sitter::{
     Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate,
     QueryPredicateArg, Tree,
 };
+use tree_sitter_facade::{Node, Parser, Query, Tree};
 
 use crate::{
     atom_collection::AtomCollection, error::FormatterError, language::Language, FormatterResult,
@@ -170,7 +171,10 @@ fn capture_name<'a>(query: &'a Query, capture: &QueryCapture) -> &'a str {
 // this function tries to parse the data with every possible grammar.
 // It returns the syntax tree of the first grammar that succeeds, along with said grammar,
 // or the last error if all grammars fail.
-pub fn parse(content: &str, language: Language) -> FormatterResult<(Tree, tree_sitter::Language)> {
+pub fn parse(
+    content: &str,
+    language: Language,
+) -> FormatterResult<(Tree, tree_sitter_facade::Language)> {
     let mut parser = Parser::new();
 
     language
