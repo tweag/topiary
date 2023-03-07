@@ -78,7 +78,7 @@ pub fn apply_query(
     query_content: &str,
     language: Language,
 ) -> FormatterResult<AtomCollection> {
-    let (tree, grammar) = parse(input_content, &language.grammars())?;
+    let (tree, grammar) = parse(input_content, language)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
     let query = Query::new(grammar, query_content)
@@ -164,22 +164,24 @@ fn capture_name<'a>(query: &'a Query, capture: &QueryCapture) -> &'a str {
 // this function tries to parse the data with every possible grammar.
 // It returns the syntax tree of the first grammar that succeeds, along with said grammar,
 // or the last error if all grammars fail.
-pub fn parse(
-    content: &str,
-    grammars: &[tree_sitter::Language],
-) -> FormatterResult<(Tree, tree_sitter::Language)> {
+pub fn parse(content: &str, language: Language) -> FormatterResult<(Tree, tree_sitter::Language)> {
     let mut parser = Parser::new();
-    grammars
+
+    language
+        .grammars()
         .iter()
         .map(|grammar| {
             parser.set_language(*grammar).map_err(|_| {
                 FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
             })?;
+
             let tree = parser
                 .parse(content, None)
                 .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))?;
+
             // Fail parsing if we don't get a complete syntax tree.
             check_for_error_nodes(tree.root_node())?;
+
             Ok((tree, *grammar))
         })
         .fold(

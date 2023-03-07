@@ -170,7 +170,7 @@ pub fn formatter(
         }
 
         Operation::Visualise { output_format } => {
-            let (tree, _) = tree_sitter::parse(&content, &configuration.language.grammars())?;
+            let (tree, _) = tree_sitter::parse(&content, configuration.language)?;
             let root: tree_sitter::SyntaxNode = tree.root_node().into();
 
             match output_format {

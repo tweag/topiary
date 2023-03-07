@@ -54,7 +54,7 @@ impl From<io::Error> for TopiaryError {
             }
 
             _ => Self::Bin(
-                "Cound not read or write to file".into(),
+                "Could not read or write to file".into(),
                 Some(CLIError::IOError(e)),
             ),
         }
