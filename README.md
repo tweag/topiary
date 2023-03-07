@@ -39,6 +39,9 @@ Topiary has been created with the following goals in mind:
 * Use [Tree-sitter] for parsing, to avoid writing yet another grammar
   for a formatter.
 
+* Expect idempotency. That is, formatting of already-formatted code
+  doesn't change anything.
+
 * For bundled formatting styles to meet the following constraints:
 
   * Be compatible with attested formatting styles used for that language
@@ -53,11 +56,8 @@ Topiary has been created with the following goals in mind:
     won't force you to make later, cosmetic changes when you modify your
     code.
 
-  * Be idempotent. That is, formatting of already-formatted code doesn't
-    change anything.
-
-* Code and formatting styles must be well-tested and robust, so that the
-  formatter can be used in large projects.
+  * Be well-tested and robust, so that the formatter can be trusted in
+    large projects.
 
 * For end users -- i.e., not formatting style authors -- the formatter
   should:
@@ -165,7 +165,7 @@ Options:
 
 * `-v`, `--visualise`\
   Visualise the syntax tree, rather than format [possible values: `json`
-  (default)].
+  (default), `dot`].
 
 * `-s`, `--skip-idempotence`\
   Do not check that formatting twice gives the same output.
@@ -836,22 +836,26 @@ suggested way to work:
 
 4. Run `RUST_LOG=debug cargo test`.
 
-5. Provided it works, it should output a lot of log messages. Copy that
+   Provided it works, it should output a lot of log messages. Copy that
    output to a text editor. You are particularly interested in the CST
    output that starts with a line like this: `CST node: {Node
    compilation_unit (0, 0) - (5942, 0)} - Named: true`.
 
-6. The test run will output all the differences between the actual
+   :bulb: As an alternative to using the debugging output, the
+   `--visualise` command line option exists to output the Tree-sitter
+   syntax tree in a variety of formats.
+
+5. The test run will output all the differences between the actual
    output and the expected output, e.g. missing spaces between tokens.
    Pick a difference you would like to fix, and find the line number and
    column in the input file.
 
-7. Keep in mind that the CST output uses 0-based line and column
+   :bulb: Keep in mind that the CST output uses 0-based line and column
    numbers, so if your editor reports line 40, column 37, you probably
    want line 39, column 36.
 
-8. In the CST debug output, find the nodes in this region, such as the
-   following:
+6. In the CST debug or visualisation output, find the nodes in this
+   region, such as the following:
 
    ```
    [DEBUG atom_collection] CST node:   {Node constructed_type (39, 15) - (39, 42)} - Named: true
@@ -861,35 +865,47 @@ suggested way to work:
    [DEBUG atom_collection] CST node:       {Node type_constructor (39, 36) - (39, 42)} - Named: true
    ```
 
-9. This may indicate that you would like spaces after all
+7. This may indicate that you would like spaces after all
    `type_constructor_path` nodes:
 
    ```scheme
    (type_constructor_path) @append_space
    ```
 
-10. Or, more likely, you just want spaces between pairs of them:
+   Or, more likely, you just want spaces between pairs of them:
 
-    ```scheme
-    (
-      (type_constructor_path) @append_space
-      .
-      (type_constructor_path)
-    )
-    ```
+   ```scheme
+   (
+     (type_constructor_path) @append_space
+     .
+     (type_constructor_path)
+   )
+   ```
 
-11. Or maybe you want spaces between all children of `constructed_type`:
+   Or maybe you want spaces between all children of `constructed_type`:
 
-    ```scheme
-    (constructed_type
-      (_) @append_space
-      .
-      (_)
-    )
-    ```
+   ```scheme
+   (constructed_type
+     (_) @append_space
+     .
+     (_)
+   )
+   ```
 
-12. Run `cargo test` again, to see if the output is better now, and then
-    return to step 6.
+8. Run `cargo test` again, to see if the output is better now, and then
+   return to step 5.
+
+### Syntax Tree Visualisation
+
+To support the development of formatting queries, the Tree-sitter syntax
+tree for a given input can be produced using the `--visualise` CLI
+option.
+
+This currently supports JSON output, covering the same information as
+the debugging output, as well as GraphViz DOT output, which is useful
+for generating syntax diagrams. (Note that the text position
+serialisation in the visualisation output is 1-based, unlike the
+debugging output's 0-based position.)
 
 ### Terminal-Based Playground
 
@@ -921,6 +937,8 @@ of choice open in another.
   language.
 * [Neovim Treesitter Playground][nvim-treesitter]: A Tree-sitter
   playground plugin for Neovim.
+* [Difftastic]: A tool that utilises Tree-sitter to perform syntactic
+  diffing.
 
 ### Meta and Multi-Language Formatters
 
@@ -948,6 +966,7 @@ of choice open in another.
 [bash]: https://www.gnu.org/software/bash
 [ci-badge]: https://github.com/tweag/topiary/actions/workflows/ci.yml/badge.svg
 [contributing]: CONTRIBUTING.md
+[difftastic]: https://difftastic.wilfred.me.uk
 [format-all]: https://melpa.org/#/format-all
 [gofmt-slides]: https://go.dev/talks/2015/gofmt-en.slide#1
 [gofmt]: https://pkg.go.dev/cmd/gofmt

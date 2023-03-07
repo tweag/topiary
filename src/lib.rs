@@ -18,13 +18,14 @@ use pretty_assertions::StrComparison;
 pub use crate::{
     error::{FormatterError, IoError},
     language::Language,
-    tree_sitter::Visualisation,
+    tree_sitter::{SyntaxNode, Visualisation},
 };
 use configuration::Configuration;
 
 mod atom_collection;
 mod configuration;
 mod error;
+mod graphviz;
 mod language;
 mod pretty;
 mod tree_sitter;
@@ -174,9 +175,10 @@ pub fn formatter(
 
         Operation::Visualise { output_format } => {
             let (tree, _) = tree_sitter::parse(&content, configuration.language)?;
-            let root: tree_sitter::SyntaxNode = tree.root_node().into();
+            let root: SyntaxNode = tree.root_node().into();
 
             match output_format {
+                Visualisation::GraphViz => graphviz::write(output, &root)?,
                 Visualisation::Json => serde_json::to_writer(output, &root)?,
             };
         }

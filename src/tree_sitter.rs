@@ -13,6 +13,7 @@ use crate::{
 /// Supported visualisation formats
 #[derive(Clone, Copy, Debug)]
 pub enum Visualisation {
+    GraphViz,
     Json,
 }
 
@@ -35,15 +36,18 @@ impl From<Point> for Position {
 // Simplified syntactic node struct, for the sake of serialisation.
 #[derive(Serialize)]
 pub struct SyntaxNode {
-    kind: String,
-    is_named: bool,
+    #[serde(skip_serializing)]
+    pub id: usize,
+
+    pub kind: String,
+    pub is_named: bool,
     is_extra: bool,
     is_error: bool,
     is_missing: bool,
     start: Position,
     end: Position,
 
-    children: Vec<SyntaxNode>,
+    pub children: Vec<SyntaxNode>,
 }
 
 impl From<Node<'_>> for SyntaxNode {
@@ -52,7 +56,7 @@ impl From<Node<'_>> for SyntaxNode {
         let children = node.children(&mut walker).map(SyntaxNode::from).collect();
 
         Self {
-            children,
+            id: node.id(),
 
             kind: node.kind().into(),
             is_named: node.is_named(),
@@ -61,6 +65,8 @@ impl From<Node<'_>> for SyntaxNode {
             is_missing: node.is_missing(),
             start: node.start_position().into(),
             end: node.end_position().into(),
+
+            children,
         }
     }
 }
