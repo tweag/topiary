@@ -169,3 +169,9 @@ where
         ))
     }
 }
+
+impl From<serde_json::Error> for FormatterError {
+    fn from(e: serde_json::Error) -> Self {
+        Self::Internal("Could not serialise JSON output".into(), Some(e.into()))
+    }
+}

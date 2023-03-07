@@ -1,7 +1,7 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use std::fs;
 use std::io;
-use topiary::formatter;
+use topiary::{formatter, Operation};
 
 fn criterion_benchmark(c: &mut Criterion) {
     let input = fs::read_to_string("tests/samples/input/ocaml.ml").unwrap();
@@ -13,7 +13,15 @@ fn criterion_benchmark(c: &mut Criterion) {
             let mut query = query.as_bytes();
             let mut output = io::BufWriter::new(Vec::new());
 
-            formatter(&mut input, &mut output, &mut query, None, false)
+            formatter(
+                &mut input,
+                &mut output,
+                &mut query,
+                None,
+                Operation::Format {
+                    skip_idempotence: false,
+                },
+            )
         })
     });
 }

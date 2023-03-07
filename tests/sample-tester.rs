@@ -5,7 +5,7 @@ use std::path::Path;
 use pretty_assertions::assert_eq;
 use test_log::test;
 
-use topiary::{formatter, Language};
+use topiary::{formatter, Language, Operation};
 
 #[test]
 fn input_output_tester() {
@@ -24,7 +24,17 @@ fn input_output_tester() {
         let query = fs::read_to_string(language.query_file().unwrap()).unwrap();
         let mut query = query.as_bytes();
 
-        formatter(&mut input, &mut output, &mut query, Some(language), true).unwrap();
+        formatter(
+            &mut input,
+            &mut output,
+            &mut query,
+            Some(language),
+            Operation::Format {
+                skip_idempotence: true,
+            },
+        )
+        .unwrap();
+
         let formatted = String::from_utf8(output).unwrap();
         log::debug!("{}", formatted);
 
@@ -48,7 +58,17 @@ fn formatted_query_tester() {
         let query = fs::read_to_string(language.query_file().unwrap()).unwrap();
         let mut query = query.as_bytes();
 
-        formatter(&mut input, &mut output, &mut query, Some(language), true).unwrap();
+        formatter(
+            &mut input,
+            &mut output,
+            &mut query,
+            Some(language),
+            Operation::Format {
+                skip_idempotence: true,
+            },
+        )
+        .unwrap();
+
         let formatted = String::from_utf8(output).unwrap();
         log::debug!("{}", formatted);
 

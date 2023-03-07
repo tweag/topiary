@@ -1,7 +1,7 @@
-use clap::ArgEnum;
+use clap::ValueEnum;
 use topiary::Language;
 
-#[derive(ArgEnum, Clone, Copy, Debug)]
+#[derive(ValueEnum, Clone, Copy, Debug)]
 pub enum SupportedLanguage {
     Json,
     Toml,

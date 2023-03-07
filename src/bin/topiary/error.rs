@@ -10,7 +10,7 @@ pub type CLIResult<T> = result::Result<T, TopiaryError>;
 #[derive(Debug)]
 pub enum TopiaryError {
     Lib(FormatterError),
-    Bin(String, CLIError),
+    Bin(String, Option<CLIError>),
 }
 
 /// A subtype of `TopiaryError::Bin`
@@ -33,8 +33,9 @@ impl error::Error for TopiaryError {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self {
             Self::Lib(error) => error.source(),
-            Self::Bin(_, CLIError::IOError(error)) => error.source(),
-            Self::Bin(_, CLIError::Generic(error)) => error.source(),
+            Self::Bin(_, Some(CLIError::IOError(error))) => error.source(),
+            Self::Bin(_, Some(CLIError::Generic(error))) => error.source(),
+            Self::Bin(_, None) => None,
         }
     }
 }
@@ -48,11 +49,13 @@ impl From<FormatterError> for TopiaryError {
 impl From<io::Error> for TopiaryError {
     fn from(e: io::Error) -> Self {
         match e.kind() {
-            io::ErrorKind::NotFound => Self::Bin("File not found".into(), CLIError::IOError(e)),
+            io::ErrorKind::NotFound => {
+                Self::Bin("File not found".into(), Some(CLIError::IOError(e)))
+            }
 
             _ => Self::Bin(
-                "Cound not read or write to file".into(),
-                CLIError::IOError(e),
+                "Could not read or write to file".into(),
+                Some(CLIError::IOError(e)),
             ),
         }
     }
@@ -62,7 +65,7 @@ impl From<tempfile::PersistError> for TopiaryError {
     fn from(e: tempfile::PersistError) -> Self {
         Self::Bin(
             "Could not persist output to disk".into(),
-            CLIError::IOError(e.error),
+            Some(CLIError::IOError(e.error)),
         )
     }
 }
@@ -75,8 +78,8 @@ where
 {
     fn from(e: io::IntoInnerError<W>) -> Self {
         Self::Bin(
-            "Cannot flush internal buffer".into(),
-            CLIError::Generic(Box::new(e)),
+            "Could not flush internal buffer".into(),
+            Some(CLIError::Generic(Box::new(e))),
         )
     }
 }
