@@ -245,11 +245,17 @@ fn idempotence_check(
 }
 
 // GraphViz output for our syntax tree
+// Named syntax nodes are elliptical; anonymous are rectangular
 impl fmt::Display for SyntaxNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let shape = match self.is_named {
+            true => "ellipse",
+            false => "box",
+        };
+
         writeln!(
             f,
-            "  {} [label=\"{}\"];",
+            "  {} [label=\"{}\", shape={shape}];",
             self.id,
             self.kind.escape_default()
         )?;

@@ -40,7 +40,7 @@ pub struct SyntaxNode {
     pub id: usize,
 
     pub kind: String,
-    is_named: bool,
+    pub is_named: bool,
     is_extra: bool,
     is_error: bool,
     is_missing: bool,
