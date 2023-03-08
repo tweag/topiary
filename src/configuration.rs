@@ -153,128 +153,128 @@ pub struct Configuration {
     pub indent_level: usize,
 }
 
-impl FromStr for Configuration {
-    type Err = FormatterError;
+// impl FromStr for Configuration {
+//     type Err = FormatterError;
 
-    fn from_str(query: &str) -> FormatterResult<Self> {
-        let mut language: Option<Language> = None;
-        let mut indent_level: Option<usize> = None;
+//     fn from_str(query: &str) -> FormatterResult<Self> {
+//         let mut language: Option<Language> = None;
+//         let mut indent_level: Option<usize> = None;
 
-        let pragmata = Pragmata::from(query);
-        for pragma in pragmata {
-            let Pragma { predicate, value } = pragma?;
-            log::info!("Pragma: {predicate}, Arguments: {value:?}");
+//         let pragmata = Pragmata::from(query);
+//         for pragma in pragmata {
+//             let Pragma { predicate, value } = pragma?;
+//             log::info!("Pragma: {predicate}, Arguments: {value:?}");
 
-            match predicate {
-                "language" => {
-                    if let Some(value) = value {
-                        if language.is_some() {
-                            log::warn!("The #language! pragma has already been set");
-                        }
+//             match predicate {
+//                 "language" => {
+//                     if let Some(value) = value {
+//                         if language.is_some() {
+//                             log::warn!("The #language! pragma has already been set");
+//                         }
 
-                        language = Some(Language::new(value)?);
-                    } else {
-                        return Err(FormatterError::Query(
-                            "The #language! pragma must have a parameter".into(),
-                            None,
-                        ));
-                    }
-                }
+//                         language = Some(Language::new(value)?);
+//                     } else {
+//                         return Err(FormatterError::Query(
+//                             "The #language! pragma must have a parameter".into(),
+//                             None,
+//                         ));
+//                     }
+//                 }
 
-                "indent-level" => {
-                    if let Some(value) = value {
-                        if indent_level.is_some() {
-                            log::warn!("The #indent-level! pragma has already been set");
-                        }
+//                 "indent-level" => {
+//                     if let Some(value) = value {
+//                         if indent_level.is_some() {
+//                             log::warn!("The #indent-level! pragma has already been set");
+//                         }
 
-                        indent_level = Some(value.parse().map_err(|_| {
-                            FormatterError::Query(
-                                format!("The #indent-level! pragma expects a positive integer, but got '{value}'"),
-                                None,
-                            )
-                        })?);
-                    } else {
-                        return Err(FormatterError::Query(
-                            "The #indent-level! pragma must have a parameter".into(),
-                            None,
-                        ));
-                    }
-                }
+//                         indent_level = Some(value.parse().map_err(|_| {
+//                             FormatterError::Query(
+//                                 format!("The #indent-level! pragma expects a positive integer, but got '{value}'"),
+//                                 None,
+//                             )
+//                         })?);
+//                     } else {
+//                         return Err(FormatterError::Query(
+//                             "The #indent-level! pragma must have a parameter".into(),
+//                             None,
+//                         ));
+//                     }
+//                 }
 
-                _ => {
-                    return Err(FormatterError::Query(
-                        format!("Unknown pragma in language query file: '#{predicate}!'"),
-                        None,
-                    ));
-                }
-            }
-        }
+//                 _ => {
+//                     return Err(FormatterError::Query(
+//                         format!("Unknown pragma in language query file: '#{predicate}!'"),
+//                         None,
+//                     ));
+//                 }
+//             }
+//         }
 
-        if let Some(language) = language {
-            Ok(Configuration {
-                language,
-                indent_level: indent_level.unwrap_or(DEFAULT_INDENT_LEVEL),
-            })
-        } else {
-            Err(FormatterError::Query(
-                "The query file must set a language using the #language! pragma".into(),
-                None,
-            ))
-        }
-    }
-}
+//         if let Some(language) = language {
+//             Ok(Configuration {
+//                 language,
+//                 indent_level: indent_level.unwrap_or(DEFAULT_INDENT_LEVEL),
+//             })
+//         } else {
+//             Err(FormatterError::Query(
+//                 "The query file must set a language using the #language! pragma".into(),
+//                 None,
+//             ))
+//         }
+//     }
+// }
 
 #[cfg(test)]
 mod test {
     use super::{Configuration, FormatterResult, Language, Pragma, Pragmata};
 
-    #[test]
-    fn pragma_extraction() -> FormatterResult<()> {
-        let src = r#"
-            (#root-pragma1! value)  ; This should be extracted
-            (#root-pragma2!)        ; This should be extracted
+    // #[test]
+    // fn pragma_extraction() -> FormatterResult<()> {
+    //     let src = r#"
+    //         (#root-pragma1! value)  ; This should be extracted
+    //         (#root-pragma2!)        ; This should be extracted
 
-            (rule (#predicate!)     ; This should be ignored
-            (#predicate! foo bar))  ; This should be ignored
-        "#;
+    //         (rule (#predicate!)     ; This should be ignored
+    //         (#predicate! foo bar))  ; This should be ignored
+    //     "#;
 
-        let mut pragmata = Pragmata::from(src).into_iter();
+    //     let mut pragmata = Pragmata::from(src).into_iter();
 
-        let Pragma { predicate, value } = pragmata.next().unwrap()?;
-        assert_eq!(predicate, "root-pragma1");
-        assert_eq!(value, Some("value"));
+    //     let Pragma { predicate, value } = pragmata.next().unwrap()?;
+    //     assert_eq!(predicate, "root-pragma1");
+    //     assert_eq!(value, Some("value"));
 
-        let Pragma { predicate, value } = pragmata.next().unwrap()?;
-        assert_eq!(predicate, "root-pragma2");
-        assert_eq!(value, None);
+    //     let Pragma { predicate, value } = pragmata.next().unwrap()?;
+    //     assert_eq!(predicate, "root-pragma2");
+    //     assert_eq!(value, None);
 
-        let pragma = pragmata.next();
-        assert!(pragma.is_none());
+    //     let pragma = pragmata.next();
+    //     assert!(pragma.is_none());
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
-    #[test]
-    fn good_configuration() -> FormatterResult<()> {
-        let src = r#"
-            (#language! rust)
-            (#indent-level! 4)
-        "#;
+    // #[test]
+    // fn good_configuration() -> FormatterResult<()> {
+    //     let src = r#"
+    //         (#language! rust)
+    //         (#indent-level! 4)
+    //     "#;
 
-        let Configuration {
-            language,
-            indent_level,
-        } = src.parse()?;
+    //     let Configuration {
+    //         language,
+    //         indent_level,
+    //     } = src.parse()?;
 
-        assert_eq!(language, Language::Rust);
-        assert_eq!(indent_level, 4);
+    //     assert_eq!(language, Language::Rust);
+    //     assert_eq!(indent_level, 4);
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
-    #[test]
-    fn missing_language() {
-        let result = "".parse::<Configuration>();
-        assert!(result.is_err());
-    }
+    // #[test]
+    // fn missing_language() {
+    //     let result = "".parse::<Configuration>();
+    //     assert!(result.is_err());
+    // }
 }

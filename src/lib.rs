@@ -146,7 +146,12 @@ pub fn formatter(
         ))
     })?;
 
-    let mut configuration: Configuration = query.parse()?;
+    // let mut configuration: Configuration = query.parse()?;
+    let configuration = Configuration {
+        language: todo!(),
+        indent_level: todo!(),
+    };
+
     // Replace the language deduced from the query file by the one from the CLI, if any
     if let Some(l) = language {
         configuration.language = l

@@ -568,6 +568,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "pin-project-lite"
+version = "0.2.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e0a7ae3ac2f1173085d398531c705756c94a4c56843785df85a60c1a0afac116"
+
+[[package]]
 name = "plotters"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -869,6 +875,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "tokio"
+version = "1.26.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "03201d01c3c27a29c8a5cee5b55a93ddae1ccf6f08f65365c2c918f8c1b76f64"
+dependencies = [
+ "autocfg",
+ "num_cpus",
+ "pin-project-lite",
+ "tokio-macros",
+ "windows-sys 0.45.0",
+]
+
+[[package]]
+name = "tokio-macros"
+version = "1.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d266c00fde287f55d3f1c3e96c500c362a2b8c695076ec180f27918820bc6df8"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "topiary"
 version = "0.1.0"
 dependencies = [
@@ -884,6 +914,8 @@ dependencies = [
  "serde_json",
  "tempfile",
  "test-log",
+ "tokio",
+ "tree-sitter",
  "tree-sitter-bash",
  "tree-sitter-facade",
  "tree-sitter-json",
@@ -892,6 +924,7 @@ dependencies = [
  "tree-sitter-query",
  "tree-sitter-rust",
  "tree-sitter-toml",
+ "web-tree-sitter-sys",
 ]
 
 [[package]]
@@ -915,9 +948,7 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter-facade"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b44e6891c6ead45559fbc28372517553ad40adba80adcba6ca7c960177a8df83"
+version = "0.9.1"
 dependencies = [
  "js-sys",
  "tree-sitter",
@@ -1094,12 +1125,11 @@ dependencies = [
 [[package]]
 name = "web-tree-sitter-sys"
 version = "1.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab32acd9a6c3f5d9044c125b7fd173f87d019b8853fe6a424f438c9349601b26"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
  "wasm-bindgen-futures",
+ "web-sys",
 ]
 
 [[package]]

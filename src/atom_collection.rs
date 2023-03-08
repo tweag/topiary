@@ -19,8 +19,8 @@ pub struct AtomCollection {
     // HashMap<leaf_node_id, (line_number, Vec<scope_id>)>
     // The line number is passed here because otherwise the information
     // is lost at post-processing time.
-    scope_begin: HashMap<usize, (usize, Vec<String>)>,
-    scope_end: HashMap<usize, (usize, Vec<String>)>,
+    scope_begin: HashMap<usize, (u32, Vec<String>)>,
+    scope_end: HashMap<usize, (u32, Vec<String>)>,
     /// Used to generate unique IDs
     counter: usize,
 }
@@ -336,7 +336,7 @@ impl AtomCollection {
             .and_modify(|(_, scope_ids)| scope_ids.push(String::from(scope_id)))
             .or_insert_with(|| {
                 (
-                    target_node.start_position().row,
+                    target_node.start_position().row(),
                     vec![String::from(scope_id)],
                 )
             });
@@ -355,7 +355,12 @@ impl AtomCollection {
         self.scope_end
             .entry(target_node_id)
             .and_modify(|(_, scope_ids)| scope_ids.push(String::from(scope_id)))
-            .or_insert_with(|| (target_node.end_position().row, vec![String::from(scope_id)]));
+            .or_insert_with(|| {
+                (
+                    target_node.end_position().row(),
+                    vec![String::from(scope_id)],
+                )
+            });
     }
 
     fn parent_leaf_node(&mut self, node: Node) -> usize {
@@ -460,7 +465,7 @@ impl AtomCollection {
     // The second pass applies the modifications to the atoms.
     fn post_process_scopes(&mut self) {
         type ScopeId = String;
-        type LineIndex = usize;
+        type LineIndex = u32;
         type ScopedNodeId = usize;
         // `opened_scopes` maintains stacks of opened scopes,
         // the line at which they started,
@@ -656,8 +661,8 @@ fn detect_multi_line_nodes(node: Node) -> HashSet<usize> {
         ids.extend(detect_multi_line_nodes(child));
     }
 
-    let start_line = node.start_position().row;
-    let end_line = node.end_position().row;
+    let start_line = node.start_position().row();
+    let end_line = node.end_position().row();
 
     if end_line > start_line {
         let id = node.id();
@@ -680,15 +685,15 @@ fn detect_line_break_before_and_after(node: Node) -> (HashSet<usize>, HashSet<us
 // optimization.
 fn detect_line_breaks_inner<'a>(
     node: Node<'a>,
-    minimum_line_breaks: usize,
+    minimum_line_breaks: u32,
     previous_node: &mut Option<Node<'a>>,
 ) -> (HashSet<usize>, HashSet<usize>) {
     let mut nodes_with_breaks_before = HashSet::new();
     let mut nodes_with_breaks_after = HashSet::new();
 
     if let Some(previous_node) = previous_node {
-        let previous_end = previous_node.end_position().row;
-        let current_start = node.start_position().row;
+        let previous_end = previous_node.end_position().row();
+        let current_start = node.start_position().row();
 
         if current_start >= previous_end + minimum_line_breaks {
             nodes_with_breaks_before.insert(node.id());

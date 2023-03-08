@@ -14,14 +14,14 @@ pub enum FormatterError {
     Idempotence,
 
     /// An internal error occurred. This is a bug. Please log an issue.
-    Internal(String, Option<io::Error>),
+    Internal(String, Option<Box<dyn Error>>),
 
     /// Tree-sitter could not parse the input without errors.
     Parsing {
-        start_line: usize,
-        start_column: usize,
-        end_line: usize,
-        end_column: usize,
+        start_line: u32,
+        start_column: u32,
+        end_line: u32,
+        end_column: u32,
     },
 
     /// There was an error in the query file. If this happened using our
@@ -101,7 +101,8 @@ impl Error for FormatterError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             Self::Idempotence => None,
-            Self::Internal(_, source) => source.as_ref().map(|e| e as &dyn Error),
+            Self::Internal(_, source) => source.as_ref().map(|e| &**e),
+            // Self::Internal(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::Parsing { .. } => None,
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::LanguageDetection(_, _) => None,
@@ -172,6 +173,12 @@ where
 
 impl From<serde_json::Error> for FormatterError {
     fn from(e: serde_json::Error) -> Self {
-        Self::Internal("Could not serialise JSON output".into(), Some(e.into()))
+        Self::Internal("Could not serialise JSON output".into(), Some(Box::new(e)))
+    }
+}
+
+impl From<tree_sitter_facade::ParserError> for FormatterError {
+    fn from(e: tree_sitter_facade::ParserError) -> Self {
+        Self::Internal("Error while parsing".into(), Some(Box::new(e)))
     }
 }
