@@ -7,7 +7,7 @@ edition = "2021"
 [dependencies]
 # For now we just load the tree-sitter language parsers statically.
 # Eventually we will want to dynamically load them, like Helix does.
-clap = { version = "3.2", features = ["derive"]}
+clap = { version = "4.1", features = ["derive"] }
 env_logger = "0.10"
 itertools = "0.10"
 log = "0.4"
