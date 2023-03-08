@@ -1,6 +1,6 @@
 [package]
 name = "topiary"
-description = "Takes a source file from stdin and outputs a version to stdout that is formatted according to the specified language."
+description = "Formats input source code in a style defined for that language."
 version = "0.1.0"
 edition = "2021"
 
