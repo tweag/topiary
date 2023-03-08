@@ -20,7 +20,7 @@ use topiary::{formatter, Language, Operation};
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 // Require at least one of --language, --input-file or --query (n.b., language > input > query)
-#[clap(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "input-file", "query"]),))]
+#[clap(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "input_file", "query"]),))]
 struct Args {
     /// Which language to parse and format
     #[clap(short, long, value_enum, display_order = 1)]
@@ -41,7 +41,7 @@ struct Args {
     output_file: Option<String>,
 
     /// Format the input file in place.
-    #[clap(short, long, requires = "input-file", display_order = 5)]
+    #[clap(short, long, requires = "input_file", display_order = 5)]
     in_place: bool,
 
     /// Visualise the syntax tree, rather than format.
@@ -51,7 +51,9 @@ struct Args {
         value_enum,
         aliases = &["view", "visualize"],
         value_name = "OUTPUT_FORMAT",
-        conflicts_with_all = &["in-place", "skip-idempotence"],
+        conflicts_with_all = &["in_place", "skip_idempotence"],
+        require_equals = true,
+        num_args = 0..=1,
         default_missing_value = "json",
         display_order = 6
     )]
