@@ -147,9 +147,9 @@ pub fn formatter(
     })?;
 
     // let mut configuration: Configuration = query.parse()?;
-    let configuration = Configuration {
-        language: todo!(),
-        indent_level: todo!(),
+    let mut configuration = Configuration {
+        language: Language::Json,
+        indent_level: 2,
     };
 
     // Replace the language deduced from the query file by the one from the CLI, if any
