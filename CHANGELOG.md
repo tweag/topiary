@@ -37,7 +37,7 @@ GitHub comparison, and a fresh "Unreleased" section should be started.
 [unreleased]: https://github.com/tweag/topiary/compare/v0.1.0...HEAD
 
 ### Added
-- Maintain a CHANGELOG.
+- Maintain a CHANGELOG and a documented release process.
 
 ### Changed
 - Updated clap dependency to v4.1.
