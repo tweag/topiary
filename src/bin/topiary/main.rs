@@ -18,47 +18,49 @@ use crate::{
 use topiary::{formatter, Language, Operation};
 
 #[derive(Parser, Debug)]
-#[clap(author, version, about, long_about = None)]
+#[command(author, version, about, long_about = None)]
 // Require at least one of --language, --input-file or --query (n.b., language > input > query)
-#[clap(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "input-file", "query"]),))]
+#[command(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "input_file", "query"]),))]
 struct Args {
     /// Which language to parse and format
-    #[clap(short, long, value_enum, display_order = 1)]
+    #[arg(short, long, value_enum, display_order = 1)]
     language: Option<SupportedLanguage>,
 
     /// Path to an input file. If omitted, or equal to "-", read from standard
     /// input.
-    #[clap(short = 'f', long, display_order = 2)]
+    #[arg(short = 'f', long, display_order = 2)]
     input_file: Option<String>,
 
     /// Which query file to use
-    #[clap(short, long, display_order = 3)]
+    #[arg(short, long, display_order = 3)]
     query: Option<PathBuf>,
 
     /// Path to an output file. If omitted, or equal to "-", write to standard
     /// output.
-    #[clap(short, long, display_order = 4)]
+    #[arg(short, long, display_order = 4)]
     output_file: Option<String>,
 
     /// Format the input file in place.
-    #[clap(short, long, requires = "input-file", display_order = 5)]
+    #[arg(short, long, requires = "input_file", display_order = 5)]
     in_place: bool,
 
     /// Visualise the syntax tree, rather than format.
-    #[clap(
+    #[arg(
         short,
         long,
         value_enum,
         aliases = &["view", "visualize"],
         value_name = "OUTPUT_FORMAT",
-        conflicts_with_all = &["in-place", "skip-idempotence"],
+        conflicts_with_all = &["in_place", "skip_idempotence"],
+        require_equals = true,
+        num_args = 0..=1,
         default_missing_value = "json",
         display_order = 6
     )]
     visualise: Option<Visualisation>,
 
     /// Do not check that formatting twice gives the same output
-    #[clap(short, long, display_order = 7)]
+    #[arg(short, long, display_order = 7)]
     skip_idempotence: bool,
 }
 
