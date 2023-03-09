@@ -681,11 +681,13 @@ fn detect_blank_lines_before(node: &Node) -> HashSet<usize> {
 }
 
 fn detect_line_break_before_and_after(node: &Node) -> (HashSet<usize>, HashSet<usize>) {
-    detect_line_breaks_inner(node, 1, None, None)
+    let result = detect_line_breaks_inner(node, 1, None, None);
+    (result.0, result.1)
 }
 
 // TODO: This is taking a bit too much time, and would benefit from an
 // optimization.
+// TODO 2: The whole function is a mess now, and should be rewritten.
 fn detect_line_breaks_inner<'tree, 'node>(
     node: &'node Node<'tree>,
     minimum_line_breaks: u32,
@@ -693,7 +695,7 @@ fn detect_line_breaks_inner<'tree, 'node>(
     // TODO: Replace these with just previous_node: Option<&'node Node<'tree>>
     previous_node_id: Option<usize>,
     previous_end: Option<u32>,
-) -> (HashSet<usize>, HashSet<usize>) {
+) -> (HashSet<usize>, HashSet<usize>, Option<usize>, Option<u32>) {
     let mut nodes_with_breaks_before = HashSet::new();
     let mut nodes_with_breaks_after = HashSet::new();
 
@@ -713,17 +715,25 @@ fn detect_line_breaks_inner<'tree, 'node>(
         }
     }
 
-    let previous_node_id = Some(node.id());
-    let previous_end = Some(node.end_position().row());
+    let mut previous_node_id = Some(node.id());
+    let mut previous_end = Some(node.end_position().row());
 
     for child in node.children(&mut node.walk()) {
-        let (before, after) =
+        let (before, after, node_id, end) =
             detect_line_breaks_inner(&child, minimum_line_breaks, previous_node_id, previous_end);
+
+        previous_node_id = node_id;
+        previous_end = end;
         nodes_with_breaks_before.extend(before);
         nodes_with_breaks_after.extend(after);
     }
 
-    (nodes_with_breaks_before, nodes_with_breaks_after)
+    (
+        nodes_with_breaks_before,
+        nodes_with_breaks_after,
+        previous_node_id,
+        previous_end,
+    )
 }
 
 // TODO: first_leaf and last_leaf can probably be simplified.
