@@ -26,21 +26,22 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'tree-sitter-formatter'",
+            "name": "Debug executable 'topiary'",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=tree-sitter-formatter",
-                    "--package=tree-sitter-formatter"
+                    "--bin=topiary",
+                    "--package=topiary"
                 ],
                 "filter": {
-                    "name": "tree-sitter-formatter",
+                    "name": "topiary",
                     "kind": "bin"
                 }
             },
             "args": [
-                "<", "tests/samples/input/rust.rs",
-                "-l", "rust"
+                "--query", "languages/debug.scm",
+                "--input-file", "languages/debug.scm",
+                "-s"
             ],
             "cwd": "${workspaceFolder}"
         },
