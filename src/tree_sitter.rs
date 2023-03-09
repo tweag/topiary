@@ -2,8 +2,7 @@ use std::collections::HashSet;
 
 use serde::Serialize;
 use tree_sitter_facade::{
-    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch,
-    /*QueryPredicate, QueryPredicateArg,*/ Tree,
+    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryPredicate, Tree,
 };
 
 use crate::{
@@ -130,14 +129,14 @@ pub fn apply_query(
         let mut delimiter: Option<String> = None;
         let mut scope_id: Option<String> = None;
 
-        // for p in query.general_predicates(m.pattern_index) {
-        //     if let Some(d) = handle_delimiter_predicate(p)? {
-        //         delimiter = Some(d);
-        //     }
-        //     if let Some(d) = handle_scope_id_predicate(p)? {
-        //         scope_id = Some(d);
-        //     }
-        // }
+        for p in query.general_predicates(m.pattern_index) {
+            if let Some(d) = handle_delimiter_predicate(&p)? {
+                delimiter = Some(d);
+            }
+            if let Some(d) = handle_scope_id_predicate(&p)? {
+                scope_id = Some(d);
+            }
+        }
 
         // If any capture is a do_nothing, then do nothing.
         if m.captures
@@ -236,46 +235,34 @@ fn collect_leaf_ids(matches: &Vec<LocalQueryMatch>, capture_names: &[String]) ->
     ids
 }
 
-// fn handle_delimiter_predicate(predicate: &QueryPredicate) -> FormatterResult<Option<String>> {
-//     let operator = &*predicate.operator;
+// TODO: Deduplicate these.
 
-//     if let "delimiter!" = operator {
-//         let arg = predicate
-//             .args
-//             .first()
-//             .ok_or_else(|| FormatterError::Query(format!("{operator} needs an argument"), None))?;
+fn handle_delimiter_predicate(predicate: &QueryPredicate) -> FormatterResult<Option<String>> {
+    let operator = &*predicate.utf8_operator();
 
-//         if let QueryPredicateArg::String(s) = arg {
-//             Ok(Some(s.to_string()))
-//         } else {
-//             Err(FormatterError::Query(
-//                 format!("{operator} needs a string argument, but got {arg:?}."),
-//                 None,
-//             ))
-//         }
-//     } else {
-//         Ok(None)
-//     }
-// }
+    if let "delimiter!" = operator {
+        let arg =
+            predicate.args().into_iter().next().ok_or_else(|| {
+                FormatterError::Query(format!("{operator} needs an argument"), None)
+            })?;
 
-// fn handle_scope_id_predicate(predicate: &QueryPredicate) -> FormatterResult<Option<String>> {
-//     let operator = &*predicate.operator;
+        Ok(Some(arg))
+    } else {
+        Ok(None)
+    }
+}
 
-//     if let "scope_id!" = operator {
-//         let arg = predicate
-//             .args
-//             .first()
-//             .ok_or_else(|| FormatterError::Query(format!("{operator} needs an argument"), None))?;
+fn handle_scope_id_predicate(predicate: &QueryPredicate) -> FormatterResult<Option<String>> {
+    let operator = &*predicate.utf8_operator();
 
-//         if let QueryPredicateArg::String(s) = arg {
-//             Ok(Some(s.to_string()))
-//         } else {
-//             Err(FormatterError::Query(
-//                 format!("{operator} needs a string argument, but got {arg:?}."),
-//                 None,
-//             ))
-//         }
-//     } else {
-//         Ok(None)
-//     }
-// }
+    if let "scope_id!" = operator {
+        let arg =
+            predicate.args().into_iter().next().ok_or_else(|| {
+                FormatterError::Query(format!("{operator} needs an argument"), None)
+            })?;
+
+        Ok(Some(arg))
+    } else {
+        Ok(None)
+    }
+}
