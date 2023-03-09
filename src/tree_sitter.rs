@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use serde::Serialize;
 use tree_sitter_facade::{
-    Node, Parser, Point, Query, QueryCapture, QueryMatch,
+    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch,
     /*QueryPredicate, QueryPredicateArg,*/ Tree,
 };
 
@@ -87,14 +87,15 @@ pub fn apply_query(
     let (tree, grammar) = parse(input_content, language)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
-    let mut query = Query::new(&grammar, query_content)
+    let query = Query::new(&grammar, query_content)
         .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
+    let mut cursor = QueryCursor::new();
 
     let capture_names = query.capture_names();
 
     // Match queries
     let mut matches: Vec<LocalQueryMatch> = Vec::new();
-    for query_match in query.matches(root, source) {
+    for query_match in query.matches(&root, source, &mut cursor) {
         // This may provoke the collect bug described here:
         // https://github.com/tree-sitter/tree-sitter/issues/608
         let local_captures: Vec<QueryCapture> = query_match.captures().collect();
@@ -149,7 +150,7 @@ pub fn apply_query(
 
         for c in m.captures {
             let name = c.utf8_name(&capture_names);
-            atoms.resolve_capture(&name, c.node(), delimiter.as_deref(), scope_id.as_deref())?;
+            atoms.resolve_capture(&name, &c.node(), delimiter.as_deref(), scope_id.as_deref())?;
         }
     }
 
