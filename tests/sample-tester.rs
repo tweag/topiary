@@ -3,12 +3,11 @@ use std::io::BufReader;
 use std::path::Path;
 
 use pretty_assertions::assert_eq;
-use test_log::test;
 
 use topiary::{formatter, Language, Operation};
 
-#[test]
-fn input_output_tester() {
+#[tokio::test]
+async fn input_output_tester() {
     let input_dir = fs::read_dir("tests/samples/input").unwrap();
     let expected_dir = Path::new("tests/samples/expected");
 
@@ -33,6 +32,7 @@ fn input_output_tester() {
                 skip_idempotence: true,
             },
         )
+        .await
         .unwrap();
 
         let formatted = String::from_utf8(output).unwrap();
@@ -43,8 +43,8 @@ fn input_output_tester() {
 }
 
 // Test that our query files are properly formatted
-#[test]
-fn formatted_query_tester() {
+#[tokio::test]
+async fn formatted_query_tester() {
     let language_dir = fs::read_dir("languages").unwrap();
 
     for file in language_dir {
@@ -67,6 +67,7 @@ fn formatted_query_tester() {
                 skip_idempotence: true,
             },
         )
+        .await
         .unwrap();
 
         let formatted = String::from_utf8(output).unwrap();

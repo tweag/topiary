@@ -5,6 +5,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+async-recursion = "1.0.2"
 # For now we just load the tree-sitter language parsers statically.
 # Eventually we will want to dynamically load them, like Helix does.
 clap = { version = "4.1", features = ["derive"] }
@@ -17,6 +18,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tempfile = "3.4.0"
 test-log = "0.2"
+tokio = { version = "^1.26.0", features = ["rt-multi-thread", "macros"] }
 tree-sitter-facade = { git = "https://github.com/tweag/tree-sitter-facade" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies] 
@@ -35,6 +37,7 @@ web-tree-sitter = { git = "https://github.com/tweag/web-tree-sitter-sys", packag
 [dev-dependencies]
 assert_cmd = "2.0"
 criterion = "0.4"
+tokio-test = "0.4.2"
 
 [[bench]]
 name = "benchmark"

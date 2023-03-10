@@ -10,10 +10,10 @@
 //! More details can be found on
 //! [GitHub](https://github.com/tweag/topiary).
 
-use std::io;
-
+use async_recursion::async_recursion;
 use itertools::Itertools;
 use pretty_assertions::StrComparison;
+use std::io;
 
 pub use crate::{
     error::{FormatterError, IoError},
@@ -105,6 +105,7 @@ pub enum Operation {
 /// # Examples
 ///
 /// ```
+/// # tokio_test::block_on(async {
 /// use std::fs::File;
 /// use std::io::BufReader;
 /// use topiary::{formatter, FormatterError, Operation};
@@ -114,7 +115,7 @@ pub enum Operation {
 /// let mut output = Vec::new();
 /// let mut query = BufReader::new(File::open("languages/json.scm").expect("query file"));
 ///
-/// match formatter(&mut input, &mut output, &mut query, None, Operation::Format{ skip_idempotence: false }) {
+/// match formatter(&mut input, &mut output, &mut query, None, Operation::Format{ skip_idempotence: false }).await {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
@@ -125,11 +126,13 @@ pub enum Operation {
 ///     panic!("An error occurred");
 ///   }
 /// }
+/// # }) // end tokio_test
 /// ```
-pub fn formatter(
-    input: &mut dyn io::Read,
-    output: &mut dyn io::Write,
-    query: &mut dyn io::Read,
+#[async_recursion]
+pub async fn formatter(
+    input: &mut (impl io::Read + Send),
+    output: &mut (impl io::Write + Send),
+    query: &mut (impl io::Read + Send),
     language: Option<Language>,
     operation: Operation,
 ) -> FormatterResult<()> {
@@ -153,11 +156,13 @@ pub fn formatter(
         configuration.language = l
     }
 
+    let grammars = configuration.language.grammars().await;
+
     match operation {
         Operation::Format { skip_idempotence } => {
             // All the work related to tree-sitter and the query is done here
             log::info!("Apply Tree-sitter query");
-            let mut atoms = tree_sitter::apply_query(&content, &query, configuration.language)?;
+            let mut atoms = tree_sitter::apply_query(&content, &query, &grammars)?;
 
             // Various post-processing of whitespace
             atoms.post_process();
@@ -168,14 +173,14 @@ pub fn formatter(
             let trimmed = trim_whitespace(&rendered);
 
             if !skip_idempotence {
-                idempotence_check(&trimmed, &query, language)?
+                idempotence_check(&trimmed, &query, language).await?
             }
 
             write!(output, "{trimmed}")?;
         }
 
         Operation::Visualise { output_format } => {
-            let (tree, _) = tree_sitter::parse(&content, configuration.language)?;
+            let (tree, _) = tree_sitter::parse(&content, &grammars)?;
             let root: SyntaxNode = tree.root_node().into();
 
             match output_format {
@@ -201,7 +206,7 @@ fn trim_whitespace(s: &str) -> String {
     format!("{}\n", s.lines().map(str::trim_end).join("\n").trim())
 }
 
-fn idempotence_check(
+async fn idempotence_check(
     content: &str,
     query: &str,
     language: Option<Language>,
@@ -211,26 +216,26 @@ fn idempotence_check(
     let mut input = content.as_bytes();
     let mut query = query.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
-    let do_steps = || -> Result<(), FormatterError> {
-        formatter(
-            &mut input,
-            &mut output,
-            &mut query,
-            language,
-            Operation::Format {
-                skip_idempotence: true,
-            },
-        )?;
-        let reformatted = String::from_utf8(output.into_inner()?)?;
-        if content == reformatted {
-            Ok(())
-        } else {
-            log::error!("Failed idempotence check");
-            log::error!("{}", StrComparison::new(content, &reformatted));
-            Err(FormatterError::Idempotence)
-        }
+
+    formatter(
+        &mut input,
+        &mut output,
+        &mut query,
+        language,
+        Operation::Format {
+            skip_idempotence: true,
+        },
+    )
+    .await?;
+    let reformatted = String::from_utf8(output.into_inner()?)?;
+    let res = if content == reformatted {
+        Ok(())
+    } else {
+        log::error!("Failed idempotence check");
+        log::error!("{}", StrComparison::new(content, &reformatted));
+        Err(FormatterError::Idempotence)
     };
-    let res = do_steps();
+
     if let Err(err) = res {
         match err {
             // If topiary ran smoothly on its own output,
@@ -246,8 +251,8 @@ fn idempotence_check(
     }
 }
 
-#[test]
-fn parse_error_fails_formatting() {
+#[tokio::test]
+async fn parse_error_fails_formatting() {
     let mut input = "[ 1, % ]".as_bytes();
     let mut output = Vec::new();
     let mut query = "(#language! json)".as_bytes();
@@ -259,7 +264,9 @@ fn parse_error_fails_formatting() {
         Operation::Format {
             skip_idempotence: true,
         },
-    ) {
+    )
+    .await
+    {
         Err(FormatterError::Parsing {
             start_line: 1,
             end_line: 1,

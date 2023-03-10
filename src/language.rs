@@ -64,9 +64,55 @@ impl Language {
         self.try_into()
     }
 
-    /// Convenience alias to return the Tree-sitter grammars for the Language.
-    pub fn grammars(&self) -> Vec<tree_sitter_facade::Language> {
-        self.into()
+    /// Convert a Language into a vector of supported Tree-sitter grammars, ordered by priority.
+    ///
+    /// Note that, currently, all grammars are statically linked. This will change once dynamic linking
+    /// is implemented (see Issue #4).
+    #[cfg(not(target_arch = "wasm32"))]
+    pub async fn grammars(&self) -> Vec<tree_sitter_facade::Language> {
+        match self {
+            Language::Bash => vec![tree_sitter_bash::language()],
+            Language::Json => vec![tree_sitter_json::language()],
+            Language::Nickel => vec![tree_sitter_nickel::language()],
+            Language::Ocaml => vec![
+                tree_sitter_ocaml::language_ocaml(),
+                tree_sitter_ocaml::language_ocaml_interface(),
+            ],
+            Language::OcamlImplementation => vec![tree_sitter_ocaml::language_ocaml()],
+            Language::OcamlInterface => vec![tree_sitter_ocaml::language_ocaml_interface()],
+            Language::Rust => vec![tree_sitter_rust::language()],
+            Language::Toml => vec![tree_sitter_toml::language()],
+            Language::TreeSitterQuery => vec![tree_sitter_query::language()],
+        }
+        .into_iter()
+        .map(Into::into)
+        .collect()
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    pub async fn grammars(&self) -> Vec<tree_sitter_facade::Language> {
+        match self {
+            Language::Bash => vec!["bash"],
+            Language::Json => vec!["json"],
+            Language::Nickel => vec!["nickel"],
+            Language::Ocaml => vec!["ocaml", "ocaml-interface"],
+            Language::OcamlImplementation => vec!["ocaml"],
+            Language::OcamlInterface => vec!["ocaml-interface"],
+            Language::Rust => vec!["rust"],
+            Language::Toml => vec!["toml"],
+            Language::TreeSitterQuery => vec!["query"],
+        }
+        .iter()
+        .map(|name| format!("tree-sitter-{}.wasm", name))
+        .map(|path| {
+            web_tree_sitter::Language::load_path(path)
+                .await
+                .map_err(|e| {
+                    let error: web_tree_sitter::Language::LanguageError = e.into();
+                    error
+                })?
+                .into();
+        })
     }
 }
 
@@ -170,60 +216,5 @@ impl TryFrom<PathBuf> for Language {
             path.clone(),
             extension.map(|v| v.into()),
         ))
-    }
-}
-
-/// Convert a Language into a vector of supported Tree-sitter grammars, ordered by priority.
-///
-/// Note that, currently, all grammars are statically linked. This will change once dynamic linking
-/// is implemented (see Issue #4).
-#[cfg(not(target_arch = "wasm32"))]
-impl From<&Language> for Vec<tree_sitter_facade::Language> {
-    fn from(language: &Language) -> Self {
-        match language {
-            Language::Bash => vec![tree_sitter_bash::language()],
-            Language::Json => vec![tree_sitter_json::language()],
-            Language::Nickel => vec![tree_sitter_nickel::language()],
-            Language::Ocaml => vec![
-                tree_sitter_ocaml::language_ocaml(),
-                tree_sitter_ocaml::language_ocaml_interface(),
-            ],
-            Language::OcamlImplementation => vec![tree_sitter_ocaml::language_ocaml()],
-            Language::OcamlInterface => vec![tree_sitter_ocaml::language_ocaml_interface()],
-            Language::Rust => vec![tree_sitter_rust::language()],
-            Language::Toml => vec![tree_sitter_toml::language()],
-            Language::TreeSitterQuery => vec![tree_sitter_query::language()],
-        }
-        .into_iter()
-        .map(Into::into)
-        .collect()
-    }
-}
-
-#[cfg(target_arch = "wasm32")]
-impl From<&Language> for Vec<tree_sitter_facade::Language> {
-    fn from(language: &Language) -> Self {
-        match language {
-            Language::Bash => vec!["bash"],
-            Language::Json => vec!["json"],
-            Language::Nickel => vec!["nickel"],
-            Language::Ocaml => vec!["ocaml", "ocaml-interface"],
-            Language::OcamlImplementation => vec!["ocaml"],
-            Language::OcamlInterface => vec!["ocaml-interface"],
-            Language::Rust => vec!["rust"],
-            Language::Toml => vec!["toml"],
-            Language::TreeSitterQuery => vec!["query"],
-        }
-        .iter()
-        .map(|name| format!("tree-sitter-{}.wasm", name))
-        .map(|path| {
-            web_tree_sitter::Language::load_path(path)
-                .await
-                .map_err(|e| {
-                    let error: web_tree_sitter::Language::LanguageError = e.into();
-                    error
-                })?
-                .into();
-        })
     }
 }

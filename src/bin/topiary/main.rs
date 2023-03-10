@@ -64,20 +64,21 @@ struct Args {
     skip_idempotence: bool,
 }
 
-fn main() {
-    if let Err(e) = run() {
+#[tokio::main]
+async fn main() {
+    if let Err(e) = run().await {
         print_error(&e);
         std::process::exit(1);
     }
 }
 
-fn run() -> CLIResult<()> {
+async fn run() -> CLIResult<()> {
     env_logger::init();
     let args = Args::parse();
 
     // The as_deref() gives us an Option<&str>, which we can match against
     // string literals
-    let mut input: Box<dyn std::io::Read> = match args.input_file.as_deref() {
+    let mut input: Box<(dyn std::io::Read + Send)> = match args.input_file.as_deref() {
         Some("-") | None => Box::new(stdin()),
         Some(file) => Box::new(BufReader::new(File::open(file)?)),
     };
@@ -124,7 +125,7 @@ fn run() -> CLIResult<()> {
         }
     };
 
-    formatter(&mut input, &mut output, &mut query, language, operation)?;
+    formatter(&mut input, &mut output, &mut query, language, operation).await?;
 
     output.into_inner()?.persist()?;
 

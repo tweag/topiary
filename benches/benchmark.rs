@@ -8,7 +8,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     let query = fs::read_to_string("languages/ocaml.scm").unwrap();
 
     c.bench_function("format ocaml", |b| {
-        b.iter(|| {
+        b.iter(|| async {
             let mut input = input.as_bytes();
             let mut query = query.as_bytes();
             let mut output = io::BufWriter::new(Vec::new());
@@ -22,6 +22,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                     skip_idempotence: false,
                 },
             )
+            .await
         })
     });
 }
