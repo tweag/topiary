@@ -688,11 +688,11 @@ fn detect_line_break_before_and_after(node: &Node) -> (HashSet<usize>, HashSet<u
 // TODO: This is taking a bit too much time, and would benefit from an
 // optimization.
 // TODO 2: The whole function is a mess now, and should be rewritten.
-fn detect_line_breaks_inner<'tree, 'node>(
-    node: &'node Node<'tree>,
+fn detect_line_breaks_inner(
+    node: &Node,
     minimum_line_breaks: u32,
 
-    // TODO: Replace these with just previous_node: Option<&'node Node<'tree>>
+    // TODO: Replace these with just previous_node: Option<&Node>
     previous_node_id: Option<usize>,
     previous_end: Option<u32>,
 ) -> (HashSet<usize>, HashSet<usize>, Option<usize>, Option<u32>) {
