@@ -141,14 +141,14 @@ pub fn apply_query(
         // If any capture is a do_nothing, then do nothing.
         if m.captures
             .iter()
-            .map(|c| c.utf8_name(&capture_names))
+            .map(|c| c.name(&capture_names))
             .any(|name| name == "do_nothing")
         {
             continue;
         }
 
         for c in m.captures {
-            let name = c.utf8_name(&capture_names);
+            let name = c.name(&capture_names);
             atoms.resolve_capture(&name, &c.node(), delimiter.as_deref(), scope_id.as_deref())?;
         }
     }
@@ -227,7 +227,7 @@ fn collect_leaf_ids(matches: &Vec<LocalQueryMatch>, capture_names: &[String]) ->
 
     for m in matches {
         for c in &m.captures {
-            if c.utf8_name(capture_names) == "leaf" {
+            if c.name(capture_names) == "leaf" {
                 ids.insert(c.node().id());
             }
         }
@@ -238,7 +238,7 @@ fn collect_leaf_ids(matches: &Vec<LocalQueryMatch>, capture_names: &[String]) ->
 // TODO: Deduplicate these.
 
 fn handle_delimiter_predicate(predicate: &QueryPredicate) -> FormatterResult<Option<String>> {
-    let operator = &*predicate.utf8_operator();
+    let operator = &*predicate.operator();
 
     if let "delimiter!" = operator {
         let arg =
@@ -253,7 +253,7 @@ fn handle_delimiter_predicate(predicate: &QueryPredicate) -> FormatterResult<Opt
 }
 
 fn handle_scope_id_predicate(predicate: &QueryPredicate) -> FormatterResult<Option<String>> {
-    let operator = &*predicate.utf8_operator();
+    let operator = &*predicate.operator();
 
     if let "scope_id!" = operator {
         let arg =
