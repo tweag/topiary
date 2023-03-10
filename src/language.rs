@@ -65,7 +65,7 @@ impl Language {
     }
 
     /// Convenience alias to return the Tree-sitter grammars for the Language.
-    pub fn grammars(&self) -> Vec<tree_sitter::Language> {
+    pub fn grammars(&self) -> Vec<tree_sitter_facade::Language> {
         self.into()
     }
 }
@@ -177,7 +177,8 @@ impl TryFrom<PathBuf> for Language {
 ///
 /// Note that, currently, all grammars are statically linked. This will change once dynamic linking
 /// is implemented (see Issue #4).
-impl From<&Language> for Vec<tree_sitter::Language> {
+#[cfg(not(target_arch = "wasm32"))]
+impl From<&Language> for Vec<tree_sitter_facade::Language> {
     fn from(language: &Language) -> Self {
         match language {
             Language::Bash => vec![tree_sitter_bash::language()],
@@ -193,5 +194,36 @@ impl From<&Language> for Vec<tree_sitter::Language> {
             Language::Toml => vec![tree_sitter_toml::language()],
             Language::TreeSitterQuery => vec![tree_sitter_query::language()],
         }
+        .into_iter()
+        .map(Into::into)
+        .collect()
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+impl From<&Language> for Vec<tree_sitter_facade::Language> {
+    fn from(language: &Language) -> Self {
+        match language {
+            Language::Bash => vec!["bash"],
+            Language::Json => vec!["json"],
+            Language::Nickel => vec!["nickel"],
+            Language::Ocaml => vec!["ocaml", "ocaml-interface"],
+            Language::OcamlImplementation => vec!["ocaml"],
+            Language::OcamlInterface => vec!["ocaml-interface"],
+            Language::Rust => vec!["rust"],
+            Language::Toml => vec!["toml"],
+            Language::TreeSitterQuery => vec!["query"],
+        }
+        .iter()
+        .map(|name| format!("tree-sitter-{}.wasm", name))
+        .map(|path| {
+            web_tree_sitter::Language::load_path(path)
+                .await
+                .map_err(|e| {
+                    let error: LanguageError = e.into();
+                    error
+                })?
+                .into();
+        })
     }
 }

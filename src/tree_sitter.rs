@@ -1,9 +1,8 @@
 use std::collections::HashSet;
 
 use serde::Serialize;
-use tree_sitter::{
-    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate,
-    QueryPredicateArg, Tree,
+use tree_sitter_facade::{
+    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryPredicate, Tree,
 };
 
 use crate::{
@@ -20,15 +19,15 @@ pub enum Visualisation {
 // 1-based text position, derived from tree_sitter::Point, for the sake of serialisation.
 #[derive(Serialize)]
 struct Position {
-    row: usize,
-    column: usize,
+    row: u32,
+    column: u32,
 }
 
 impl From<Point> for Position {
     fn from(point: Point) -> Self {
         Self {
-            row: point.row + 1,
-            column: point.column + 1,
+            row: point.row() + 1,
+            column: point.column() + 1,
         }
     }
 }
@@ -75,7 +74,7 @@ impl From<Node<'_>> for SyntaxNode {
 // A struct to statically store the public fields of query match results,
 // to avoid running queries twice.
 struct LocalQueryMatch<'a> {
-    pattern_index: usize,
+    pattern_index: u32,
     captures: Vec<QueryCapture<'a>>,
 }
 
@@ -87,28 +86,26 @@ pub fn apply_query(
     let (tree, grammar) = parse(input_content, language)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
-    let query = Query::new(grammar, query_content)
+    let query = Query::new(&grammar, query_content)
         .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
 
     // Match queries
     let mut cursor = QueryCursor::new();
     let mut matches: Vec<LocalQueryMatch> = Vec::new();
-    for QueryMatch {
-        pattern_index,
-        captures,
-        ..
-    } in cursor.matches(&query, root, source)
-    {
-        let local_captures: Vec<QueryCapture> = captures.to_vec();
+    let capture_names = query.capture_names();
+
+    for query_match in query.matches(&root, source, &mut cursor) {
+        let local_captures: Vec<QueryCapture> = query_match.captures().collect();
+
         matches.push(LocalQueryMatch {
-            pattern_index,
+            pattern_index: query_match.pattern_index(),
             captures: local_captures,
         })
     }
 
     // Find the ids of all tree-sitter nodes that were identified as a leaf
     // We want to avoid recursing into them in the collect_leafs function.
-    let specified_leaf_nodes: HashSet<usize> = collect_leaf_ids(&matches, query.capture_names());
+    let specified_leaf_nodes: HashSet<usize> = collect_leaf_ids(&matches, &capture_names);
 
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
     let mut atoms = AtomCollection::collect_leafs(root, source, specified_leaf_nodes)?;
@@ -131,10 +128,10 @@ pub fn apply_query(
         let mut scope_id: Option<String> = None;
 
         for p in query.general_predicates(m.pattern_index) {
-            if let Some(d) = handle_delimiter_predicate(p)? {
+            if let Some(d) = handle_delimiter_predicate(&p)? {
                 delimiter = Some(d);
             }
-            if let Some(d) = handle_scope_id_predicate(p)? {
+            if let Some(d) = handle_scope_id_predicate(&p)? {
                 scope_id = Some(d);
             }
         }
@@ -142,15 +139,15 @@ pub fn apply_query(
         // If any capture is a do_nothing, then do nothing.
         if m.captures
             .iter()
-            .map(|c| capture_name(&query, c))
+            .map(|c| c.name(&capture_names))
             .any(|name| name == "do_nothing")
         {
             continue;
         }
 
         for c in m.captures {
-            let name = capture_name(&query, &c);
-            atoms.resolve_capture(name, c.node, delimiter.as_deref(), scope_id.as_deref())?;
+            let name = c.name(&capture_names);
+            atoms.resolve_capture(&name, &c.node(), delimiter.as_deref(), scope_id.as_deref())?;
         }
     }
 
@@ -160,35 +157,34 @@ pub fn apply_query(
     Ok(atoms)
 }
 
-fn capture_name<'a>(query: &'a Query, capture: &QueryCapture) -> &'a str {
-    query.capture_names()[capture.index as usize].as_str()
-}
-
 // A single "language" can correspond to multiple grammars.
 // For instance, we have separate grammars for interfaces and implementation in OCaml.
 // When the proper grammar cannot be inferred from the extension of the input file,
 // this function tries to parse the data with every possible grammar.
 // It returns the syntax tree of the first grammar that succeeds, along with said grammar,
 // or the last error if all grammars fail.
-pub fn parse(content: &str, language: Language) -> FormatterResult<(Tree, tree_sitter::Language)> {
-    let mut parser = Parser::new();
+pub fn parse(
+    content: &str,
+    language: Language,
+) -> FormatterResult<(Tree, tree_sitter_facade::Language)> {
+    let mut parser = Parser::new()?;
 
     language
         .grammars()
-        .iter()
+        .into_iter()
         .map(|grammar| {
-            parser.set_language(*grammar).map_err(|_| {
+            parser.set_language(&grammar).map_err(|_| {
                 FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
             })?;
 
             let tree = parser
-                .parse(content, None)
+                .parse(content, None)?
                 .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))?;
 
             // Fail parsing if we don't get a complete syntax tree.
             check_for_error_nodes(tree.root_node())?;
 
-            Ok((tree, *grammar))
+            Ok((tree, grammar))
         })
         .fold(
             Err(FormatterError::Internal(
@@ -206,10 +202,10 @@ fn check_for_error_nodes(node: Node) -> FormatterResult<()> {
 
         // Report 1-based lines and columns.
         return Err(FormatterError::Parsing {
-            start_line: start.row + 1,
-            start_column: start.column + 1,
-            end_line: end.row + 1,
-            end_column: end.column + 1,
+            start_line: start.row() + 1,
+            start_column: start.column() + 1,
+            end_line: end.row() + 1,
+            end_column: end.column() + 1,
         });
     }
 
@@ -225,53 +221,41 @@ fn collect_leaf_ids(matches: &Vec<LocalQueryMatch>, capture_names: &[String]) ->
 
     for m in matches {
         for c in &m.captures {
-            if capture_names[c.index as usize] == "leaf" {
-                ids.insert(c.node.id());
+            if c.name(capture_names) == "leaf" {
+                ids.insert(c.node().id());
             }
         }
     }
     ids
 }
 
+// TODO: Deduplicate these.
+
 fn handle_delimiter_predicate(predicate: &QueryPredicate) -> FormatterResult<Option<String>> {
-    let operator = &*predicate.operator;
+    let operator = &*predicate.operator();
 
     if let "delimiter!" = operator {
-        let arg = predicate
-            .args
-            .first()
-            .ok_or_else(|| FormatterError::Query(format!("{operator} needs an argument"), None))?;
+        let arg =
+            predicate.args().into_iter().next().ok_or_else(|| {
+                FormatterError::Query(format!("{operator} needs an argument"), None)
+            })?;
 
-        if let QueryPredicateArg::String(s) = arg {
-            Ok(Some(s.to_string()))
-        } else {
-            Err(FormatterError::Query(
-                format!("{operator} needs a string argument, but got {arg:?}."),
-                None,
-            ))
-        }
+        Ok(Some(arg))
     } else {
         Ok(None)
     }
 }
 
 fn handle_scope_id_predicate(predicate: &QueryPredicate) -> FormatterResult<Option<String>> {
-    let operator = &*predicate.operator;
+    let operator = &*predicate.operator();
 
     if let "scope_id!" = operator {
-        let arg = predicate
-            .args
-            .first()
-            .ok_or_else(|| FormatterError::Query(format!("{operator} needs an argument"), None))?;
+        let arg =
+            predicate.args().into_iter().next().ok_or_else(|| {
+                FormatterError::Query(format!("{operator} needs an argument"), None)
+            })?;
 
-        if let QueryPredicateArg::String(s) = arg {
-            Ok(Some(s.to_string()))
-        } else {
-            Err(FormatterError::Query(
-                format!("{operator} needs a string argument, but got {arg:?}."),
-                None,
-            ))
-        }
+        Ok(Some(arg))
     } else {
         Ok(None)
     }

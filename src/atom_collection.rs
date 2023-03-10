@@ -1,6 +1,9 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+    borrow::Cow,
+    collections::{HashMap, HashSet},
+};
 
-use tree_sitter::Node;
+use tree_sitter_facade::Node;
 
 use crate::{Atom, FormatterError, FormatterResult};
 
@@ -19,8 +22,8 @@ pub struct AtomCollection {
     // HashMap<leaf_node_id, (line_number, Vec<scope_id>)>
     // The line number is passed here because otherwise the information
     // is lost at post-processing time.
-    scope_begin: HashMap<usize, (usize, Vec<String>)>,
-    scope_end: HashMap<usize, (usize, Vec<String>)>,
+    scope_begin: HashMap<usize, (u32, Vec<String>)>,
+    scope_end: HashMap<usize, (u32, Vec<String>)>,
     /// Used to generate unique IDs
     counter: usize,
 }
@@ -33,9 +36,9 @@ impl AtomCollection {
         specified_leaf_nodes: HashSet<usize>,
     ) -> FormatterResult<AtomCollection> {
         // Detect user specified line breaks
-        let multi_line_nodes = detect_multi_line_nodes(root);
-        let blank_lines_before = detect_blank_lines_before(root);
-        let (line_break_before, line_break_after) = detect_line_break_before_and_after(root);
+        let multi_line_nodes = detect_multi_line_nodes(&root);
+        let blank_lines_before = detect_blank_lines_before(&root);
+        let (line_break_before, line_break_after) = detect_line_break_before_and_after(&root);
 
         let mut atoms = AtomCollection {
             atoms: Vec::new(),
@@ -61,7 +64,7 @@ impl AtomCollection {
     pub fn resolve_capture(
         &mut self,
         name: &str,
-        node: Node,
+        node: &Node,
         delimiter: Option<&str>,
         scope_id: Option<&str>,
     ) -> FormatterResult<()> {
@@ -243,10 +246,10 @@ impl AtomCollection {
         self.atoms = expanded;
     }
 
-    fn mark_leaf_parent(&mut self, node: Node, parent_id: usize) {
+    fn mark_leaf_parent(&mut self, node: &Node, parent_id: usize) {
         self.parent_leaf_nodes.insert(node.id(), parent_id);
         for child in node.children(&mut node.walk()) {
-            self.mark_leaf_parent(child, parent_id)
+            self.mark_leaf_parent(&child, parent_id)
         }
     }
 
@@ -274,7 +277,7 @@ impl AtomCollection {
                 single_line_no_indent: false,
             });
             // Mark all sub-nodes as having this node as a "leaf parent"
-            self.mark_leaf_parent(node, node.id())
+            self.mark_leaf_parent(&node, node.id())
         } else {
             for child in node.children(&mut node.walk()) {
                 self.collect_leafs_inner(child, source, &parent_ids, level + 1)?;
@@ -284,7 +287,7 @@ impl AtomCollection {
         Ok(())
     }
 
-    fn prepend(&mut self, atom: Atom, node: Node) {
+    fn prepend(&mut self, atom: Atom, node: &Node) {
         if let Some(atom) = self.expand_multiline(atom, node) {
             // TODO: Pre-populate these
             let target_node = first_leaf(node);
@@ -292,7 +295,7 @@ impl AtomCollection {
             // If this is a child of a node that we have deemed as a leaf node
             // (e.g. a character in a string), we need to use that node id
             // instead.
-            let target_node_id = self.parent_leaf_node(target_node);
+            let target_node_id = self.parent_leaf_node(&target_node);
 
             log::debug!("Prepending {atom:?} to node {:?}", target_node,);
 
@@ -303,14 +306,14 @@ impl AtomCollection {
         }
     }
 
-    fn append(&mut self, atom: Atom, node: Node) {
+    fn append(&mut self, atom: Atom, node: &Node) {
         if let Some(atom) = self.expand_multiline(atom, node) {
             let target_node = last_leaf(node);
 
             // If this is a child of a node that we have deemed as a leaf node
             // (e.g. a character in a string), we need to use that node id
             // instead.
-            let target_node_id = self.parent_leaf_node(target_node);
+            let target_node_id = self.parent_leaf_node(&target_node);
 
             log::debug!("Appending {atom:?} to node {:?}", target_node,);
 
@@ -321,13 +324,13 @@ impl AtomCollection {
         }
     }
 
-    fn begin_scope_before(&mut self, node: Node, scope_id: &str) {
+    fn begin_scope_before(&mut self, node: &Node, scope_id: &str) {
         let target_node = first_leaf(node);
 
         // If this is a child of a node that we have deemed as a leaf node
         // (e.g. a character in a string), we need to use that node id
         // instead.
-        let target_node_id = self.parent_leaf_node(target_node);
+        let target_node_id = self.parent_leaf_node(&target_node);
 
         log::debug!("Begin scope {scope_id:?} before node {:?}", target_node,);
 
@@ -336,29 +339,34 @@ impl AtomCollection {
             .and_modify(|(_, scope_ids)| scope_ids.push(String::from(scope_id)))
             .or_insert_with(|| {
                 (
-                    target_node.start_position().row,
+                    target_node.start_position().row(),
                     vec![String::from(scope_id)],
                 )
             });
     }
 
-    fn end_scope_after(&mut self, node: Node, scope_id: &str) {
+    fn end_scope_after(&mut self, node: &Node, scope_id: &str) {
         let target_node = last_leaf(node);
 
         // If this is a child of a node that we have deemed as a leaf node
         // (e.g. a character in a string), we need to use that node id
         // instead.
-        let target_node_id = self.parent_leaf_node(target_node);
+        let target_node_id = self.parent_leaf_node(&target_node);
 
         log::debug!("End scope {scope_id:?} after node {:?}", target_node,);
 
         self.scope_end
             .entry(target_node_id)
             .and_modify(|(_, scope_ids)| scope_ids.push(String::from(scope_id)))
-            .or_insert_with(|| (target_node.end_position().row, vec![String::from(scope_id)]));
+            .or_insert_with(|| {
+                (
+                    target_node.end_position().row(),
+                    vec![String::from(scope_id)],
+                )
+            });
     }
 
-    fn parent_leaf_node(&mut self, node: Node) -> usize {
+    fn parent_leaf_node(&mut self, node: &Node) -> usize {
         if let Some(id) = self.parent_leaf_nodes.get(&node.id()) {
             *id
         } else {
@@ -366,7 +374,7 @@ impl AtomCollection {
         }
     }
 
-    fn expand_multiline(&self, atom: Atom, node: Node) -> Option<Atom> {
+    fn expand_multiline(&self, atom: Atom, node: &Node) -> Option<Atom> {
         if let Atom::Softline { spaced } = atom {
             if let Some(parent) = node.parent() {
                 let parent_id = parent.id();
@@ -460,7 +468,7 @@ impl AtomCollection {
     // The second pass applies the modifications to the atoms.
     fn post_process_scopes(&mut self) {
         type ScopeId = String;
-        type LineIndex = usize;
+        type LineIndex = u32;
         type ScopedNodeId = usize;
         // `opened_scopes` maintains stacks of opened scopes,
         // the line at which they started,
@@ -649,15 +657,15 @@ fn is_dominant(next: Atom, prev: Atom) -> bool {
     }
 }
 
-fn detect_multi_line_nodes(node: Node) -> HashSet<usize> {
+fn detect_multi_line_nodes(node: &Node) -> HashSet<usize> {
     let mut ids = HashSet::new();
 
     for child in node.children(&mut node.walk()) {
-        ids.extend(detect_multi_line_nodes(child));
+        ids.extend(detect_multi_line_nodes(&child));
     }
 
-    let start_line = node.start_position().row;
-    let end_line = node.end_position().row;
+    let start_line = node.start_position().row();
+    let end_line = node.end_position().row();
 
     if end_line > start_line {
         let id = node.id();
@@ -668,68 +676,94 @@ fn detect_multi_line_nodes(node: Node) -> HashSet<usize> {
     ids
 }
 
-fn detect_blank_lines_before(node: Node) -> HashSet<usize> {
-    detect_line_breaks_inner(node, 2, &mut None).0
+fn detect_blank_lines_before(node: &Node) -> HashSet<usize> {
+    detect_line_breaks_inner(node, 2, None, None).0
 }
 
-fn detect_line_break_before_and_after(node: Node) -> (HashSet<usize>, HashSet<usize>) {
-    detect_line_breaks_inner(node, 1, &mut None)
+fn detect_line_break_before_and_after(node: &Node) -> (HashSet<usize>, HashSet<usize>) {
+    let result = detect_line_breaks_inner(node, 1, None, None);
+    (result.0, result.1)
 }
 
 // TODO: This is taking a bit too much time, and would benefit from an
 // optimization.
-fn detect_line_breaks_inner<'a>(
-    node: Node<'a>,
-    minimum_line_breaks: usize,
-    previous_node: &mut Option<Node<'a>>,
-) -> (HashSet<usize>, HashSet<usize>) {
+// TODO 2: The whole function is a mess now, and should be rewritten.
+fn detect_line_breaks_inner(
+    node: &Node,
+    minimum_line_breaks: u32,
+
+    // TODO: Replace these with just previous_node: Option<&Node>
+    previous_node_id: Option<usize>,
+    previous_end: Option<u32>,
+) -> (HashSet<usize>, HashSet<usize>, Option<usize>, Option<u32>) {
     let mut nodes_with_breaks_before = HashSet::new();
     let mut nodes_with_breaks_after = HashSet::new();
 
-    if let Some(previous_node) = previous_node {
-        let previous_end = previous_node.end_position().row;
-        let current_start = node.start_position().row;
+    if let (Some(previous_node_id), Some(previous_end)) = (previous_node_id, previous_end) {
+        let current_start = node.start_position().row();
 
         if current_start >= previous_end + minimum_line_breaks {
             nodes_with_breaks_before.insert(node.id());
-            nodes_with_breaks_after.insert(previous_node.id());
+            nodes_with_breaks_after.insert(previous_node_id);
 
             log::debug!(
                 "There are at least {} blank lines between {:?} and {:?}",
                 minimum_line_breaks,
-                previous_node,
-                node
+                previous_node_id,
+                node.id()
             );
         }
     }
 
-    *previous_node = Some(node);
+    let mut previous_node_id = Some(node.id());
+    let mut previous_end = Some(node.end_position().row());
 
     for child in node.children(&mut node.walk()) {
-        let (before, after) = detect_line_breaks_inner(child, minimum_line_breaks, previous_node);
+        let (before, after, node_id, end) =
+            detect_line_breaks_inner(&child, minimum_line_breaks, previous_node_id, previous_end);
+
+        previous_node_id = node_id;
+        previous_end = end;
         nodes_with_breaks_before.extend(before);
         nodes_with_breaks_after.extend(after);
     }
 
-    (nodes_with_breaks_before, nodes_with_breaks_after)
+    (
+        nodes_with_breaks_before,
+        nodes_with_breaks_after,
+        previous_node_id,
+        previous_end,
+    )
 }
 
+// TODO: first_leaf and last_leaf can probably be simplified.
+
 /// Given a node, returns the id of the first leaf in the subtree.
-fn first_leaf(node: Node) -> Node {
+fn first_leaf<'tree, 'node: 'tree>(node: &'node Node<'tree>) -> Cow<'node, Node<'tree>> {
+    first_leaf_inner(Cow::Borrowed(node))
+}
+
+fn first_leaf_inner<'tree, 'node: 'tree>(node: Cow<'node, Node<'tree>>) -> Cow<'node, Node<'tree>> {
     if node.child_count() == 0 {
         node
     } else {
-        first_leaf(node.child(0).unwrap())
+        let node = Cow::Owned(node.child(0).unwrap());
+        first_leaf_inner(node)
     }
 }
 
 /// Given a node, returns the id of the last leaf in the subtree.
-fn last_leaf(node: Node) -> Node {
+fn last_leaf<'tree, 'node: 'tree>(node: &'node Node<'tree>) -> Cow<'node, Node<'tree>> {
+    last_leaf_inner(Cow::Borrowed(node))
+}
+
+fn last_leaf_inner<'tree, 'node: 'tree>(node: Cow<'node, Node<'tree>>) -> Cow<'node, Node<'tree>> {
     let nr_children = node.child_count();
     if nr_children == 0 {
         node
     } else {
-        last_leaf(node.child(nr_children - 1).unwrap())
+        let node = Cow::Owned(node.child(nr_children - 1).unwrap());
+        last_leaf_inner(node)
     }
 }
 
