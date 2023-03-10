@@ -220,7 +220,7 @@ impl From<&Language> for Vec<tree_sitter_facade::Language> {
             web_tree_sitter::Language::load_path(path)
                 .await
                 .map_err(|e| {
-                    let error: LanguageError = e.into();
+                    let error: web_tree_sitter::Language::LanguageError = e.into();
                     error
                 })?
                 .into();
