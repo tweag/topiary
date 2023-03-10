@@ -102,7 +102,6 @@ impl Error for FormatterError {
         match self {
             Self::Idempotence => None,
             Self::Internal(_, source) => source.as_ref().map(|e| &**e),
-            // Self::Internal(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::Parsing { .. } => None,
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::LanguageDetection(_, _) => None,

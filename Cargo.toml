@@ -20,7 +20,6 @@ test-log = "0.2"
 tree-sitter-facade = { git = "https://github.com/tweag/tree-sitter-facade" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies] 
-tokio = { version = "1.21.2", features = ["macros", "rt-multi-thread"] }
 tree-sitter-json = "0.19"
 tree-sitter-rust = "0.20.3"
 tree-sitter-toml = "0.20.0"

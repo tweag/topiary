@@ -88,15 +88,13 @@ pub fn apply_query(
     let source = input_content.as_bytes();
     let query = Query::new(&grammar, query_content)
         .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
-    let mut cursor = QueryCursor::new();
-
-    let capture_names = query.capture_names();
 
     // Match queries
+    let mut cursor = QueryCursor::new();
     let mut matches: Vec<LocalQueryMatch> = Vec::new();
+    let capture_names = query.capture_names();
+
     for query_match in query.matches(&root, source, &mut cursor) {
-        // This may provoke the collect bug described here:
-        // https://github.com/tree-sitter/tree-sitter/issues/608
         let local_captures: Vec<QueryCapture> = query_match.captures().collect();
 
         matches.push(LocalQueryMatch {
@@ -158,10 +156,6 @@ pub fn apply_query(
 
     Ok(atoms)
 }
-
-// fn capture_name<'a>(query: &'a Query, capture: &QueryCapture) -> &'a str {
-//     query.capture_names()[capture.index as usize].as_str()
-// }
 
 // A single "language" can correspond to multiple grammars.
 // For instance, we have separate grammars for interfaces and implementation in OCaml.
