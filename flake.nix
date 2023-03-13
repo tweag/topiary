@@ -18,6 +18,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    rust-overlay.url = "github:oxalica/rust-overlay";
+
     advisory-db = {
       url = "github:rustsec/advisory-db";
       flake = false;
@@ -31,9 +33,12 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        code = pkgs.callPackage ./. { inherit advisory-db crane nix-filter; };
+        code = pkgs.callPackage ./. { inherit nixpkgs system advisory-db crane rust-overlay nix-filter; };
       in {
-        packages.default = code.app;
+        packages = with code; {
+          inherit wasm;
+          default = app;
+        };
         checks = with code; {
           inherit app clippy fmt audit benchmark;
         };
