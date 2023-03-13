@@ -2,34 +2,48 @@
 
 ## Cutting a New Release
 
-* Update the CHANGELOG:
+* Update the [CHANGELOG]:
   * Create a new branch to prepare the release.
-  * Ensure the [CHANGELOG][changelog] is up to date. (See
+
+  * Ensure the [CHANGELOG] is up to date. (See
     [below][changelog-refresh] for a suggested workflow.)
+
   * Retitle the "Unreleased" section to this release and create a fresh
-    "Unreleased" section (see comments in the [CHANGELOG](changelog) for
-    details).
+    "Unreleased" section (see comments in the [CHANGELOG] for details).
+
+    :bulb: Point releases (i.e., not patch releases) should also be
+    given a name, taking the form `ADJECTIVE TREE`, incrementing
+    alphabetically. This name should be decided amongst the team before
+    the release.
+
   * Commit (squash, if necessary) and tag with the release version,
     prefixed with a `v` (e.g., `v1.0.0`).
+
   * Merge into `main` on green CI and peer approval.
 
 * [Draft a new release][draft-release] in GitHub.
   * Set the tag to that created in the previous step, now on `main`.
-  * Set the release title to `Topiary v<RELEASE>`.
-  * Copy-and-paste the [CHANGELOG][changelog] contents for this release
+  * Set the release title to `Topiary v<RELEASE>`, or `Topiary
+    v<RELEASE>: <NAME>` for point releases.
+  * Copy-and-paste the [CHANGELOG] contents for this release
     into the description.
   * Publish.
 
-* Publicise (not patch releases).
+* Publicise.
+
+  :warning: Point releases, only. Don't publicise patch releases, unless
+  there's a pressing need to do so (e.g., fix of a security
+  vulnerability, etc.).
+
   * Announce the new version on Tweag's Twitter and other social network
     accounts, via someone with access.
   * Share amongst other social networks (e.g., Reddit, Hacker News,
-    etc.), under personal accounts, at your discretion.
+    Mastodon, etc.), under personal accounts, at your discretion.
 
 ### Generating the PR List for the CHANGELOG
 
-If the unreleased changes in the [CHANGELOG][changelog] have become
-stale, the list of merged PRs can be fetched from:
+If the unreleased changes in the [CHANGELOG] have become stale, the list
+of merged PRs can be fetched from:
 
     https://github.com/tweag/topiary/pulls?q=is:pr+base:main+merged:>YYYY-MM-DD
 
