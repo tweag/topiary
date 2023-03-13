@@ -605,7 +605,7 @@ let _ =
 
 let _ =
   let foo = function
-    true -> false
+    | true -> false
     | false -> true
   in
   foo
@@ -1000,6 +1000,10 @@ let not x =
   match x with
   | false -> true
   | true -> false
+
+let not = function
+  | true -> false
+  | false -> true
 
 let not = function true -> false | false -> true
 
