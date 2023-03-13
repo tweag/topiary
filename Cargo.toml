@@ -44,7 +44,7 @@ web-tree-sitter = { git = "https://github.com/tweag/web-tree-sitter-sys", packag
 
 [dev-dependencies]
 assert_cmd = "2.0"
-criterion = "0.4"
+criterion = { version = "0.4", features=["async_futures"] }
 tokio-test = "0.4.2"
 
 [[bench]]
