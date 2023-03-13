@@ -32,17 +32,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "async-recursion"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b015a331cc64ebd1774ba119538573603427eaace0a1950c423ab971f903796"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "async-stream"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1036,7 +1025,6 @@ name = "topiary"
 version = "0.1.0"
 dependencies = [
  "assert_cmd",
- "async-recursion",
  "clap 4.1.8",
  "criterion",
  "env_logger",

@@ -15,7 +15,7 @@ use clap::{ArgGroup, Parser};
 use crate::{
     error::CLIResult, output::OutputFile, supported::SupportedLanguage, visualise::Visualisation,
 };
-use topiary::{formatter, Configuration, FormatterError, Language, Operation};
+use topiary::{formatter, Configuration, Language, Operation};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -78,7 +78,7 @@ async fn run() -> CLIResult<()> {
 
     // The as_deref() gives us an Option<&str>, which we can match against
     // string literals
-    let mut input: Box<(dyn std::io::Read + Send)> = match args.input_file.as_deref() {
+    let mut input: Box<(dyn Read)> = match args.input_file.as_deref() {
         Some("-") | None => Box::new(stdin()),
         Some(file) => Box::new(BufReader::new(File::open(file)?)),
     };
@@ -93,7 +93,7 @@ async fn run() -> CLIResult<()> {
         OutputFile::new(args.output_file.as_deref())?
     });
 
-    let language: Option<Language> = if let Some(language) = args.language {
+    let language = if let Some(language) = args.language {
         Some(language.into())
     } else if let Some(filename) = args.input_file.as_deref() {
         Some(Language::detect(filename)?)
@@ -114,9 +114,12 @@ async fn run() -> CLIResult<()> {
     };
 
     let mut query_reader = BufReader::new(File::open(query_path)?);
+
+    // It's not very nice that formatter wants an io::Read and
+    // Configuration::parse wants a &str. Should we just let formatter take
+    // &str as well?
     let mut query = String::new();
     query_reader.read_to_string(&mut query)?;
-
     let mut configuration = Configuration::parse(&query)?;
 
     // Replace the language deduced from the query file by the one from the CLI, if any
@@ -124,11 +127,7 @@ async fn run() -> CLIResult<()> {
         configuration.language = l
     }
 
-    let grammars = configuration
-        .language
-        .grammars()
-        .await
-        .map_err(|e| FormatterError::Internal("Could not load grammars".into(), Some(e)))?;
+    let grammars = configuration.language.grammars().await?;
 
     let operation = if let Some(visualisation) = args.visualise {
         Operation::Visualise {

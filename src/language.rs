@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::io;
 use std::path::{Path, PathBuf};
 
@@ -70,7 +69,7 @@ impl Language {
     /// Note that, currently, all grammars are statically linked. This will change once dynamic linking
     /// is implemented (see Issue #4).
     #[cfg(not(target_arch = "wasm32"))]
-    pub async fn grammars(&self) -> Result<Vec<tree_sitter_facade::Language>, Box<dyn Error>> {
+    pub async fn grammars(&self) -> FormatterResult<Vec<tree_sitter_facade::Language>> {
         Ok(match self {
             Language::Bash => vec![tree_sitter_bash::language()],
             Language::Json => vec![tree_sitter_json::language()],
@@ -91,7 +90,7 @@ impl Language {
     }
 
     #[cfg(target_arch = "wasm32")]
-    pub async fn grammars(&self) -> Result<Vec<tree_sitter_facade::Language>, Box<dyn Error>> {
+    pub async fn grammars(&self) -> FormatterResult<Vec<tree_sitter_facade::Language>> {
         use futures::future::join_all;
 
         let language_names = match self {

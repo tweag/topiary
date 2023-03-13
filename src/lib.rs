@@ -121,8 +121,7 @@ pub enum Operation {
 ///     .language
 ///     .grammars()
 ///     .await
-///     // TODO: Let grammars return this error.
-///     .map_err(|e| FormatterError::Internal("Could not load grammars".into(), Some(e))).expect("grammars");
+///     .expect("grammars");
 ///
 /// match formatter(&mut input, &mut output, &mut query_file, &grammars, &configuration, Operation::Format{ skip_idempotence: false }) {
 ///   Ok(()) => {
@@ -138,9 +137,9 @@ pub enum Operation {
 /// # }) // end tokio_test
 /// ```
 pub fn formatter(
-    input: &mut (impl io::Read + Send),
-    output: &mut (impl io::Write + Send),
-    query: &mut (impl io::Read + Send),
+    input: &mut impl io::Read,
+    output: &mut impl io::Write,
+    query: &mut impl io::Read,
     grammars: &[tree_sitter_facade::Language],
     configuration: &Configuration,
     operation: Operation,
