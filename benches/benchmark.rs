@@ -19,8 +19,8 @@ async fn format() {
         &mut input,
         &mut output,
         &mut query,
-        &grammars,
         &configuration,
+        &grammars,
         Operation::Format {
             skip_idempotence: true,
         },

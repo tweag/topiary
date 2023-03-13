@@ -31,8 +31,8 @@ async fn input_output_tester() {
             &mut input,
             &mut output,
             &mut query.as_bytes(),
-            &grammars,
             &configuration,
+            &grammars,
             Operation::Format {
                 skip_idempotence: true,
             },
@@ -70,8 +70,8 @@ async fn formatted_query_tester() {
             &mut input,
             &mut output,
             &mut query.as_bytes(),
-            &grammars,
             &configuration,
+            &grammars,
             Operation::Format {
                 skip_idempotence: true,
             },

@@ -123,7 +123,7 @@ pub enum Operation {
 ///     .await
 ///     .expect("grammars");
 ///
-/// match formatter(&mut input, &mut output, &mut query_file, &grammars, &configuration, Operation::Format{ skip_idempotence: false }) {
+/// match formatter(&mut input, &mut output, &mut query_file, &configuration, &grammars, Operation::Format{ skip_idempotence: false }) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
@@ -140,8 +140,8 @@ pub fn formatter(
     input: &mut impl io::Read,
     output: &mut impl io::Write,
     query: &mut impl io::Read,
-    grammars: &[tree_sitter_facade::Language],
     configuration: &Configuration,
+    grammars: &[tree_sitter_facade::Language],
     operation: Operation,
 ) -> FormatterResult<()> {
     let content = read_input(input).map_err(|e| {
@@ -172,7 +172,7 @@ pub fn formatter(
             let trimmed = trim_whitespace(&rendered);
 
             if !skip_idempotence {
-                idempotence_check(&trimmed, &query, grammars, configuration)?
+                idempotence_check(&trimmed, &query, configuration, grammars)?
             }
 
             write!(output, "{trimmed}")?;
@@ -208,8 +208,8 @@ fn trim_whitespace(s: &str) -> String {
 fn idempotence_check(
     content: &str,
     query: &str,
-    grammars: &[tree_sitter_facade::Language],
     configuration: &Configuration,
+    grammars: &[tree_sitter_facade::Language],
 ) -> FormatterResult<()> {
     log::info!("Checking for idempotence ...");
 
@@ -221,8 +221,8 @@ fn idempotence_check(
         &mut input,
         &mut output,
         &mut query,
-        grammars,
         configuration,
+        grammars,
         Operation::Format {
             skip_idempotence: true,
         },
@@ -263,8 +263,8 @@ async fn parse_error_fails_formatting() {
         &mut input,
         &mut output,
         &mut query.as_bytes(),
-        &grammars,
         &configuration,
+        &grammars,
         Operation::Format {
             skip_idempotence: true,
         },

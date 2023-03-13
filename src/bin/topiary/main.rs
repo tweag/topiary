@@ -143,8 +143,8 @@ async fn run() -> CLIResult<()> {
         &mut input,
         &mut output,
         &mut query_reader,
-        &grammars,
         &configuration,
+        &grammars,
         operation,
     )?;
 
