@@ -820,6 +820,45 @@ This Tree-sitter query:
 
 ...while the single-lined `(1, 2, 3)` is kept as is.
 
+### `@singleline_scoped_delete`
+
+Remove the matched node from the output, only if the associated custom scope is single-line. The scope must be specified with the predicate `#scope_id!`.
+
+#### Example
+
+```scheme
+; Delete the optional "|" before the first match case
+; if the context is single-line
+(function_expression
+  (match_case)? @do_nothing
+  .
+  "|" @singleline_scoped_delete
+  .
+  (match_case)
+  (#scope_id! "function_definiton")
+)
+```
+
+### `@append_multiline_delimiter` / `@prepend_multiline_delimiter`
+
+The matched nodes will have a multi-line-only delimiter appended to
+them. It will be printed if the associated custom scope is multi-line, and omitted otherwise.
+The delimiter must be specified using the predicate `#delimiter!`. The scope must be specified with the predicate `#scope_id!`.
+
+#### Example
+
+```scheme
+; Add the optional "|" before the first match case
+; only if the context is multi-line
+(function_expression
+  "|"? @do_nothing
+  .
+  (match_case) @prepend_scoped_multiline_delimiter
+  (#scope_id! "function_definiton")
+  (#delimiter! "| ")
+)
+```
+
 ## Suggested workflow
 
 In order to work productively on query files, the following is one
