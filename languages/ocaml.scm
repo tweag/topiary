@@ -679,7 +679,7 @@
 ;   Const_int _ -> instance Predef.type_int
 ;   | Const_char _ -> instance Predef.type_char
 ;
-(
+(match_expression
   "|"* @do_nothing
   .
   (match_case) @prepend_spaced_softline
@@ -688,7 +688,7 @@
 ; Allow (and enforce) the optional "|" before the first match case
 ; if and only if the context is multi-line
 (
-  (match_case)? @do_nothing
+  "with"
   .
   "|" @singleline_delete
   .
@@ -696,7 +696,7 @@
 )
 
 (
-  (match_case)? @do_nothing
+  "with"
   .
   "|"? @do_nothing
   .
@@ -776,7 +776,7 @@
 ; into
 ;
 ; let foo = function
-;   true -> false
+;   | true -> false
 ;   | false -> true
 ; in
 ; bar
@@ -789,17 +789,28 @@
   (#scope_id! "function_definiton")
 )
 (parenthesized_expression
-  (function_expression) @begin_scope @end_scope
+  (function_expression
+    "function" @append_spaced_scoped_softline
+  ) @begin_scope @end_scope
   (#scope_id! "function_definiton")
 )
 (function_expression
-  "|"* @do_nothing
+  (match_case)? @do_nothing
   .
-  (match_case) @prepend_spaced_scoped_softline
+  "|" @singleline_scoped_delete
+  .
+  (match_case)
   (#scope_id! "function_definiton")
 )
 (function_expression
-  "|"* @prepend_spaced_scoped_softline
+  "|"? @do_nothing
+  .
+  (match_case) @prepend_scoped_multiline_delimiter
+  (#scope_id! "function_definiton")
+  (#delimiter! "| ") ; sic
+)
+(function_expression
+  "|" @prepend_spaced_scoped_softline
   .
   (match_case)
   (#scope_id! "function_definiton")
