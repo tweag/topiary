@@ -60,8 +60,15 @@ pub enum Atom {
     /// Represents a literal string, such as a semicolon.
     Literal(String),
     /// Represents a literal string, such as a semicolon. It will be printed only
-    // in multi-line constructs
+    // in multi-line nodes.
     MultilineOnlyLiteral(String),
+    /// Represents a literal string, such as a semicolon. It will be printed only
+    // if the associated scope is multi-line
+    ScopedMultilineOnlyLiteral {
+        id: usize,
+        literal: String,
+        scope_id: String,
+    },
     /// Represents a softline. It will be turned into a hardline for multi-line
     /// constructs, and either a space or nothing for single-line constructs.
     Softline {

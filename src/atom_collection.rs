@@ -107,6 +107,17 @@ impl AtomCollection {
                 Atom::MultilineOnlyLiteral(requires_delimiter()?.to_string()),
                 node,
             ),
+            "append_scoped_multiline_delimiter" => {
+                let id = self.next_id();
+                self.append(
+                    Atom::ScopedMultilineOnlyLiteral {
+                        id,
+                        literal: requires_delimiter()?.to_string(),
+                        scope_id: requires_scope_id()?.to_string(),
+                    },
+                    node,
+                )
+            }
             "append_space" => self.append(Atom::Space, node),
             "append_spaced_softline" => self.append(Atom::Softline { spaced: true }, node),
             "prepend_delimiter" => {
@@ -129,6 +140,17 @@ impl AtomCollection {
                 Atom::MultilineOnlyLiteral(requires_delimiter()?.to_string()),
                 node,
             ),
+            "prepend_scoped_multiline_delimiter" => {
+                let id = self.next_id();
+                self.prepend(
+                    Atom::ScopedMultilineOnlyLiteral {
+                        id,
+                        literal: requires_delimiter()?.to_string(),
+                        scope_id: requires_scope_id()?.to_string(),
+                    },
+                    node,
+                )
+            }
             "prepend_space" => self.prepend(Atom::Space, node),
             "prepend_spaced_softline" => self.prepend(Atom::Softline { spaced: true }, node),
             // Skip over leafs
@@ -518,6 +540,16 @@ impl AtomCollection {
                                         None
                                     };
                                     modifications.insert(*id, new_atom);
+                                } else if let Atom::ScopedMultilineOnlyLiteral {
+                                    id, literal, ..
+                                } = atom
+                                {
+                                    let new_atom = if multiline {
+                                        Some(Atom::Literal(literal.to_string()))
+                                    } else {
+                                        None
+                                    };
+                                    modifications.insert(*id, new_atom);
                                 }
                             }
                         } else {
@@ -536,6 +568,21 @@ impl AtomCollection {
                     vec.push(atom)
                 } else {
                     log::warn!("Found scoped softline {:?} outside of its scope", atom);
+                    force_apply_modifications = true;
+                }
+            // Register the ScopedMultilineOnlyLiteral in the correct scope
+            } else if let Atom::ScopedMultilineOnlyLiteral { scope_id, .. } = atom {
+                if let Some((_, vec)) = opened_scopes
+                    .get_mut(&scope_id)
+                    .map(|v| v.last_mut())
+                    .unwrap_or(None)
+                {
+                    vec.push(atom)
+                } else {
+                    log::warn!(
+                        "Found scoped multi-line only literal {:?} outside of its scope",
+                        atom
+                    );
                     force_apply_modifications = true;
                 }
             }
@@ -562,6 +609,16 @@ impl AtomCollection {
                         } else {
                             log::warn!(
                                 "Found scoped softline {:?}, but was unable to replace it.",
+                                atom
+                            );
+                            None
+                        }
+                    } else if let Atom::ScopedMultilineOnlyLiteral { id, .. } = atom {
+                        if let Some(atom_option) = modifications.remove(id) {
+                            atom_option
+                        } else {
+                            log::warn!(
+                                "Found scoped multi-line only literal {:?}, but was unable to replace it.",
                                 atom
                             );
                             None
