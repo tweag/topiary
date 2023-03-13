@@ -84,6 +84,15 @@ pub enum Atom {
     /// Represents a segment to be deleted, only if the context is single-line
     SingleLineDeleteBegin,
     SingleLineDeleteEnd,
+    /// Represents a segment to be deleted, only if the associated scope is single-line
+    SingleLineScopedDeleteBegin {
+        id: usize,
+        scope_id: String,
+    },
+    SingleLineScopedDeleteEnd {
+        id: usize,
+        scope_id: String,
+    },
     /// Scoped commands
     // ScopedSoftline works together with the @open_scope and @end_scope query tags.
     // To decide if a scoped softline must be expanded into a hardline, we look at
