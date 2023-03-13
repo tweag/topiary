@@ -164,6 +164,24 @@ impl AtomCollection {
                 self.prepend(Atom::SingleLineDeleteBegin, node);
                 self.append(Atom::SingleLineDeleteEnd, node)
             }
+            "singleline_scoped_delete" => {
+                let id = self.next_id();
+                self.prepend(
+                    Atom::SingleLineScopedDeleteBegin {
+                        id,
+                        scope_id: requires_scope_id()?.to_string(),
+                    },
+                    node,
+                );
+                let id = self.next_id();
+                self.append(
+                    Atom::SingleLineScopedDeleteEnd {
+                        id,
+                        scope_id: requires_scope_id()?.to_string(),
+                    },
+                    node,
+                )
+            }
             // Scope manipulation
             "begin_scope" => self.begin_scope_before(node, requires_scope_id()?),
             "end_scope" => self.end_scope_after(node, requires_scope_id()?),
@@ -550,6 +568,20 @@ impl AtomCollection {
                                         None
                                     };
                                     modifications.insert(*id, new_atom);
+                                } else if let Atom::SingleLineScopedDeleteBegin { id, .. } = atom {
+                                    let new_atom = if multiline {
+                                        None
+                                    } else {
+                                        Some(Atom::DeleteBegin)
+                                    };
+                                    modifications.insert(*id, new_atom);
+                                } else if let Atom::SingleLineScopedDeleteEnd { id, .. } = atom {
+                                    let new_atom = if multiline {
+                                        None
+                                    } else {
+                                        Some(Atom::DeleteEnd)
+                                    };
+                                    modifications.insert(*id, new_atom);
                                 }
                             }
                         } else {
@@ -568,6 +600,36 @@ impl AtomCollection {
                     vec.push(atom)
                 } else {
                     log::warn!("Found scoped softline {:?} outside of its scope", atom);
+                    force_apply_modifications = true;
+                }
+            // Register the SingleLineScopedDeleteBegin in the correct scope
+            } else if let Atom::SingleLineScopedDeleteBegin { scope_id, .. } = atom {
+                if let Some((_, vec)) = opened_scopes
+                    .get_mut(&scope_id)
+                    .map(|v| v.last_mut())
+                    .unwrap_or(None)
+                {
+                    vec.push(atom)
+                } else {
+                    log::warn!(
+                        "Found scoped single-line delete begin {:?} outside of its scope",
+                        atom
+                    );
+                    force_apply_modifications = true;
+                }
+            // Register the SingleLineScopedDeleteEnd in the correct scope
+            } else if let Atom::SingleLineScopedDeleteEnd { scope_id, .. } = atom {
+                if let Some((_, vec)) = opened_scopes
+                    .get_mut(&scope_id)
+                    .map(|v| v.last_mut())
+                    .unwrap_or(None)
+                {
+                    vec.push(atom)
+                } else {
+                    log::warn!(
+                        "Found scoped single-line delete end {:?} outside of its scope",
+                        atom
+                    );
                     force_apply_modifications = true;
                 }
             // Register the ScopedMultilineOnlyLiteral in the correct scope
@@ -619,6 +681,26 @@ impl AtomCollection {
                         } else {
                             log::warn!(
                                 "Found scoped multi-line only literal {:?}, but was unable to replace it.",
+                                atom
+                            );
+                            None
+                        }
+                    } else if let Atom::SingleLineScopedDeleteBegin { id, .. } = atom {
+                        if let Some(atom_option) = modifications.remove(id) {
+                            atom_option
+                        } else {
+                            log::warn!(
+                                "Found scoped single-line only delete begin {:?}, but was unable to replace it.",
+                                atom
+                            );
+                            None
+                        }
+                    } else if let Atom::SingleLineScopedDeleteEnd { id, .. } = atom {
+                        if let Some(atom_option) = modifications.remove(id) {
+                            atom_option
+                        } else {
+                            log::warn!(
+                                "Found scoped single-line only delete end {:?}, but was unable to replace it.",
                                 atom
                             );
                             None
