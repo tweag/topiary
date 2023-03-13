@@ -105,22 +105,19 @@ impl Language {
             Language::TreeSitterQuery => vec!["query"],
         };
 
-        let languages = language_names
-            .iter()
-            .map(|name| format!("tree-sitter-{}.wasm", name).to_string())
-            .map(|path| async move { web_tree_sitter::Language::load_path(&path).await });
-
-        let fut: Result<Vec<web_tree_sitter::Language>, web_tree_sitter::LanguageError> =
-            join_all(languages).await.into_iter().collect();
-
-        let fut2: Vec<web_tree_sitter::Language> = fut.map_err(|e| {
+        Ok(join_all(language_names.iter().map(|name| async move {
+            web_tree_sitter::Language::load_path(&format!("tree-sitter-{}.wasm", name)).await
+        }))
+        .await
+        .into_iter()
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| {
             let error: tree_sitter_facade::LanguageError = e.into();
             error
-        })?;
-
-        let fut3: Vec<tree_sitter_facade::Language> = fut2.into_iter().map(Into::into).collect();
-
-        Ok(fut3)
+        })?
+        .into_iter()
+        .map(Into::into)
+        .collect())
     }
 }
 
