@@ -4,62 +4,58 @@ use std::{borrow::Cow, fmt, io};
 
 use crate::{tree_sitter::SyntaxNode, FormatterResult};
 
-// TODO Factor out the repetition here
 // TODO Add tests for this
+/// We double-escape whitespace (\n and \t) so it is
+/// rendered as the escaped value in the GraphViz output
 fn escape(input: &str) -> Cow<str> {
-    // We double-escape whitespace (\n and \t) so it is
-    // rendered as the escaped value in the GraphViz output
-    let mut is_escaped = false;
-    let mut buffer: String = String::new();
+    let mut buffer: Option<String> = None;
+
     let mut start: usize = 0;
     let length = input.len();
 
-    for (upto, c) in input.chars().enumerate() {
-        match c {
-            '\n' => {
-                if !is_escaped {
-                    // Best case scenario: length + 1
-                    // Worst case scenario: length * 3
-                    buffer.reserve(length * 2);
-                    is_escaped = true;
-                }
+    let append = |buffer: &mut Option<String>, from: &mut usize, to: usize, suffix: &str| {
+        // Allocate buffer only when necessary
+        if buffer.is_none() {
+            // Best case:  length + 1  (i.e., single escaped character in input)
+            // Worst case: length * 3  (i.e., every character needs double-escaping)
+            *buffer = Some(String::with_capacity(length * 2));
+        }
 
-                buffer += &input[start..upto];
-                buffer += r#"\\n"#;
+        if let Some(ref mut buffer) = buffer {
+            // Decant the unescaped chunk from the input,
+            // followed by the escaped suffix provided
+            *buffer += &input[*from..to];
+            *buffer += suffix;
+        }
 
-                start = upto + 1;
-            }
+        // Fast-forward the tracking cursor to the next character
+        *from = to + 1;
+    };
 
-            '\t' => {
-                if !is_escaped {
-                    buffer.reserve(length * 2);
-                    is_escaped = true;
-                }
-
-                buffer += &input[start..upto];
-                buffer += r#"\\t"#;
-
-                start = upto + 1;
-            }
+    for (idx, current) in input.chars().enumerate() {
+        match current {
+            // Double-escape whitespace characters
+            '\n' => append(&mut buffer, &mut start, idx, r#"\\n"#),
+            '\t' => append(&mut buffer, &mut start, idx, r#"\\t"#),
 
             otherwise => {
+                // If char::escape_default starts with a backslash, then we
+                // have an escaped character and we're off the happy path
                 let mut escaped = otherwise.escape_default().peekable();
                 if escaped.peek() == Some(&'\\') {
-                    if !is_escaped {
-                        buffer.reserve(length * 2);
-                        is_escaped = true;
-                    }
-
-                    buffer += &input[start..upto];
-                    buffer += &otherwise.escape_default().to_string();
-
-                    start = upto + 1;
+                    append(
+                        &mut buffer,
+                        &mut start,
+                        idx,
+                        &otherwise.escape_default().to_string(),
+                    );
                 }
             }
         }
     }
 
-    if is_escaped {
+    if let Some(mut buffer) = buffer {
+        // Decant whatever's left of the input into the buffer
         buffer += &input[start..length];
         buffer.into()
     } else {
