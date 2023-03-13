@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::io;
 use std::path::{Path, PathBuf};
 
@@ -69,8 +70,8 @@ impl Language {
     /// Note that, currently, all grammars are statically linked. This will change once dynamic linking
     /// is implemented (see Issue #4).
     #[cfg(not(target_arch = "wasm32"))]
-    pub async fn grammars(&self) -> Vec<tree_sitter_facade::Language> {
-        match self {
+    pub async fn grammars(&self) -> Result<Vec<tree_sitter_facade::Language>, Box<dyn Error>> {
+        Ok(match self {
             Language::Bash => vec![tree_sitter_bash::language()],
             Language::Json => vec![tree_sitter_json::language()],
             Language::Nickel => vec![tree_sitter_nickel::language()],
@@ -86,12 +87,14 @@ impl Language {
         }
         .into_iter()
         .map(Into::into)
-        .collect()
+        .collect())
     }
 
     #[cfg(target_arch = "wasm32")]
-    pub async fn grammars(&self) -> Vec<tree_sitter_facade::Language> {
-        match self {
+    pub async fn grammars(&self) -> Result<Vec<tree_sitter_facade::Language>, Box<dyn Error>> {
+        use futures::future::join_all;
+
+        let language_names = match self {
             Language::Bash => vec!["bash"],
             Language::Json => vec!["json"],
             Language::Nickel => vec!["nickel"],
@@ -101,18 +104,24 @@ impl Language {
             Language::Rust => vec!["rust"],
             Language::Toml => vec!["toml"],
             Language::TreeSitterQuery => vec!["query"],
-        }
-        .iter()
-        .map(|name| format!("tree-sitter-{}.wasm", name))
-        .map(|path| {
-            web_tree_sitter::Language::load_path(path)
-                .await
-                .map_err(|e| {
-                    let error: web_tree_sitter::Language::LanguageError = e.into();
-                    error
-                })?
-                .into();
-        })
+        };
+
+        let languages = language_names
+            .iter()
+            .map(|name| format!("tree-sitter-{}.wasm", name).to_string())
+            .map(|path| async move { web_tree_sitter::Language::load_path(&path).await });
+
+        let fut: Result<Vec<web_tree_sitter::Language>, web_tree_sitter::LanguageError> =
+            join_all(languages).await.into_iter().collect();
+
+        let fut2: Vec<web_tree_sitter::Language> = fut.map_err(|e| {
+            let error: tree_sitter_facade::LanguageError = e.into();
+            error
+        })?;
+
+        let fut3: Vec<tree_sitter_facade::Language> = fut2.into_iter().map(Into::into).collect();
+
+        Ok(fut3)
     }
 }
 

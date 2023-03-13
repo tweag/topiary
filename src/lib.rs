@@ -10,17 +10,16 @@
 //! More details can be found on
 //! [GitHub](https://github.com/tweag/topiary).
 
-use async_recursion::async_recursion;
 use itertools::Itertools;
 use pretty_assertions::StrComparison;
 use std::io;
 
 pub use crate::{
+    configuration::Configuration,
     error::{FormatterError, IoError},
     language::Language,
     tree_sitter::{SyntaxNode, Visualisation},
 };
-use configuration::Configuration;
 
 mod atom_collection;
 mod configuration;
@@ -107,15 +106,25 @@ pub enum Operation {
 /// ```
 /// # tokio_test::block_on(async {
 /// use std::fs::File;
-/// use std::io::BufReader;
-/// use topiary::{formatter, FormatterError, Operation};
+/// use std::io::{BufReader, Read};
+/// use topiary::{formatter, Configuration, FormatterError, Operation};
 ///
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
 /// let mut output = Vec::new();
-/// let mut query = BufReader::new(File::open("languages/json.scm").expect("query file"));
+/// let mut query_file = BufReader::new(File::open("languages/json.scm").expect("query file"));
+/// let mut query = String::new();
+/// query_file.read_to_string(&mut query).expect("read query file");
 ///
-/// match formatter(&mut input, &mut output, &mut query, None, Operation::Format{ skip_idempotence: false }).await {
+/// let mut configuration = Configuration::parse(&query).expect("valid configuration");
+/// let grammars = configuration
+///     .language
+///     .grammars()
+///     .await
+///     // TODO: Let grammars return this error.
+///     .map_err(|e| FormatterError::Internal("Could not load grammars".into(), Some(e))).expect("grammars");
+///
+/// match formatter(&mut input, &mut output, &mut query_file, &grammars, &configuration, Operation::Format{ skip_idempotence: false }) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
@@ -128,12 +137,12 @@ pub enum Operation {
 /// }
 /// # }) // end tokio_test
 /// ```
-#[async_recursion]
-pub async fn formatter(
+pub fn formatter(
     input: &mut (impl io::Read + Send),
     output: &mut (impl io::Write + Send),
     query: &mut (impl io::Read + Send),
-    language: Option<Language>,
+    grammars: &[tree_sitter_facade::Language],
+    configuration: &Configuration,
     operation: Operation,
 ) -> FormatterResult<()> {
     let content = read_input(input).map_err(|e| {
@@ -149,20 +158,11 @@ pub async fn formatter(
         ))
     })?;
 
-    let mut configuration = Configuration::parse(&query)?;
-
-    // Replace the language deduced from the query file by the one from the CLI, if any
-    if let Some(l) = language {
-        configuration.language = l
-    }
-
-    let grammars = configuration.language.grammars().await;
-
     match operation {
         Operation::Format { skip_idempotence } => {
             // All the work related to tree-sitter and the query is done here
             log::info!("Apply Tree-sitter query");
-            let mut atoms = tree_sitter::apply_query(&content, &query, &grammars)?;
+            let mut atoms = tree_sitter::apply_query(&content, &query, grammars)?;
 
             // Various post-processing of whitespace
             atoms.post_process();
@@ -173,14 +173,14 @@ pub async fn formatter(
             let trimmed = trim_whitespace(&rendered);
 
             if !skip_idempotence {
-                idempotence_check(&trimmed, &query, language).await?
+                idempotence_check(&trimmed, &query, grammars, configuration)?
             }
 
             write!(output, "{trimmed}")?;
         }
 
         Operation::Visualise { output_format } => {
-            let (tree, _) = tree_sitter::parse(&content, &grammars)?;
+            let (tree, _) = tree_sitter::parse(&content, grammars)?;
             let root: SyntaxNode = tree.root_node().into();
 
             match output_format {
@@ -206,10 +206,11 @@ fn trim_whitespace(s: &str) -> String {
     format!("{}\n", s.lines().map(str::trim_end).join("\n").trim())
 }
 
-async fn idempotence_check(
+fn idempotence_check(
     content: &str,
     query: &str,
-    language: Option<Language>,
+    grammars: &[tree_sitter_facade::Language],
+    configuration: &Configuration,
 ) -> FormatterResult<()> {
     log::info!("Checking for idempotence ...");
 
@@ -221,12 +222,12 @@ async fn idempotence_check(
         &mut input,
         &mut output,
         &mut query,
-        language,
+        grammars,
+        configuration,
         Operation::Format {
             skip_idempotence: true,
         },
-    )
-    .await?;
+    )?;
     let reformatted = String::from_utf8(output.into_inner()?)?;
     let res = if content == reformatted {
         Ok(())
@@ -255,18 +256,20 @@ async fn idempotence_check(
 async fn parse_error_fails_formatting() {
     let mut input = "[ 1, % ]".as_bytes();
     let mut output = Vec::new();
-    let mut query = "(#language! json)".as_bytes();
+    let query = "(#language! json)";
+    let configuration = Configuration::parse(query).unwrap();
+    let grammars = configuration.language.grammars().await.unwrap();
+
     match formatter(
         &mut input,
         &mut output,
-        &mut query,
-        None,
+        &mut query.as_bytes(),
+        &grammars,
+        &configuration,
         Operation::Format {
             skip_idempotence: true,
         },
-    )
-    .await
-    {
+    ) {
         Err(FormatterError::Parsing {
             start_line: 1,
             end_line: 1,

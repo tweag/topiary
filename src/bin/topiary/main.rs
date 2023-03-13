@@ -6,7 +6,7 @@ mod visualise;
 use std::{
     error::Error,
     fs::File,
-    io::{stdin, BufReader, BufWriter},
+    io::{stdin, BufReader, BufWriter, Read},
     path::PathBuf,
 };
 
@@ -15,7 +15,7 @@ use clap::{ArgGroup, Parser};
 use crate::{
     error::CLIResult, output::OutputFile, supported::SupportedLanguage, visualise::Visualisation,
 };
-use topiary::{formatter, Language, Operation};
+use topiary::{formatter, Configuration, FormatterError, Language, Operation};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -113,7 +113,22 @@ async fn run() -> CLIResult<()> {
         unreachable!();
     };
 
-    let mut query = BufReader::new(File::open(query_path)?);
+    let mut query_reader = BufReader::new(File::open(query_path)?);
+    let mut query = String::new();
+    query_reader.read_to_string(&mut query)?;
+
+    let mut configuration = Configuration::parse(&query)?;
+
+    // Replace the language deduced from the query file by the one from the CLI, if any
+    if let Some(l) = language {
+        configuration.language = l
+    }
+
+    let grammars = configuration
+        .language
+        .grammars()
+        .await
+        .map_err(|e| FormatterError::Internal("Could not load grammars".into(), Some(e)))?;
 
     let operation = if let Some(visualisation) = args.visualise {
         Operation::Visualise {
@@ -125,7 +140,14 @@ async fn run() -> CLIResult<()> {
         }
     };
 
-    formatter(&mut input, &mut output, &mut query, language, operation).await?;
+    formatter(
+        &mut input,
+        &mut output,
+        &mut query_reader,
+        &grammars,
+        &configuration,
+        operation,
+    )?;
 
     output.into_inner()?.persist()?;
 
