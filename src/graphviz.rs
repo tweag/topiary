@@ -4,7 +4,6 @@ use std::{borrow::Cow, fmt, io};
 
 use crate::{tree_sitter::SyntaxNode, FormatterResult};
 
-// TODO Add tests for this
 /// We double-escape whitespace (\n and \t) so it is
 /// rendered as the escaped value in the GraphViz output
 fn escape(input: &str) -> Cow<str> {
@@ -92,4 +91,22 @@ pub fn write(output: &mut dyn io::Write, root: &SyntaxNode) -> FormatterResult<(
     writeln!(output, "}}")?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use super::escape;
+
+    #[test]
+    fn double_escape() {
+        // PBT would be handy, here
+        assert_eq!(escape("foo"), "foo");
+        assert_eq!(escape("'"), r#"\'"#);
+        assert_eq!(escape("\n"), r#"\\n"#);
+        assert_eq!(escape("\t"), r#"\\t"#);
+        assert_eq!(
+            escape("Here's something\nlonger"),
+            r#"Here\'s something\\nlonger"#
+        );
+    }
 }
