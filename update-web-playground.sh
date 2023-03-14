@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 nix build .#web-playground
-ln -sf ../../result/post website/playground/wasm-app
+rm -rf website/playground/wasm-app
+ln -s ../../result/post website/playground/wasm-app
