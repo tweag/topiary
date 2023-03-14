@@ -30,7 +30,7 @@ async fn input_output_tester() {
         formatter(
             &mut input,
             &mut output,
-            &mut query.as_bytes(),
+            &query,
             &configuration,
             &grammars,
             Operation::Format {
@@ -69,7 +69,7 @@ async fn formatted_query_tester() {
         formatter(
             &mut input,
             &mut output,
-            &mut query.as_bytes(),
+            &query,
             &configuration,
             &grammars,
             Operation::Format {

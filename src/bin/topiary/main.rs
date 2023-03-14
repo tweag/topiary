@@ -113,13 +113,14 @@ async fn run() -> CLIResult<()> {
         unreachable!();
     };
 
-    let mut query_reader = BufReader::new(File::open(query_path)?);
+    let query = {
+        let mut reader = BufReader::new(File::open(&query_path)?);
+        let mut contents = String::new();
+        reader.read_to_string(&mut contents)?;
 
-    // It's not very nice that formatter wants an io::Read and
-    // Configuration::parse wants a &str. Should we just let formatter take
-    // &str as well?
-    let mut query = String::new();
-    query_reader.read_to_string(&mut query)?;
+        contents
+    };
+
     let mut configuration = Configuration::parse(&query)?;
 
     // Replace the language deduced from the query file by the one from the CLI, if any
@@ -142,7 +143,7 @@ async fn run() -> CLIResult<()> {
     formatter(
         &mut input,
         &mut output,
-        &mut query_reader,
+        &query,
         &configuration,
         &grammars,
         operation,
