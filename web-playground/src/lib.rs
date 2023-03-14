@@ -32,7 +32,7 @@ pub async fn format(input: &str, query: &str) -> String {
     match formatter(
         &mut input.as_bytes(),
         &mut output,
-        &mut query.as_bytes(),
+        query,
         &configuration,
         &grammars,
         Operation::Format {
