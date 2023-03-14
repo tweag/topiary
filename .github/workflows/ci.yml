@@ -28,6 +28,8 @@ jobs:
         run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- -l json'
 
       - name: Build web playground
+        # Linux will do a full bundle instead.
+        if: success() && matrix.os == 'macos-latest'
         run: nix build .#web-playground
 
       - name: Bundle web playground
