@@ -28,7 +28,11 @@ let
       ];
     };
 
-    nativeBuildInputs = [ pkgs.libiconv ];
+    nativeBuildInputs = [
+      pkgs.binaryen pkgs.wasm-bindgen-cli
+    ] ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [
+      pkgs.libiconv
+    ];
   };
 
   cargoArtifacts = craneLib.buildDepsOnly (commonArgs);
@@ -75,20 +79,25 @@ in
 
   web-playground = craneLibWasm.buildPackage (commonArgs // {
     inherit cargoArtifacts;
-    cargoExtraArgs = "--manifest-path=web-playground/Cargo.toml --target ${wasmTarget} --release";
+    cargoExtraArgs = "--manifest-path=web-playground/Cargo.toml --target ${wasmTarget}";
     
     # Tests currently need to be run via `cargo wasi` which
     # isn't packaged in nixpkgs yet...
     doCheck = false;
 
-    postInstallPhase = ''
-      echo 'Creating out directory'
-      mkdir -p $out/src;
+    postInstall = ''
+      echo 'Copying built wasm'
+      mkdir -p $out/build;
+      mkdir -p $out/post;
+      cp web-playground/target/wasm32-unknown-unknown/release/topiary_playground.wasm $out/build/
       echo 'Running wasm-bindgen'
-      wasm-bindgen \
-        --target web \
-        --out-dir $out/src \
-        target/wasm32-unknown-unknown/release/topiary_playground.wasm;
+      wasm-bindgen --version
+      wasm-bindgen --target web --out-dir $out/post $out/build/topiary_playground.wasm;
+      echo 'Running wasm-opt'
+      wasm-opt --version
+      wasm-opt -Oz -o $out/post/output.wasm $out/post/topiary_playground_bg.wasm
+      echo 'Overwriting post/topiary_playground_bg.wasm with the optimized file'
+      mv $out/post/output.wasm $out/post/topiary_playground_bg.wasm
     '';
   });
 }

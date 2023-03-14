@@ -1079,6 +1079,8 @@ dependencies = [
  "wasm-bindgen-test",
  "web-tree-sitter-sys",
  "wee_alloc",
+ "windows_i686_gnu",
+ "windows_i686_msvc",
 ]
 
 [[package]]
