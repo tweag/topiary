@@ -27,12 +27,15 @@ jobs:
       - name: Build and test executable
         run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- -l json'
 
-      - name: Compile Wasm
-        run: nix build .#wasm
+      - name: Build web playground
+        run: nix build .#web-playground
+
+      - name: Copy web playground into website
+        run: cp -r result website/playground/wasm-app
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v1.0.7
-        if: github.ref == 'refs/heads/main'
+        if: success() && matrix.os == 'ubuntu-latest' && github.ref == 'refs/heads/main'
         with:
           path: 'website'
 

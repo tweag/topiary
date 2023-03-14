@@ -24,10 +24,15 @@ let
         "languages"
         "src"
         "tests"
+        "web-playground"
       ];
     };
 
-    nativeBuildInputs = [ pkgs.libiconv ];
+    nativeBuildInputs = [
+      pkgs.binaryen pkgs.wasm-bindgen-cli
+    ] ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [
+      pkgs.libiconv
+    ];
   };
 
   cargoArtifacts = craneLib.buildDepsOnly (commonArgs);
@@ -72,12 +77,25 @@ in
     '';
   });
 
-  wasm = craneLibWasm.buildPackage (commonArgs // {
+  web-playground = craneLibWasm.buildPackage (commonArgs // {
     inherit cargoArtifacts;
-    cargoExtraArgs = "--lib --target ${wasmTarget}";
+    cargoExtraArgs = "--manifest-path=web-playground/Cargo.toml --target ${wasmTarget}";
     
     # Tests currently need to be run via `cargo wasi` which
     # isn't packaged in nixpkgs yet...
-    doCheck = false;    
+    doCheck = false;
+
+    postInstall = ''
+      echo 'Removing unneeded dir'
+      rm -rf $out/lib
+      echo 'Running wasm-bindgen'
+      wasm-bindgen --version
+      wasm-bindgen --target web --out-dir $out web-playground/target/wasm32-unknown-unknown/release/topiary_playground.wasm;
+      echo 'Running wasm-opt'
+      wasm-opt --version
+      wasm-opt -Oz -o $out/output.wasm $out/topiary_playground_bg.wasm
+      echo 'Overwriting topiary_playground_bg.wasm with the optimized file'
+      mv $out/output.wasm $out/topiary_playground_bg.wasm
+    '';
   });
 }

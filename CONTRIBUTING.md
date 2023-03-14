@@ -54,3 +54,20 @@ that is provided by Nix, if you have both installed. For convenience,
 the `generate-coverage.sh` script can be run from the root of this
 repository to avoid contaminating your environment, but note it will
 download a full toolchain on each run.
+
+## Web site and web playground
+
+If you have [Deno](https://deno.land/) installed, you can start a local web
+server like this:
+
+```bash
+deno run -A local-web-server.ts
+```
+
+The web site should then be running on http://localhost:8080.
+
+In order to build or update the Wasm playground, you can run this:
+
+```bash
+./update-web-playground.sh
+```
