@@ -106,7 +106,8 @@ impl Language {
         };
 
         Ok(join_all(language_names.iter().map(|name| async move {
-            web_tree_sitter::Language::load_path(&format!("tree-sitter-{}.wasm", name)).await
+            web_tree_sitter::Language::load_path(&format!("scripts/tree-sitter-{}.wasm", name))
+                .await
         }))
         .await
         .into_iter()
