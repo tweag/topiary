@@ -28,14 +28,10 @@ jobs:
         run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- -l json'
 
       - name: Build web playground
-        # Linux will do a full bundle instead.
-        if: success() && matrix.os == 'macos-latest'
         run: nix build .#web-playground
 
-      - name: Bundle web playground
-        # Only works on Linux
-        if: success() && matrix.os == 'ubuntu-latest'
-        run: nix bundle .#web-playground
+      - name: Copy web playground into website
+        run: cp -r result/post website/playground/wasm-app
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v1.0.7
