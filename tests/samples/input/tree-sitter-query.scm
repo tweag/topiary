@@ -745,7 +745,7 @@
   (fun_expression
     "->" @append_spaced_scoped_softline
   ) @end_scope
-  (#scope_id! "fun_definiton")
+  (#scope_id! "fun_definition")
 )
 
 ; The same as above holds for single-line `function`.
@@ -769,23 +769,23 @@
   (function_expression
     "function" @append_spaced_scoped_softline
   ) @end_scope
-  (#scope_id! "function_definiton")
+  (#scope_id! "function_definition")
 )
 (parenthesized_expression
   (function_expression) @begin_scope @end_scope
-  (#scope_id! "function_definiton")
+  (#scope_id! "function_definition")
 )
 (function_expression
   "|"* @do_nothing
   .
   (match_case) @prepend_spaced_scoped_softline
-  (#scope_id! "function_definiton")
+  (#scope_id! "function_definition")
 )
 (function_expression
   "|"* @prepend_spaced_scoped_softline
   .
   (match_case)
-  (#scope_id! "function_definiton")
+  (#scope_id! "function_definition")
 )
 
 (value_definition

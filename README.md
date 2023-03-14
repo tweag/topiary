@@ -835,7 +835,7 @@ Remove the matched node from the output, only if the associated custom scope is 
   "|" @singleline_scoped_delete
   .
   (match_case)
-  (#scope_id! "function_definiton")
+  (#scope_id! "function_definition")
 )
 ```
 
@@ -854,7 +854,7 @@ The delimiter must be specified using the predicate `#delimiter!`. The scope mus
   "|"? @do_nothing
   .
   (match_case) @prepend_scoped_multiline_delimiter
-  (#scope_id! "function_definiton")
+  (#scope_id! "function_definition")
   (#delimiter! "| ")
 )
 ```
