@@ -86,6 +86,8 @@ in
     doCheck = false;
 
     postInstall = ''
+      echo 'Removing unneeded dir'
+      rm -rf $out/lib
       echo 'Running wasm-bindgen'
       wasm-bindgen --version
       wasm-bindgen --target web --out-dir $out web-playground/target/wasm32-unknown-unknown/release/topiary_playground.wasm;
