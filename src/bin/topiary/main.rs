@@ -6,7 +6,7 @@ mod visualise;
 use std::{
     error::Error,
     fs::File,
-    io::{stdin, BufReader, BufWriter},
+    io::{stdin, BufReader, BufWriter, Read},
     path::PathBuf,
 };
 
@@ -15,7 +15,7 @@ use clap::{ArgGroup, Parser};
 use crate::{
     error::CLIResult, output::OutputFile, supported::SupportedLanguage, visualise::Visualisation,
 };
-use topiary::{formatter, Language, Operation};
+use topiary::{formatter, Configuration, Language, Operation};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -64,20 +64,21 @@ struct Args {
     skip_idempotence: bool,
 }
 
-fn main() {
-    if let Err(e) = run() {
+#[tokio::main]
+async fn main() {
+    if let Err(e) = run().await {
         print_error(&e);
         std::process::exit(1);
     }
 }
 
-fn run() -> CLIResult<()> {
+async fn run() -> CLIResult<()> {
     env_logger::init();
     let args = Args::parse();
 
     // The as_deref() gives us an Option<&str>, which we can match against
     // string literals
-    let mut input: Box<dyn std::io::Read> = match args.input_file.as_deref() {
+    let mut input: Box<(dyn Read)> = match args.input_file.as_deref() {
         Some("-") | None => Box::new(stdin()),
         Some(file) => Box::new(BufReader::new(File::open(file)?)),
     };
@@ -92,7 +93,7 @@ fn run() -> CLIResult<()> {
         OutputFile::new(args.output_file.as_deref())?
     });
 
-    let language: Option<Language> = if let Some(language) = args.language {
+    let language = if let Some(language) = args.language {
         Some(language.into())
     } else if let Some(filename) = args.input_file.as_deref() {
         Some(Language::detect(filename)?)
@@ -112,7 +113,21 @@ fn run() -> CLIResult<()> {
         unreachable!();
     };
 
-    let mut query = BufReader::new(File::open(query_path)?);
+    let mut query_reader = BufReader::new(File::open(query_path)?);
+
+    // It's not very nice that formatter wants an io::Read and
+    // Configuration::parse wants a &str. Should we just let formatter take
+    // &str as well?
+    let mut query = String::new();
+    query_reader.read_to_string(&mut query)?;
+    let mut configuration = Configuration::parse(&query)?;
+
+    // Replace the language deduced from the query file by the one from the CLI, if any
+    if let Some(l) = language {
+        configuration.language = l
+    }
+
+    let grammars = configuration.language.grammars().await?;
 
     let operation = if let Some(visualisation) = args.visualise {
         Operation::Visualise {
@@ -124,7 +139,14 @@ fn run() -> CLIResult<()> {
         }
     };
 
-    formatter(&mut input, &mut output, &mut query, language, operation)?;
+    formatter(
+        &mut input,
+        &mut output,
+        &mut query_reader,
+        &configuration,
+        &grammars,
+        operation,
+    )?;
 
     output.into_inner()?.persist()?;
 

@@ -5,9 +5,7 @@ use tree_sitter_facade::{
     Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryPredicate, Tree,
 };
 
-use crate::{
-    atom_collection::AtomCollection, error::FormatterError, language::Language, FormatterResult,
-};
+use crate::{atom_collection::AtomCollection, error::FormatterError, FormatterResult};
 
 /// Supported visualisation formats
 #[derive(Clone, Copy, Debug)]
@@ -81,12 +79,12 @@ struct LocalQueryMatch<'a> {
 pub fn apply_query(
     input_content: &str,
     query_content: &str,
-    language: Language,
+    grammars: &[tree_sitter_facade::Language],
 ) -> FormatterResult<AtomCollection> {
-    let (tree, grammar) = parse(input_content, language)?;
+    let (tree, grammar) = parse(input_content, grammars)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
-    let query = Query::new(&grammar, query_content)
+    let query = Query::new(grammar, query_content)
         .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
 
     // Match queries
@@ -163,17 +161,15 @@ pub fn apply_query(
 // this function tries to parse the data with every possible grammar.
 // It returns the syntax tree of the first grammar that succeeds, along with said grammar,
 // or the last error if all grammars fail.
-pub fn parse(
+pub fn parse<'a>(
     content: &str,
-    language: Language,
-) -> FormatterResult<(Tree, tree_sitter_facade::Language)> {
+    grammars: &'a [tree_sitter_facade::Language],
+) -> FormatterResult<(Tree, &'a tree_sitter_facade::Language)> {
     let mut parser = Parser::new()?;
-
-    language
-        .grammars()
-        .into_iter()
+    grammars
+        .iter()
         .map(|grammar| {
-            parser.set_language(&grammar).map_err(|_| {
+            parser.set_language(grammar).map_err(|_| {
                 FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
             })?;
 

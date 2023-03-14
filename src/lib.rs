@@ -10,17 +10,16 @@
 //! More details can be found on
 //! [GitHub](https://github.com/tweag/topiary).
 
-use std::io;
-
 use itertools::Itertools;
 use pretty_assertions::StrComparison;
+use std::io;
 
 pub use crate::{
+    configuration::Configuration,
     error::{FormatterError, IoError},
     language::Language,
     tree_sitter::{SyntaxNode, Visualisation},
 };
-use configuration::Configuration;
 
 mod atom_collection;
 mod configuration;
@@ -121,16 +120,26 @@ pub enum Operation {
 /// # Examples
 ///
 /// ```
+/// # tokio_test::block_on(async {
 /// use std::fs::File;
-/// use std::io::BufReader;
-/// use topiary::{formatter, FormatterError, Operation};
+/// use std::io::{BufReader, Read};
+/// use topiary::{formatter, Configuration, FormatterError, Operation};
 ///
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
 /// let mut output = Vec::new();
-/// let mut query = BufReader::new(File::open("languages/json.scm").expect("query file"));
+/// let mut query_file = BufReader::new(File::open("languages/json.scm").expect("query file"));
+/// let mut query = String::new();
+/// query_file.read_to_string(&mut query).expect("read query file");
 ///
-/// match formatter(&mut input, &mut output, &mut query, None, Operation::Format{ skip_idempotence: false }) {
+/// let mut configuration = Configuration::parse(&query).expect("valid configuration");
+/// let grammars = configuration
+///     .language
+///     .grammars()
+///     .await
+///     .expect("grammars");
+///
+/// match formatter(&mut input, &mut output, &mut query_file, &configuration, &grammars, Operation::Format{ skip_idempotence: false }) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
@@ -141,12 +150,14 @@ pub enum Operation {
 ///     panic!("An error occurred");
 ///   }
 /// }
+/// # }) // end tokio_test
 /// ```
 pub fn formatter(
-    input: &mut dyn io::Read,
-    output: &mut dyn io::Write,
-    query: &mut dyn io::Read,
-    language: Option<Language>,
+    input: &mut impl io::Read,
+    output: &mut impl io::Write,
+    query: &mut impl io::Read,
+    configuration: &Configuration,
+    grammars: &[tree_sitter_facade::Language],
     operation: Operation,
 ) -> FormatterResult<()> {
     let content = read_input(input).map_err(|e| {
@@ -162,18 +173,11 @@ pub fn formatter(
         ))
     })?;
 
-    let mut configuration = Configuration::parse(&query)?;
-
-    // Replace the language deduced from the query file by the one from the CLI, if any
-    if let Some(l) = language {
-        configuration.language = l
-    }
-
     match operation {
         Operation::Format { skip_idempotence } => {
             // All the work related to tree-sitter and the query is done here
             log::info!("Apply Tree-sitter query");
-            let mut atoms = tree_sitter::apply_query(&content, &query, configuration.language)?;
+            let mut atoms = tree_sitter::apply_query(&content, &query, grammars)?;
 
             // Various post-processing of whitespace
             atoms.post_process();
@@ -184,14 +188,14 @@ pub fn formatter(
             let trimmed = trim_whitespace(&rendered);
 
             if !skip_idempotence {
-                idempotence_check(&trimmed, &query, language)?
+                idempotence_check(&trimmed, &query, configuration, grammars)?
             }
 
             write!(output, "{trimmed}")?;
         }
 
         Operation::Visualise { output_format } => {
-            let (tree, _) = tree_sitter::parse(&content, configuration.language)?;
+            let (tree, _) = tree_sitter::parse(&content, grammars)?;
             let root: SyntaxNode = tree.root_node().into();
 
             match output_format {
@@ -220,33 +224,34 @@ fn trim_whitespace(s: &str) -> String {
 fn idempotence_check(
     content: &str,
     query: &str,
-    language: Option<Language>,
+    configuration: &Configuration,
+    grammars: &[tree_sitter_facade::Language],
 ) -> FormatterResult<()> {
     log::info!("Checking for idempotence ...");
 
     let mut input = content.as_bytes();
     let mut query = query.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
-    let do_steps = || -> Result<(), FormatterError> {
-        formatter(
-            &mut input,
-            &mut output,
-            &mut query,
-            language,
-            Operation::Format {
-                skip_idempotence: true,
-            },
-        )?;
-        let reformatted = String::from_utf8(output.into_inner()?)?;
-        if content == reformatted {
-            Ok(())
-        } else {
-            log::error!("Failed idempotence check");
-            log::error!("{}", StrComparison::new(content, &reformatted));
-            Err(FormatterError::Idempotence)
-        }
+
+    formatter(
+        &mut input,
+        &mut output,
+        &mut query,
+        configuration,
+        grammars,
+        Operation::Format {
+            skip_idempotence: true,
+        },
+    )?;
+    let reformatted = String::from_utf8(output.into_inner()?)?;
+    let res = if content == reformatted {
+        Ok(())
+    } else {
+        log::error!("Failed idempotence check");
+        log::error!("{}", StrComparison::new(content, &reformatted));
+        Err(FormatterError::Idempotence)
     };
-    let res = do_steps();
+
     if let Err(err) = res {
         match err {
             // If topiary ran smoothly on its own output,
@@ -262,16 +267,20 @@ fn idempotence_check(
     }
 }
 
-#[test]
-fn parse_error_fails_formatting() {
+#[tokio::test]
+async fn parse_error_fails_formatting() {
     let mut input = "[ 1, % ]".as_bytes();
     let mut output = Vec::new();
-    let mut query = "(#language! json)".as_bytes();
+    let query = "(#language! json)";
+    let configuration = Configuration::parse(query).unwrap();
+    let grammars = configuration.language.grammars().await.unwrap();
+
     match formatter(
         &mut input,
         &mut output,
-        &mut query,
-        None,
+        &mut query.as_bytes(),
+        &configuration,
+        &grammars,
         Operation::Format {
             skip_idempotence: true,
         },

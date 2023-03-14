@@ -1,5 +1,17 @@
-{ pkgs, advisory-db, crane, nix-filter }:
+{ pkgs, nixpkgs, system, advisory-db, crane, rust-overlay, nix-filter }:
 let
+  rustPkgs = import nixpkgs {
+    inherit system;
+    overlays = [ (import rust-overlay) ];
+  };
+
+  wasmRustVersion = "1.67.1";
+  wasmTarget = "wasm32-unknown-unknown";
+
+  rustWithWasmTarget = rustPkgs.rust-bin.stable.${wasmRustVersion}.default.override {
+    targets = [ wasmTarget ];
+  };
+
   craneLib = crane.mkLib pkgs;
 
   commonArgs = {
@@ -19,6 +31,12 @@ let
   };
 
   cargoArtifacts = craneLib.buildDepsOnly (commonArgs);
+
+  # NB: we don't need to overlay our custom toolchain for the *entire*
+  # pkgs (which would require rebuidling anything else which uses rust).
+  # Instead, we just want to update the scope that crane will use by appending
+  # our specific toolchain there.
+  craneLibWasm = craneLib.overrideToolchain rustWithWasmTarget;
 in
 {
   clippy = craneLib.cargoClippy (commonArgs // {
@@ -52,5 +70,14 @@ in
     shellHook = ''
       export TOPIARY_LANGUAGE_DIR=$PWD/languages
     '';
+  });
+
+  wasm = craneLibWasm.buildPackage (commonArgs // {
+    inherit cargoArtifacts;
+    cargoExtraArgs = "--lib --target ${wasmTarget}";
+    
+    # Tests currently need to be run via `cargo wasi` which
+    # isn't packaged in nixpkgs yet...
+    doCheck = false;    
   });
 }

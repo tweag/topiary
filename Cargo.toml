@@ -4,6 +4,12 @@ description = "Formats input source code in a style defined for that language."
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+crate-type = [
+    "cdylib", # for Wasm 
+    "rlib" # for native
+]
+
 [dependencies]
 # For now we just load the tree-sitter language parsers statically.
 # Eventually we will want to dynamically load them, like Helix does.
@@ -20,6 +26,7 @@ test-log = "0.2"
 tree-sitter-facade = { git = "https://github.com/tweag/tree-sitter-facade" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies] 
+tokio = { version = "^1.26.0", features = ["rt-multi-thread", "macros"] }
 tree-sitter-json = "0.19"
 tree-sitter-rust = "0.20.3"
 tree-sitter-toml = "0.20.0"
@@ -30,11 +37,14 @@ tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-quer
 tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
+futures = "0.3.26"
+tokio = { version = "^1.26.0", features = ["rt", "macros"] }
 web-tree-sitter = { git = "https://github.com/tweag/web-tree-sitter-sys", package = "web-tree-sitter-sys", default-features = false, features = ["web"] }
 
 [dev-dependencies]
 assert_cmd = "2.0"
-criterion = "0.4"
+criterion = { version = "0.4", features=["async_futures"] }
+tokio-test = "0.4.2"
 
 [[bench]]
 name = "benchmark"

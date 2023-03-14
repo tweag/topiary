@@ -176,6 +176,15 @@ impl From<serde_json::Error> for FormatterError {
     }
 }
 
+impl From<tree_sitter_facade::LanguageError> for FormatterError {
+    fn from(e: tree_sitter_facade::LanguageError) -> Self {
+        Self::Internal(
+            "Error while loading language grammar".into(),
+            Some(Box::new(e)),
+        )
+    }
+}
+
 impl From<tree_sitter_facade::ParserError> for FormatterError {
     fn from(e: tree_sitter_facade::ParserError) -> Self {
         Self::Internal("Error while parsing".into(), Some(Box::new(e)))
