@@ -24,6 +24,7 @@ let
         "languages"
         "src"
         "tests"
+        "web-playground"
       ];
     };
 
@@ -72,12 +73,22 @@ in
     '';
   });
 
-  wasm = craneLibWasm.buildPackage (commonArgs // {
+  web-playground = craneLibWasm.buildPackage (commonArgs // {
     inherit cargoArtifacts;
-    cargoExtraArgs = "--lib --target ${wasmTarget} --release --no-default-features";
+    cargoExtraArgs = "--manifest-path=web-playground/Cargo.toml --target ${wasmTarget} --release";
     
     # Tests currently need to be run via `cargo wasi` which
     # isn't packaged in nixpkgs yet...
-    doCheck = false;    
+    doCheck = false;
+
+    postInstallPhase = ''
+      echo 'Creating out directory'
+      mkdir -p $out/src;
+      echo 'Running wasm-bindgen'
+      wasm-bindgen \
+        --target web \
+        --out-dir $out/src \
+        target/wasm32-unknown-unknown/release/topiary_playground.wasm;
+    '';
   });
 }

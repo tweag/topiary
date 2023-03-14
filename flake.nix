@@ -36,7 +36,7 @@
         code = pkgs.callPackage ./. { inherit nixpkgs system advisory-db crane rust-overlay nix-filter; };
       in {
         packages = with code; {
-          inherit wasm;
+          inherit web-playground;
           default = app;
         };
         checks = with code; {

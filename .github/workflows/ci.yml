@@ -27,8 +27,8 @@ jobs:
       - name: Build and test executable
         run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- -l json'
 
-      - name: Compile Wasm
-        run: nix build .#wasm
+      - name: Build web playground
+        run: nix build .#web-playground
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v1.0.7
