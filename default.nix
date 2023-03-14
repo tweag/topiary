@@ -86,18 +86,14 @@ in
     doCheck = false;
 
     postInstall = ''
-      echo 'Copying built wasm'
-      mkdir -p $out/build;
-      mkdir -p $out/post;
-      cp web-playground/target/wasm32-unknown-unknown/release/topiary_playground.wasm $out/build/
       echo 'Running wasm-bindgen'
       wasm-bindgen --version
-      wasm-bindgen --target web --out-dir $out/post $out/build/topiary_playground.wasm;
+      wasm-bindgen --target web --out-dir $out web-playground/target/wasm32-unknown-unknown/release/topiary_playground.wasm;
       echo 'Running wasm-opt'
       wasm-opt --version
-      wasm-opt -Oz -o $out/post/output.wasm $out/post/topiary_playground_bg.wasm
-      echo 'Overwriting post/topiary_playground_bg.wasm with the optimized file'
-      mv $out/post/output.wasm $out/post/topiary_playground_bg.wasm
+      wasm-opt -Oz -o $out/output.wasm $out/topiary_playground_bg.wasm
+      echo 'Overwriting topiary_playground_bg.wasm with the optimized file'
+      mv $out/output.wasm $out/topiary_playground_bg.wasm
     '';
   });
 }
