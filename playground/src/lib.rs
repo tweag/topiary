@@ -1,0 +1,45 @@
+use std::panic;
+use topiary::{formatter, Configuration, Language, Operation};
+use tree_sitter_facade::TreeSitter;
+use wasm_bindgen::prelude::*;
+
+// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
+// allocator.
+#[cfg(feature = "wee_alloc")]
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
+#[wasm_bindgen]
+extern "C" {
+    fn alert(s: &str);
+}
+
+#[wasm_bindgen(js_name = topiaryInit)]
+pub async fn topiary_init() {
+    panic::set_hook(Box::new(console_error_panic_hook::hook));
+    TreeSitter::init().await;
+}
+
+#[wasm_bindgen]
+pub async fn format(input: &str, query: &str) -> String {
+    let mut output = Vec::new();
+
+    let mut configuration = Configuration::parse(&query).unwrap();
+    configuration.language = Language::Json;
+
+    let grammars = configuration.language.grammars().await.unwrap();
+
+    match formatter(
+        &mut input.as_bytes(),
+        &mut output,
+        &mut query.as_bytes(),
+        &configuration,
+        &grammars,
+        Operation::Format {
+            skip_idempotence: true,
+        },
+    ) {
+        Ok(()) => String::from_utf8(output).unwrap(),
+        Err(e) => "error".to_string(),
+    }
+}

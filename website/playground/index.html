@@ -1,3 +1,30 @@
-<h1>Topiary Playground</h1>
+<html>
+    <head>
+        <script src="tree-sitter.js"></script>
+    </head>
+    <body>
+        <h1>Topiary Playground</h1>
 
-Coming soon...
+        Coming soon...
+
+        <script type="module">
+            import init, {
+                topiaryInit,
+                format,
+            } from "./wasm-app/topiary_playground.js";
+
+            async function run() {
+                await init();
+                await topiaryInit();
+
+                const output = await format(
+                    '{"foo":"bar"}',
+                    '(#language! json) ":" @append_space'
+                );
+                console.log(`Output is ${output}`);
+            }
+
+            run();
+        </script>
+    </body>
+</html>
