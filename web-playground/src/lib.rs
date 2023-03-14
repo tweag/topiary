@@ -16,7 +16,12 @@ extern "C" {
 
 #[wasm_bindgen(js_name = topiaryInit)]
 pub async fn topiary_init() {
-    panic::set_hook(Box::new(console_error_panic_hook::hook));
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "console_error_panic_hook")] {
+            panic::set_hook(Box::new(console_error_panic_hook::hook));
+        }
+    }
+
     TreeSitter::init().await;
 }
 

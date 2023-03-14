@@ -74,7 +74,7 @@ in
 
   wasm = craneLibWasm.buildPackage (commonArgs // {
     inherit cargoArtifacts;
-    cargoExtraArgs = "--lib --target ${wasmTarget}";
+    cargoExtraArgs = "--lib --target ${wasmTarget} --release --no-default-features";
     
     # Tests currently need to be run via `cargo wasi` which
     # isn't packaged in nixpkgs yet...

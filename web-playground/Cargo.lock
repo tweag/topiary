@@ -630,6 +630,7 @@ dependencies = [
 name = "topiary"
 version = "0.1.0"
 dependencies = [
+ "cfg-if 1.0.0",
  "clap",
  "env_logger",
  "futures",
@@ -657,6 +658,7 @@ dependencies = [
 name = "topiary-playground"
 version = "0.0.1"
 dependencies = [
+ "cfg-if 1.0.0",
  "console_error_panic_hook",
  "topiary",
  "tree-sitter-facade",
