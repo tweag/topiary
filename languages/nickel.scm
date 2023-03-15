@@ -8,6 +8,7 @@
   (static_string)
   (str_chunks_single)
   (str_chunks_multi)
+  (builtin)
 ] @leaf
 
 ; Allow blank line before
