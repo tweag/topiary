@@ -21,15 +21,15 @@ pub async fn topiary_init() {
 }
 
 #[wasm_bindgen]
-pub async fn format(input: &str, query: &str) -> String {
+pub async fn format(input: &str, query: &str) -> Result<String, JsError> {
     let mut output = Vec::new();
 
-    let mut configuration = Configuration::parse(&query).unwrap();
+    let mut configuration = Configuration::parse(&query)?;
     configuration.language = Language::Json;
 
-    let grammars = configuration.language.grammars().await.unwrap();
+    let grammars = configuration.language.grammars().await?;
 
-    match formatter(
+    formatter(
         &mut input.as_bytes(),
         &mut output,
         query,
@@ -38,8 +38,7 @@ pub async fn format(input: &str, query: &str) -> String {
         Operation::Format {
             skip_idempotence: true,
         },
-    ) {
-        Ok(()) => String::from_utf8(output).unwrap(),
-        Err(e) => "error".to_string(),
-    }
+    )?;
+
+    Ok(String::from_utf8(output)?)
 }

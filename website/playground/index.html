@@ -5,7 +5,25 @@
     <body>
         <h1>Topiary Playground</h1>
 
-        Coming soon...
+        Query:
+        <br />
+        <textarea id="query" cols="80" rows="10"></textarea>
+        <br />
+        <br />
+
+        Input:
+        <br />
+        <textarea id="input" cols="80" rows="10"></textarea>
+        <br />
+        <br />
+
+        Output:
+        <br />
+        <textarea id="output" cols="80" rows="10" readonly></textarea>
+        <br />
+        <br />
+
+        <button id="runButton">Format</button>
 
         <script type="module">
             import init, {
@@ -13,18 +31,20 @@
                 format,
             } from "./wasm-app/topiary_playground.js";
 
-            async function run() {
-                await init();
-                await topiaryInit();
-
-                const output = await format(
-                    '{"foo":"bar"}',
-                    '(#language! json) ":" @append_space'
-                );
-                console.log(`Output is ${output}`);
+            async function runFormat() {
+                try {
+                    output.value = await format(input.value, query.value);
+                } catch (e) {
+                    output.value = e;
+                }
             }
 
-            run();
+            await init();
+            await topiaryInit();
+
+            document
+                .querySelector("#runButton")
+                .addEventListener("click", runFormat);
         </script>
     </body>
 </html>

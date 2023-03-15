@@ -1076,11 +1076,14 @@ dependencies = [
  "tree-sitter-query",
  "tree-sitter-rust",
  "tree-sitter-toml",
+ "wasm-bindgen",
  "wasm-bindgen-test",
  "web-tree-sitter-sys",
  "wee_alloc",
  "windows_i686_gnu",
  "windows_i686_msvc",
+ "windows_x86_64_gnu",
+ "windows_x86_64_gnullvm",
 ]
 
 [[package]]
