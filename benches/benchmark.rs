@@ -12,13 +12,12 @@ async fn format() {
     let grammars = configuration.language.grammars().await.unwrap();
 
     let mut input = input.as_bytes();
-    let mut query = query.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
 
     formatter(
         &mut input,
         &mut output,
-        &mut query,
+        &query,
         &configuration,
         &grammars,
         Operation::Format {

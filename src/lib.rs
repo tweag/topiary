@@ -139,7 +139,7 @@ pub enum Operation {
 ///     .await
 ///     .expect("grammars");
 ///
-/// match formatter(&mut input, &mut output, &mut query_file, &configuration, &grammars, Operation::Format{ skip_idempotence: false }) {
+/// match formatter(&mut input, &mut output, &query, &configuration, &grammars, Operation::Format{ skip_idempotence: false }) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
@@ -155,7 +155,7 @@ pub enum Operation {
 pub fn formatter(
     input: &mut impl io::Read,
     output: &mut impl io::Write,
-    query: &mut impl io::Read,
+    query: &str,
     configuration: &Configuration,
     grammars: &[tree_sitter_facade::Language],
     operation: Operation,
@@ -166,18 +166,12 @@ pub fn formatter(
             e,
         ))
     })?;
-    let query = read_input(query).map_err(|e| {
-        FormatterError::Io(IoError::Filesystem(
-            "Failed to read query contents".into(),
-            e,
-        ))
-    })?;
 
     match operation {
         Operation::Format { skip_idempotence } => {
             // All the work related to tree-sitter and the query is done here
             log::info!("Apply Tree-sitter query");
-            let mut atoms = tree_sitter::apply_query(&content, &query, grammars)?;
+            let mut atoms = tree_sitter::apply_query(&content, query, grammars)?;
 
             // Various post-processing of whitespace
             atoms.post_process();
@@ -188,7 +182,7 @@ pub fn formatter(
             let trimmed = trim_whitespace(&rendered);
 
             if !skip_idempotence {
-                idempotence_check(&trimmed, &query, configuration, grammars)?
+                idempotence_check(&trimmed, query, configuration, grammars)?
             }
 
             write!(output, "{trimmed}")?;
@@ -230,13 +224,12 @@ fn idempotence_check(
     log::info!("Checking for idempotence ...");
 
     let mut input = content.as_bytes();
-    let mut query = query.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
 
     formatter(
         &mut input,
         &mut output,
-        &mut query,
+        query,
         configuration,
         grammars,
         Operation::Format {
@@ -278,7 +271,7 @@ async fn parse_error_fails_formatting() {
     match formatter(
         &mut input,
         &mut output,
-        &mut query.as_bytes(),
+        query,
         &configuration,
         &grammars,
         Operation::Format {
