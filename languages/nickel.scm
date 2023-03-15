@@ -14,6 +14,8 @@
 ; Allow blank line before
 [
   (comment)
+  (record_field)
+  (record_last_field)
 ] @allow_blank_line_before
 
 (comment) @prepend_input_softline
