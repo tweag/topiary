@@ -6,8 +6,10 @@ use std::{
 };
 use tempfile::NamedTempFile;
 
-// Exemplar JSON state that won't be affected by the formatter
-const JSON: &str = "\"test\"";
+// Simple exemplar JSON state, to verify the formatter
+// is doing something... and hopefully the right thing
+const JSON_INPUT: &str = r#"{   "test"  :123}"#;
+const JSON_EXPECTED: &str = r#"{ "test": 123 }"#;
 
 struct State(NamedTempFile);
 
@@ -44,16 +46,16 @@ fn test_file_output() {
         .arg("json")
         .arg("--output-file")
         .arg(output.path())
-        .write_stdin(JSON)
+        .write_stdin(JSON_INPUT)
         .assert()
         .success();
 
-    assert_eq!(output.read().trim(), JSON);
+    assert_eq!(output.read().trim(), JSON_EXPECTED);
 }
 
 #[test]
 fn test_no_clobber() {
-    let json = State::new(JSON);
+    let json = State::new(JSON_INPUT);
     let input_path = json.path();
 
     let mut topiary = Command::cargo_bin("topiary").unwrap();
@@ -69,12 +71,12 @@ fn test_no_clobber() {
 
     // NOTE We only assume, here, that the state has been modified by the call to Topiary. It may
     // be worthwhile asserting (e.g., change in mtime, etc.).
-    assert_eq!(json.read().trim(), JSON);
+    assert_eq!(json.read().trim(), JSON_EXPECTED);
 }
 
 #[test]
 fn test_in_place() {
-    let json = State::new(JSON);
+    let json = State::new(JSON_INPUT);
     let input_path = json.path();
 
     let mut topiary = Command::cargo_bin("topiary").unwrap();
@@ -89,7 +91,7 @@ fn test_in_place() {
 
     // NOTE We only assume, here, that the state has been modified by the call to Topiary. It may
     // be worthwhile asserting (e.g., change in mtime, etc.).
-    assert_eq!(json.read().trim(), JSON);
+    assert_eq!(json.read().trim(), JSON_EXPECTED);
 }
 
 #[test]
