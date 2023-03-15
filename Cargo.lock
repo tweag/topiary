@@ -84,6 +84,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
+name = "bitflags"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "487f1e0fcbe47deb8b0574e646def1c903389d95241dd1bbcc6ce4a715dfc0c1"
+
+[[package]]
 name = "bstr"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -158,7 +164,7 @@ version = "3.2.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "71655c45cb9845d3270c9d6df84ebe72b4dad3c2ba3f7023ad47c144e4e473a5"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
  "clap_lex 0.2.4",
  "indexmap",
  "textwrap",
@@ -166,11 +172,11 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.1.10"
+version = "4.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce38afc168d8665cfc75c7b1dd9672e50716a137f433f070991619744a67342a"
+checksum = "42dfd32784433290c51d92c438bb72ea5063797fc3cc9a21a8c4346bebbb2098"
 dependencies = [
- "bitflags",
+ "bitflags 2.0.2",
  "clap_derive",
  "clap_lex 0.3.3",
  "is-terminal",
@@ -525,9 +531,9 @@ dependencies = [
 
 [[package]]
 name = "io-lifetimes"
-version = "1.0.7"
+version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76e86b86ae312accbf05ade23ce76b625e0e47a255712b7414037385a1c05380"
+checksum = "09270fd4fa1111bc614ed2246c7ef56239a3063d5be0d1ec3b589c505d400aeb"
 dependencies = [
  "hermit-abi 0.3.1",
  "libc",
@@ -536,9 +542,9 @@ dependencies = [
 
 [[package]]
 name = "is-terminal"
-version = "0.4.4"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21b6b32576413a8e69b90e952e4a026476040d81017b80445deda5f2d3921857"
+checksum = "8687c819457e979cc940d09cb16e42a1bf70aa6b60a549de6d3a62a0ee90c69e"
 dependencies = [
  "hermit-abi 0.3.1",
  "io-lifetimes",
@@ -645,9 +651,9 @@ checksum = "0ab1bc2a289d34bd04a330323ac98a1b4bc82c9d9fcb1e66b63caa84da26b575"
 
 [[package]]
 name = "os_str_bytes"
-version = "6.4.1"
+version = "6.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b7820b9daea5457c9f21c69448905d723fbd21136ccf521748f23fd49e723ee"
+checksum = "ceedf44fb00f2d1984b0bc98102627ce622e083e49a5bacdb3e514fa4238e267"
 
 [[package]]
 name = "output_vt100"
@@ -808,7 +814,7 @@ version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fb5a58c1855b4b6819d59012155603f0b22ad30cad752600aadfcb695265519a"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
 ]
 
 [[package]]
@@ -836,11 +842,11 @@ checksum = "456c603be3e8d448b072f410900c09faf164fbce2d480456f50eea6e25f9c848"
 
 [[package]]
 name = "rustix"
-version = "0.36.9"
+version = "0.36.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd5c6ff11fecd55b40746d1995a02f2eb375bf8c00d192d521ee09f42bef37bc"
+checksum = "2fe885c3a125aa45213b68cc1472a49880cb5923dc23f522ad2791b882228778"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
  "errno",
  "io-lifetimes",
  "libc",
@@ -871,22 +877,22 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "serde"
-version = "1.0.157"
+version = "1.0.158"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "707de5fcf5df2b5788fca98dd7eab490bc2fd9b7ef1404defc462833b83f25ca"
+checksum = "771d4d9c4163ee138805e12c710dd365e4f44be8be0503cb1bb9eb989425d9c9"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.157"
+version = "1.0.158"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "78997f4555c22a7971214540c4a661291970619afd56de19f77e0de86296e1e5"
+checksum = "e801c1712f48475582b7696ac71e0ca34ebb30e09338425384269d9717c62cad"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.0",
+ "syn 2.0.3",
 ]
 
 [[package]]
@@ -928,9 +934,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.0"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4cff13bb1732bccfe3b246f3fdb09edfd51c01d6f5299b7ccd9457c2e4e37774"
+checksum = "e8234ae35e70582bfa0f1fedffa6daa248e41dd045310b19800c4a36382c8f60"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1059,7 +1065,7 @@ name = "topiary-cli"
 version = "0.1.0"
 dependencies = [
  "assert_cmd",
- "clap 4.1.10",
+ "clap 4.1.11",
  "env_logger",
  "log",
  "tempfile",
@@ -1122,7 +1128,7 @@ dependencies = [
 [[package]]
 name = "tree-sitter-nickel"
 version = "0.0.1"
-source = "git+https://github.com/nickel-lang/tree-sitter-nickel#d6c7eeb751038f934b5b1aa7ff236376d0235c56"
+source = "git+https://github.com/nickel-lang/tree-sitter-nickel?rev=fc0c53e#fc0c53ec2fda2f259079a1caea4a1ffe99a0d227"
 dependencies = [
  "cc",
  "tree-sitter",
