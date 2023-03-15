@@ -33,6 +33,7 @@
 
             async function runFormat() {
                 try {
+                    output.value = "Formatting ...";
                     output.value = await format(input.value, query.value);
                 } catch (e) {
                     output.value = e;
