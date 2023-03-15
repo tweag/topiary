@@ -39,10 +39,13 @@ tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml" }
 # We should be able to remove these when we have moved to workspaces.
 windows_i686_gnu = "0.42.2"
 windows_i686_msvc = "0.42.2"
+windows_x86_64_gnu = "0.42.2"
+windows_x86_64_gnullvm = "0.42.2"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 futures = "0.3.26"
 tokio = { version = "^1.26.0", features = ["rt", "macros"] }
+wasm-bindgen = "0.2.84"
 web-tree-sitter = { git = "https://github.com/tweag/web-tree-sitter-sys", package = "web-tree-sitter-sys", default-features = false, features = ["web"] }
 
 # These don't belong here, but `nix build .#web-playground` fails without them.

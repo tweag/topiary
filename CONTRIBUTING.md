@@ -71,3 +71,16 @@ In order to build or update the Wasm playground, you can run this:
 ```bash
 ./update-web-playground.sh
 ```
+
+If you need to add or update Tree-sitter grammar Wasm files, you can do it like
+this (using JSON as an example):
+
+1. Make sure you have Docker running.
+2. npm install --save-dev tree-sitter-cli tree-sitter-json
+3. npm install --save-dev tree-sitter-json
+4. Alternatively, clone a Git repo with the grammars and copy it into `node_modules`.
+5. Make sure you have a file at
+   `node_modules/tree-sitter-json/src/grammar.json`. In case of OCaml, you have
+   to copy some directories (you also have to move a `common` directory).
+6. npx tree-sitter build-wasm node_modules/tree-sitter-json
+7. mv tree-sitter-json.wasm website/playground/scripts/

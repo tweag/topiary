@@ -1,5 +1,6 @@
+use std::error::Error;
 use std::panic;
-use topiary::{formatter, Configuration, Language, Operation};
+use topiary::{formatter, Configuration, FormatterError, FormatterResult, Language, Operation};
 use tree_sitter_facade::TreeSitter;
 use wasm_bindgen::prelude::*;
 
@@ -21,15 +22,17 @@ pub async fn topiary_init() {
 }
 
 #[wasm_bindgen]
-pub async fn format(input: &str, query: &str) -> String {
+pub async fn format(input: &str, query: &str) -> Result<String, JsError> {
+    Ok(format_inner(input, query).await.map_err(format_error)?)
+}
+
+async fn format_inner(input: &str, query: &str) -> FormatterResult<String> {
     let mut output = Vec::new();
 
-    let mut configuration = Configuration::parse(&query).unwrap();
-    configuration.language = Language::Json;
+    let mut configuration = Configuration::parse(&query)?;
+    let grammars = configuration.language.grammars().await?;
 
-    let grammars = configuration.language.grammars().await.unwrap();
-
-    match formatter(
+    formatter(
         &mut input.as_bytes(),
         &mut output,
         query,
@@ -38,8 +41,19 @@ pub async fn format(input: &str, query: &str) -> String {
         Operation::Format {
             skip_idempotence: true,
         },
-    ) {
-        Ok(()) => String::from_utf8(output).unwrap(),
-        Err(e) => "error".to_string(),
+    )?;
+
+    Ok(String::from_utf8(output)?)
+}
+
+fn format_error(e: FormatterError) -> JsError {
+    let mut message: String = format!("{e}");
+    let mut inner: &dyn std::error::Error = &e;
+
+    while let Some(source) = inner.source() {
+        message += &format!("\nCause: {source}");
+        inner = source;
     }
+
+    JsError::new(&message)
 }
