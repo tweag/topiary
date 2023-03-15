@@ -30,8 +30,6 @@ async fn format_inner(input: &str, query: &str) -> FormatterResult<String> {
     let mut output = Vec::new();
 
     let mut configuration = Configuration::parse(&query)?;
-    configuration.language = Language::Json;
-
     let grammars = configuration.language.grammars().await?;
 
     formatter(
