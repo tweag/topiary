@@ -13,7 +13,10 @@ use std::{
 use clap::{ArgGroup, Parser};
 
 use crate::{
-    error::CLIResult, output::OutputFile, supported::SupportedLanguage, visualise::Visualisation,
+    error::{CLIError, CLIResult, TopiaryError},
+    output::OutputFile,
+    supported::SupportedLanguage,
+    visualise::Visualisation,
 };
 use topiary::{formatter, Configuration, Language, Operation};
 
@@ -113,13 +116,19 @@ async fn run() -> CLIResult<()> {
         unreachable!();
     };
 
-    let query = {
+    let query = (|| {
         let mut reader = BufReader::new(File::open(&query_path)?);
         let mut contents = String::new();
         reader.read_to_string(&mut contents)?;
 
-        contents
-    };
+        Ok(contents)
+    })()
+    .map_err(|e| {
+        TopiaryError::Bin(
+            "Could not open query file".into(),
+            Some(CLIError::IOError(e)),
+        )
+    })?;
 
     let mut configuration = Configuration::parse(&query)?;
 

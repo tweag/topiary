@@ -33,7 +33,7 @@ impl error::Error for TopiaryError {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self {
             Self::Lib(error) => error.source(),
-            Self::Bin(_, Some(CLIError::IOError(error))) => error.source(),
+            Self::Bin(_, Some(CLIError::IOError(error))) => Some(error),
             Self::Bin(_, Some(CLIError::Generic(error))) => error.source(),
             Self::Bin(_, None) => None,
         }
