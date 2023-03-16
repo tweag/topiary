@@ -24,7 +24,7 @@ let
         "languages"
         "src"
         "tests"
-        "web-playground"
+        "web-playground/wasm-app"
       ];
     };
 
@@ -79,7 +79,7 @@ in
 
   web-playground = craneLibWasm.buildPackage (commonArgs // {
     inherit cargoArtifacts;
-    cargoExtraArgs = "--manifest-path=web-playground/Cargo.toml --target ${wasmTarget}";
+    cargoExtraArgs = "--manifest-path=web-playground/wasm-app/Cargo.toml --target ${wasmTarget}";
     
     # Tests currently need to be run via `cargo wasi` which
     # isn't packaged in nixpkgs yet...
@@ -90,7 +90,7 @@ in
       rm -rf $out/lib
       echo 'Running wasm-bindgen'
       wasm-bindgen --version
-      wasm-bindgen --target web --out-dir $out web-playground/target/wasm32-unknown-unknown/release/topiary_playground.wasm;
+      wasm-bindgen --target web --out-dir $out web-playground/wasm-app/target/wasm32-unknown-unknown/release/topiary_playground.wasm;
       echo 'Running wasm-opt'
       wasm-opt --version
       wasm-opt -Oz -o $out/output.wasm $out/topiary_playground_bg.wasm
