@@ -1,8 +1,11 @@
+import { useState } from "react";
 import "./App.css";
 
 function App() {
+    const [output, setOutput] = useState("");
+
     function format() {
-        output = "Formatting ...";
+        setOutput("Formatting ...");
     }
 
     return (
@@ -23,7 +26,7 @@ function App() {
                 </div>
                 <div className="column">
                     <h1>Output</h1>
-                    <textarea value={output}></textarea>
+                    <textarea value={output} readOnly></textarea>
                 </div>
             </div>
         </div>
