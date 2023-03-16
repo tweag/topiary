@@ -31,7 +31,9 @@ jobs:
         run: nix build .#wasm-app
 
       - name: Copy web playground Wasm app into playground frontend
-        run: cp -r result web-playground/react-app/src/wasm-app
+        run: |
+          mkdir -p web-playground/react-app/src/wasm-app
+          cp -r result/* web-playground/react-app/src/wasm-app/
 
       - name: Install web playground frontend dependencies
         run: npm install --prefix web-playground/react-app
