@@ -8,7 +8,7 @@ use std::{
     fs::File,
     io::{stdin, BufReader, BufWriter, Read},
     path::PathBuf,
-    process::ExitCode
+    process::ExitCode,
 };
 
 use clap::{ArgGroup, Parser};
