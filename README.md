@@ -181,6 +181,22 @@ Language selection is based on precedence, in the following order:
 * Detected from the input file's extension
 * A specified query file
 
+#### Exit Codes
+
+The Topiary process will exit with a zero exit code upon successful
+formatting. Otherwise, the following exit codes are defined:
+
+| Reason                       | Code |
+| :--------------------------- | ---- |
+| Unspecified error            |    1 |
+| CLI argument parsing error   |    2 |
+| I/O error                    |    3 |
+| Topiary query error          |    4 |
+| Source parsing error         |    5 |
+| Language detection error     |    6 |
+| Idempotency error            |    7 |
+| Unspecified formatting error |    8 |
+
 #### Example
 
 Once built, the program can be run like this:
