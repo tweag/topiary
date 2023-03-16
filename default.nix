@@ -77,7 +77,7 @@ in
     '';
   });
 
-  web-playground = craneLibWasm.buildPackage (commonArgs // {
+  wasm-app = craneLibWasm.buildPackage (commonArgs // {
     inherit cargoArtifacts;
     cargoExtraArgs = "--manifest-path=web-playground/wasm-app/Cargo.toml --target ${wasmTarget}";
     

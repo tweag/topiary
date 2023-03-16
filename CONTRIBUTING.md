@@ -69,7 +69,7 @@ The web site should then be running on http://localhost:8080.
 In order to build or update the Wasm playground, you can run this:
 
 ```bash
-./update-web-playground.sh
+./update-wasm-app.sh
 ```
 
 If you need to add or update Tree-sitter grammar Wasm files, you can do it like

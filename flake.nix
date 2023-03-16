@@ -37,7 +37,7 @@
       in
       {
         packages = with code; {
-          inherit web-playground;
+          inherit wasm-app;
           default = app;
         };
         checks = with code; {
