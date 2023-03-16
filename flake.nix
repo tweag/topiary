@@ -9,7 +9,7 @@
       "tweag-topiary.cachix.org-1:8TKqya43LAfj4qNHnljLpuBnxAY/YwEBfzo3kzXxNY0="
     ];
   };
-  
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
@@ -34,7 +34,8 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         code = pkgs.callPackage ./. { inherit nixpkgs system advisory-db crane rust-overlay nix-filter; };
-      in {
+      in
+      {
         packages = with code; {
           inherit web-playground;
           default = app;
@@ -48,17 +49,28 @@
           enable = true;
           name = "topiary";
           description = "A general code formatter based on tree-sitter.";
-          entry = let
-            topiary-inplace = pkgs.writeShellApplication {
-              name = "topiary-inplace";
-              text = ''
-                for file; do
-                  ${code.app}/bin/topiary --in-place --input-file "$file"
-                done
-              '';
-            };
-          in "${topiary-inplace}/bin/topiary-inplace";
-          files = "(\\.json$)|(\\.toml$)|(\\.mli?$)";
+          entry =
+            let
+              topiary-inplace = pkgs.writeShellApplication {
+                name = "topiary-inplace";
+                text = ''
+                  for FILE; do
+                    if ${code.app}/bin/topiary --in-place --input-file "$FILE"; then
+                      continue
+                    else
+                      EXIT=$?
+                      if (( EXIT == 6 )); then
+                        continue
+                      else
+                        exit $EXIT
+                      fi
+                    fi
+                  done
+                '';
+              };
+            in
+            "${topiary-inplace}/bin/topiary-inplace";
+          types = [ "text" ];
         };
       }
     );
