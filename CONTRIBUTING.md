@@ -84,3 +84,10 @@ this (using JSON as an example):
    to copy some directories (you also have to move a `common` directory).
 6. npx tree-sitter build-wasm node_modules/tree-sitter-json
 7. mv tree-sitter-json.wasm website/playground/scripts/
+
+The playground frontend is a small React app. You can run a development server for that like this:
+
+```bash
+cd web-playground/react-app
+npm start
+```
