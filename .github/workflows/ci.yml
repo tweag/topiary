@@ -34,10 +34,10 @@ jobs:
         run: cp -r result web-playground/react-app/src
 
       - name: Install web playground frontend dependencies
-        run: nix develop -c npm install --prefix web-playground/react-app
+        run: npm install --prefix web-playground/react-app
 
       - name: Build web playground frontend
-        run: nix develop -c npm run build --prefix web-playground/react-app
+        run: npm run build --prefix web-playground/react-app
 
       - name: Copy playground into website
         run: |
