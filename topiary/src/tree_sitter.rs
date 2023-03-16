@@ -131,6 +131,9 @@ pub fn apply_query(
         for p in query.general_predicates(m.pattern_index) {
             predicates = handle_predicate(&p, &predicates)?;
         }
+        if predicates.single_line_only && predicates.multi_line_only {
+            log::warn!("Both predicates #single_line_only! and #multi_line_only! have been set: this query won't do anything")
+        }
 
         // If any capture is a do_nothing, then do nothing.
         if m.captures
@@ -244,6 +247,16 @@ fn handle_predicate(
             })?;
         Ok(QueryPredicates {
             scope_id: Some(arg),
+            ..predicates.clone()
+        })
+    } else if let "single_line_only!" = operator {
+        Ok(QueryPredicates {
+            single_line_only: true,
+            ..predicates.clone()
+        })
+    } else if let "multi_line_only!" = operator {
+        Ok(QueryPredicates {
+            multi_line_only: true,
             ..predicates.clone()
         })
     } else {
