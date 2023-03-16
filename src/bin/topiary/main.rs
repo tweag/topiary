@@ -8,6 +8,7 @@ use std::{
     fs::File,
     io::{stdin, BufReader, BufWriter, Read},
     path::PathBuf,
+    process::ExitCode,
 };
 
 use clap::{ArgGroup, Parser};
@@ -68,11 +69,13 @@ struct Args {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> ExitCode {
     if let Err(e) = run().await {
         print_error(&e);
-        std::process::exit(1);
+        return e.into();
     }
+
+    ExitCode::SUCCESS
 }
 
 async fn run() -> CLIResult<()> {

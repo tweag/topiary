@@ -1,4 +1,4 @@
-use std::{error, fmt, io, result};
+use std::{error, fmt, io, process::ExitCode, result};
 use topiary::FormatterError;
 
 /// A convenience wrapper around `std::result::Result<T, TopiaryError>`.
@@ -37,6 +37,39 @@ impl error::Error for TopiaryError {
             Self::Bin(_, Some(CLIError::Generic(error))) => error.source(),
             Self::Bin(_, None) => None,
         }
+    }
+}
+
+impl From<TopiaryError> for ExitCode {
+    fn from(e: TopiaryError) -> Self {
+        let exit_code = match e {
+            // Formatting errors: Exit 8
+            TopiaryError::Lib(FormatterError::Formatting(_)) => 8,
+
+            // Idempotency errors: Exit 7
+            TopiaryError::Lib(FormatterError::Idempotence) => 7,
+
+            // Language detection errors: Exit 6
+            TopiaryError::Lib(FormatterError::LanguageDetection(_, _)) => 6,
+
+            // Parsing errors: Exit 5
+            TopiaryError::Lib(FormatterError::Parsing { .. }) => 5,
+
+            // Query errors: Exit 4
+            TopiaryError::Lib(FormatterError::Query(_, _)) => 4,
+
+            // I/O errors: Exit 3
+            TopiaryError::Lib(FormatterError::Io(_)) => 3,
+            TopiaryError::Bin(_, Some(CLIError::IOError(_))) => 3,
+
+            // Bad arguments: Exit 2
+            // (Handled by clap: https://github.com/clap-rs/clap/issues/3426)
+
+            // Anything else: Exit 1
+            _ => 1,
+        };
+
+        ExitCode::from(exit_code)
     }
 }
 
