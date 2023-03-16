@@ -1,9 +1,9 @@
 ; Configuration
 (#language! nickel)
 
-; Sometimes we want to indicate that certain parts of our source text should
-; not be formatted, but taken as is. We use the leaf capture name to inform the
-; tool of this.
+;; General
+
+; The following nodes in our source text should not be formatted
 [
   (static_string)
   (str_chunks_single)
@@ -11,16 +11,14 @@
   (builtin)
 ] @leaf
 
-; Allow blank line before
+; Allow a blank line before the following nodes
 [
   (comment)
   (record_field)
   (record_last_field)
 ] @allow_blank_line_before
 
-; Surround spaces
-; A space is put after, and before keywords.
-; It is also put before and after "|", ":" and "?" separating annotation from the annotated object.
+; Surround with spaces: keywords, operators, annotation markers
 (
   [
     "if"
@@ -55,7 +53,7 @@
     "->"
     (interpolation_start)
     (interpolation_end)
-    ;  We put spaces around infix operators
+    ; Infix operators
     "++"
     "@"
     "*"
@@ -81,14 +79,76 @@
 
 (comment) @prepend_input_softline @append_hardline
 
-;;
+;; Symbol Definitions
+; i.e., Let bindings and record fields
+
+; Create a scope that covers all annotation atoms, if any,
+; which are children of the (annot) node, *and* the equal sign
+;
+; NOTE This query will only match when annotations are present; thus a
+; "bare" signature, with just an equal sign, will not get a softline,
+; regardless of context. This behaviour can be changed by quantifying
+; the (annot) node with the Kleene star; with the consequence of keeping
+; the signature together if it's written on one line (albeit a different
+; one to the defined symbol). For example:
+;
+;   {
+;     foo
+;       | some | annotations = 1
+;   }
+;
+; The unquantified behaviour is probably a better trade-off, as bare
+; signatures are short and so more conducive to a single-line.
+;
+;   {
+;     foo
+;       | some
+;       | annotations
+;       = 1
+;   }
+(
+  (#scope_id! "signature")
+
+  _ @begin_scope
+  .
+  (annot)
+  .
+  "=" @end_scope
+)
+
+; Put each component of the signature on a new line,
+; in a multi-line context
+(
+  (#scope_id! "signature")
+
+  [
+    (annot_atom)
+    "="
+  ] @prepend_spaced_scoped_softline
+)
+
+; Start an indentation block after the first named child of a
+; definition, up 'til the end of that definition
+(let_in_block
+  .
+  (_) @append_indent_start
+  "in" @prepend_indent_end
+  .
+)
+
+(record_field
+  .
+  (_) @append_indent_start
+) @append_indent_end
+
+;; TIDY FROM HERE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (let_expr
   (let_in_block) @append_spaced_softline
 )
 
 (let_in_block
-  "=" @append_spaced_softline @append_indent_start
+  "=" @append_indent_start ; @append_spaced_softline
   .
   t1: (_) @append_indent_end @append_spaced_softline
 )
