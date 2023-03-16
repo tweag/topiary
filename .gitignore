@@ -2,5 +2,4 @@ target
 /result
 /.envrc
 /.direnv
-/website/playground/wasm-app
 *.profraw
