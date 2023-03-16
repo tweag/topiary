@@ -5,7 +5,11 @@ use tree_sitter_facade::{
     Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryPredicate, Tree,
 };
 
-use crate::{atom_collection::AtomCollection, error::FormatterError, FormatterResult};
+use crate::{
+    atom_collection::{AtomCollection, QueryPredicates},
+    error::FormatterError,
+    FormatterResult,
+};
 
 /// Supported visualisation formats
 #[derive(Clone, Copy, Debug)]
@@ -122,16 +126,10 @@ pub fn apply_query(
     for m in matches {
         log::debug!("Processing match: {m:?}");
 
-        let mut delimiter: Option<String> = None;
-        let mut scope_id: Option<String> = None;
+        let mut predicates = QueryPredicates::default();
 
         for p in query.general_predicates(m.pattern_index) {
-            if let Some(d) = handle_delimiter_predicate(&p)? {
-                delimiter = Some(d);
-            }
-            if let Some(d) = handle_scope_id_predicate(&p)? {
-                scope_id = Some(d);
-            }
+            predicates = handle_predicate(&p, &predicates)?;
         }
 
         // If any capture is a do_nothing, then do nothing.
@@ -145,7 +143,7 @@ pub fn apply_query(
 
         for c in m.captures {
             let name = c.name(&capture_names);
-            atoms.resolve_capture(&name, &c.node(), delimiter.as_deref(), scope_id.as_deref())?;
+            atoms.resolve_capture(&name, &c.node(), &predicates)?;
         }
     }
 
@@ -225,34 +223,30 @@ fn collect_leaf_ids(matches: &Vec<LocalQueryMatch>, capture_names: &[String]) ->
     ids
 }
 
-// TODO: Deduplicate these.
-
-fn handle_delimiter_predicate(predicate: &QueryPredicate) -> FormatterResult<Option<String>> {
+fn handle_predicate(
+    predicate: &QueryPredicate,
+    predicates: &QueryPredicates,
+) -> FormatterResult<QueryPredicates> {
     let operator = &*predicate.operator();
-
     if let "delimiter!" = operator {
         let arg =
             predicate.args().into_iter().next().ok_or_else(|| {
                 FormatterError::Query(format!("{operator} needs an argument"), None)
             })?;
-
-        Ok(Some(arg))
-    } else {
-        Ok(None)
-    }
-}
-
-fn handle_scope_id_predicate(predicate: &QueryPredicate) -> FormatterResult<Option<String>> {
-    let operator = &*predicate.operator();
-
-    if let "scope_id!" = operator {
+        Ok(QueryPredicates {
+            delimiter: Some(arg),
+            ..predicates.clone()
+        })
+    } else if let "scope_id!" = operator {
         let arg =
             predicate.args().into_iter().next().ok_or_else(|| {
                 FormatterError::Query(format!("{operator} needs an argument"), None)
             })?;
-
-        Ok(Some(arg))
+        Ok(QueryPredicates {
+            scope_id: Some(arg),
+            ..predicates.clone()
+        })
     } else {
-        Ok(None)
+        Ok(predicates.clone())
     }
 }

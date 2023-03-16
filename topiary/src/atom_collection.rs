@@ -65,18 +65,17 @@ impl AtomCollection {
         &mut self,
         name: &str,
         node: &Node,
-        delimiter: Option<&str>,
-        scope_id: Option<&str>,
+        predicates: &QueryPredicates,
     ) -> FormatterResult<()> {
         log::debug!("Resolving {name}");
 
         let requires_delimiter = || {
-            delimiter.ok_or_else(|| {
+            predicates.delimiter.as_deref().ok_or_else(|| {
                 FormatterError::Query(format!("@{name} requires a #delimiter! predicate"), None)
             })
         };
         let requires_scope_id = || {
-            scope_id.ok_or_else(|| {
+            predicates.scope_id.as_deref().ok_or_else(|| {
                 FormatterError::Query(format!("@{name} requires a #scope_id! predicate"), None)
             })
         };
@@ -745,6 +744,13 @@ impl AtomCollection {
         self.counter += 1;
         self.counter
     }
+}
+
+#[derive(Clone, Debug, Default)]
+// A struct to store query predicates that are relevant to Topiary
+pub struct QueryPredicates {
+    pub delimiter: Option<String>,
+    pub scope_id: Option<String>,
 }
 
 fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
