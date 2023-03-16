@@ -27,11 +27,22 @@ jobs:
       - name: Build and test executable
         run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- -l json'
 
-      - name: Build web playground
-        run: nix build .#web-playground
+      - name: Build web playground Wasm app
+        run: nix build .#wasm-app
 
-      - name: Copy web playground into website
-        run: cp -r result website/playground/wasm-app
+      - name: Copy web playground Wasm app into playground frontend
+        run: cp -r result web-playground/react-app/src
+
+      - name: Install web playground frontend dependencies
+        run: nix develop -c npm install --prefix web-playground/react-app
+
+      - name: Build web playground frontend
+        run: nix develop -c npm run build --prefix web-playground/react-app
+
+      - name: Copy playground into website
+        run: |
+          rm -rf website/playground
+          cp -r web-playground/react-app/build website/playground
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v1.0.7
