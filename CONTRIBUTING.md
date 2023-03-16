@@ -91,3 +91,11 @@ The playground frontend is a small React app. You can run a development server f
 cd web-playground/react-app
 npm start
 ```
+
+If you want to build the playground so it works with the full website running with Deno as above,
+you can do:
+
+```bash
+cd web-playground/react-app
+npm run build
+```
