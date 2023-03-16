@@ -63,7 +63,7 @@ impl From<TopiaryError> for ExitCode {
             TopiaryError::Bin(_, Some(CLIError::IOError(_))) => 3,
 
             // Bad arguments: Exit 2
-            // (Handled by clap)
+            // (Handled by clap: https://github.com/clap-rs/clap/issues/3426)
 
             // Anything else: Exit 1
             _ => 1,

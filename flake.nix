@@ -60,6 +60,7 @@
                     else
                       EXIT=$?
                       if (( EXIT == 6 )); then
+                        # Skip over language detection errors
                         continue
                       else
                         exit $EXIT
