@@ -18,14 +18,6 @@
   (record_last_field)
 ] @allow_blank_line_before
 
-(comment) @prepend_input_softline
-
-(
-  (comment) @append_input_softline
-  .
-  ["," ";"]* @do_nothing
-)
-
 ; Surround spaces
 ; A space is put after, and before keywords.
 ; It is also put before and after "|", ":" and "?" separating annotation from the annotated object.
@@ -84,6 +76,12 @@
     "||"
   ] @prepend_space @append_space
 )
+
+;; Comments
+
+(comment) @prepend_input_softline @append_hardline
+
+;;
 
 (let_expr
   (let_in_block) @append_spaced_softline
