@@ -80,6 +80,22 @@ impl AtomCollection {
             })
         };
 
+        let mut is_multi_line = false;
+        if let Some(parent) = node.parent() {
+            let parent_id = parent.id();
+            if self.multi_line_nodes.contains(&parent_id) {
+                is_multi_line = true
+            }
+        }
+        if is_multi_line && predicates.single_line_only {
+            log::debug!("Aborting because context is multi-line and #single_line_only! is set");
+            return Ok(())
+        }
+        if !is_multi_line && predicates.multi_line_only {
+            log::debug!("Aborting because context is single-line and #multi_line_only! is set");
+            return Ok(())
+        }
+
         match name {
             "allow_blank_line_before" => {
                 if self.blank_lines_before.contains(&node.id()) {
@@ -751,6 +767,8 @@ impl AtomCollection {
 pub struct QueryPredicates {
     pub delimiter: Option<String>,
     pub scope_id: Option<String>,
+    pub single_line_only: bool,
+    pub multi_line_only: bool,
 }
 
 fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
