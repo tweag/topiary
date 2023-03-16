@@ -86,6 +86,7 @@ stated design goals. They are exposed, in Topiary, through a command
 line flag.
 
 * [OCaml] (both implementations and interfaces)
+* [Nickel]
 * [JSON]
 * [TOML]
 
@@ -97,7 +98,6 @@ specifying the path to their query files.
 
 * [Rust]
 * [Bash]
-* [Nickel]
 * [Tree Sitter Queries][tree-sitter-query]
 
 ## Getting Started
@@ -146,8 +146,8 @@ pre-commit-check = nix-pre-commit-hooks.run {
 Options:
 
 * `-l`, `--language <LANGUAGE>`\
-  Which language to parse and format [possible values: `json`, `toml`,
-  `ocaml`, `ocaml-implementation`, `ocaml-interface`].
+  Which language to parse and format [possible values: `json`, `nickel`,
+  `ocaml`, `ocaml-implementation`, `ocaml-interface`, `toml`].
 
 * `-f`, `--input-file <INPUT_FILE>`\
   Path to an input file. If omitted, or equal to "-", read from standard
