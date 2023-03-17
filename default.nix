@@ -72,6 +72,12 @@ in
     cargoTestCommand = "cargo bench --profile release";
   });
 
+  topiary = craneLib.buildPackage (commonArgs // {
+    inherit cargoArtifacts;
+    pname = "topiary";
+    cargoExtraArgs = "-p topiary";
+  });
+
   topiary-cli = craneLib.buildPackage (commonArgs // {
     inherit cargoArtifacts;
     pname = "topiary-cli";
@@ -91,7 +97,7 @@ in
     '';
   });
 
-  wasm-app = craneLibWasm.buildPackage (commonArgs // {
+  topiary-playground = craneLibWasm.buildPackage (commonArgs // {
     inherit cargoArtifacts;
     pname = "topiary-playground";
     cargoExtraArgs = "-p topiary-playground --target ${wasmTarget}";

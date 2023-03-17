@@ -37,11 +37,11 @@
       in
       {
         packages = with code; {
-          inherit wasm-app;
+          inherit topiary-playground;
           default = topiary-cli;
         };
         checks = with code; {
-          inherit topiary-cli clippy-topiary clippy-cli clippy-wasm fmt audit benchmark;
+          inherit clippy-topiary clippy-cli clippy-wasm fmt topiary topiary-cli topiary-playground audit benchmark;
         };
 
         ## For easy use in https://github.com/cachix/pre-commit-hooks.nix
