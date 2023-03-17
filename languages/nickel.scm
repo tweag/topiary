@@ -83,7 +83,8 @@
 ; i.e., Let bindings and record fields
 
 ; Create a scope that covers all annotation atoms, if any,
-; which are children of the (annot) node, *and* the equal sign
+; which are children of the (annot) node, *and* the equal sign. This
+; also defines an indentation block.
 ;
 ; NOTE This query will only match when annotations are present; thus a
 ; "bare" signature, with just an equal sign, will not get a softline,
@@ -108,12 +109,11 @@
 ;   }
 (
   (#scope_id! "signature")
-
   _ @begin_scope
   .
-  (annot)
+  (annot) @prepend_indent_start
   .
-  "=" @end_scope
+  "=" @append_indent_end @end_scope
 )
 
 ; Put each annotation and the equals sign on a new line, in a multi-line
@@ -134,26 +134,11 @@
 ;   }
 (
   (#scope_id! "signature")
-
   [
     (annot_atom "|")
     "="
   ] @prepend_spaced_scoped_softline
 )
-
-; Start an indentation block after the first named child of a
-; definition, up 'til the end of that definition
-(let_in_block
-  .
-  (_) @append_indent_start
-  "in" @prepend_indent_end
-  .
-)
-
-(record_field
-  .
-  (_) @append_indent_start
-) @append_indent_end
 
 ;; TIDY FROM HERE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -162,7 +147,7 @@
 )
 
 (let_in_block
-  "=" @append_indent_start ; @append_spaced_softline
+  "=" @append_input_softline @append_indent_start
   .
   t1: (_) @append_indent_end @append_spaced_softline
 )
