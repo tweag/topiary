@@ -100,7 +100,7 @@ in
   topiary-playground = craneLibWasm.buildPackage (commonArgs // {
     inherit cargoArtifacts;
     pname = "topiary-playground";
-    cargoExtraArgs = "-p topiary-playground --target ${wasmTarget}";
+    cargoExtraArgs = "-p topiary-playground --no-default-features --target ${wasmTarget}";
     
     # Tests currently need to be run via `cargo wasi` which
     # isn't packaged in nixpkgs yet...

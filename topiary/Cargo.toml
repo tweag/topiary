@@ -35,10 +35,6 @@ web-tree-sitter = { git = "https://github.com/tweag/web-tree-sitter-sys", packag
 criterion = { version = "0.4", features=["async_futures"] }
 tokio-test = "0.4.2"
 
-# These don't belong here, but `nix build .#web-playground` fails without them.
-# Can possibly be removed when we have moved to workspaces.
-wasm-bindgen-test = "0.3.34"
-
 [[bench]]   
 name = "benchmark"
 harness = false

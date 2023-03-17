@@ -13,32 +13,10 @@ path = "src/main.rs"
 # Eventually we will want to dynamically load them, like Helix does.
 clap = { version = "4.1", features = ["derive"] }
 env_logger = "0.10"
-itertools = "0.10"
 log = "0.4"
-pretty_assertions = "1.3"
-regex = "1.7.1"
-serde = { version = "1.0.156", features = ["derive"] }
-serde_json = "1.0"
-test-log = "0.2"
-tree-sitter-facade = { git = "https://github.com/tweag/tree-sitter-facade" }
 tempfile = "3.4.0"
 tokio = { version = "^1.26.0", features = ["rt-multi-thread", "macros"] }
 topiary = { path = "../topiary" }
-tree-sitter-json = "0.19"
-tree-sitter-rust = "0.20.3"
-tree-sitter-toml = "0.20.0"
-tree-sitter-bash = { git = "https://github.com/tree-sitter/tree-sitter-bash" }
-tree-sitter-nickel = { git = "https://github.com/nickel-lang/tree-sitter-nickel" }
-tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-query" }
-# Needs a version > 0.19
-tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml" }
-# Crane (Nix) seems to think these are needed for the Wasm build because of the tempfile dep.
-# We should be able to remove these when we have moved to workspaces.
-windows_i686_gnu = "0.42.2"
-windows_i686_msvc = "0.42.2"
-windows_x86_64_gnu = "0.42.2"
-windows_x86_64_gnullvm = "0.42.2"
 
 [dev-dependencies]
 assert_cmd = "2.0"
-tokio-test = "0.4.2"
