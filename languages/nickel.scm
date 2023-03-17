@@ -116,13 +116,27 @@
   "=" @end_scope
 )
 
-; Put each component of the signature on a new line,
-; in a multi-line context
+; Put each annotation and the equals sign on a new line, in a multi-line
+; context. Type annotations do not get a new line; this is because they
+; can be nested and it's not(?) possible to deduce the depth with
+; queries alone. For example:
+;
+;   {
+;     foo : { foo : String, bar : Number } = ...
+;   }
+;
+;   {
+;     foo : {
+;       foo : String,
+;       bar : Number
+;     }
+;     = ...
+;   }
 (
   (#scope_id! "signature")
 
   [
-    (annot_atom)
+    (annot_atom "|")
     "="
   ] @prepend_spaced_scoped_softline
 )
