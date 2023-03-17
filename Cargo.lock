@@ -1052,9 +1052,7 @@ dependencies = [
 name = "topiary"
 version = "0.1.0"
 dependencies = [
- "assert_cmd",
  "criterion",
- "env_logger",
  "futures",
  "itertools",
  "log",
@@ -1062,7 +1060,6 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
- "test-log",
  "tokio",
  "tokio-test",
  "tree-sitter-bash",
