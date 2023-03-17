@@ -1,7 +1,7 @@
 on: push
 
 jobs:
-  build:
+  setup:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -21,12 +21,23 @@ jobs:
           name: tweag-topiary
           authToken: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
+  native:
+    needs: setup
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
       - name: Clippy, test, and benchmark
         run: nix -L flake check
 
       - name: Build and test executable
         run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- -l json'
 
+  wasm:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
       - name: Build web playground Wasm app
         run: nix build .#wasm-app
 
@@ -53,7 +64,7 @@ jobs:
           path: 'website'
 
   deploy:
-    needs: build
+    needs: wasm
     if: github.ref == 'refs/heads/main'
 
     permissions:
