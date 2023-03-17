@@ -69,7 +69,7 @@ The web site should then be running on http://localhost:8080.
 In order to build or update the Wasm playground, you can run this:
 
 ```bash
-./update-web-playground.sh
+./update-wasm-app.sh
 ```
 
 If you need to add or update Tree-sitter grammar Wasm files, you can do it like
@@ -84,3 +84,18 @@ this (using JSON as an example):
    to copy some directories (you also have to move a `common` directory).
 6. npx tree-sitter build-wasm node_modules/tree-sitter-json
 7. mv tree-sitter-json.wasm website/playground/scripts/
+
+The playground frontend is a small React app. You can run a development server for that like this:
+
+```bash
+cd web-playground/react-app
+npm start
+```
+
+If you want to build the playground so it works with the full website running with Deno as above,
+you can do:
+
+```bash
+cd web-playground/react-app
+npm run build
+```
