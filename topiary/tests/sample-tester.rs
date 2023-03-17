@@ -49,7 +49,7 @@ async fn input_output_tester() {
 // Test that our query files are properly formatted
 #[tokio::test]
 async fn formatted_query_tester() {
-    let language_dir = fs::read_dir("languages").unwrap();
+    let language_dir = fs::read_dir("../languages").unwrap();
 
     for file in language_dir {
         let file = file.unwrap();

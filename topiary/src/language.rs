@@ -181,10 +181,11 @@ impl TryFrom<&Language> for PathBuf {
         .with_extension("scm");
 
         #[rustfmt::skip]
-        let potentials: [Option<PathBuf>; 3] = [
+        let potentials: [Option<PathBuf>; 4] = [
             std::env::var("TOPIARY_LANGUAGE_DIR").map(PathBuf::from).ok(),
             option_env!("TOPIARY_LANGUAGE_DIR").map(PathBuf::from),
             Some(PathBuf::from("./languages")),
+            Some(PathBuf::from("../languages")),
         ];
 
         potentials
