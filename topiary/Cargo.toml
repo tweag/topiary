@@ -10,11 +10,16 @@ crate-type = [
     "rlib" # for native
 ]
 
+[features]
+default = ["tree-sitter"]
+tree-sitter = ["tree-sitter-json", "tree-sitter-rust", "tree-sitter-toml", "tree-sitter-bash", "tree-sitter-nickel", "tree-sitter-query", "tree-sitter-ocaml", ]
+wasm = ["futures", "tokio/rt", "web-tree-sitter"]
+
 [dependencies]
 # For now we just load the tree-sitter language parsers statically.
 # Eventually we will want to dynamically load them, like Helix does.
-clap = { version = "4.1", features = ["derive"] }
 env_logger = "0.10"
+futures = { version = "0.3.27", optional = true }
 itertools = "0.10"
 log = "0.4"
 pretty_assertions = "1.3"
@@ -22,36 +27,17 @@ regex = "1.7.1"
 serde = { version = "1.0.156", features = ["derive"] }
 serde_json = "1.0"
 test-log = "0.2"
+tokio = { version = "^1.26.0", features = ["macros"] }
 tree-sitter-facade = { git = "https://github.com/tweag/tree-sitter-facade" }
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies] 
-tempfile = "3.4.0"
-tokio = { version = "^1.26.0", features = ["rt-multi-thread", "macros"] }
-tree-sitter-json = "0.19"
-tree-sitter-rust = "0.20.3"
-tree-sitter-toml = "0.20.0"
-tree-sitter-bash = { git = "https://github.com/tree-sitter/tree-sitter-bash" }
-tree-sitter-nickel = { git = "https://github.com/nickel-lang/tree-sitter-nickel" }
-tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-query" }
+tree-sitter-json = { version = "0.19", optional = true }
+tree-sitter-rust = { version = "0.20.3", optional = true }
+tree-sitter-toml = { version = "0.20.0", optional = true }
+tree-sitter-bash = { git = "https://github.com/tree-sitter/tree-sitter-bash", optional = true }
+tree-sitter-nickel = { git = "https://github.com/nickel-lang/tree-sitter-nickel", optional = true }
+tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-query", optional = true }
 # Needs a version > 0.19
-tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml" }
-# Crane (Nix) seems to think these are needed for the Wasm build because of the tempfile dep.
-# We should be able to remove these when we have moved to workspaces.
-windows_i686_gnu = "0.42.2"
-windows_i686_msvc = "0.42.2"
-windows_x86_64_gnu = "0.42.2"
-windows_x86_64_gnullvm = "0.42.2"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-futures = "0.3.26"
-tokio = { version = "^1.26.0", features = ["rt", "macros"] }
-wasm-bindgen = "0.2.84"
-web-tree-sitter = { git = "https://github.com/tweag/web-tree-sitter-sys", package = "web-tree-sitter-sys", default-features = false, features = ["web"] }
-
-# These don't belong here, but `nix build .#web-playground` fails without them.
-# Can possibly be removed when we have moved to workspaces.
-console_error_panic_hook = { version = "0.1.7", optional = true }
-wee_alloc = { version = "0.4.5", optional = true }
+tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml", optional = true }
+web-tree-sitter = { git = "https://github.com/tweag/web-tree-sitter-sys", package = "web-tree-sitter-sys", default-features = false, features = ["web"], optional = true }
 
 [dev-dependencies]
 assert_cmd = "2.0"

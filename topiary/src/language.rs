@@ -68,7 +68,7 @@ impl Language {
     ///
     /// Note that, currently, all grammars are statically linked. This will change once dynamic linking
     /// is implemented (see Issue #4).
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(feature = "tree-sitter")]
     pub async fn grammars(&self) -> FormatterResult<Vec<tree_sitter_facade::Language>> {
         Ok(match self {
             Language::Bash => vec![tree_sitter_bash::language()],
@@ -89,7 +89,7 @@ impl Language {
         .collect())
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn grammars(&self) -> FormatterResult<Vec<tree_sitter_facade::Language>> {
         use futures::future::join_all;
 

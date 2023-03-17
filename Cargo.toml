@@ -1,9 +1,9 @@
 [workspace]
 
 members = [
-    "cli",
     "topiary",
-    "wasm-app",
+    "topiary-cli",
+    "topiary-playground",
 ]
 
 [profile.release]

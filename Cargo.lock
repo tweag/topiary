@@ -1053,8 +1053,6 @@ name = "topiary"
 version = "0.1.0"
 dependencies = [
  "assert_cmd",
- "clap 4.1.8",
- "console_error_panic_hook",
  "criterion",
  "env_logger",
  "futures",
@@ -1064,7 +1062,6 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
- "tempfile",
  "test-log",
  "tokio",
  "tokio-test",
@@ -1076,14 +1073,8 @@ dependencies = [
  "tree-sitter-query",
  "tree-sitter-rust",
  "tree-sitter-toml",
- "wasm-bindgen",
  "wasm-bindgen-test",
  "web-tree-sitter-sys",
- "wee_alloc",
- "windows_i686_gnu",
- "windows_i686_msvc",
- "windows_x86_64_gnu",
- "windows_x86_64_gnullvm",
 ]
 
 [[package]]

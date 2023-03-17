@@ -12,13 +12,7 @@ default = ["console_error_panic_hook"]
 
 [dependencies]
 cfg-if = "1.0.0"
-<<<<<<<< HEAD:web-playground/wasm-app/Cargo.toml
-topiary = { path = "../.." }
-|||||||| parent of 20d4ba9 (Move to workspace.):web-playground/Cargo.toml
-topiary = { path = ".." }
-========
-topiary = { path = "../topiary" }
->>>>>>>> 20d4ba9 (Move to workspace.):wasm-app/Cargo.toml
+topiary = { path = "../topiary", default-features = false, features = ["wasm"] }
 tree-sitter-facade = { git = "https://github.com/tweag/tree-sitter-facade" }
 wasm-bindgen = "0.2.84"
 wasm-bindgen-futures = "0.4.34"

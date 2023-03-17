@@ -1,4 +1,3 @@
-use std::panic;
 use topiary::{formatter, Configuration, FormatterResult, Operation};
 use tree_sitter_facade::TreeSitter;
 use wasm_bindgen::prelude::*;
@@ -17,7 +16,7 @@ pub async fn topiary_init() -> Result<(), JsError> {
         }
     }
 
-    TreeSitter::init().await.map_err(|e| format_error(&*e))
+    TreeSitter::init().await
 }
 
 #[wasm_bindgen]
