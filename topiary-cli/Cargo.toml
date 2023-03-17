@@ -1,8 +1,12 @@
 [package]
 name = "topiary-cli"
-description = "Formats input source code in a style defined for that language."
+description = "CLI app for Topiary, the universal code formatter."
 version = "0.1.0"
 edition = "2021"
+
+[[bin]]
+name = "topiary"
+path = "src/main.rs"
 
 [dependencies]
 # For now we just load the tree-sitter language parsers statically.
