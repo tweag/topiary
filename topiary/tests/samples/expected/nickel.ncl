@@ -4,7 +4,11 @@
 {
   arrays_arrays = let my_array_lib =
     {
-      map : forall a b. (a -> b) -> Array a -> Array b = fun f arr =>
+      map : forall a b. (a -> b) -> Array a -> Array b
+        | doc m%"
+          Here is some documentation
+          "%
+        = fun f arr =>
         if arr == []
         then
           []

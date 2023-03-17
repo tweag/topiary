@@ -5,13 +5,17 @@
 {
   arrays_arrays =
     let my_array_lib = {
-      map : forall a b. (a -> b) -> Array a -> Array b = fun f arr =>
-        if arr == [] then
-          []
-        else
-          let head = array.head arr in
-          let tail = array.tail arr in
-          [f head] @ map f tail,
+      map : forall a b. (a -> b) -> Array a -> Array b
+        | doc m%"
+          Here is some documentation
+          "%
+        = fun f arr =>
+          if arr == [] then
+            []
+          else
+            let head = array.head arr in
+            let tail = array.tail arr in
+            [f head] @ map f tail,
 
       fold : forall a b. (a -> b -> b) -> Array a -> b -> b =
           fun f arr first =>
