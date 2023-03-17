@@ -4,11 +4,13 @@ import init, {
     topiaryInit,
     format,
 } from "./wasm-app/topiary_playground.js";
+import inputSample from './samples/input.js';
+import querySample from './samples/query.js';
 
 function App() {
     const [isInitialised, setIsInitialised] = useState(false);
-    const [query, setQuery] = useState("");
-    const [input, setInput] = useState("");
+    const [query, setQuery] = useState(querySample);
+    const [input, setInput] = useState(inputSample);
     const [output, setOutput] = useState("");
 
     async function runFormat() {
