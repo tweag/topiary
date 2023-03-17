@@ -22,9 +22,10 @@ let
         "Cargo.lock"
         "Cargo.toml"
         "languages"
-        "src"
+        "topiary"
+        "topiary-cli"
+        "topiary-playground"
         "tests"
-        "web-playground/wasm-app"
       ];
     };
 
@@ -44,9 +45,19 @@ let
   craneLibWasm = craneLib.overrideToolchain rustWithWasmTarget;
 in
 {
-  clippy = craneLib.cargoClippy (commonArgs // {
+  clippy-topiary = craneLib.cargoClippy (commonArgs // {
     inherit cargoArtifacts;
-    cargoClippyExtraArgs = "--all-targets -- --deny warnings";
+    cargoClippyExtraArgs = "-p topiary -- --deny warnings";
+  });
+
+  clippy-cli = craneLib.cargoClippy (commonArgs // {
+    inherit cargoArtifacts;
+    cargoClippyExtraArgs = "-p topiary-cli -- --deny warnings";
+  });
+
+  clippy-wasm = craneLibWasm.cargoClippy (commonArgs // {
+    inherit cargoArtifacts;
+    cargoClippyExtraArgs = "-p topiary-playground --target ${wasmTarget} -- --deny warnings";
   });
 
   fmt = craneLib.cargoFmt (commonArgs);
@@ -57,11 +68,14 @@ in
 
   benchmark = craneLib.buildPackage (commonArgs // {
     inherit cargoArtifacts;
+    cargoExtraArgs = "-p topiary";
     cargoTestCommand = "cargo bench --profile release";
   });
 
-  app = craneLib.buildPackage (commonArgs // {
+  topiary-cli = craneLib.buildPackage (commonArgs // {
     inherit cargoArtifacts;
+    pname = "topiary-cli";
+    cargoExtraArgs = "-p topiary-cli";
     postInstall = ''
       install -Dm444 languages/* -t $out/share/languages
     '';
@@ -79,7 +93,8 @@ in
 
   wasm-app = craneLibWasm.buildPackage (commonArgs // {
     inherit cargoArtifacts;
-    cargoExtraArgs = "--manifest-path=web-playground/wasm-app/Cargo.toml --target ${wasmTarget}";
+    pname = "topiary-playground";
+    cargoExtraArgs = "-p topiary-playground --target ${wasmTarget}";
     
     # Tests currently need to be run via `cargo wasi` which
     # isn't packaged in nixpkgs yet...
@@ -90,7 +105,7 @@ in
       rm -rf $out/lib
       echo 'Running wasm-bindgen'
       wasm-bindgen --version
-      wasm-bindgen --target web --out-dir $out web-playground/wasm-app/target/wasm32-unknown-unknown/release/topiary_playground.wasm;
+      wasm-bindgen --target web --out-dir $out target/wasm32-unknown-unknown/release/topiary_playground.wasm;
       echo 'Running wasm-opt'
       wasm-opt --version
       wasm-opt -Oz -o $out/output.wasm $out/topiary_playground_bg.wasm

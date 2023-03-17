@@ -12,7 +12,7 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 pub async fn topiary_init() -> Result<(), JsError> {
     cfg_if::cfg_if! {
         if #[cfg(feature = "console_error_panic_hook")] {
-            panic::set_hook(Box::new(console_error_panic_hook::hook));
+            std::panic::set_hook(Box::new(console_error_panic_hook::hook));
         }
     }
 
