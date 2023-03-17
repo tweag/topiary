@@ -34,7 +34,7 @@ jobs:
       - name: Build and test executable
         run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- -l json'
 
-  wasm:
+  website:
     needs: setup
     runs-on: ubuntu-latest
     steps:
@@ -59,12 +59,12 @@ jobs:
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v1.0.7
-        if: success() && matrix.os == 'ubuntu-latest' && github.ref == 'refs/heads/main'
+        if: success() && github.ref == 'refs/heads/main'
         with:
           path: 'website'
 
   deploy:
-    needs: wasm
+    needs: website
     if: github.ref == 'refs/heads/main'
 
     permissions:
