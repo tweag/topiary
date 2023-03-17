@@ -12,6 +12,7 @@
           let head = array.head arr in
           let tail = array.tail arr in
           [ f head ] @ map f tail,
+
       fold : forall a b. (a -> b -> b) -> Array a -> b -> b = fun f arr first =>
         if arr == []
         then
@@ -25,6 +26,7 @@
   # Compute `7!`
   let l = my_array_lib.map ( fun x => x + 1) [ 1, 2, 3, 4, 5, 6 ] in
   my_array_lib.fold ( fun x acc => x * acc) l 1,
+
   fibonacci_fibonacci = let rec fibonacci =
     fun n =>
       if n == 0
@@ -38,20 +40,25 @@
           fibonacci (n - 1) + fibonacci (n - 2)
   in
   fibonacci 10,
+
   merge_main = let server = import "server.ncl" in
   let security = import "security.ncl" in
   server & security & { firewall.enabled = false } ,
+
   merge_server = {
     server.host.ip = "182.168.1.1",
     server.host.port = 80,
     server.host.name = "hello-world.net",
   } ,
+
   merge_security = {
     server.host.options = "TLS",
+
     firewall.enabled | default = true ,
     firewall.type = "iptables",
     firewall.open_ports = [ 21, 80, 443 ],
   } ,
+
   polymorphism_polymorphism =
   # First projection, statically typed
   let fst : forall a b. a -> b -> a = fun x y => x in
@@ -59,6 +66,7 @@
   let ev : forall a b. (a -> b) -> a -> b = fun f x => f x in
   let id : forall a. a -> a = fun x => x in
   (ev id (fst 5 10) == 5 : Bool ),
+
   simple-contracts_simple-contract-bool =
   # Example of simple custom contract, parametrized by a first argument.
   # In practice, for this kind of simple predicate, one should rather use
@@ -80,6 +88,7 @@
   # by `x`) to see contract errors appear.
   let not | AlwaysTrue -> AlwaysFalse = fun x => ! x in
   not true ,
+
   simple-contracts_simple-contract-div =
   # /!\ THIS EXAMPLE IS EXPECTED TO FAIL
   # Illustrates a basic contract violation.
