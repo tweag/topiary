@@ -1087,6 +1087,52 @@ dependencies = [
 ]
 
 [[package]]
+name = "topiary-cli"
+version = "0.1.0"
+dependencies = [
+ "assert_cmd",
+ "clap 4.1.8",
+ "env_logger",
+ "itertools",
+ "log",
+ "pretty_assertions",
+ "regex",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "test-log",
+ "tokio",
+ "tokio-test",
+ "topiary",
+ "tree-sitter-bash",
+ "tree-sitter-facade",
+ "tree-sitter-json",
+ "tree-sitter-nickel",
+ "tree-sitter-ocaml",
+ "tree-sitter-query",
+ "tree-sitter-rust",
+ "tree-sitter-toml",
+ "windows_i686_gnu",
+ "windows_i686_msvc",
+ "windows_x86_64_gnu",
+ "windows_x86_64_gnullvm",
+]
+
+[[package]]
+name = "topiary-playground"
+version = "0.0.1"
+dependencies = [
+ "cfg-if 1.0.0",
+ "console_error_panic_hook",
+ "topiary",
+ "tree-sitter-facade",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "wee_alloc",
+]
+
+[[package]]
 name = "tree-sitter"
 version = "0.20.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
