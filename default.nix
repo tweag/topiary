@@ -80,7 +80,7 @@ in
 
   topiary-cli = craneLib.buildPackage (commonArgs // {
     inherit cargoArtifacts;
-    pname = "topiary-cli";
+    pname = "topiary";
     cargoExtraArgs = "-p topiary-cli";
     postInstall = ''
       install -Dm444 languages/* -t $out/share/languages
