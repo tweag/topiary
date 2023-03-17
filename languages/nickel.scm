@@ -140,6 +140,42 @@
   ] @prepend_spaced_scoped_softline
 )
 
+; Start a let binding's RHS on a new line, in a multi-line context.
+(let_in_block
+  (#scope_id! "let_term")
+  "=" @begin_scope
+  .
+  (term) @end_scope
+)
+
+(let_in_block
+  (#scope_id! "let_term")
+  (term) @prepend_spaced_scoped_softline
+)
+
+;; Functions
+
+; Start a function's definition on a new line, in a multi-line context.
+; This also defines an indentation block.
+(fun_expr
+  (#scope_id! "function_definition")
+  "=>" @begin_scope @append_indent_start
+) @append_indent_end @end_scope
+
+(fun_expr
+  (#scope_id! "function_definition")
+  (term) @prepend_spaced_scoped_softline
+)
+
+(fun_expr
+  (pattern) @append_space
+)
+
+; Application operator is space, so we put it between identifiers.
+(applicative
+  t1: (applicative) @append_space
+)
+
 ;; TIDY FROM HERE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (let_expr
@@ -147,19 +183,9 @@
 )
 
 (let_in_block
-  "=" @append_input_softline @append_indent_start
+  "=" @append_indent_start
   .
   t1: (_) @append_indent_end @append_spaced_softline
-)
-
-(fun_expr
-  "=>" @append_spaced_softline @append_indent_start
-  (_) @append_indent_end
-  .
-)
-
-(fun_expr
-  (pattern) @append_space
 )
 
 (match_expr
@@ -178,11 +204,9 @@
   t2: (term) @append_indent_end
 )
 
-(
-  (infix_b_op_6
-    "&"
-  ) @prepend_spaced_softline
-)
+(infix_b_op_6
+  "&"
+) @prepend_spaced_softline
 
 (forall
   "." @append_spaced_softline @append_indent_start
@@ -254,9 +278,4 @@
     ","
     ";"
   ] @append_spaced_softline
-)
-
-; Application operator is space, so we put it between identifiers.
-(applicative
-  t1: (applicative) @append_space
 )
