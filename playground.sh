@@ -35,6 +35,38 @@ get_sample_input() {
   | head -1
 }
 
+format() {
+  local query="$1"
+  local input="$2"
+  local skip_idempotence="${3-1}"
+
+  local -a topiary_args=(
+    --query "${query}"
+    --input-file "${input}"
+  )
+
+  if (( skip_idempotence )); then
+    topiary_args+=(--skip-idempotence)
+  fi
+
+  cargo run --quiet -- "${topiary_args[@]}"
+}
+
+idempotency() {
+  local query="$1"
+  local input="$2"
+
+  if format "${query}" "${input}" 0 >/dev/null 2>&1; then
+    printf "Yes"
+  else
+    if (( $? == 7 )); then
+      printf "No"
+    else
+      printf "n/a"
+    fi
+  fi
+}
+
 main() {
   local query="${1-}"
   if ! [[ -e "${query}" ]]; then
@@ -60,13 +92,9 @@ main() {
 		EOF
     hr
 
-    cargo run --quiet -- \
-      --skip-idempotence \
-      --query "${query}" \
-      --input-file "${input}" \
-    || true
-
+    format "${query}" "${input}" || true
     hr
+    printf "Idempotent    %s\n" "$(idempotency "${query}" "${input}")"
 
     # NOTE We don't wait for specific inotify events because different
     # editors have different strategies for modifying files
