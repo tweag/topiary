@@ -128,7 +128,7 @@ pub enum Operation {
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
 /// let mut output = Vec::new();
-/// let mut query_file = BufReader::new(File::open("languages/json.scm").expect("query file"));
+/// let mut query_file = BufReader::new(File::open("../languages/json.scm").expect("query file"));
 /// let mut query = String::new();
 /// query_file.read_to_string(&mut query).expect("read query file");
 ///

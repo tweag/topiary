@@ -49,7 +49,7 @@ format() {
     topiary_args+=(--skip-idempotence)
   fi
 
-  cargo run --quiet -- "${topiary_args[@]}"
+  cargo run -p topiary-cli --quiet -- "${topiary_args[@]}"
 }
 
 idempotency() {

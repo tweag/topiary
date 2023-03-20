@@ -88,7 +88,7 @@ this (using JSON as an example):
 The playground frontend is a small React app. You can run a development server for that like this:
 
 ```bash
-cd web-playground/react-app
+cd web-playground
 npm start
 ```
 
@@ -96,6 +96,6 @@ If you want to build the playground so it works with the full website running wi
 you can do:
 
 ```bash
-cd web-playground/react-app
+cd web-playground
 npm run build
 ```
