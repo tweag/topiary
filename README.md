@@ -880,9 +880,9 @@ The delimiter must be specified using the predicate `#delimiter!`. The scope mus
 In order to work productively on query files, the following is one
 suggested way to work:
 
-1. Add a sample file to `tests/samples/input`.
+1. Add a sample file to `topiary/tests/samples/input`.
 
-2. Copy the same file to `tests/samples/expected`, and make any changes
+2. Copy the same file to `topiary/tests/samples/expected`, and make any changes
    to how you want the output to be formatted.
 
 3. If this is a new language, add its Tree-sitter grammar, extend
