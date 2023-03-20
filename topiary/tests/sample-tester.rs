@@ -34,7 +34,7 @@ async fn input_output_tester() {
             &configuration,
             &grammars,
             Operation::Format {
-                skip_idempotence: true,
+                skip_idempotence: false,
             },
         )
         .unwrap();
@@ -73,7 +73,7 @@ async fn formatted_query_tester() {
             &configuration,
             &grammars,
             Operation::Format {
-                skip_idempotence: true,
+                skip_idempotence: false,
             },
         )
         .unwrap();
