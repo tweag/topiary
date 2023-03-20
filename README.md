@@ -3,6 +3,9 @@
 ![Latest Release][badge-release]
 ![CI Status][badge-ci]
 
+* [Topiary web site][topiary-website]
+* [Topiary playground][topiary-playground]
+
 Topiary aims to be a uniform formatter for simple languages, as part of
 the [Tree-sitter] ecosystem. It is named after the art of clipping or
 trimming trees into fantastic shapes.
@@ -1041,6 +1044,8 @@ of choice open in another.
 [shfmt]: https://github.com/mvdan/sh
 [toml]: https://toml.io
 [topiary-issue4]: https://github.com/tweag/topiary/issues/4
+[topiary-playground]: https://topiary.tweag.io/playground
+[topiary-website]: https://topiary.tweag.io
 [tree-sitter-parsers]: https://tree-sitter.github.io/tree-sitter/#available-parsers
 [tree-sitter-playground]: https://tree-sitter.github.io/tree-sitter/playground
 [tree-sitter-query]: https://tree-sitter.github.io/tree-sitter/using-parsers#pattern-matching-with-queries
