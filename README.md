@@ -1,6 +1,7 @@
 # Topiary
 
-![CI Status][ci-badge]
+![Latest Release][badge-release]
+![CI Status][badge-ci]
 
 Topiary aims to be a uniform formatter for simple languages, as part of
 the [Tree-sitter] ecosystem. It is named after the art of clipping or
@@ -1018,8 +1019,9 @@ of choice open in another.
 
 <!-- Links -->
 
+[badge-ci]: https://github.com/tweag/topiary/actions/workflows/ci.yml/badge.svg
+[badge-release]: https://img.shields.io/github/v/release/tweag/topiary?display_name=release&sort=semver
 [bash]: https://www.gnu.org/software/bash
-[ci-badge]: https://github.com/tweag/topiary/actions/workflows/ci.yml/badge.svg
 [contributing]: CONTRIBUTING.md
 [difftastic]: https://difftastic.wilfred.me.uk
 [format-all]: https://melpa.org/#/format-all
