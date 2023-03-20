@@ -31,7 +31,7 @@ get_sample_input() {
   local language="$1"
 
   # Only return the first result, presuming there is one
-  find tests/samples/input -name "${language}.*" \
+  find topiary/tests/samples/input -name "${language}.*" \
   | head -1
 }
 

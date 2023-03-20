@@ -94,7 +94,8 @@ fi
   { inside
     the
   }
-  other )
+  other
+)
 
 function foo  () {
   local x=1
@@ -125,12 +126,13 @@ if foo 2>/dev/null; then
   exit 1
 fi
 
-{
-  cat <<EOF
-This shouldn't be indented ${foo}
-...nor this
-EOF
-}
+# This cannot be fixed without upstream changes; see Issue #200.
+# {
+#   cat <<EOF
+# This shouldn't be indented ${foo}
+# ...nor this
+# EOF
+# }
 
 readonly a="$(foo | bar || baz --quux 2>&1)"
 foo <(bar||baz --something) | tee >(quux)
