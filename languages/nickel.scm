@@ -1,7 +1,7 @@
 ; Configuration
 (#language! nickel)
 
-;; General
+;; General Spacing
 
 ; The following nodes in our source text should not be formatted
 [
@@ -43,8 +43,6 @@
     "?"
     "="
     "rec"
-    "{"
-    "}"
     "Array"
     "Dyn"
     "Num"
@@ -74,6 +72,17 @@
     "||"
   ] @prepend_space @append_space
 )
+
+; Don't insert spaces before the following delimiters
+[
+  ","
+  ";"
+  "."
+] @prepend_antispace
+
+; Don't insert spaces immediately inside parentheses
+"(" @append_antispace
+")" @prepend_antispace
 
 ;; Comments
 
@@ -176,6 +185,26 @@
   t1: (applicative) @append_space
 )
 
+;; Records
+
+; We don't want to add spaces/newlines in empty records, so the
+; following query only matches if a named node exists within the record
+(uni_record
+  .
+  "{" @append_spaced_softline @append_indent_start
+  (_)
+  "}" @prepend_indent_end @prepend_spaced_softline
+  .
+)
+
+(uni_record
+  "," @append_spaced_softline
+)
+
+(uni_record
+  ";" @append_spaced_softline
+)
+
 ;; TIDY FROM HERE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (let_expr
@@ -218,19 +247,6 @@
   (ident) @append_space
   .
   (ident)
-)
-
-(uni_record
-  "{" @append_spaced_softline @append_indent_start
-  "}" @prepend_indent_end @prepend_spaced_softline
-)
-
-(uni_record
-  "," @append_spaced_softline
-)
-
-(uni_record
-  ";" @append_spaced_softline
 )
 
 ; We want the same rule for arrays as for records,
