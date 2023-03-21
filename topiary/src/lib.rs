@@ -59,10 +59,10 @@ pub enum Atom {
     /// Represents a literal string, such as a semicolon.
     Literal(String),
     /// Represents a literal string, such as a semicolon. It will be printed only
-    // in multi-line nodes.
+    /// in multi-line nodes.
     MultilineOnlyLiteral(String),
     /// Represents a literal string, such as a semicolon. It will be printed only
-    // if the associated scope is multi-line
+    /// if the associated scope is multi-line
     ScopedMultilineOnlyLiteral {
         id: usize,
         literal: String,
@@ -75,6 +75,9 @@ pub enum Atom {
     },
     /// Represents a space. Consecutive spaces are reduced to one before rendering.
     Space,
+    /// Represents the destruction of errant spaces. Adjacent consecutive spaces are
+    /// reduced to zero before rendering.
+    Antispace,
     /// Represents a segment to be deleted.
     // It is a segment, because if one wants to delete a node,
     // it might happen that it contains several leaves.
