@@ -292,17 +292,16 @@ this:
 ```scheme
 ; Configuration
 (#language! rust)
-(#indent-level! 4)
+(#indent! "    ")
 ```
 
 The `#language!` pragma must be included in any query file and dictates
 which language to parse. The queries themselves will refer to node types
 that are specific to this language.
 
-The `#indent-level!` pragma is optional and controls how many spaces to
-indent a block whenever `@append_indent_start` or
-`@prepend_indent_start` is processed. If it is omitted, it defaults to
-two spaces.
+The `#indent!` pragma is optional and controls what indentation to use to
+indent a block whenever `@append_indent_start` or `@prepend_indent_start` is
+processed. If it is omitted, it defaults to two spaces.
 
 ### `@allow_blank_line_before`
 
