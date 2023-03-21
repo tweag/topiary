@@ -119,6 +119,7 @@ impl AtomCollection {
                 )
             }
             "append_space" => self.append(Atom::Space, node),
+            "append_antispace" => self.append(Atom::Antispace, node),
             "append_spaced_softline" => self.append(Atom::Softline { spaced: true }, node),
             "prepend_delimiter" => {
                 self.prepend(Atom::Literal(requires_delimiter()?.to_string()), node)
@@ -152,6 +153,7 @@ impl AtomCollection {
                 )
             }
             "prepend_space" => self.prepend(Atom::Space, node),
+            "prepend_antispace" => self.prepend(Atom::Antispace, node),
             "prepend_spaced_softline" => self.prepend(Atom::Softline { spaced: true }, node),
             // Skip over leafs
             "leaf" => {}
@@ -730,11 +732,12 @@ impl AtomCollection {
                 // we skip all the spaces and newlines
                 // and add the first significant atom to the new vector.
                 match next {
-                    Atom::Space | Atom::Hardline | Atom::Blankline => {}
+                    Atom::Space | Atom::Antispace | Atom::Hardline | Atom::Blankline => {}
                     _ => new_vec.push(next.clone()),
                 };
             }
         }
+        collapse_antispace(&mut new_vec);
         ensure_final_hardline(&mut new_vec);
         self.atoms = new_vec;
     }
@@ -747,6 +750,22 @@ impl AtomCollection {
 
 fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
     match prev {
+        // Discard all spaces "connected" to an antispace
+        Atom::Antispace => {
+            match next {
+                // Skip over a space or antispace that follows an antispace...
+                Atom::Space | Atom::Antispace => {}
+
+                // ...otherwise, pop the previous antispace (as we're done with
+                // processing it) and any spaces that preceded it, and push
+                // whatever follows
+                _ => {
+                    collapse_antispace(new_vec);
+                    new_vec.push(next);
+                }
+            }
+        }
+
         // If the last atom is a space/line
         Atom::Space | Atom::Hardline | Atom::Blankline => {
             match next {
@@ -757,15 +776,18 @@ fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
                         new_vec.push(next);
                     }
                 }
+
                 // Or an indentation delimiter, then one has to merge/re-order.
                 Atom::IndentStart | Atom::IndentEnd => {
                     new_vec.pop();
                     new_vec.push(next);
                     new_vec.push(prev);
                 }
+
                 _ => new_vec.push(next),
             }
         }
+
         // If the last one is a DeleteBegin,
         // we ignore all the atoms until a DeleteEnd is met.
         Atom::DeleteBegin => {
@@ -773,8 +795,18 @@ fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
                 new_vec.pop();
             }
         }
+
         // Otherwise, we simply copy the atom to the new vector.
         _ => new_vec.push(next),
+    }
+}
+
+fn collapse_antispace(v: &mut Vec<Atom>) {
+    while let Some(last) = v.last() {
+        match last {
+            Atom::Space | Atom::Antispace => v.pop(),
+            _ => break,
+        };
     }
 }
 
