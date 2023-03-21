@@ -119,6 +119,7 @@ impl AtomCollection {
                 )
             }
             "append_space" => self.append(Atom::Space, node),
+            "append_antispace" => self.append(Atom::Antispace, node),
             "append_spaced_softline" => self.append(Atom::Softline { spaced: true }, node),
             "prepend_delimiter" => {
                 self.prepend(Atom::Literal(requires_delimiter()?.to_string()), node)
@@ -152,6 +153,7 @@ impl AtomCollection {
                 )
             }
             "prepend_space" => self.prepend(Atom::Space, node),
+            "prepend_antispace" => self.prepend(Atom::Antispace, node),
             "prepend_spaced_softline" => self.prepend(Atom::Softline { spaced: true }, node),
             // Skip over leafs
             "leaf" => {}
