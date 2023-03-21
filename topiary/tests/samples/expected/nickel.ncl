@@ -28,8 +28,8 @@
     }
   in
   # Compute `7!`
-  let l = my_array_lib.map ( fun x => x + 1) [ 1, 2, 3, 4, 5, 6 ] in
-  my_array_lib.fold ( fun x acc => x * acc) l 1,
+  let l = my_array_lib.map (fun x => x + 1) [ 1, 2, 3, 4, 5, 6 ] in
+  my_array_lib.fold (fun x acc => x * acc) l 1,
 
   fibonacci_fibonacci = let rec fibonacci =
     fun n =>
@@ -47,21 +47,21 @@
 
   merge_main = let server = import "server.ncl" in
   let security = import "security.ncl" in
-  server & security & { firewall.enabled = false } ,
+  server & security & { firewall.enabled = false },
 
   merge_server = {
     server.host.ip = "182.168.1.1",
     server.host.port = 80,
     server.host.name = "hello-world.net",
-  } ,
+  },
 
   merge_security = {
     server.host.options = "TLS",
 
-    firewall.enabled | default = true ,
+    firewall.enabled | default = true,
     firewall.type = "iptables",
     firewall.open_ports = [ 21, 80, 443 ],
-  } ,
+  },
 
   polymorphism_polymorphism =
   # First projection, statically typed
@@ -69,7 +69,7 @@
   # Evaluation function, statically typed
   let ev : forall a b. (a -> b) -> a -> b = fun f x => f x in
   let id : forall a. a -> a = fun x => x in
-  (ev id (fst 5 10) == 5 : Bool ),
+  (ev id (fst 5 10) == 5 : Bool),
 
   simple-contracts_simple-contract-bool =
   # Example of simple custom contract, parametrized by a first argument.
@@ -91,7 +91,7 @@
   # Try passing `false` to `not`, or to use the identity function (replacing `!x`
   # by `x`) to see contract errors appear.
   let not | AlwaysTrue -> AlwaysFalse = fun x => ! x in
-  not true ,
+  not true,
 
   simple-contracts_simple-contract-div =
   # /!\ THIS EXAMPLE IS EXPECTED TO FAIL
