@@ -111,7 +111,7 @@ The project can be built and installed with Cargo from the repository
 directory:
 
 ```bash
-cargo install --path .
+cargo install --path topiary-cli
 ```
 
 The `TOPIARY_LANGUAGE_DIR` variable can be set either at build time or
