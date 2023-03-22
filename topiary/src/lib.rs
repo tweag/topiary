@@ -107,6 +107,20 @@ pub enum Atom {
         scope_id: String,
         spaced: bool,
     },
+    // Represents an atom that must only be output if the associated scope meets the condition
+    // (single-line or multi-line)
+    ScopedConditional {
+        id: usize,
+        scope_id: String,
+        condition: ScopeCondition,
+        atom: Box<Atom>,
+    },
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum ScopeCondition {
+    SingleLineOnly,
+    MultiLineOnly,
 }
 
 /// A convenience wrapper around `std::result::Result<T, FormatterError>`.

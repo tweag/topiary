@@ -131,9 +131,7 @@ pub fn apply_query(
         for p in query.general_predicates(m.pattern_index) {
             predicates = handle_predicate(&p, &predicates)?;
         }
-        if predicates.single_line_only && predicates.multi_line_only {
-            log::warn!("Both predicates #single_line_only! and #multi_line_only! have been set: this query won't do anything")
-        }
+        check_predicates(&predicates)?;
 
         // If any capture is a do_nothing, then do nothing.
         if m.captures
@@ -259,7 +257,49 @@ fn handle_predicate(
             multi_line_only: true,
             ..predicates.clone()
         })
+    } else if let "single_line_scope_only!" = operator {
+        let arg =
+            predicate.args().into_iter().next().ok_or_else(|| {
+                FormatterError::Query(format!("{operator} needs an argument"), None)
+            })?;
+        Ok(QueryPredicates {
+            single_line_scope_only: Some(arg),
+            ..predicates.clone()
+        })
+    } else if let "multi_line_scope_only!" = operator {
+        let arg =
+            predicate.args().into_iter().next().ok_or_else(|| {
+                FormatterError::Query(format!("{operator} needs an argument"), None)
+            })?;
+        Ok(QueryPredicates {
+            multi_line_scope_only: Some(arg),
+            ..predicates.clone()
+        })
     } else {
         Ok(predicates.clone())
+    }
+}
+
+fn check_predicates(predicates: &QueryPredicates) -> FormatterResult<()> {
+    let mut incompatible_predicates = 0;
+    if predicates.single_line_only {
+        incompatible_predicates += 1;
+    }
+    if predicates.multi_line_only {
+        incompatible_predicates += 1;
+    }
+    if predicates.single_line_scope_only.is_some() {
+        incompatible_predicates += 1;
+    }
+    if predicates.multi_line_scope_only.is_some() {
+        incompatible_predicates += 1;
+    }
+    if incompatible_predicates > 1 {
+        Err(FormatterError::Query(
+            "A query can contain at most one #single/multi_line[_scope]_only! predicate".into(),
+            None,
+        ))
+    } else {
+        Ok(())
     }
 }
