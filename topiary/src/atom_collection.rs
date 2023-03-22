@@ -5,7 +5,7 @@ use std::{
 
 use tree_sitter_facade::Node;
 
-use crate::{Atom, FormatterError, FormatterResult};
+use crate::{Atom, FormatterError, FormatterResult, ScopeCondition};
 
 #[derive(Debug)]
 pub struct AtomCollection {
@@ -60,6 +60,29 @@ impl AtomCollection {
         Ok(atoms)
     }
 
+    // wrap inside a conditional atom if #single/multi_line_scope_only! is set
+    fn wrap(&mut self, atom: Atom, predicates: &QueryPredicates) -> Atom {
+        if let Some(scope_id) = &predicates.single_line_scope_only {
+            let id = self.next_id();
+            Atom::ScopedConditional {
+                id,
+                scope_id: scope_id.to_string(),
+                condition: ScopeCondition::SingleLineOnly,
+                atom: Box::new(atom),
+            }
+        } else if let Some(scope_id) = &predicates.multi_line_scope_only {
+            let id = self.next_id();
+            Atom::ScopedConditional {
+                id,
+                scope_id: scope_id.to_string(),
+                condition: ScopeCondition::MultiLineOnly,
+                atom: Box::new(atom),
+            }
+        } else {
+            atom
+        }
+    }
+
     /// This gets called a lot during query processing, and needs to be efficient.
     pub fn resolve_capture(
         &mut self,
@@ -89,26 +112,30 @@ impl AtomCollection {
         }
         if is_multi_line && predicates.single_line_only {
             log::debug!("Aborting because context is multi-line and #single_line_only! is set");
-            return Ok(())
+            return Ok(());
         }
         if !is_multi_line && predicates.multi_line_only {
             log::debug!("Aborting because context is single-line and #multi_line_only! is set");
-            return Ok(())
+            return Ok(());
         }
 
         match name {
             "allow_blank_line_before" => {
                 if self.blank_lines_before.contains(&node.id()) {
-                    self.prepend(Atom::Blankline, node);
+                    self.prepend(Atom::Blankline, node, predicates);
                 }
             }
-            "append_delimiter" => {
-                self.append(Atom::Literal(requires_delimiter()?.to_string()), node)
+            "append_delimiter" => self.append(
+                Atom::Literal(requires_delimiter()?.to_string()),
+                node,
+                predicates,
+            ),
+            "append_empty_softline" => {
+                self.append(Atom::Softline { spaced: false }, node, predicates)
             }
-            "append_empty_softline" => self.append(Atom::Softline { spaced: false }, node),
-            "append_hardline" => self.append(Atom::Hardline, node),
-            "append_indent_start" => self.append(Atom::IndentStart, node),
-            "append_indent_end" => self.append(Atom::IndentEnd, node),
+            "append_hardline" => self.append(Atom::Hardline, node, predicates),
+            "append_indent_start" => self.append(Atom::IndentStart, node, predicates),
+            "append_indent_end" => self.append(Atom::IndentEnd, node, predicates),
             "append_input_softline" => {
                 let space = if self.line_break_after.contains(&node.id()) {
                     Atom::Hardline
@@ -116,11 +143,12 @@ impl AtomCollection {
                     Atom::Space
                 };
 
-                self.append(space, node);
+                self.append(space, node, predicates);
             }
             "append_multiline_delimiter" => self.append(
                 Atom::MultilineOnlyLiteral(requires_delimiter()?.to_string()),
                 node,
+                predicates,
             ),
             "append_scoped_multiline_delimiter" => {
                 let id = self.next_id();
@@ -131,18 +159,25 @@ impl AtomCollection {
                         scope_id: requires_scope_id()?.to_string(),
                     },
                     node,
+                    predicates,
                 )
             }
-            "append_space" => self.append(Atom::Space, node),
-            "append_antispace" => self.append(Atom::Antispace, node),
-            "append_spaced_softline" => self.append(Atom::Softline { spaced: true }, node),
-            "prepend_delimiter" => {
-                self.prepend(Atom::Literal(requires_delimiter()?.to_string()), node)
+            "append_space" => self.append(Atom::Space, node, predicates),
+            "append_antispace" => self.append(Atom::Antispace, node, predicates),
+            "append_spaced_softline" => {
+                self.append(Atom::Softline { spaced: true }, node, predicates)
             }
-            "prepend_empty_softline" => self.prepend(Atom::Softline { spaced: false }, node),
-            "prepend_hardline" => self.prepend(Atom::Hardline, node),
-            "prepend_indent_start" => self.prepend(Atom::IndentStart, node),
-            "prepend_indent_end" => self.prepend(Atom::IndentEnd, node),
+            "prepend_delimiter" => self.prepend(
+                Atom::Literal(requires_delimiter()?.to_string()),
+                node,
+                predicates,
+            ),
+            "prepend_empty_softline" => {
+                self.prepend(Atom::Softline { spaced: false }, node, predicates)
+            }
+            "prepend_hardline" => self.prepend(Atom::Hardline, node, predicates),
+            "prepend_indent_start" => self.prepend(Atom::IndentStart, node, predicates),
+            "prepend_indent_end" => self.prepend(Atom::IndentEnd, node, predicates),
             "prepend_input_softline" => {
                 let space = if self.line_break_before.contains(&node.id()) {
                     Atom::Hardline
@@ -150,11 +185,12 @@ impl AtomCollection {
                     Atom::Space
                 };
 
-                self.prepend(space, node);
+                self.prepend(space, node, predicates);
             }
             "prepend_multiline_delimiter" => self.prepend(
                 Atom::MultilineOnlyLiteral(requires_delimiter()?.to_string()),
                 node,
+                predicates,
             ),
             "prepend_scoped_multiline_delimiter" => {
                 let id = self.next_id();
@@ -165,21 +201,24 @@ impl AtomCollection {
                         scope_id: requires_scope_id()?.to_string(),
                     },
                     node,
+                    predicates,
                 )
             }
-            "prepend_space" => self.prepend(Atom::Space, node),
-            "prepend_antispace" => self.prepend(Atom::Antispace, node),
-            "prepend_spaced_softline" => self.prepend(Atom::Softline { spaced: true }, node),
+            "prepend_space" => self.prepend(Atom::Space, node, predicates),
+            "prepend_antispace" => self.prepend(Atom::Antispace, node, predicates),
+            "prepend_spaced_softline" => {
+                self.prepend(Atom::Softline { spaced: true }, node, predicates)
+            }
             // Skip over leafs
             "leaf" => {}
             // Deletion
             "delete" => {
-                self.prepend(Atom::DeleteBegin, node);
-                self.append(Atom::DeleteEnd, node)
+                self.prepend(Atom::DeleteBegin, node, predicates);
+                self.append(Atom::DeleteEnd, node, predicates)
             }
             "singleline_delete" => {
-                self.prepend(Atom::SingleLineDeleteBegin, node);
-                self.append(Atom::SingleLineDeleteEnd, node)
+                self.prepend(Atom::SingleLineDeleteBegin, node, predicates);
+                self.append(Atom::SingleLineDeleteEnd, node, predicates)
             }
             "singleline_scoped_delete" => {
                 let id = self.next_id();
@@ -189,6 +228,7 @@ impl AtomCollection {
                         scope_id: requires_scope_id()?.to_string(),
                     },
                     node,
+                    predicates,
                 );
                 let id = self.next_id();
                 self.append(
@@ -197,6 +237,7 @@ impl AtomCollection {
                         scope_id: requires_scope_id()?.to_string(),
                     },
                     node,
+                    predicates,
                 )
             }
             // Scope manipulation
@@ -212,6 +253,7 @@ impl AtomCollection {
                         spaced: false,
                     },
                     node,
+                    predicates,
                 )
             }
             "append_spaced_scoped_softline" => {
@@ -223,6 +265,7 @@ impl AtomCollection {
                         spaced: true,
                     },
                     node,
+                    predicates,
                 )
             }
             "prepend_empty_scoped_softline" => {
@@ -234,6 +277,7 @@ impl AtomCollection {
                         spaced: false,
                     },
                     node,
+                    predicates,
                 )
             }
             "prepend_spaced_scoped_softline" => {
@@ -245,6 +289,7 @@ impl AtomCollection {
                         spaced: true,
                     },
                     node,
+                    predicates,
                 )
             }
             // Mark a leaf to be printed on an single line, with no indentation
@@ -261,7 +306,7 @@ impl AtomCollection {
                         _ => atom.clone(),
                     })
                     .collect();
-                self.append(Atom::Hardline, node)
+                self.append(Atom::Hardline, node, predicates)
             }
             // Return a query parsing error on unknown capture names
             unknown => {
@@ -344,8 +389,9 @@ impl AtomCollection {
         Ok(())
     }
 
-    fn prepend(&mut self, atom: Atom, node: &Node) {
+    fn prepend(&mut self, atom: Atom, node: &Node, predicates: &QueryPredicates) {
         if let Some(atom) = self.expand_multiline(atom, node) {
+            let atom = self.wrap(atom, predicates);
             // TODO: Pre-populate these
             let target_node = first_leaf(node);
 
@@ -363,8 +409,9 @@ impl AtomCollection {
         }
     }
 
-    fn append(&mut self, atom: Atom, node: &Node) {
+    fn append(&mut self, atom: Atom, node: &Node, predicates: &QueryPredicates) {
         if let Some(atom) = self.expand_multiline(atom, node) {
+            let atom = self.wrap(atom, predicates);
             let target_node = last_leaf(node);
 
             // If this is a child of a node that we have deemed as a leaf node
@@ -599,6 +646,21 @@ impl AtomCollection {
                                         Some(Atom::DeleteEnd)
                                     };
                                     modifications.insert(*id, new_atom);
+                                } else if let Atom::ScopedConditional {
+                                    id,
+                                    atom,
+                                    condition,
+                                    ..
+                                } = atom
+                                {
+                                    let multiline_only =
+                                        *condition == ScopeCondition::MultiLineOnly;
+                                    let new_atom = if multiline == multiline_only {
+                                        Some((**atom).clone())
+                                    } else {
+                                        None
+                                    };
+                                    modifications.insert(*id, new_atom);
                                 }
                             }
                         } else {
@@ -664,6 +726,18 @@ impl AtomCollection {
                     );
                     force_apply_modifications = true;
                 }
+            // Register the ScopedConditional in the correct scope
+            } else if let Atom::ScopedConditional { scope_id, .. } = atom {
+                if let Some((_, vec)) = opened_scopes
+                    .get_mut(&scope_id)
+                    .map(|v| v.last_mut())
+                    .unwrap_or(None)
+                {
+                    vec.push(atom)
+                } else {
+                    log::warn!("Found scoped conditional {:?} outside of its scope", atom);
+                    force_apply_modifications = true;
+                }
             }
         }
         let still_opened: Vec<&String> = opened_scopes
@@ -722,6 +796,16 @@ impl AtomCollection {
                             );
                             None
                         }
+                    } else if let Atom::ScopedConditional { id, .. } = atom {
+                        if let Some(atom_option) = modifications.remove(id) {
+                            atom_option
+                        } else {
+                            log::warn!(
+                                "Found scoped conditional {:?}, but was unable to replace it.",
+                                atom
+                            );
+                            None
+                        }
                     } else {
                         Some(atom.clone())
                     }
@@ -770,6 +854,8 @@ pub struct QueryPredicates {
     pub scope_id: Option<String>,
     pub single_line_only: bool,
     pub multi_line_only: bool,
+    pub single_line_scope_only: Option<String>,
+    pub multi_line_scope_only: Option<String>,
 }
 
 fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
