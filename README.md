@@ -557,24 +557,6 @@ Remove the matched node from the output.
 )
 ```
 
-### `@singleline_delete`
-
-Remove the matched node from the output, online if the context is single-line.
-
-#### Example
-
-```scheme
-; Delete the optional "|" before the first match case
-; if the context is single-line
-(
-  (match_case)? @do_nothing
-  .
-  "|" @singleline_delete
-  .
-  (match_case)
-)
-```
-
 ### `@do_nothing`
 
 If any of the captures in a query match are `@do_nothing`, then the
@@ -860,42 +842,62 @@ This Tree-sitter query:
 
 ...while the single-lined `(1, 2, 3)` is kept as is.
 
-### `@singleline_scoped_delete`
+### Testing context with predicates
 
-Remove the matched node from the output, only if the associated custom scope is single-line. The scope must be specified with the predicate `#scope_id!`.
+Sometimes, similarly to what happens with softlines, we want a query to match only if the context is single-line, or multi-line. Topiary has several predicates that achieve this result.
+
+### `#single_line_only!` / `#multi_line_only!`
+
+These predicates allow the query to trigger only if the matched nodes are in a single-line (resp. multi-line) context.
 
 #### Example
 
 ```scheme
-; Delete the optional "|" before the first match case
-; if the context is single-line
-(function_expression
-  (match_case)? @do_nothing
+; Allow (and enforce) the optional "|" before the first match case
+; in OCaml if and only if the context is multi-line
+(
+  "with"
   .
-  "|" @singleline_scoped_delete
+  "|" @delete
   .
   (match_case)
-  (#scope_id! "function_definition")
+  (#single_line_only!)
+)
+
+(
+  "with"
+  .
+  "|"? @do_nothing
+  .
+  (match_case) @prepend_delimiter
+  (#delimiter! "| ")
+  (#multi_line_only!)
 )
 ```
 
-### `@append_multiline_delimiter` / `@prepend_multiline_delimiter`
+### `#single_line_scope_only!` / `#multi_line_scope_only!`
 
-The matched nodes will have a multi-line-only delimiter appended to
-them. It will be printed if the associated custom scope is multi-line, and omitted otherwise.
-The delimiter must be specified using the predicate `#delimiter!`. The scope must be specified with the predicate `#scope_id!`.
+These predicates allow the query to trigger only if the associated custom scope containing the matched nodes are is single-line (resp. multi-line).
 
 #### Example
 
 ```scheme
-; Add the optional "|" before the first match case
-; only if the context is multi-line
+; Allow (and enforce) the optional "|" before the first match case
+; in function expressions in OCaml if and only if the scope is multi-line
+(function_expression
+  (match_case)? @do_nothing
+  .
+  "|" @delete
+  .
+  (match_case)
+  (#single_line_scope_only! "function_definition")
+)
 (function_expression
   "|"? @do_nothing
   .
-  (match_case) @prepend_scoped_multiline_delimiter
-  (#scope_id! "function_definition")
-  (#delimiter! "| ")
+  (match_case) @prepend_delimiter
+  (#multi_line_scope_only! "function_definition")
+  (#delimiter! "| ") ; sic
 )
 ```
 
