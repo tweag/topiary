@@ -799,16 +799,16 @@
 (function_expression
   (match_case)? @do_nothing
   .
-  "|" @singleline_scoped_delete
+  "|" @delete
   .
   (match_case)
-  (#scope_id! "function_definition")
+  (#single_line_scope_only! "function_definition")
 )
 (function_expression
   "|"? @do_nothing
   .
-  (match_case) @prepend_scoped_multiline_delimiter
-  (#scope_id! "function_definition")
+  (match_case) @prepend_delimiter
+  (#multi_line_scope_only! "function_definition")
   (#delimiter! "| ") ; sic
 )
 (function_expression
