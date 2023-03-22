@@ -61,13 +61,6 @@ pub enum Atom {
     /// Represents a literal string, such as a semicolon. It will be printed only
     /// in multi-line nodes.
     MultilineOnlyLiteral(String),
-    /// Represents a literal string, such as a semicolon. It will be printed only
-    /// if the associated scope is multi-line
-    ScopedMultilineOnlyLiteral {
-        id: usize,
-        literal: String,
-        scope_id: String,
-    },
     /// Represents a softline. It will be turned into a hardline for multi-line
     /// constructs, and either a space or nothing for single-line constructs.
     Softline {
@@ -86,15 +79,6 @@ pub enum Atom {
     /// Represents a segment to be deleted, only if the context is single-line
     SingleLineDeleteBegin,
     SingleLineDeleteEnd,
-    /// Represents a segment to be deleted, only if the associated scope is single-line
-    SingleLineScopedDeleteBegin {
-        id: usize,
-        scope_id: String,
-    },
-    SingleLineScopedDeleteEnd {
-        id: usize,
-        scope_id: String,
-    },
     /// Scoped commands
     // ScopedSoftline works together with the @open_scope and @end_scope query tags.
     // To decide if a scoped softline must be expanded into a hardline, we look at
