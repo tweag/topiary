@@ -738,7 +738,6 @@ impl AtomCollection {
             }
         }
         collapse_antispace(&mut new_vec);
-        ensure_final_hardline(&mut new_vec);
         self.atoms = new_vec;
     }
 
@@ -807,13 +806,6 @@ fn collapse_antispace(v: &mut Vec<Atom>) {
             Atom::Space | Atom::Antispace => v.pop(),
             _ => break,
         };
-    }
-}
-
-fn ensure_final_hardline(v: &mut Vec<Atom>) {
-    if let Some(Atom::Hardline) = v.last() {
-    } else {
-        v.push(Atom::Hardline);
     }
 }
 
