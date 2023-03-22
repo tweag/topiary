@@ -145,24 +145,6 @@ impl AtomCollection {
 
                 self.append(space, node, predicates);
             }
-            "append_multiline_delimiter" => self.append(
-                Atom::MultilineOnlyLiteral(requires_delimiter()?.to_string()),
-                node,
-                predicates,
-            ),
-            "append_scoped_multiline_delimiter" => {
-                let id = self.next_id();
-                self.append(
-                    Atom::ScopedConditional {
-                        id,
-                        condition: ScopeCondition::MultiLineOnly,
-                        atom: Box::new(Atom::Literal(requires_delimiter()?.to_string())),
-                        scope_id: requires_scope_id()?.to_string(),
-                    },
-                    node,
-                    predicates,
-                )
-            }
             "append_space" => self.append(Atom::Space, node, predicates),
             "append_antispace" => self.append(Atom::Antispace, node, predicates),
             "append_spaced_softline" => {
@@ -188,24 +170,6 @@ impl AtomCollection {
 
                 self.prepend(space, node, predicates);
             }
-            "prepend_multiline_delimiter" => self.prepend(
-                Atom::MultilineOnlyLiteral(requires_delimiter()?.to_string()),
-                node,
-                predicates,
-            ),
-            "prepend_scoped_multiline_delimiter" => {
-                let id = self.next_id();
-                self.prepend(
-                    Atom::ScopedConditional {
-                        id,
-                        condition: ScopeCondition::MultiLineOnly,
-                        atom: Box::new(Atom::Literal(requires_delimiter()?.to_string())),
-                        scope_id: requires_scope_id()?.to_string(),
-                    },
-                    node,
-                    predicates,
-                )
-            }
             "prepend_space" => self.prepend(Atom::Space, node, predicates),
             "prepend_antispace" => self.prepend(Atom::Antispace, node, predicates),
             "prepend_spaced_softline" => {
@@ -217,34 +181,6 @@ impl AtomCollection {
             "delete" => {
                 self.prepend(Atom::DeleteBegin, node, predicates);
                 self.append(Atom::DeleteEnd, node, predicates)
-            }
-            "singleline_delete" => {
-                self.prepend(Atom::SingleLineDeleteBegin, node, predicates);
-                self.append(Atom::SingleLineDeleteEnd, node, predicates)
-            }
-            "singleline_scoped_delete" => {
-                let id = self.next_id();
-                self.prepend(
-                    Atom::ScopedConditional {
-                        id,
-                        condition: ScopeCondition::SingleLineOnly,
-                        atom: Box::new(Atom::DeleteBegin),
-                        scope_id: requires_scope_id()?.to_string(),
-                    },
-                    node,
-                    predicates,
-                );
-                let id = self.next_id();
-                self.append(
-                    Atom::ScopedConditional {
-                        id,
-                        condition: ScopeCondition::SingleLineOnly,
-                        atom: Box::new(Atom::DeleteEnd),
-                        scope_id: requires_scope_id()?.to_string(),
-                    },
-                    node,
-                    predicates,
-                )
             }
             // Scope manipulation
             "begin_scope" => self.begin_scope_before(node, requires_scope_id()?),
@@ -505,61 +441,6 @@ impl AtomCollection {
                         parent
                     );
                     Some(Atom::Space)
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        } else if let Atom::MultilineOnlyLiteral(literal) = atom {
-            if let Some(parent) = node.parent() {
-                let parent_id = parent.id();
-
-                if self.multi_line_nodes.contains(&parent_id) {
-                    log::debug!(
-                        "Expanding multiline literal {:?} in node {:?} with parent {}: {:?}",
-                        literal,
-                        node,
-                        parent_id,
-                        parent
-                    );
-                    Some(Atom::Literal(literal))
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        } else if let Atom::SingleLineDeleteBegin = atom {
-            if let Some(parent) = node.parent() {
-                let parent_id = parent.id();
-
-                if !self.multi_line_nodes.contains(&parent_id) {
-                    log::debug!(
-                        "Expanding single-line delete begin in node {:?} with parent {}: {:?}",
-                        node,
-                        parent_id,
-                        parent
-                    );
-                    Some(Atom::DeleteBegin)
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        } else if let Atom::SingleLineDeleteEnd = atom {
-            if let Some(parent) = node.parent() {
-                let parent_id = parent.id();
-
-                if !self.multi_line_nodes.contains(&parent_id) {
-                    log::debug!(
-                        "Expanding single-line delete end in node {:?} with parent {}: {:?}",
-                        node,
-                        parent_id,
-                        parent
-                    );
-                    Some(Atom::DeleteEnd)
                 } else {
                     None
                 }
