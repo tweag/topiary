@@ -213,7 +213,7 @@ echo '{"foo":"bar"}' | topiary --language json
 if you have those installed:
 
 ```bash
-echo '{"foo":"bar"}' | cargo run -p topiary-cli -- --language json
+echo '{"foo":"bar"}' | cargo run -- --language json
 echo '{"foo":"bar"}' | nix run . -- --language json
 ```
 

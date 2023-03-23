@@ -45,14 +45,9 @@ let
   craneLibWasm = craneLib.overrideToolchain rustWithWasmTarget;
 in
 {
-  clippy-topiary = craneLib.cargoClippy (commonArgs // {
+  clippy = craneLib.cargoClippy (commonArgs // {
     inherit cargoArtifacts;
-    cargoClippyExtraArgs = "-p topiary -- --deny warnings";
-  });
-
-  clippy-cli = craneLib.cargoClippy (commonArgs // {
-    inherit cargoArtifacts;
-    cargoClippyExtraArgs = "-p topiary-cli -- --deny warnings";
+    cargoClippyExtraArgs = "-- --deny warnings";
   });
 
   clippy-wasm = craneLibWasm.cargoClippy (commonArgs // {
@@ -68,14 +63,7 @@ in
 
   benchmark = craneLib.buildPackage (commonArgs // {
     inherit cargoArtifacts;
-    cargoExtraArgs = "-p topiary";
     cargoTestCommand = "cargo bench --profile release";
-  });
-
-  topiary = craneLib.buildPackage (commonArgs // {
-    inherit cargoArtifacts;
-    pname = "topiary";
-    cargoExtraArgs = "-p topiary";
   });
 
   topiary-cli = craneLib.buildPackage (commonArgs // {
