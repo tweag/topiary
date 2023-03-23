@@ -203,6 +203,22 @@
   (term) @prepend_spaced_scoped_softline @prepend_indent_start @append_indent_end
 )
 
+; If a record field's value is multi-line, then push it on to an
+; indented new line (like let expressions). This has a single "ugly"
+; case: when a multi-line value follows multi-line annotations, the
+; equals sign will be alone on its own line.
+(record_field
+  (#scope_id! "record_field_rhs")
+  "=" @begin_scope
+  .
+  (term) @end_scope
+)
+
+(record_field
+  (#scope_id! "record_field_rhs")
+  (term) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
+)
+
 ;; Functions
 
 ; Start a function's definition on a new line, in a multi-line context.
