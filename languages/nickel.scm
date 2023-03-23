@@ -49,6 +49,7 @@
     "Bool"
     "Str"
     "->"
+    "=>"
     (interpolation_start)
     (interpolation_end)
     ; Infix operators
@@ -199,11 +200,19 @@
   t1: (applicative) @append_space
 )
 
+;; Conditionals
+
+; Flow multi-line match cases into an indented block after the =>
+(match_case
+  "=>" @append_spaced_softline @append_indent_start
+) @append_indent_end
+
 ;; Container Types
 ; Arrays, records, dictionaries and enums
 
 ; We don't want to add spaces/newlines in empty records, so the
 ; following query only matches if a named node exists within the record
+; NOTE This rule also applies to (match) and (destruct) patterns
 (_
   (#scope_id! "container")
   .
@@ -256,15 +265,6 @@
   t1: (_) @append_indent_end @append_spaced_softline
 )
 
-(match_expr
-  "{" @append_spaced_softline @append_indent_start
-  "}" @prepend_indent_end @prepend_spaced_softline @append_spaced_softline
-)
-
-(match_expr
-  "," @append_spaced_softline
-)
-
 (ite_expr
   "then" @prepend_spaced_softline @append_spaced_softline @append_indent_start
   t1: (term) @append_spaced_softline @append_indent_end
@@ -286,19 +286,4 @@
   (ident) @append_space
   .
   (ident)
-)
-
-(destruct
-  "{" @append_spaced_softline @append_indent_start
-  "}" @prepend_indent_end @prepend_spaced_softline
-)
-
-(destruct
-  "," @append_spaced_softline
-)
-
-(match_case
-  "=>" @append_spaced_softline @append_indent_start
-  (_) @append_indent_end
-  .
 )
