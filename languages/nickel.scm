@@ -86,6 +86,15 @@
 "(" @append_antispace
 ")" @prepend_antispace
 
+; Don't insert spaces between the negation operator and its operand
+(infix_expr
+  .
+  "-" @append_antispace
+  .
+  (infix_expr)
+  .
+)
+
 ;; Comments
 
 (comment) @prepend_input_softline @append_hardline
