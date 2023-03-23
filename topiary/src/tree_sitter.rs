@@ -110,7 +110,7 @@ pub fn apply_query(
     let specified_leaf_nodes: HashSet<usize> = collect_leaf_ids(&matches, &capture_names);
 
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
-    let mut atoms = AtomCollection::collect_leafs(root, source, specified_leaf_nodes)?;
+    let mut atoms = AtomCollection::collect_leafs(&root, source, specified_leaf_nodes)?;
 
     log::debug!("List of atoms before formatting: {atoms:?}");
 
@@ -177,7 +177,7 @@ pub fn parse<'a>(
                 .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))?;
 
             // Fail parsing if we don't get a complete syntax tree.
-            check_for_error_nodes(tree.root_node())?;
+            check_for_error_nodes(&tree.root_node())?;
 
             Ok((tree, grammar))
         })
@@ -190,7 +190,7 @@ pub fn parse<'a>(
         )
 }
 
-fn check_for_error_nodes(node: Node) -> FormatterResult<()> {
+fn check_for_error_nodes(node: &Node) -> FormatterResult<()> {
     if node.kind() == "ERROR" {
         let start = node.start_position();
         let end = node.end_position();
@@ -205,7 +205,7 @@ fn check_for_error_nodes(node: Node) -> FormatterResult<()> {
     }
 
     for child in node.children(&mut node.walk()) {
-        check_for_error_nodes(child)?;
+        check_for_error_nodes(&child)?;
     }
 
     Ok(())
