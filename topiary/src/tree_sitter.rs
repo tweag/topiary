@@ -211,7 +211,7 @@ fn check_for_error_nodes(node: &Node) -> FormatterResult<()> {
     Ok(())
 }
 
-fn collect_leaf_ids(matches: &Vec<LocalQueryMatch>, capture_names: &[String]) -> HashSet<usize> {
+fn collect_leaf_ids(matches: &[LocalQueryMatch], capture_names: &[String]) -> HashSet<usize> {
     let mut ids = HashSet::new();
 
     for m in matches {
