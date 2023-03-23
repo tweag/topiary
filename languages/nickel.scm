@@ -104,7 +104,7 @@
 (comment) @prepend_input_softline @append_hardline
 
 ;; Symbol Definitions
-; i.e., Let bindings and record fields
+; i.e., Let expressions and record fields
 
 ; Create a scope that covers all annotation atoms, if any,
 ; which are children of the (annot) node, *and* the equal sign. This
@@ -164,17 +164,43 @@
   ] @prepend_spaced_scoped_softline
 )
 
-; Start a let binding's RHS on a new line, in a multi-line context.
+; A let expression looks like:
+;
+;   let [rec] IDENT = EXPR in EXPR
+;
+; The binding expression should appear on a new line, indented, if its
+; RHS is multi-line (pushing the "in" to an unindented new line).
+; Similarly, the result expression (i.e., after the "in") should appear
+; on an indented new line, if that is multi-line.
+
 (let_in_block
-  (#scope_id! "let_term")
+  (#scope_id! "let_binding_rhs")
   "=" @begin_scope
+  .
+  (term)
+  .
+  "in" @end_scope
+)
+
+(let_in_block
+  (#scope_id! "let_binding_rhs")
+  (term) @prepend_spaced_scoped_softline @prepend_indent_start
+  "in" @prepend_indent_end @prepend_spaced_scoped_softline
+)
+
+(let_expr
+  (#scope_id! "let_result")
+  (let_in_block
+    "in" @begin_scope
+    .
+  )
   .
   (term) @end_scope
 )
 
-(let_in_block
-  (#scope_id! "let_term")
-  (term) @prepend_spaced_scoped_softline
+(let_expr
+  (#scope_id! "let_result")
+  (term) @prepend_spaced_scoped_softline @prepend_indent_start @append_indent_end
 )
 
 ;; Functions
@@ -225,9 +251,9 @@
 )
 
 ;; Container Types
-; Arrays, records, dictionaries and enums
+; i.e., Arrays, records (and dictionaries, vicariously) and enums
 
-; We don't want to add spaces/newlines in empty records, so the
+; We don't want to add spaces/new lines in empty records, so the
 ; following query only matches if a named node exists within the record
 ; NOTE This rule also applies to (match) and (destruct) patterns
 (_
@@ -271,16 +297,6 @@
 )
 
 ;; TIDY FROM HERE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(let_expr
-  (let_in_block) @append_spaced_softline
-)
-
-(let_in_block
-  "=" @append_indent_start
-  .
-  t1: (_) @append_indent_end @append_spaced_softline
-)
 
 (infix_b_op_6
   "&"
