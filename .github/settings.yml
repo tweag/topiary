@@ -50,3 +50,6 @@ labels:
   - name: "language: nickel"
     color: f8451f
     description: "Nickel formatting issues"
+  - name: "language: Tree-sitter queries"
+    color: f8451f
+    description: "Tree-sitter queries formatting issues"
