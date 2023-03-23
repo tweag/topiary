@@ -74,6 +74,8 @@
 )
 
 ; Don't insert spaces before the following delimiters
+; NOTE This will destroy the space in a polymorphic record tail. For
+; example: forall. { x: Number; a } -> {; a}
 [
   ","
   ";"
@@ -185,24 +187,49 @@
   t1: (applicative) @append_space
 )
 
-;; Records
+;; Container Types
+; Arrays, records, dictionaries and enums
 
 ; We don't want to add spaces/newlines in empty records, so the
 ; following query only matches if a named node exists within the record
-(uni_record
+(_
+  (#scope_id! "container")
   .
-  "{" @append_spaced_softline @append_indent_start
+  "{" @append_spaced_softline @append_indent_start @begin_scope
   (_)
-  "}" @prepend_indent_end @prepend_spaced_softline
+  "}" @prepend_indent_end @prepend_spaced_softline @end_scope
   .
 )
 
-(uni_record
-  "," @append_spaced_softline
+; As with records, we don't want internal spacing to apply if the array
+; is empty; this restriction also applies to arrays of exactly one
+; element, which is usually short (e.g., [x]).
+(_
+  (#scope_id! "container")
+  .
+  "[" @append_spaced_softline @append_indent_start @begin_scope
+  (_)
+  (_)
+  "]" @prepend_indent_end @prepend_spaced_softline @end_scope
+  .
 )
 
-(uni_record
-  ";" @append_spaced_softline
+; It doesn't really make sense for an enum to
+; have no members, so we ignore that case
+(_
+  (#scope_id! "container")
+  .
+  "[|" @append_spaced_softline @append_indent_start @begin_scope
+  "|]" @prepend_indent_end @prepend_spaced_softline @end_scope
+  .
+)
+
+(
+  (#scope_id! "container")
+  [
+    ","
+    ";"
+  ] @append_spaced_scoped_softline
 )
 
 ;; TIDY FROM HERE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -249,20 +276,6 @@
   (ident)
 )
 
-; We want the same rule for arrays as for records,
-; but array does not have a specific syntactic class, so we use the one of atoms.
-(atom
-  .
-  "[" @append_spaced_softline @append_indent_start
-  (term)
-  "]" @prepend_indent_end @prepend_spaced_softline
-  .
-)
-
-(atom
-  "," @append_spaced_softline
-)
-
 (destruct
   "{" @append_spaced_softline @append_indent_start
   "}" @prepend_indent_end @prepend_spaced_softline
@@ -276,22 +289,4 @@
   "=>" @append_spaced_softline @append_indent_start
   (_) @append_indent_end
   .
-)
-
-(type_atom
-  [
-    "[|"
-    "{"
-  ] @append_spaced_softline @append_indent_start
-  [
-    "|]"
-    "}"
-  ] @prepend_indent_end @prepend_spaced_softline
-)
-
-(type_atom
-  [
-    ","
-    ";"
-  ] @append_spaced_softline
 )

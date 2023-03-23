@@ -15,7 +15,7 @@
         else
           let head = array.head arr in
           let tail = array.tail arr in
-          [ f head ] @ map f tail,
+          [f head] @ map f tail,
 
       fold : forall a b. (a -> b -> b) -> Array a -> b -> b = fun f arr first =>
         if arr == []
