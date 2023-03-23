@@ -152,7 +152,6 @@
   _ @begin_scope
   .
   (annot) @prepend_indent_start
-  .
   "=" @append_indent_end @end_scope
 )
 
