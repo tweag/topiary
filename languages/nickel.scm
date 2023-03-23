@@ -99,6 +99,22 @@
   .
 )
 
+; Flow a chain of infix expressions over
+; new lines, in a multi-line context
+(uni_term
+  (#scope_id! "infix_chain")
+  (infix_expr) @begin_scope
+) @end_scope
+
+(infix_expr
+  (#scope_id! "infix_chain")
+  (infix_expr)
+  .
+  (_) @prepend_spaced_scoped_softline
+  .
+  (infix_expr)
+)
+
 ;; Comments
 
 (comment) @prepend_input_softline @append_hardline
@@ -313,10 +329,6 @@
 )
 
 ;; TIDY FROM HERE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(infix_b_op_6
-  "&"
-) @prepend_spaced_softline
 
 (forall
   "." @append_spaced_softline @append_indent_start
