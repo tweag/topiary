@@ -86,10 +86,13 @@
 "(" @append_antispace
 ")" @prepend_antispace
 
-; Don't insert spaces between the negation operator and its operand
+; Don't insert spaces between infix operators and their operand
 (infix_expr
   .
-  "-" @append_antispace
+  [
+    "-"
+    (infix_u_op_5 "!")
+  ] @append_antispace
   .
   (infix_expr)
   .
