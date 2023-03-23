@@ -93,6 +93,10 @@ pub enum Atom {
         condition: ScopeCondition,
         atom: Box<Atom>,
     },
+    // Represents the sorting key of a `sort_item` scope. It won't be printed
+    SortingKey {
+        content: String,
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]

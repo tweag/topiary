@@ -144,7 +144,7 @@ pub fn apply_query(
 
         for c in m.captures {
             let name = c.name(&capture_names);
-            atoms.resolve_capture(&name, &c.node(), &predicates)?;
+            atoms.resolve_capture(&name, &c.node(), &predicates, source)?;
         }
     }
 

@@ -89,6 +89,7 @@ impl AtomCollection {
         name: &str,
         node: &Node,
         predicates: &QueryPredicates,
+        source: &[u8],
     ) -> FormatterResult<()> {
         log::debug!("Resolving {name}");
 
@@ -249,6 +250,19 @@ impl AtomCollection {
                     })
                     .collect();
                 self.append(Atom::Hardline, node, predicates)
+            }
+            // Sorting-related capture names
+            "sort_asc" => {
+                self.begin_scope_before(node, "sort_range_ascending");
+                self.end_scope_after(node, "sort_range_ascending");
+            }
+            "sort_desc" => {
+                self.begin_scope_before(node, "sort_range_descending");
+                self.end_scope_after(node, "sort_range_descending");
+            }
+            "sort_key" => {
+                let atom = Atom::SortingKey { content: String::from(node.utf8_text(source)?) };
+                self.append(atom, node, predicates)
             }
             // Return a query parsing error on unknown capture names
             unknown => {
@@ -529,6 +543,13 @@ impl AtomCollection {
                         } else {
                             log::warn!("Closing unopened scope {scope_id:?}");
                             force_apply_modifications = true;
+                        }
+                        if scope_id == "sort_item" {
+
+                        } else if scope_id == "sort_range_ascending" {
+                            
+                        } else if scope_id == "sort_range_descending" {
+                            
                         }
                     }
                 }
