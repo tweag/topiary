@@ -207,6 +207,23 @@
   "=>" @append_spaced_softline @append_indent_start
 ) @append_indent_end
 
+; if...then...else expressions can either be single or multi-line. In a
+; multi-line context, they will be formatted like so:
+;
+;  if CONDITION then
+;    TRUE_TERM
+;  else
+;    FALSE_TERM
+;
+; This style has precedent from the manually formatted stdlib. (An
+; alternative style is to give the "then" token its own line.)
+(ite_expr
+  "then" @append_spaced_softline
+  t1: (term) @prepend_indent_start @append_indent_end
+  "else" @prepend_spaced_softline @append_spaced_softline
+  t2: (term) @prepend_indent_start @append_indent_end
+)
+
 ;; Container Types
 ; Arrays, records, dictionaries and enums
 
@@ -263,13 +280,6 @@
   "=" @append_indent_start
   .
   t1: (_) @append_indent_end @append_spaced_softline
-)
-
-(ite_expr
-  "then" @prepend_spaced_softline @append_spaced_softline @append_indent_start
-  t1: (term) @append_spaced_softline @append_indent_end
-  "else" @append_indent_start @append_spaced_softline
-  t2: (term) @append_indent_end
 )
 
 (infix_b_op_6
