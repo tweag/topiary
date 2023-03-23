@@ -44,3 +44,12 @@
 (array
   "," @append_spaced_softline
 )
+
+(object
+  (pair
+    . (string) @sort_key
+  ) @begin_scope
+  .
+  "," @end_scope
+  (#scope_id! "sort_item")
+) @sort_asc
