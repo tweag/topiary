@@ -115,12 +115,74 @@
   (infix_expr)
 )
 
+; Surround all polymorphic type variables with spaces
+(forall
+  (ident) @append_space @prepend_space
+)
+
 ;; Comments
 
 (comment) @prepend_input_softline @append_hardline
 
 ;; Symbol Definitions
 ; i.e., Let expressions and record fields
+
+; A let expression looks like:
+;
+;   let [rec] IDENT = EXPR in EXPR
+;
+; The binding expression should appear on a new line, indented, if its
+; RHS is multi-line (pushing the "in" to an unindented new line).
+; Similarly, the result expression (i.e., after the "in") should appear
+; on an indented new line, if that is multi-line.
+
+(let_in_block
+  (#scope_id! "let_binding_rhs")
+  "=" @begin_scope
+  .
+  (term)
+  .
+  "in" @end_scope
+)
+
+(let_in_block
+  (#scope_id! "let_binding_rhs")
+  (term) @prepend_spaced_scoped_softline @prepend_indent_start
+  "in" @prepend_indent_end @prepend_spaced_scoped_softline
+)
+
+(let_expr
+  (#scope_id! "let_result")
+  (let_in_block
+    "in" @begin_scope
+    .
+  )
+  .
+  (term) @end_scope
+)
+
+(let_expr
+  (#scope_id! "let_result")
+  (term) @prepend_spaced_scoped_softline @prepend_indent_start @append_indent_end
+)
+
+; If a record field's value is multi-line, then push it on to an
+; indented new line (like let expressions). This has a single "ugly"
+; case: when a multi-line value follows multi-line annotations, the
+; equals sign will be alone on its own line.
+(record_field
+  (#scope_id! "record_field_rhs")
+  "=" @begin_scope
+  .
+  (term) @end_scope
+)
+
+(record_field
+  (#scope_id! "record_field_rhs")
+  (term) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
+)
+
+;; Annotations
 
 ; Create a scope that covers all annotation atoms, if any,
 ; which are children of the (annot) node, *and* the equal sign. This
@@ -179,60 +241,11 @@
   ] @prepend_spaced_scoped_softline
 )
 
-; A let expression looks like:
-;
-;   let [rec] IDENT = EXPR in EXPR
-;
-; The binding expression should appear on a new line, indented, if its
-; RHS is multi-line (pushing the "in" to an unindented new line).
-; Similarly, the result expression (i.e., after the "in") should appear
-; on an indented new line, if that is multi-line.
-
-(let_in_block
-  (#scope_id! "let_binding_rhs")
-  "=" @begin_scope
-  .
-  (term)
-  .
-  "in" @end_scope
-)
-
-(let_in_block
-  (#scope_id! "let_binding_rhs")
-  (term) @prepend_spaced_scoped_softline @prepend_indent_start
-  "in" @prepend_indent_end @prepend_spaced_scoped_softline
-)
-
-(let_expr
-  (#scope_id! "let_result")
-  (let_in_block
-    "in" @begin_scope
-    .
-  )
-  .
-  (term) @end_scope
-)
-
-(let_expr
-  (#scope_id! "let_result")
-  (term) @prepend_spaced_scoped_softline @prepend_indent_start @append_indent_end
-)
-
-; If a record field's value is multi-line, then push it on to an
-; indented new line (like let expressions). This has a single "ugly"
-; case: when a multi-line value follows multi-line annotations, the
-; equals sign will be alone on its own line.
-(record_field
-  (#scope_id! "record_field_rhs")
-  "=" @begin_scope
-  .
-  (term) @end_scope
-)
-
-(record_field
-  (#scope_id! "record_field_rhs")
-  (term) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
-)
+; Break a multi-line polymorphic type annotation after the type
+; variables, starting an indentation block
+(forall
+  "." @append_spaced_softline @append_indent_start
+) @append_indent_end
 
 ;; Functions
 
@@ -325,18 +338,4 @@
     ","
     ";"
   ] @append_spaced_scoped_softline
-)
-
-;; TIDY FROM HERE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(forall
-  "." @append_spaced_softline @append_indent_start
-  (_) @append_indent_end
-  .
-)
-
-(forall
-  (ident) @append_space
-  .
-  (ident)
 )
