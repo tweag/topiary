@@ -292,10 +292,10 @@
 ; This style has precedent from the manually formatted stdlib. (An
 ; alternative style is to give the "then" token its own line.)
 (ite_expr
-  "then" @append_spaced_softline
-  t1: (term) @prepend_indent_start @append_indent_end
-  "else" @prepend_spaced_softline @append_spaced_softline
-  t2: (term) @prepend_indent_start @append_indent_end
+  "then" @append_spaced_softline @append_indent_start
+  t1: (term) @append_indent_end
+  "else" @prepend_spaced_softline @append_spaced_softline @append_indent_start
+  t2: (term) @append_indent_end
 )
 
 ;; Container Types
