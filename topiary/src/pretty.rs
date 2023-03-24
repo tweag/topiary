@@ -1,13 +1,13 @@
-use std::fmt::Write;
+use std::{borrow::Cow, fmt::Write, ops::Deref, rc::Rc};
 
 use crate::{Atom, FormatterError, FormatterResult};
 
-pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
+pub fn render<'a>(atoms: &[Rc<Atom>], indent: &str) -> FormatterResult<String> {
     let mut buffer = String::new();
     let mut indent_level: usize = 0;
 
     for atom in atoms {
-        match atom {
+        match atom.deref() {
             Atom::Blankline => write!(buffer, "\n\n{}", indent.repeat(indent_level))?,
 
             Atom::Empty => (),

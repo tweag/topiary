@@ -1,6 +1,8 @@
 use std::{
     borrow::Cow,
     collections::{HashMap, HashSet},
+    ops::Deref,
+    rc::Rc,
 };
 
 use tree_sitter_facade::Node;
@@ -9,9 +11,10 @@ use crate::{Atom, FormatterError, FormatterResult, ScopeCondition};
 
 #[derive(Debug)]
 pub struct AtomCollection {
-    atoms: Vec<Atom>,
-    prepend: HashMap<usize, Vec<Atom>>,
-    append: HashMap<usize, Vec<Atom>>,
+    atoms: Vec<Rc<Atom>>,
+    post_processed: Vec<Rc<Atom>>,
+    prepend: HashMap<usize, Vec<Rc<Atom>>>,
+    append: HashMap<usize, Vec<Rc<Atom>>>,
     specified_leaf_nodes: HashSet<usize>,
     parent_leaf_nodes: HashMap<usize, usize>,
     multi_line_nodes: HashSet<usize>,
@@ -28,7 +31,7 @@ pub struct AtomCollection {
     counter: usize,
 }
 
-impl AtomCollection {
+impl<'a> AtomCollection {
     /// Use this to create an initial AtomCollection
     pub fn collect_leafs(
         root: &Node,
@@ -42,6 +45,7 @@ impl AtomCollection {
 
         let mut atoms = AtomCollection {
             atoms: Vec::new(),
+            post_processed: Vec::new(),
             prepend: HashMap::new(),
             append: HashMap::new(),
             specified_leaf_nodes,
@@ -61,25 +65,25 @@ impl AtomCollection {
     }
 
     // wrap inside a conditional atom if #single/multi_line_scope_only! is set
-    fn wrap(&mut self, atom: Atom, predicates: &QueryPredicates) -> Atom {
+    fn wrap(&mut self, atom: Rc<Atom>, predicates: &QueryPredicates) -> Rc<Atom> {
         if let Some(scope_id) = &predicates.single_line_scope_only {
             let id = self.next_id();
-            Atom::ScopedConditional {
+            Rc::new(Atom::ScopedConditional {
                 id,
                 scope_id: scope_id.to_string(),
                 condition: ScopeCondition::SingleLineOnly,
-                atom: Box::new(atom),
-            }
+                atom,
+            })
         } else if let Some(scope_id) = &predicates.multi_line_scope_only {
             let id = self.next_id();
-            Atom::ScopedConditional {
+            Rc::new(Atom::ScopedConditional {
                 id,
                 scope_id: scope_id.to_string(),
                 condition: ScopeCondition::MultiLineOnly,
-                atom: Box::new(atom),
-            }
+                atom,
+            })
         } else {
-            atom
+            atom.clone()
         }
     }
 
@@ -122,20 +126,20 @@ impl AtomCollection {
         match name {
             "allow_blank_line_before" => {
                 if self.blank_lines_before.contains(&node.id()) {
-                    self.prepend(Atom::Blankline, node, predicates);
+                    self.prepend(Rc::new(Atom::Blankline), node, predicates);
                 }
             }
             "append_delimiter" => self.append(
-                Atom::Literal(requires_delimiter()?.to_string()),
+                Rc::new(Atom::Literal(requires_delimiter()?.to_string())),
                 node,
                 predicates,
             ),
             "append_empty_softline" => {
-                self.append(Atom::Softline { spaced: false }, node, predicates)
+                self.append(Rc::new(Atom::Softline { spaced: false }), node, predicates)
             }
-            "append_hardline" => self.append(Atom::Hardline, node, predicates),
-            "append_indent_start" => self.append(Atom::IndentStart, node, predicates),
-            "append_indent_end" => self.append(Atom::IndentEnd, node, predicates),
+            "append_hardline" => self.append(Rc::new(Atom::Hardline), node, predicates),
+            "append_indent_start" => self.append(Rc::new(Atom::IndentStart), node, predicates),
+            "append_indent_end" => self.append(Rc::new(Atom::IndentEnd), node, predicates),
             "append_input_softline" => {
                 let space = if self.line_break_after.contains(&node.id()) {
                     Atom::Hardline
@@ -143,24 +147,24 @@ impl AtomCollection {
                     Atom::Space
                 };
 
-                self.append(space, node, predicates);
+                self.append(Rc::new(space), node, predicates);
             }
-            "append_space" => self.append(Atom::Space, node, predicates),
-            "append_antispace" => self.append(Atom::Antispace, node, predicates),
+            "append_space" => self.append(Rc::new(Atom::Space), node, predicates),
+            "append_antispace" => self.append(Rc::new(Atom::Antispace), node, predicates),
             "append_spaced_softline" => {
-                self.append(Atom::Softline { spaced: true }, node, predicates)
+                self.append(Rc::new(Atom::Softline { spaced: true }), node, predicates)
             }
             "prepend_delimiter" => self.prepend(
-                Atom::Literal(requires_delimiter()?.to_string()),
+                Rc::new(Atom::Literal(requires_delimiter()?.to_string())),
                 node,
                 predicates,
             ),
             "prepend_empty_softline" => {
-                self.prepend(Atom::Softline { spaced: false }, node, predicates)
+                self.prepend(Rc::new(Atom::Softline { spaced: false }), node, predicates)
             }
-            "prepend_hardline" => self.prepend(Atom::Hardline, node, predicates),
-            "prepend_indent_start" => self.prepend(Atom::IndentStart, node, predicates),
-            "prepend_indent_end" => self.prepend(Atom::IndentEnd, node, predicates),
+            "prepend_hardline" => self.prepend(Rc::new(Atom::Hardline), node, predicates),
+            "prepend_indent_start" => self.prepend(Rc::new(Atom::IndentStart), node, predicates),
+            "prepend_indent_end" => self.prepend(Rc::new(Atom::IndentEnd), node, predicates),
             "prepend_input_softline" => {
                 let space = if self.line_break_before.contains(&node.id()) {
                     Atom::Hardline
@@ -168,19 +172,19 @@ impl AtomCollection {
                     Atom::Space
                 };
 
-                self.prepend(space, node, predicates);
+                self.prepend(Rc::new(space), node, predicates);
             }
-            "prepend_space" => self.prepend(Atom::Space, node, predicates),
-            "prepend_antispace" => self.prepend(Atom::Antispace, node, predicates),
+            "prepend_space" => self.prepend(Rc::new(Atom::Space), node, predicates),
+            "prepend_antispace" => self.prepend(Rc::new(Atom::Antispace), node, predicates),
             "prepend_spaced_softline" => {
-                self.prepend(Atom::Softline { spaced: true }, node, predicates)
+                self.prepend(Rc::new(Atom::Softline { spaced: true }), node, predicates)
             }
             // Skip over leafs
             "leaf" => {}
             // Deletion
             "delete" => {
-                self.prepend(Atom::DeleteBegin, node, predicates);
-                self.append(Atom::DeleteEnd, node, predicates)
+                self.prepend(Rc::new(Atom::DeleteBegin), node, predicates);
+                self.append(Rc::new(Atom::DeleteEnd), node, predicates)
             }
             // Scope manipulation
             "begin_scope" => self.begin_scope_before(node, requires_scope_id()?),
@@ -189,11 +193,11 @@ impl AtomCollection {
             "append_empty_scoped_softline" => {
                 let id = self.next_id();
                 self.append(
-                    Atom::ScopedSoftline {
+                    Rc::new(Atom::ScopedSoftline {
                         id,
                         scope_id: requires_scope_id()?.to_string(),
                         spaced: false,
-                    },
+                    }),
                     node,
                     predicates,
                 )
@@ -201,11 +205,11 @@ impl AtomCollection {
             "append_spaced_scoped_softline" => {
                 let id = self.next_id();
                 self.append(
-                    Atom::ScopedSoftline {
+                    Rc::new(Atom::ScopedSoftline {
                         id,
                         scope_id: requires_scope_id()?.to_string(),
                         spaced: true,
-                    },
+                    }),
                     node,
                     predicates,
                 )
@@ -213,11 +217,11 @@ impl AtomCollection {
             "prepend_empty_scoped_softline" => {
                 let id = self.next_id();
                 self.prepend(
-                    Atom::ScopedSoftline {
+                    Rc::new(Atom::ScopedSoftline {
                         id,
                         scope_id: requires_scope_id()?.to_string(),
                         spaced: false,
-                    },
+                    }),
                     node,
                     predicates,
                 )
@@ -225,11 +229,11 @@ impl AtomCollection {
             "prepend_spaced_scoped_softline" => {
                 let id = self.next_id();
                 self.prepend(
-                    Atom::ScopedSoftline {
+                    Rc::new(Atom::ScopedSoftline {
                         id,
                         scope_id: requires_scope_id()?.to_string(),
                         spaced: true,
-                    },
+                    }),
                     node,
                     predicates,
                 )
@@ -239,16 +243,16 @@ impl AtomCollection {
                 self.atoms = self
                     .atoms
                     .iter()
-                    .map(|atom| match atom {
-                        Atom::Leaf { content, id, .. } if *id == node.id() => Atom::Leaf {
+                    .map(|atom| match &**atom {
+                        Atom::Leaf { content, id, .. } if *id == node.id() => Rc::new(Atom::Leaf {
                             content: content.to_string(),
                             id: *id,
                             single_line_no_indent: true,
-                        },
+                        }),
                         _ => atom.clone(),
                     })
                     .collect();
-                self.append(Atom::Hardline, node, predicates)
+                self.append(Rc::new(Atom::Hardline), node, predicates)
             }
             // Return a query parsing error on unknown capture names
             unknown => {
@@ -264,18 +268,18 @@ impl AtomCollection {
 
     /// After query processing is done, a flattened/expanded vector of atoms can be created.
     pub fn apply_prepends_and_appends(&mut self) {
-        let mut expanded: Vec<Atom> = Vec::new();
+        let mut expanded: Vec<Rc<Atom>> = Vec::new();
 
         for atom in self.atoms.iter() {
-            match atom {
+            match **atom {
                 Atom::Leaf { id, .. } => {
-                    for prepended in self.prepend.entry(*id).or_default() {
+                    for prepended in self.prepend.entry(id).or_default() {
                         expanded.push(prepended.clone());
                     }
 
                     expanded.push(atom.clone());
 
-                    for appended in self.append.entry(*id).or_default() {
+                    for appended in self.append.entry(id).or_default() {
                         log::debug!("Applying append of {appended:?} to {atom:?}.");
                         expanded.push(appended.clone());
                     }
@@ -315,11 +319,11 @@ impl AtomCollection {
         );
 
         if node.child_count() == 0 || self.specified_leaf_nodes.contains(&node.id()) {
-            self.atoms.push(Atom::Leaf {
+            self.atoms.push(Rc::new(Atom::Leaf {
                 content: String::from(node.utf8_text(source)?),
                 id,
                 single_line_no_indent: false,
-            });
+            }));
             // Mark all sub-nodes as having this node as a "leaf parent"
             self.mark_leaf_parent(node, node.id())
         } else {
@@ -331,7 +335,7 @@ impl AtomCollection {
         Ok(())
     }
 
-    fn prepend(&mut self, atom: Atom, node: &Node, predicates: &QueryPredicates) {
+    fn prepend(&mut self, atom: Rc<Atom>, node: &Node, predicates: &QueryPredicates) {
         if let Some(atom) = self.expand_multiline(atom, node) {
             let atom = self.wrap(atom, predicates);
             // TODO: Pre-populate these
@@ -351,7 +355,7 @@ impl AtomCollection {
         }
     }
 
-    fn append(&mut self, atom: Atom, node: &Node, predicates: &QueryPredicates) {
+    fn append(&mut self, atom: Rc<Atom>, node: &Node, predicates: &QueryPredicates) {
         if let Some(atom) = self.expand_multiline(atom, node) {
             let atom = self.wrap(atom, predicates);
             let target_node = last_leaf(node);
@@ -420,8 +424,8 @@ impl AtomCollection {
         }
     }
 
-    fn expand_multiline(&self, atom: Atom, node: &Node) -> Option<Atom> {
-        if let Atom::Softline { spaced } = atom {
+    fn expand_multiline(&self, atom: Rc<Atom>, node: &Node) -> Option<Rc<Atom>> {
+        if let Atom::Softline { spaced } = *atom {
             if let Some(parent) = node.parent() {
                 let parent_id = parent.id();
 
@@ -432,7 +436,7 @@ impl AtomCollection {
                         parent_id,
                         parent
                     );
-                    Some(Atom::Hardline)
+                    Some(Rc::new(Atom::Hardline))
                 } else if spaced {
                     log::debug!(
                         "Expanding softline to space in node {:?} with parent {}: {:?}",
@@ -440,7 +444,7 @@ impl AtomCollection {
                         parent_id,
                         parent
                     );
-                    Some(Atom::Space)
+                    Some(Rc::new(Atom::Space))
                 } else {
                     None
                 }
@@ -448,7 +452,7 @@ impl AtomCollection {
                 None
             }
         } else {
-            Some(atom)
+            Some(atom.clone())
         }
     }
 
@@ -470,7 +474,7 @@ impl AtomCollection {
         // replace them with. Instead of in-place modifications, we associate a replacement
         // atom to each ScopedSoftline atom (identified by their `id` field), then apply
         // the modifications in a second pass over the atoms.
-        let mut modifications: HashMap<ScopedNodeId, Option<Atom>> = HashMap::new();
+        let mut modifications: HashMap<ScopedNodeId, Option<Rc<Atom>>> = HashMap::new();
         // `force_apply_modifications` keeps track of whether something has gone wrong in the
         // post-processing (e.g. closing an unopened scope, finding a scoped atom outside
         // of its scope). If we detect any error, we don't skip the "Apply modifications" part
@@ -479,9 +483,9 @@ impl AtomCollection {
         let mut force_apply_modifications = false;
 
         for atom in &self.atoms {
-            if let Atom::Leaf { id, .. } = atom {
+            if let Atom::Leaf { id, .. } = **atom {
                 // Begin a new scope
-                if let Some((line_start, scope_ids)) = self.scope_begin.get(id) {
+                if let Some((line_start, scope_ids)) = self.scope_begin.get(&id) {
                     for scope_id in scope_ids {
                         opened_scopes
                             .entry(scope_id)
@@ -491,7 +495,7 @@ impl AtomCollection {
                 }
                 // End a scope, and register the ScopedSoftline transformations
                 // in `modifications`
-                if let Some((line_end, scope_ids)) = self.scope_end.get(id) {
+                if let Some((line_end, scope_ids)) = self.scope_end.get(&id) {
                     for scope_id in scope_ids {
                         if let Some((line_start, atoms)) = opened_scopes
                             .get_mut(scope_id)
@@ -502,9 +506,9 @@ impl AtomCollection {
                             for atom in atoms {
                                 if let Atom::ScopedSoftline { id, spaced, .. } = atom {
                                     let new_atom = if multiline {
-                                        Some(Atom::Hardline)
+                                        Some(Rc::new(Atom::Hardline))
                                     } else if *spaced {
-                                        Some(Atom::Space)
+                                        Some(Rc::new(Atom::Space))
                                     } else {
                                         None
                                     };
@@ -519,7 +523,7 @@ impl AtomCollection {
                                     let multiline_only =
                                         *condition == ScopeCondition::MultiLineOnly;
                                     let new_atom = if multiline == multiline_only {
-                                        Some((**atom).clone())
+                                        Some(atom.clone())
                                     } else {
                                         None
                                     };
@@ -533,7 +537,7 @@ impl AtomCollection {
                     }
                 }
             // Register the ScopedSoftline in the correct scope
-            } else if let Atom::ScopedSoftline { scope_id, .. } = atom {
+            } else if let Atom::ScopedSoftline { scope_id, .. } = &**atom {
                 if let Some((_, vec)) = opened_scopes
                     .get_mut(&scope_id)
                     .map(|v| v.last_mut())
@@ -545,7 +549,7 @@ impl AtomCollection {
                     force_apply_modifications = true;
                 }
             // Register the ScopedConditional in the correct scope
-            } else if let Atom::ScopedConditional { scope_id, .. } = atom {
+            } else if let Atom::ScopedConditional { scope_id, .. } = &**atom {
                 if let Some((_, vec)) = opened_scopes
                     .get_mut(&scope_id)
                     .map(|v| v.last_mut())
@@ -574,8 +578,8 @@ impl AtomCollection {
                 .atoms
                 .iter()
                 .filter_map(|atom| {
-                    if let Atom::ScopedSoftline { id, .. } = atom {
-                        if let Some(atom_option) = modifications.remove(id) {
+                    if let Atom::ScopedSoftline { id, .. } = **atom {
+                        if let Some(atom_option) = modifications.remove(&id) {
                             atom_option
                         } else {
                             log::warn!(
@@ -584,8 +588,8 @@ impl AtomCollection {
                             );
                             None
                         }
-                    } else if let Atom::ScopedConditional { id, .. } = atom {
-                        if let Some(atom_option) = modifications.remove(id) {
+                    } else if let Atom::ScopedConditional { id, .. } = **atom {
+                        if let Some(atom_option) = modifications.remove(&id) {
                             atom_option
                         } else {
                             log::warn!(
@@ -609,16 +613,15 @@ impl AtomCollection {
     // Furthermore, this function put the indentation delimiters before any space/line atom.
     pub fn post_process(&mut self) {
         self.post_process_scopes();
-        let mut new_vec: Vec<Atom> = Vec::new();
-        for next in &(self.atoms) {
-            if let Some(prev_var) = new_vec.last() {
-                let prev = prev_var.clone();
-                post_process_internal(&mut new_vec, prev, next.clone())
+        let mut new_vec: Vec<Rc<Atom>> = Vec::new();
+        for next in &self.atoms {
+            if let Some(prev) = new_vec.last().cloned() {
+                post_process_internal(&mut new_vec, prev.clone(), next.clone());
             } else {
                 // If the new vector is still empty,
                 // we skip all the spaces and newlines
                 // and add the first significant atom to the new vector.
-                match next {
+                match **next {
                     Atom::Space | Atom::Antispace | Atom::Hardline | Atom::Blankline => {}
                     _ => new_vec.push(next.clone()),
                 };
@@ -645,11 +648,15 @@ pub struct QueryPredicates {
     pub multi_line_scope_only: Option<String>,
 }
 
-fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
-    match prev {
+fn post_process_internal<'a, 'b, 'c, 'd: 'b, 'e: 'b>(
+    new_vec: &'c mut Vec<Rc<Atom>>,
+    prev: Rc<Atom>,
+    next: Rc<Atom>,
+) {
+    match *prev {
         // Discard all spaces "connected" to an antispace
         Atom::Antispace => {
-            match next {
+            match *next {
                 // Skip over a space or antispace that follows an antispace...
                 Atom::Space | Atom::Antispace => {}
 
@@ -665,7 +672,7 @@ fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
 
         // If the last atom is a space/line
         Atom::Space | Atom::Hardline | Atom::Blankline => {
-            match next {
+            match *next {
                 // And the next one is also a space/line
                 Atom::Space | Atom::Hardline | Atom::Blankline => {
                     if is_dominant(&next, &prev) {
@@ -688,7 +695,7 @@ fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
         // If the last one is a DeleteBegin,
         // we ignore all the atoms until a DeleteEnd is met.
         Atom::DeleteBegin => {
-            if next == Atom::DeleteEnd {
+            if *next == Atom::DeleteEnd {
                 new_vec.pop();
             }
         }
@@ -698,9 +705,9 @@ fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
     }
 }
 
-fn collapse_antispace(v: &mut Vec<Atom>) {
+fn collapse_antispace(v: &mut Vec<Rc<Atom>>) {
     while let Some(last) = v.last() {
-        match last {
+        match **last {
             Atom::Space | Atom::Antispace => v.pop(),
             _ => break,
         };
@@ -831,7 +838,7 @@ fn last_leaf_inner<'tree, 'node: 'tree>(node: Cow<'node, Node<'tree>>) -> Cow<'n
 /// So that we can easily extract the atoms using &atom_collection[..]
 impl<Idx> std::ops::Index<Idx> for AtomCollection
 where
-    Idx: std::slice::SliceIndex<[Atom]>,
+    Idx: std::slice::SliceIndex<[Rc<Atom>]>,
 {
     type Output = Idx::Output;
 

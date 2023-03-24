@@ -12,7 +12,7 @@
 
 use itertools::Itertools;
 use pretty_assertions::StrComparison;
-use std::io;
+use std::{io, rc::Rc};
 
 pub use crate::{
     configuration::Configuration,
@@ -91,7 +91,7 @@ pub enum Atom {
         id: usize,
         scope_id: String,
         condition: ScopeCondition,
-        atom: Box<Atom>,
+        atom: Rc<Atom>,
     },
 }
 

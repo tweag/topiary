@@ -80,7 +80,7 @@ struct LocalQueryMatch<'a> {
     captures: Vec<QueryCapture<'a>>,
 }
 
-pub fn apply_query(
+pub fn apply_query<'a>(
     input_content: &str,
     query_content: &str,
     grammars: &[tree_sitter_facade::Language],
