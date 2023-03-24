@@ -1,4 +1,4 @@
-use std::{error::Error, fmt, io, path::PathBuf, str, string};
+use std::{error::Error, fmt, io, ops::Deref, path::PathBuf, str, string};
 
 /// The various errors the formatter may return.
 #[derive(Debug)]
@@ -101,7 +101,7 @@ impl Error for FormatterError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             Self::Idempotence => None,
-            Self::Internal(_, source) => source.as_ref().map(|e| &**e),
+            Self::Internal(_, source) => source.as_ref().map(|e| e.deref()),
             Self::Parsing { .. } => None,
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::LanguageDetection(_, _) => None,

@@ -1,6 +1,7 @@
 use std::{
     borrow::Cow,
     collections::{HashMap, HashSet},
+    ops::Deref,
     rc::Rc,
 };
 
@@ -240,7 +241,7 @@ impl AtomCollection {
                 self.atoms = self
                     .atoms
                     .iter()
-                    .map(|atom| match &**atom {
+                    .map(|atom| match atom.deref() {
                         Atom::Leaf { content, id, .. } if *id == node.id() => Rc::new(Atom::Leaf {
                             content: content.to_string(),
                             id: *id,
@@ -268,15 +269,15 @@ impl AtomCollection {
         let mut expanded: Vec<Rc<Atom>> = Vec::new();
 
         for atom in self.atoms.iter() {
-            match **atom {
+            match atom.deref() {
                 Atom::Leaf { id, .. } => {
-                    for prepended in self.prepend.entry(id).or_default() {
+                    for prepended in self.prepend.entry(*id).or_default() {
                         expanded.push(prepended.clone());
                     }
 
                     expanded.push(atom.clone());
 
-                    for appended in self.append.entry(id).or_default() {
+                    for appended in self.append.entry(*id).or_default() {
                         log::debug!("Applying append of {appended:?} to {atom:?}.");
                         expanded.push(appended.clone());
                     }
@@ -480,9 +481,9 @@ impl AtomCollection {
         let mut force_apply_modifications = false;
 
         for atom in &self.atoms {
-            if let Atom::Leaf { id, .. } = **atom {
+            if let Atom::Leaf { id, .. } = atom.deref() {
                 // Begin a new scope
-                if let Some((line_start, scope_ids)) = self.scope_begin.get(&id) {
+                if let Some((line_start, scope_ids)) = self.scope_begin.get(id) {
                     for scope_id in scope_ids {
                         opened_scopes
                             .entry(scope_id)
@@ -492,7 +493,7 @@ impl AtomCollection {
                 }
                 // End a scope, and register the ScopedSoftline transformations
                 // in `modifications`
-                if let Some((line_end, scope_ids)) = self.scope_end.get(&id) {
+                if let Some((line_end, scope_ids)) = self.scope_end.get(id) {
                     for scope_id in scope_ids {
                         if let Some((line_start, atoms)) = opened_scopes
                             .get_mut(scope_id)
@@ -534,7 +535,7 @@ impl AtomCollection {
                     }
                 }
             // Register the ScopedSoftline in the correct scope
-            } else if let Atom::ScopedSoftline { scope_id, .. } = &**atom {
+            } else if let Atom::ScopedSoftline { scope_id, .. } = atom.deref() {
                 if let Some((_, vec)) = opened_scopes
                     .get_mut(&scope_id)
                     .map(|v| v.last_mut())
@@ -546,7 +547,7 @@ impl AtomCollection {
                     force_apply_modifications = true;
                 }
             // Register the ScopedConditional in the correct scope
-            } else if let Atom::ScopedConditional { scope_id, .. } = &**atom {
+            } else if let Atom::ScopedConditional { scope_id, .. } = atom.deref() {
                 if let Some((_, vec)) = opened_scopes
                     .get_mut(&scope_id)
                     .map(|v| v.last_mut())
@@ -575,8 +576,8 @@ impl AtomCollection {
                 .atoms
                 .iter()
                 .filter_map(|atom| {
-                    if let Atom::ScopedSoftline { id, .. } = **atom {
-                        if let Some(atom_option) = modifications.remove(&id) {
+                    if let Atom::ScopedSoftline { id, .. } = atom.deref() {
+                        if let Some(atom_option) = modifications.remove(id) {
                             atom_option
                         } else {
                             log::warn!(
@@ -585,8 +586,8 @@ impl AtomCollection {
                             );
                             None
                         }
-                    } else if let Atom::ScopedConditional { id, .. } = **atom {
-                        if let Some(atom_option) = modifications.remove(&id) {
+                    } else if let Atom::ScopedConditional { id, .. } = atom.deref() {
+                        if let Some(atom_option) = modifications.remove(id) {
                             atom_option
                         } else {
                             log::warn!(
@@ -618,7 +619,7 @@ impl AtomCollection {
                 // If the new vector is still empty,
                 // we skip all the spaces and newlines
                 // and add the first significant atom to the new vector.
-                match **next {
+                match next.deref() {
                     Atom::Space | Atom::Antispace | Atom::Hardline | Atom::Blankline => {}
                     _ => new_vec.push(next.clone()),
                 };
@@ -704,7 +705,7 @@ fn post_process_internal<'a, 'b, 'c, 'd: 'b, 'e: 'b>(
 
 fn collapse_antispace(v: &mut Vec<Rc<Atom>>) {
     while let Some(last) = v.last() {
-        match **last {
+        match last.deref() {
             Atom::Space | Atom::Antispace => v.pop(),
             _ => break,
         };
