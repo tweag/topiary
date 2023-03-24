@@ -1,19 +1,20 @@
 use crate::{language::Language, FormatterError, FormatterResult};
 use regex::Regex;
+use unescape::unescape;
 
 pub struct Configuration {
     pub language: Language,
-    pub indent_level: usize,
+    pub indent: String,
 }
 
 impl Configuration {
     pub fn parse(query: &str) -> FormatterResult<Self> {
         let mut language: Option<Language> = None;
-        let mut indent_level: usize = 2;
+        let mut indent: String = String::from("  ");
 
         // Match lines beginning with a predicate like this:
         // (#language! rust)
-        // (#indent-level! 4)
+        // (#indent! "    ")
         // (#foo! 1 2 bar)
         let regex =
             Regex::new(r"(?m)^\(#(?P<predicate>.*?)!\s+(?P<arguments>.*?)\)").expect("valid regex");
@@ -23,16 +24,13 @@ impl Configuration {
                 .name("predicate")
                 .expect("predicate capture group")
                 .as_str();
-            let mut arguments = capture
-                .name("arguments")
-                .expect("arguments capture group")
-                .as_str()
-                .split(' ');
-            log::info!("Predicate: {predicate} -  Arguments: {arguments:?}");
+            let argument = capture.name("arguments").map(|arg| arg.as_str());
+
+            log::info!("Predicate: {predicate} -  Argument: {argument:?}");
 
             match predicate {
                 "language" => {
-                    if let Some(arg) = arguments.next() {
+                    if let Some(arg) = argument {
                         language = Some(Language::new(arg)?);
                     } else {
                         return Err(FormatterError::Query(
@@ -41,20 +39,32 @@ impl Configuration {
                         ));
                     }
                 }
-                "indent-level" => {
-                    if let Some(arg) = arguments.next() {
-                        indent_level = arg.parse::<usize>().map_err(|_| {
+                "indent" => {
+                    if let Some(arg) = argument {
+                        // Strip first and last " or ' from the string
+                        // and unescape characters like \t
+                        let arg = unescape(&arg[1..arg.len() - 1]).ok_or_else(|| {
                             FormatterError::Query(
                                 format!(
-                                    "The #indent-level! parameter must be a positive integer, but got '{arg}'"
+                                    "The #indent! parameter could not be unescaped, got '{arg}'"
                                 ),
                                 None,
                             )
                         })?;
+
+                        if arg.chars().all(char::is_whitespace) {
+                            indent = arg;
+                        } else {
+                            return Err(FormatterError::Query(
+                                format!(
+                                    "The #indent! parameter must only contain whitespace, but got '{arg}'"
+                                ),
+                                None,
+                            ));
+                        };
                     } else {
                         return Err(FormatterError::Query(
-                            "The #indent-level! configuration predicate must have a parameter"
-                                .into(),
+                            "The #indent! configuration predicate must have a parameter".into(),
                             None,
                         ));
                     }
@@ -69,10 +79,7 @@ impl Configuration {
         }
 
         if let Some(language) = language {
-            Ok(Configuration {
-                language,
-                indent_level,
-            })
+            Ok(Configuration { language, indent })
         } else {
             Err(FormatterError::Query("The query file must configure a language using the #language! configuration predicate".into(), None))
         }

@@ -2,30 +2,30 @@ use std::fmt::Write;
 
 use crate::{Atom, FormatterError, FormatterResult};
 
-pub fn render(atoms: &[Atom], indent_offset: usize) -> FormatterResult<String> {
+pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
     let mut buffer = String::new();
-    let mut indent_level = 0;
+    let mut indent_level: usize = 0;
 
     for atom in atoms {
         match atom {
-            Atom::Blankline => write!(buffer, "\n\n{}", " ".repeat(indent_level))?,
+            Atom::Blankline => write!(buffer, "\n\n{}", indent.repeat(indent_level))?,
 
             Atom::Empty => (),
 
-            Atom::Hardline => write!(buffer, "\n{}", " ".repeat(indent_level))?,
+            Atom::Hardline => write!(buffer, "\n{}", indent.repeat(indent_level))?,
 
             Atom::IndentEnd => {
-                if indent_offset > indent_level {
+                if indent_level == 0 {
                     return Err(FormatterError::Query(
                         "Trying to close an unopened indentation block".into(),
                         None,
                     ));
                 }
 
-                indent_level -= indent_offset;
+                indent_level -= 1;
             }
 
-            Atom::IndentStart => indent_level += indent_offset,
+            Atom::IndentStart => indent_level += 1,
 
             Atom::Leaf {
                 content,

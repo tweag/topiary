@@ -14,8 +14,9 @@ regex = "1.7.1"
 serde = { version = "1.0.156", features = ["derive"] }
 serde_json = "1.0"
 tree-sitter-facade = { git = "https://github.com/tweag/tree-sitter-facade" }
+unescape = "0.1"
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies] 
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tokio = "^1.26.0"
 tree-sitter-json = "0.19"
 tree-sitter-rust = "0.20.3"

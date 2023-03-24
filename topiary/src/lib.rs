@@ -173,7 +173,7 @@ pub fn formatter(
 
             // Pretty-print atoms
             log::info!("Pretty-print output");
-            let rendered = pretty::render(&atoms[..], configuration.indent_level)?;
+            let rendered = pretty::render(&atoms[..], &configuration.indent)?;
             let trimmed = trim_whitespace(&rendered);
 
             if !skip_idempotence {
