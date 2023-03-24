@@ -31,14 +31,14 @@ pub struct AtomCollection {
 impl AtomCollection {
     /// Use this to create an initial AtomCollection
     pub fn collect_leafs(
-        root: Node,
+        root: &Node,
         source: &[u8],
         specified_leaf_nodes: HashSet<usize>,
     ) -> FormatterResult<AtomCollection> {
         // Detect user specified line breaks
-        let multi_line_nodes = detect_multi_line_nodes(&root);
-        let blank_lines_before = detect_blank_lines_before(&root);
-        let (line_break_before, line_break_after) = detect_line_break_before_and_after(&root);
+        let multi_line_nodes = detect_multi_line_nodes(root);
+        let blank_lines_before = detect_blank_lines_before(root);
+        let (line_break_before, line_break_after) = detect_line_break_before_and_after(root);
 
         let mut atoms = AtomCollection {
             atoms: Vec::new(),
@@ -299,7 +299,7 @@ impl AtomCollection {
 
     fn collect_leafs_inner(
         &mut self,
-        node: Node,
+        node: &Node,
         source: &[u8],
         parent_ids: &[usize],
         level: usize,
@@ -321,10 +321,10 @@ impl AtomCollection {
                 single_line_no_indent: false,
             });
             // Mark all sub-nodes as having this node as a "leaf parent"
-            self.mark_leaf_parent(&node, node.id())
+            self.mark_leaf_parent(node, node.id())
         } else {
             for child in node.children(&mut node.walk()) {
-                self.collect_leafs_inner(child, source, &parent_ids, level + 1)?;
+                self.collect_leafs_inner(&child, source, &parent_ids, level + 1)?;
             }
         }
 
@@ -668,7 +668,7 @@ fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
             match next {
                 // And the next one is also a space/line
                 Atom::Space | Atom::Hardline | Atom::Blankline => {
-                    if is_dominant(next.clone(), prev) {
+                    if is_dominant(&next, &prev) {
                         new_vec.pop();
                         new_vec.push(next);
                     }
@@ -709,11 +709,11 @@ fn collapse_antispace(v: &mut Vec<Atom>) {
 
 // This function is only expected to take spaces and newlines as argument.
 // It defines the order Blankline > Hardline > Space.
-fn is_dominant(next: Atom, prev: Atom) -> bool {
+fn is_dominant(next: &Atom, prev: &Atom) -> bool {
     match next {
         Atom::Space => false,
-        Atom::Hardline => prev == Atom::Space,
-        Atom::Blankline => prev != Atom::Blankline,
+        Atom::Hardline => *prev == Atom::Space,
+        Atom::Blankline => *prev != Atom::Blankline,
         _ => panic!("Unexpected character in is_dominant"),
     }
 }
