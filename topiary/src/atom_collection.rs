@@ -36,9 +36,9 @@ impl AtomCollection {
         specified_leaf_nodes: HashSet<usize>,
     ) -> FormatterResult<AtomCollection> {
         // Detect user specified line breaks
-        let multi_line_nodes = detect_multi_line_nodes(&root);
-        let blank_lines_before = detect_blank_lines_before(&root);
-        let (line_break_before, line_break_after) = detect_line_break_before_and_after(&root);
+        let multi_line_nodes = detect_multi_line_nodes(root);
+        let blank_lines_before = detect_blank_lines_before(root);
+        let (line_break_before, line_break_after) = detect_line_break_before_and_after(root);
 
         let mut atoms = AtomCollection {
             atoms: Vec::new(),
@@ -321,7 +321,7 @@ impl AtomCollection {
                 single_line_no_indent: false,
             });
             // Mark all sub-nodes as having this node as a "leaf parent"
-            self.mark_leaf_parent(&node, node.id())
+            self.mark_leaf_parent(node, node.id())
         } else {
             for child in node.children(&mut node.walk()) {
                 self.collect_leafs_inner(&child, source, &parent_ids, level + 1)?;
