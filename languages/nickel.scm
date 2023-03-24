@@ -99,8 +99,9 @@
   .
 )
 
-; Flow a chain of infix expressions over
-; new lines, in a multi-line context
+; Flow a chain of infix expressions over new lines, in a multi-line
+; context. Note that we _don't_ want this to happen for comparison
+; operators, which fall under nodes (infix_b_op_7) and (infix_b_op_8).
 (uni_term
   (#scope_id! "infix_chain")
   (infix_expr) @begin_scope
@@ -110,7 +111,14 @@
   (#scope_id! "infix_chain")
   (infix_expr)
   .
-  (_) @prepend_spaced_scoped_softline
+  [
+    (infix_b_op_2) ; ++ and @
+    (infix_b_op_3) ; *, / and %
+    (infix_b_op_4) ; + and -
+    (infix_b_op_6) ; & and |>
+    (infix_lazy_b_op_9) ; &&
+    (infix_lazy_b_op_10) ; ||
+  ] @prepend_spaced_scoped_softline
   .
   (infix_expr)
 )
