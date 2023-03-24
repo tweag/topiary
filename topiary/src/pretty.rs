@@ -1,4 +1,4 @@
-use std::{borrow::Cow, fmt::Write, ops::Deref, rc::Rc};
+use std::{fmt::Write, ops::Deref, rc::Rc};
 
 use crate::{Atom, FormatterError, FormatterResult};
 

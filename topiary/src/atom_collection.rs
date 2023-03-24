@@ -1,7 +1,6 @@
 use std::{
     borrow::Cow,
     collections::{HashMap, HashSet},
-    ops::Deref,
     rc::Rc,
 };
 
@@ -12,7 +11,6 @@ use crate::{Atom, FormatterError, FormatterResult, ScopeCondition};
 #[derive(Debug)]
 pub struct AtomCollection {
     atoms: Vec<Rc<Atom>>,
-    post_processed: Vec<Rc<Atom>>,
     prepend: HashMap<usize, Vec<Rc<Atom>>>,
     append: HashMap<usize, Vec<Rc<Atom>>>,
     specified_leaf_nodes: HashSet<usize>,
@@ -45,7 +43,6 @@ impl<'a> AtomCollection {
 
         let mut atoms = AtomCollection {
             atoms: Vec::new(),
-            post_processed: Vec::new(),
             prepend: HashMap::new(),
             append: HashMap::new(),
             specified_leaf_nodes,
@@ -83,7 +80,7 @@ impl<'a> AtomCollection {
                 atom,
             })
         } else {
-            atom.clone()
+            atom
         }
     }
 
@@ -452,7 +449,7 @@ impl<'a> AtomCollection {
                 None
             }
         } else {
-            Some(atom.clone())
+            Some(atom)
         }
     }
 
@@ -616,7 +613,7 @@ impl<'a> AtomCollection {
         let mut new_vec: Vec<Rc<Atom>> = Vec::new();
         for next in &self.atoms {
             if let Some(prev) = new_vec.last().cloned() {
-                post_process_internal(&mut new_vec, prev.clone(), next.clone());
+                post_process_internal(&mut new_vec, prev, next.clone());
             } else {
                 // If the new vector is still empty,
                 // we skip all the spaces and newlines
