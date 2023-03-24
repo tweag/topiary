@@ -174,83 +174,58 @@
   (term) @prepend_spaced_scoped_softline @prepend_indent_start @append_indent_end
 )
 
-; Unlike a let expression, we don't push a multi-line record field value
-; on to its own line, as this will leave a hanging equal sign when it's
-; preceded by multi-line annotations -- which is often -- this does not
-; look good! Instead, we let the multi-line formatting of the RHS do its
-; thing, when applicable. The only exceptions to this is when the RHS is
-; a let expression or function definition; in which case, we start an
-; indentation block. (We don't do this in the general case because you
-; can get a double indentation which, despite being valid, looks weird.)
-(record_field
-  "=" @append_indent_start
-  (term
-    (uni_term
-      [
-        (let_expr)
-        (fun_expr)
-      ]
-    )
-  ) @append_indent_end
-)
-
 ;; Annotations
 
-; Create a scope that covers all annotation atoms, if any,
-; which are children of the (annot) node, *and* the equal sign. This
-; also defines an indentation block.
-;
-; NOTE This query will only match when annotations are present; thus a
-; "bare" signature, with just an equal sign, will not get a softline,
-; regardless of context. This behaviour can be changed by quantifying
-; the (annot) node with the Kleene star; with the consequence of keeping
-; the signature together if it's written on one line (albeit a different
-; one to the defined symbol). For example:
-;
-;   {
-;     foo
-;       | some | annotations = 1
-;   }
-;
-; The unquantified behaviour is probably a better trade-off, as bare
-; signatures are short and so more conducive to a single-line.
-;
-;   {
-;     foo
-;       | some
-;       | annotations
-;       = 1
-;   }
+; Create a scope that covers at least all annotation atoms; that is,
+; children of the (annot) node. When an assignment is also involved, we
+; have another scope that extents to also cover the equals sign.
 (
   (#scope_id! "signature")
   _ @begin_scope
   .
-  (annot) @prepend_indent_start
-  "=" @append_indent_end @end_scope
+  (annot) @end_scope
 )
 
+(
+  (#scope_id! "assignee")
+  (_) @begin_scope
+  .
+  (annot)*
+  .
+  "=" @end_scope
+)
+
+; Start an indentation block from the start of the annotations to the
+; end of the enclosing node
+(_
+  (annot) @prepend_indent_start
+) @append_indent_end
+
 ; Put each annotation and the equals sign on a new line, in a multi-line
-; context. Type annotations do not get a new line; this is because they
-; can be nested and it's not(?) possible to deduce the depth with
-; queries alone. For example:
-;
-;   {
-;     foo : { foo : String, bar : Number } = ...
-;   }
-;
-;   {
-;     foo : {
-;       foo : String,
-;       bar : Number
-;     }
-;     = ...
-;   }
+; context.
 (
   (#scope_id! "signature")
-  [
-    (annot_atom "|")
-    "="
-  ] @prepend_spaced_scoped_softline
+  (annot_atom) @prepend_spaced_scoped_softline
+)
+
+; FIXME This breaks idempotency for multi-line let expressions with two
+; or more annotations on the same line as the equals sign! For example:
+;
+;  let x
+;    : TYPE | ANNOT = 1 in x
+;
+; It also doesn't do the right thing (push the equals sign to a new
+; line) if it lives on the same line as the last annotation in the
+; input. For example:
+;
+;   let x
+;     : TYPE = 1 in x
+;
+; These forms are not attested in the Nickel standard library, as of
+; writing.
+(_
+  (#scope_id! "assignee")
+  "=" @prepend_spaced_scoped_softline
 )
 
 ; Break a multi-line polymorphic type annotation after the type
