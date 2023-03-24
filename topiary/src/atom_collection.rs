@@ -29,7 +29,7 @@ pub struct AtomCollection {
     counter: usize,
 }
 
-impl<'a> AtomCollection {
+impl AtomCollection {
     /// Use this to create an initial AtomCollection
     pub fn collect_leafs(
         root: &Node,

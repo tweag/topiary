@@ -2,7 +2,7 @@ use std::{fmt::Write, ops::Deref, rc::Rc};
 
 use crate::{Atom, FormatterError, FormatterResult};
 
-pub fn render<'a>(atoms: &[Rc<Atom>], indent: &str) -> FormatterResult<String> {
+pub fn render(atoms: &[Rc<Atom>], indent: &str) -> FormatterResult<String> {
     let mut buffer = String::new();
     let mut indent_level: usize = 0;
 
