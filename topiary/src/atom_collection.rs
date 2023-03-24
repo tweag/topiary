@@ -570,36 +570,29 @@ impl AtomCollection {
         // Apply modifications.
         // For performance reasons, skip this step if there are no modifications to make
         if !modifications.is_empty() || force_apply_modifications {
-            let new_atoms = self
-                .atoms
-                .iter()
-                .filter_map(|atom| {
-                    if let Atom::ScopedSoftline { id, .. } = atom {
-                        if let Some(atom_option) = modifications.remove(id) {
-                            atom_option
-                        } else {
-                            log::warn!(
-                                "Found scoped softline {:?}, but was unable to replace it.",
-                                atom
-                            );
-                            None
-                        }
-                    } else if let Atom::ScopedConditional { id, .. } = atom {
-                        if let Some(atom_option) = modifications.remove(id) {
-                            atom_option
-                        } else {
-                            log::warn!(
-                                "Found scoped conditional {:?}, but was unable to replace it.",
-                                atom
-                            );
-                            None
-                        }
+            for atom in &mut self.atoms {
+                if let Atom::ScopedSoftline { id, .. } = atom {
+                    if let Some(atom_option) = modifications.remove(id) {
+                        *atom = atom_option.unwrap_or(Atom::Empty);
                     } else {
-                        Some(atom.clone())
+                        log::warn!(
+                            "Found scoped softline {:?}, but was unable to replace it.",
+                            atom
+                        );
+                        *atom = Atom::Empty
                     }
-                })
-                .collect();
-            self.atoms = new_atoms
+                } else if let Atom::ScopedConditional { id, .. } = atom {
+                    if let Some(atom_option) = modifications.remove(id) {
+                        *atom = atom_option.unwrap_or(Atom::Empty);
+                    } else {
+                        log::warn!(
+                            "Found scoped conditional {:?}, but was unable to replace it.",
+                            atom
+                        );
+                        *atom = Atom::Empty
+                    }
+                }
+            }
         }
     }
 
@@ -619,7 +612,11 @@ impl AtomCollection {
                 // we skip all the spaces and newlines
                 // and add the first significant atom to the new vector.
                 match next {
-                    Atom::Space | Atom::Antispace | Atom::Hardline | Atom::Blankline => {}
+                    Atom::Empty
+                    | Atom::Space
+                    | Atom::Antispace
+                    | Atom::Hardline
+                    | Atom::Blankline => {}
                     _ => new_vec.push(next.clone()),
                 };
             }
@@ -645,13 +642,14 @@ pub struct QueryPredicates {
     pub multi_line_scope_only: Option<String>,
 }
 
+// prev is always the last atom of new_vec
 fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
     match prev {
         // Discard all spaces "connected" to an antispace
         Atom::Antispace => {
             match next {
                 // Skip over a space or antispace that follows an antispace...
-                Atom::Space | Atom::Antispace => {}
+                Atom::Empty | Atom::Space | Atom::Antispace => {}
 
                 // ...otherwise, pop the previous antispace (as we're done with
                 // processing it) and any spaces that preceded it, and push
@@ -664,10 +662,10 @@ fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
         }
 
         // If the last atom is a space/line
-        Atom::Space | Atom::Hardline | Atom::Blankline => {
+        Atom::Empty | Atom::Space | Atom::Hardline | Atom::Blankline => {
             match next {
                 // And the next one is also a space/line
-                Atom::Space | Atom::Hardline | Atom::Blankline => {
+                Atom::Empty | Atom::Space | Atom::Hardline | Atom::Blankline => {
                     if is_dominant(&next, &prev) {
                         new_vec.pop();
                         new_vec.push(next);
@@ -708,11 +706,12 @@ fn collapse_antispace(v: &mut Vec<Atom>) {
 }
 
 // This function is only expected to take spaces and newlines as argument.
-// It defines the order Blankline > Hardline > Space.
+// It defines the order Blankline > Hardline > Space > Empty.
 fn is_dominant(next: &Atom, prev: &Atom) -> bool {
     match next {
-        Atom::Space => false,
-        Atom::Hardline => *prev == Atom::Space,
+        Atom::Empty => false,
+        Atom::Space => *prev == Atom::Empty,
+        Atom::Hardline => *prev == Atom::Space || *prev == Atom::Empty,
         Atom::Blankline => *prev != Atom::Blankline,
         _ => panic!("Unexpected character in is_dominant"),
     }
