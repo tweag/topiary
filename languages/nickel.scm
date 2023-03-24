@@ -163,15 +163,16 @@
   (#scope_id! "let_result")
   (let_in_block
     "in" @begin_scope
-    .
   )
-  .
   (term) @end_scope
 )
 
 (let_expr
   (#scope_id! "let_result")
-  (term) @prepend_spaced_scoped_softline @prepend_indent_start @append_indent_end
+  (let_in_block
+    "in" @append_indent_start
+  )
+  (term) @prepend_spaced_scoped_softline @append_indent_end
 )
 
 ;; Annotations
