@@ -166,20 +166,24 @@
   (term) @prepend_spaced_scoped_softline @prepend_indent_start @append_indent_end
 )
 
-; If a record field's value is multi-line, then push it on to an
-; indented new line (like let expressions). This has a single "ugly"
-; case: when a multi-line value follows multi-line annotations, the
-; equals sign will be alone on its own line.
+; Unlike a let expression, we don't push a multi-line record field value
+; on to its own line, as this will leave a hanging equal sign when it's
+; preceded by multi-line annotations -- which is often -- this does not
+; look good! Instead, we let the multi-line formatting of the RHS do its
+; thing, when applicable. The only exceptions to this is when the RHS is
+; a let expression or function definition; in which case, we start an
+; indentation block. (We don't do this in the general case because you
+; can get a double indentation which, despite being valid, looks weird.)
 (record_field
-  (#scope_id! "record_field_rhs")
-  "=" @begin_scope
-  .
-  (term) @end_scope
-)
-
-(record_field
-  (#scope_id! "record_field_rhs")
-  (term) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
+  "=" @append_indent_start
+  (term
+    (uni_term
+      [
+        (let_expr)
+        (fun_expr)
+      ]
+    )
+  ) @append_indent_end
 )
 
 ;; Annotations
