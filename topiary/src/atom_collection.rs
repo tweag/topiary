@@ -602,11 +602,54 @@ impl AtomCollection {
     // Furthermore, this function put the indentation delimiters before any space/line atom.
     pub fn post_process(&mut self) {
         self.post_process_scopes();
-        let mut new_vec: Vec<Atom> = Vec::new();
-        for next in &(self.atoms) {
-            if let Some(prev_var) = new_vec.last() {
-                let prev = prev_var.clone();
-                post_process_internal(&mut new_vec, prev, next.clone())
+        //let mut new_vec: Vec<Atom> = Vec::new();
+        let prev: Option<&Atom> = None;
+        for next in &mut self.atoms {
+            if let Some(prev) = prev {
+                match prev {
+                    // Discard all spaces following an antispace. We'll fix the
+                    // preceding ones in the next pass.
+                    Atom::Antispace => {
+                        match next {
+                            // Skip over a space or antispace that follows an antispace...
+                            Atom::Space | Atom::Antispace => {
+                                *next = Atom::Empty;
+                            }
+                        }
+                    }
+
+                    // If the last atom is a space/line
+                    Atom::Empty | Atom::Space | Atom::Hardline | Atom::Blankline => {
+                        match next {
+                            // And the next one is also a space/line
+                            Atom::Empty | Atom::Space | Atom::Hardline | Atom::Blankline => {
+                                if is_dominant(&next, &prev) {
+                                    *prev = Atom::Empty;
+                                } else {
+                                    *next = Atom::Empty;
+                                }
+                            }
+
+                            // Or an indentation delimiter, then one has to merge/re-order.
+                            Atom::IndentStart | Atom::IndentEnd => {
+                                let old_prev = prev;
+                                *prev = next;
+                                *next = old_prev;
+                            }
+                        }
+                    }
+
+                    // If the last one is a DeleteBegin,
+                    // we ignore all the atoms until a DeleteEnd is met.
+                    Atom::DeleteBegin => {
+                        if next == Atom::DeleteEnd {
+                            new_vec.pop();
+                        }
+                    }
+
+                    // Otherwise, we simply copy the atom to the new vector.
+                    _ => new_vec.push(next),
+                }
             } else {
                 // If the new vector is still empty,
                 // we skip all the spaces and newlines
@@ -620,8 +663,15 @@ impl AtomCollection {
                     _ => new_vec.push(next.clone()),
                 };
             }
+
+            if (next != Atom::Empty) {
+                prev = Some(next);
+            }
         }
+
+        // TODO: This one needs to collapse all antispaces in self.atoms
         collapse_antispace(&mut new_vec);
+
         self.atoms = new_vec;
     }
 
@@ -640,60 +690,6 @@ pub struct QueryPredicates {
     pub multi_line_only: bool,
     pub single_line_scope_only: Option<String>,
     pub multi_line_scope_only: Option<String>,
-}
-
-// prev is always the last atom of new_vec
-fn post_process_internal(new_vec: &mut Vec<Atom>, prev: Atom, next: Atom) {
-    match prev {
-        // Discard all spaces "connected" to an antispace
-        Atom::Antispace => {
-            match next {
-                // Skip over a space or antispace that follows an antispace...
-                Atom::Empty | Atom::Space | Atom::Antispace => {}
-
-                // ...otherwise, pop the previous antispace (as we're done with
-                // processing it) and any spaces that preceded it, and push
-                // whatever follows
-                _ => {
-                    collapse_antispace(new_vec);
-                    new_vec.push(next);
-                }
-            }
-        }
-
-        // If the last atom is a space/line
-        Atom::Empty | Atom::Space | Atom::Hardline | Atom::Blankline => {
-            match next {
-                // And the next one is also a space/line
-                Atom::Empty | Atom::Space | Atom::Hardline | Atom::Blankline => {
-                    if is_dominant(&next, &prev) {
-                        new_vec.pop();
-                        new_vec.push(next);
-                    }
-                }
-
-                // Or an indentation delimiter, then one has to merge/re-order.
-                Atom::IndentStart | Atom::IndentEnd => {
-                    new_vec.pop();
-                    new_vec.push(next);
-                    new_vec.push(prev);
-                }
-
-                _ => new_vec.push(next),
-            }
-        }
-
-        // If the last one is a DeleteBegin,
-        // we ignore all the atoms until a DeleteEnd is met.
-        Atom::DeleteBegin => {
-            if next == Atom::DeleteEnd {
-                new_vec.pop();
-            }
-        }
-
-        // Otherwise, we simply copy the atom to the new vector.
-        _ => new_vec.push(next),
-    }
 }
 
 fn collapse_antispace(v: &mut Vec<Atom>) {
