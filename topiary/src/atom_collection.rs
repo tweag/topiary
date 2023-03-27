@@ -1,6 +1,7 @@
 use std::{
     borrow::Cow,
     collections::{HashMap, HashSet},
+    mem,
 };
 
 use tree_sitter_facade::Node;
@@ -267,23 +268,23 @@ impl AtomCollection {
     pub fn apply_prepends_and_appends(&mut self) {
         let mut expanded: Vec<Atom> = Vec::new();
 
-        for atom in self.atoms.iter() {
+        for atom in self.atoms.iter_mut() {
             match atom {
                 Atom::Leaf { id, .. } => {
-                    for prepended in self.prepend.entry(*id).or_default() {
-                        expanded.push(prepended.clone());
-                    }
+                    let prepends = self.prepend.entry(*id).or_default();
+                    let appends = self.append.entry(*id).or_default();
 
-                    expanded.push(atom.clone());
+                    let mut swapped_atom = Atom::Empty;
+                    mem::swap(&mut swapped_atom, atom);
 
-                    for appended in self.append.entry(*id).or_default() {
-                        log::debug!("Applying append of {appended:?} to {atom:?}.");
-                        expanded.push(appended.clone());
-                    }
+                    expanded.append(prepends);
+                    expanded.push(swapped_atom);
+                    expanded.append(appends);
                 }
                 _ => {
-                    log::debug!("Not a leaf: {atom:?}");
-                    expanded.push(atom.clone());
+                    let mut swapped_atom = Atom::Empty;
+                    mem::swap(&mut swapped_atom, atom);
+                    expanded.push(swapped_atom);
                 }
             }
         }
