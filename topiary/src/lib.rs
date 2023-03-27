@@ -32,12 +32,13 @@ mod tree_sitter;
 /// An atom represents a small piece of the output. We turn Tree-sitter nodes
 /// into atoms, and we add white-space atoms where appropriate. The final list
 /// of atoms is rendered to the output.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub enum Atom {
     /// We don't allow consecutive `Hardline`, but a `Blankline` will render two
     /// newlines to produce a blank line.
     Blankline,
     /// A "no-op" atom that will not produce any output.
+    #[default]
     Empty,
     /// Represents a newline.
     Hardline,

@@ -277,17 +277,14 @@ impl AtomCollection {
 
                     // Rather than cloning the atom from the old vector, we
                     // swap it out with an empty one.
-                    let mut swapped_atom = Atom::Empty;
-                    mem::swap(&mut swapped_atom, atom);
+                    let swapped_atom = mem::take(atom);
 
                     expanded.append(prepends);
                     expanded.push(swapped_atom);
                     expanded.append(appends);
                 }
                 _ => {
-                    let mut swapped_atom = Atom::Empty;
-                    mem::swap(&mut swapped_atom, atom);
-                    expanded.push(swapped_atom);
+                    expanded.push(mem::take(atom));
                 }
             }
         }
