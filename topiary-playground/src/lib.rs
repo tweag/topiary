@@ -39,6 +39,7 @@ async fn format_inner(input: &str, query: &str) -> FormatterResult<String> {
         &configuration,
         &grammars,
         Operation::Format {
+            check_input_exhaustivity: false,
             skip_idempotence: true,
         },
     )?;
