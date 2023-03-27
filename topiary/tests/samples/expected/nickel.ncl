@@ -1397,7 +1397,7 @@
         tail_contract fields_with_contracts label tail_fields
       else
         let plural = if %length% missing_fields == 1 then "" else "s" in
-        %blame% (%label_with_message%"missing field%{plural} `%{string.join ", " missing_fields}`" label)
+        %blame% (%label_with_message% "missing field%{plural} `%{string.join ", " missing_fields}`" label)
     else
       %blame% (%label_with_message% "not a record" label),
 
@@ -1418,7 +1418,7 @@
       else
         let extra_fields = %fields% value in
         let plural = if %length% extra_fields == 1 then "" else "s" in
-        %blame% (%label_with_message%"extra field%{plural} `%{string.join ", " extra_fields}`" label)
+        %blame% (%label_with_message% "extra field%{plural} `%{string.join ", " extra_fields}`" label)
     else
       # Note: in order to correctly attribute blame, the polarity of `l`
       # must match the polarity of the `forall` which introduced the
@@ -1435,7 +1435,7 @@
     else
       let extra_fields = %fields% value in
       let plural = if %length% extra_fields == 1 then "" else "s" in
-      %blame% (%label_with_message%"extra field%{plural} `%{string.join ", " extra_fields}`" label),
+      %blame% (%label_with_message% "extra field%{plural} `%{string.join ", " extra_fields}`" label),
 
   # Recursive priorities operators
 
@@ -1827,7 +1827,7 @@
     "%
       = fun bindings =>
         bindings
-        |> array.map (fun binding => {"%{binding.field}" = binding.value })
+        |> array.map (fun binding => { "%{binding.field}" = binding.value })
         |> merge_all,
 
     is_empty
