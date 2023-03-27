@@ -142,7 +142,9 @@
 ; The binding expression should appear on a new line, indented, if its
 ; RHS is multi-line (pushing the "in" to an unindented new line).
 ; Similarly, the result expression (i.e., after the "in") should appear
-; on an indented new line, if that is multi-line.
+; on an new line, if that is multi-line. We don't start an indentation
+; block for the result expression, to avoid long diagonals in a series
+; of let expressions (which is idiomatic).
 
 (let_in_block
   (#scope_id! "let_binding_rhs")
@@ -169,10 +171,7 @@
 
 (let_expr
   (#scope_id! "let_result")
-  (let_in_block
-    "in" @append_indent_start
-  )
-  (term) @prepend_spaced_scoped_softline @append_indent_end
+  (term) @prepend_spaced_scoped_softline
 )
 
 ;; Annotations
