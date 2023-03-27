@@ -603,9 +603,9 @@ impl AtomCollection {
     pub fn post_process(&mut self) {
         self.post_process_scopes();
         //let mut new_vec: Vec<Atom> = Vec::new();
-        let prev: Option<&Atom> = None;
+        let mut prev: Option<&mut Atom> = None;
         for next in &mut self.atoms {
-            if let Some(prev) = prev {
+            if let Some(prev) = prev.as_mut() {
                 match prev {
                     // Discard all spaces following an antispace. We'll fix the
                     // preceding ones in the next pass.
@@ -615,6 +615,7 @@ impl AtomCollection {
                             Atom::Space | Atom::Antispace => {
                                 *next = Atom::Empty;
                             }
+                            _ => {}
                         }
                     }
 
@@ -623,8 +624,8 @@ impl AtomCollection {
                         match next {
                             // And the next one is also a space/line
                             Atom::Empty | Atom::Space | Atom::Hardline | Atom::Blankline => {
-                                if is_dominant(&next, &prev) {
-                                    *prev = Atom::Empty;
+                                if is_dominant(next, prev) {
+                                    **prev = Atom::Empty;
                                 } else {
                                     *next = Atom::Empty;
                                 }
@@ -632,23 +633,27 @@ impl AtomCollection {
 
                             // Or an indentation delimiter, then one has to merge/re-order.
                             Atom::IndentStart | Atom::IndentEnd => {
-                                let old_prev = prev;
-                                *prev = next;
+                                let old_prev = prev.clone();
+                                **prev = next.clone();
                                 *next = old_prev;
                             }
+
+                            _ => {}
                         }
                     }
 
                     // If the last one is a DeleteBegin,
                     // we ignore all the atoms until a DeleteEnd is met.
                     Atom::DeleteBegin => {
-                        if next == Atom::DeleteEnd {
-                            new_vec.pop();
+                        if *next == Atom::DeleteEnd {
+                            // Break this pattern
+                            **prev = Atom::Empty;
                         }
+
+                        *next = Atom::Empty;
                     }
 
-                    // Otherwise, we simply copy the atom to the new vector.
-                    _ => new_vec.push(next),
+                    _ => {}
                 }
             } else {
                 // If the new vector is still empty,
@@ -659,20 +664,19 @@ impl AtomCollection {
                     | Atom::Space
                     | Atom::Antispace
                     | Atom::Hardline
-                    | Atom::Blankline => {}
-                    _ => new_vec.push(next.clone()),
+                    | Atom::Blankline => {
+                        *next = Atom::Empty;
+                    }
+                    _ => {}
                 };
             }
 
-            if (next != Atom::Empty) {
+            if *next != Atom::Empty {
                 prev = Some(next);
             }
         }
 
-        // TODO: This one needs to collapse all antispaces in self.atoms
-        collapse_antispace(&mut new_vec);
-
-        self.atoms = new_vec;
+        collapse_antispace(&mut self.atoms);
     }
 
     fn next_id(&mut self) -> usize {
@@ -692,12 +696,18 @@ pub struct QueryPredicates {
     pub multi_line_scope_only: Option<String>,
 }
 
-fn collapse_antispace(v: &mut Vec<Atom>) {
-    while let Some(last) = v.last() {
-        match last {
-            Atom::Space | Atom::Antispace => v.pop(),
-            _ => break,
-        };
+fn collapse_antispace(v: &mut [Atom]) {
+    let mut antispace_mode = false;
+
+    for a in v.iter_mut().rev() {
+        if *a == Atom::Antispace {
+            *a = Atom::Empty;
+            antispace_mode = true;
+        } else if *a == Atom::Antispace && antispace_mode {
+            *a = Atom::Empty;
+        } else {
+            antispace_mode = false;
+        }
     }
 }
 
