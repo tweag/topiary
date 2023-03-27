@@ -347,8 +347,8 @@ impl AtomCollection {
 
             self.prepend
                 .entry(target_node_id)
-                .and_modify(|atoms| atoms.push(atom.clone()))
-                .or_insert_with(|| vec![atom]);
+                .or_insert(vec![])
+                .push(atom);
         }
     }
 
@@ -366,8 +366,8 @@ impl AtomCollection {
 
             self.append
                 .entry(target_node_id)
-                .and_modify(|atoms| atoms.push(atom.clone()))
-                .or_insert_with(|| vec![atom]);
+                .or_insert(vec![])
+                .push(atom);
         }
     }
 
