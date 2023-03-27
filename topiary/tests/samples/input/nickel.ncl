@@ -1,6 +1,17 @@
-# Nickel standard library as of af0d5ee
-
 {
+  regression_tests = [
+    # Interpolated record operation chains
+    {
+      # This is fine
+      good = "%{interpolated}",
+
+      # An interpolated (record_operation_chain) breaks the spacing
+      bad = "%{interpolated.string}"
+    }
+  ],
+
+  # Nickel standard library as of af0d5ee
+
   array = {
     NonEmpty
       | doc m%"
