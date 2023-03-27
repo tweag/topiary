@@ -676,7 +676,11 @@ impl AtomCollection {
             }
         }
 
+        log::debug!("List of atoms before collapsing: {:?}", self.atoms);
+
         collapse_antispace(&mut self.atoms);
+
+        log::debug!("List of atoms after post-processing: {:?}", self.atoms);
     }
 
     fn next_id(&mut self) -> usize {
@@ -700,10 +704,12 @@ fn collapse_antispace(v: &mut [Atom]) {
     let mut antispace_mode = false;
 
     for a in v.iter_mut().rev() {
+        log::debug!("{a:?}");
+
         if *a == Atom::Antispace {
             *a = Atom::Empty;
             antispace_mode = true;
-        } else if *a == Atom::Antispace && antispace_mode {
+        } else if *a == Atom::Space && antispace_mode {
             *a = Atom::Empty;
         } else {
             antispace_mode = false;
