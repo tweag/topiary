@@ -2,6 +2,7 @@ use std::{
     borrow::Cow,
     collections::{HashMap, HashSet},
     mem,
+    ops::Deref,
 };
 
 use tree_sitter_facade::Node;
@@ -521,7 +522,7 @@ impl AtomCollection {
                                     let multiline_only =
                                         *condition == ScopeCondition::MultiLineOnly;
                                     let new_atom = if multiline == multiline_only {
-                                        Some((**atom).clone())
+                                        Some(atom.deref().clone())
                                     } else {
                                         None
                                     };
@@ -604,7 +605,6 @@ impl AtomCollection {
     // Furthermore, this function put the indentation delimiters before any space/line atom.
     pub fn post_process(&mut self) {
         self.post_process_scopes();
-        //let mut new_vec: Vec<Atom> = Vec::new();
         let mut prev: Option<&mut Atom> = None;
         for next in &mut self.atoms {
             if let Some(prev) = prev.as_mut() {
