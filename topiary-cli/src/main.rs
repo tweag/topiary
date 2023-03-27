@@ -148,6 +148,7 @@ async fn run() -> CLIResult<()> {
         }
     } else {
         Operation::Format {
+            check_input_exhaustivity: false,
             skip_idempotence: args.skip_idempotence,
         }
     };

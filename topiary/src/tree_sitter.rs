@@ -84,6 +84,7 @@ pub fn apply_query(
     input_content: &str,
     query_content: &str,
     grammars: &[tree_sitter_facade::Language],
+    should_check_input_exhaustivity: bool,
 ) -> FormatterResult<AtomCollection> {
     let (tree, grammar) = parse(input_content, grammars)?;
     let root = tree.root_node();
@@ -103,6 +104,18 @@ pub fn apply_query(
             pattern_index: query_match.pattern_index(),
             captures: local_captures,
         })
+    }
+
+    if should_check_input_exhaustivity {
+        let ref_match_count = matches.len();
+        check_input_exhaustivity(
+            ref_match_count,
+            &query,
+            query_content,
+            grammar,
+            &root,
+            source,
+        )?;
     }
 
     // Find the ids of all tree-sitter nodes that were identified as a leaf
@@ -302,4 +315,49 @@ fn check_predicates(predicates: &QueryPredicates) -> FormatterResult<()> {
     } else {
         Ok(())
     }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+/// Check if the input tests all patterns in the query, by successively disabling
+/// all patterns. If disabling a pattern does not decrease the number of matches,
+/// then that pattern originally matched nothing in the input.
+fn check_input_exhaustivity(
+    ref_match_count: usize,
+    original_query: &Query,
+    query_content: &str,
+    grammar: &tree_sitter_facade::Language,
+    root: &Node,
+    source: &[u8],
+) -> FormatterResult<()> {
+    let pattern_count = original_query.inner.pattern_count();
+    for i in 0..pattern_count {
+        let mut query = Query::new(grammar, query_content)
+            .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
+        query.inner.disable_pattern(i);
+        let mut cursor = QueryCursor::new();
+        let match_count = query.matches(root, source, &mut cursor).count();
+        if match_count == ref_match_count {
+            let index_start = query.inner.start_byte_for_pattern(i);
+            let index_end = if i == pattern_count - 1 {
+                query_content.len()
+            } else {
+                query.inner.start_byte_for_pattern(i + 1)
+            };
+            let pattern_content = &query_content[index_start..index_end];
+            return Err(FormatterError::PatternDoesNotMatch(pattern_content.into()));
+        }
+    }
+    Ok(())
+}
+
+#[cfg(target_arch = "wasm32")]
+fn check_input_exhaustivity(
+    _ref_match_count: usize,
+    _original_query: &Query,
+    _query_content: &str,
+    _grammar: &tree_sitter_facade::Language,
+    _root: &Node,
+    _source: &[u8],
+) -> FormatterResult<()> {
+    unimplemented!();
 }

@@ -4,7 +4,7 @@ use std::path::Path;
 
 use pretty_assertions::assert_eq;
 
-use topiary::{formatter, Configuration, Language, Operation};
+use topiary::{formatter, Configuration, FormatterError, Language, Operation};
 
 #[tokio::test]
 async fn input_output_tester() {
@@ -34,6 +34,7 @@ async fn input_output_tester() {
             &configuration,
             &grammars,
             Operation::Format {
+                check_input_exhaustivity: false,
                 skip_idempotence: false,
             },
         )
@@ -73,6 +74,7 @@ async fn formatted_query_tester() {
             &configuration,
             &grammars,
             Operation::Format {
+                check_input_exhaustivity: false,
                 skip_idempotence: false,
             },
         )
@@ -82,5 +84,49 @@ async fn formatted_query_tester() {
         log::debug!("{}", formatted);
 
         assert_eq!(expected, formatted);
+    }
+}
+
+// Test that all queries are used on sample files
+#[tokio::test]
+async fn exhaustive_query_tester() {
+    let input_dir = fs::read_dir("tests/samples/input").unwrap();
+
+    for file in input_dir {
+        let file = file.unwrap();
+        // We skip "ocaml.mli", as its query file is already tested by "ocaml.ml"
+        if file.file_name().to_string_lossy() == "ocaml.mli" {
+            continue;
+        }
+        let language = Language::detect(file.path()).unwrap();
+        let query_file = language.query_file().unwrap();
+
+        let mut input = BufReader::new(fs::File::open(file.path()).unwrap());
+        let mut output = Vec::new();
+        let query = fs::read_to_string(&query_file).unwrap();
+
+        let mut configuration = Configuration::parse(&query).unwrap();
+        configuration.language = language;
+
+        let grammars = configuration.language.grammars().await.unwrap();
+
+        formatter(
+            &mut input,
+            &mut output,
+            &query,
+            &configuration,
+            &grammars,
+            Operation::Format {
+                check_input_exhaustivity: true,
+                skip_idempotence: false,
+            },
+        )
+        .unwrap_or_else(|e| {
+            if let FormatterError::PatternDoesNotMatch(_) = e {
+                panic!("Found untested query in file {query_file:?}:\n{e}");
+            } else {
+                panic!("{e}");
+            }
+        })
     }
 }
