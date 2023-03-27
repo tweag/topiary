@@ -24,6 +24,10 @@ pub enum FormatterError {
         end_column: u32,
     },
 
+    /// The query contains a pattern that had no match in the input file.
+    /// Should only be raised in the test suite.
+    PatternDoesNotMatch(String),
+
     /// There was an error in the query file. If this happened using our
     /// provided query files, it is a bug. Please log an issue.
     Query(String, Option<tree_sitter_facade::QueryError>),
@@ -87,6 +91,13 @@ impl fmt::Display for FormatterError {
                 )
             }
 
+            Self::PatternDoesNotMatch(pattern_content) => {
+                write!(
+                    f,
+                    "The following pattern matches nothing in the input:\n{pattern_content}"
+                )
+            }
+
             Self::Internal(message, _)
             | Self::Query(message, _)
             | Self::Io(IoError::Filesystem(message, _))
@@ -103,6 +114,7 @@ impl Error for FormatterError {
             Self::Idempotence => None,
             Self::Internal(_, source) => source.as_ref().map(|e| &**e),
             Self::Parsing { .. } => None,
+            Self::PatternDoesNotMatch(_) => None,
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::LanguageDetection(_, _) => None,
             Self::Io(IoError::Filesystem(_, source)) => Some(source),
