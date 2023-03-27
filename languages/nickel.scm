@@ -50,8 +50,6 @@
     "Str"
     "->"
     "=>"
-    (interpolation_start)
-    (interpolation_end)
     ; Infix operators
     "++"
     "@"

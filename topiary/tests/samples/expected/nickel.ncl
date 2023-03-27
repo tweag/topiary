@@ -1378,7 +1378,7 @@
             if %has_field% field right then
               acc
             else
-              %record_insert% field acc (left. "%{field}")) (%record_empty_with_tail% left) (%fields% left)
+              %record_insert% field acc (left."%{field}")) (%record_empty_with_tail% left) (%fields% left)
       in
       let contracts_not_in_value = field_diff field_contracts value in
       let missing_fields = %fields% contracts_not_in_value in
@@ -1387,9 +1387,9 @@
         let fields_with_contracts =
           array.fold_left (fun acc field =>
             if %has_field% field field_contracts then
-              let contract = field_contracts. "%{field}" in
+              let contract = field_contracts."%{field}" in
               let label = %go_field% field label in
-              let val = value. "%{field}" in
+              let val = value."%{field}" in
               %record_insert% field acc (%assume% contract label val)
             else
               acc) {} (%fields% value)
@@ -1810,7 +1810,7 @@
       = fun record =>
         record
         |> fields
-        |> array.map (fun field' => { field = field', value = record. "%{field'}" }),
+        |> array.map (fun field' => { field = field', value = record."%{field'}" }),
 
     from_array
       : forall a. Array { field : String, value : a } -> { _ : a }
