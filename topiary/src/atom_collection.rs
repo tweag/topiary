@@ -275,6 +275,8 @@ impl AtomCollection {
                     let prepends = self.prepend.entry(*id).or_default();
                     let appends = self.append.entry(*id).or_default();
 
+                    // Rather than cloning the atom from the old vector, we
+                    // swap it out with an empty one.
                     let mut swapped_atom = Atom::Empty;
                     mem::swap(&mut swapped_atom, atom);
 
@@ -678,8 +680,6 @@ impl AtomCollection {
             }
         }
 
-        log::debug!("List of atoms before collapsing: {:?}", self.atoms);
-
         collapse_antispace(&mut self.atoms);
 
         log::debug!("List of atoms after post-processing: {:?}", self.atoms);
@@ -706,8 +706,6 @@ fn collapse_antispace(v: &mut [Atom]) {
     let mut antispace_mode = false;
 
     for a in v.iter_mut().rev() {
-        log::debug!("{a:?}");
-
         if *a == Atom::Antispace {
             *a = Atom::Empty;
             antispace_mode = true;
