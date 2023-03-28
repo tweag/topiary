@@ -21,6 +21,12 @@ jobs:
           name: tweag-topiary
           authToken: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
+      - name: Set up frontend cache
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: node_modules-${{ hashFiles('**/package-lock.json')}}
+
       - name: Clippy, test, and benchmark
         run: nix -L flake check
 
