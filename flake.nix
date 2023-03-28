@@ -41,7 +41,7 @@
           default = topiary-cli;
         };
         checks = with code; {
-          inherit clippy clippy-wasm fmt topiary-cli topiary-playground audit benchmark;
+          inherit clippy clippy-wasm fmt topiary-lib topiary-cli topiary-playground audit benchmark;
         };
 
         ## For easy use in https://github.com/cachix/pre-commit-hooks.nix
