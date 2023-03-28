@@ -5,7 +5,8 @@ unsafe impl Sync for Language {}
 pub fn node_kind_for_id(&self, id: u16) -> &'static str {
     unsafe { CStr::from_ptr(ffi::ts_language_symbol_name(self.0, id)) }
     .to_str()
-    .unwrap()
+    .unwrap();
+    "foo"
 }
 
 // Comments
