@@ -86,21 +86,15 @@
   ";"
 ] @prepend_antispace
 
-; Create a scope between parentheses such that, if their contents are
-; multi-line, we start an indentation block on a new line
-(
-  (#scope_id! "parens")
-  "(" @begin_scope
-  ")" @end_scope
-)
-
-; Don't insert spaces immediately inside parentheses
+; Don't insert spaces immediately inside parentheses. In a multi-line
+; context, start an indentation block
 ; WARNING Using parentheses in string interpolation will manifest the
 ; bug documented in Issue #395
-(
-  (#scope_id! "parens")
-  "(" @append_empty_scoped_softline @append_indent_start @append_antispace
-  ")" @prepend_antispace @prepend_indent_end @prepend_empty_scoped_softline
+(atom
+  .
+  "(" @append_empty_softline @append_indent_start @append_antispace
+  ")" @prepend_antispace @prepend_indent_end @prepend_empty_softline
+  .
 )
 
 ; Don't insert spaces between infix operators and their operand
