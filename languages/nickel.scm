@@ -75,13 +75,20 @@
 ; Don't insert spaces before the following delimiters
 ; NOTE This will destroy the space in a polymorphic record tail. For
 ; example: forall. { x: Number; a } -> {; a}
+; WARNING We don't include "." as it is very common for it to appear in
+; string interpolation, for record field access, which will manifest the
+; bug documented in Issue #395. The remaining delimiters in this
+; alternation can also appear in such contexts, but they're much less
+; likely; i.e., this is a trade-off, to avoid over-complicating the
+; formatting rules.
 [
   ","
   ";"
-  "."
 ] @prepend_antispace
 
 ; Don't insert spaces immediately inside parentheses
+; WARNING Using parentheses in string interpolation will manifest the
+; bug documented in Issue #395
 "(" @append_antispace
 ")" @prepend_antispace
 
@@ -123,7 +130,7 @@
 
 ; Surround all polymorphic type variables with spaces
 (forall
-  (ident) @append_space @prepend_space
+  (ident) @prepend_space
 )
 
 ;; Comments
