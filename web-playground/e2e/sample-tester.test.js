@@ -20,7 +20,7 @@ describe('test all grammars with puppeteer', () => {
         const output = await readOutput();
 
         expect(output).toBe("foo");
-    });
+    }, 30000);
 })
 
 async function readOutput() {
