@@ -86,11 +86,16 @@
   ";"
 ] @prepend_antispace
 
-; Don't insert spaces immediately inside parentheses
+; Don't insert spaces immediately inside parentheses. In a multi-line
+; context, start an indentation block
 ; WARNING Using parentheses in string interpolation will manifest the
 ; bug documented in Issue #395
-"(" @append_antispace
-")" @prepend_antispace
+(atom
+  .
+  "(" @append_empty_softline @append_indent_start @append_antispace
+  ")" @prepend_antispace @prepend_indent_end @prepend_empty_softline
+  .
+)
 
 ; Don't insert spaces between infix operators and their operand
 (infix_expr
