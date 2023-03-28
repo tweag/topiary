@@ -615,7 +615,8 @@ impl AtomCollection {
                     // preceding ones in the next pass.
                     Atom::Antispace => {
                         match next {
-                            // Skip over a space or antispace that follows an antispace...
+                            // Remove any space or antispace that follows an
+                            // antispace by setting it empty.
                             Atom::Space | Atom::Antispace => {
                                 *next = Atom::Empty;
                             }
@@ -628,6 +629,7 @@ impl AtomCollection {
                         match next {
                             // And the next one is also a space/line
                             Atom::Empty | Atom::Space | Atom::Hardline | Atom::Blankline => {
+                                // Set the non-dominant one to empty.
                                 if is_dominant(next, prev) {
                                     **prev = Atom::Empty;
                                 } else {
@@ -650,19 +652,21 @@ impl AtomCollection {
                     // we ignore all the atoms until a DeleteEnd is met.
                     Atom::DeleteBegin => {
                         if *next == Atom::DeleteEnd {
-                            // Break this pattern
+                            // Break this pattern. We no longer want prev to
+                            // match DeleteBegin.
                             **prev = Atom::Empty;
                         }
 
+                        // We're inside a delete section, so set atom to empty.
                         *next = Atom::Empty;
                     }
 
                     _ => {}
                 }
             } else {
-                // If the new vector is still empty,
-                // we skip all the spaces and newlines
-                // and add the first significant atom to the new vector.
+                // If we're at the beginning of the file and still haven't
+                // reached a non-empty atom, we remove all the spaces and
+                // newlines by setting them empty.
                 match next {
                     Atom::Empty
                     | Atom::Space
@@ -676,11 +680,14 @@ impl AtomCollection {
             }
 
             if *next != Atom::Empty {
+                // Let prev point to the previous non-empty atom.
                 prev = Some(next);
             }
         }
 
-        collapse_antispace(&mut self.atoms);
+        // We have taken care of spaces following an antispace. Now fix the
+        // preceding spaces.
+        collapse_spaces_before_antispace(&mut self.atoms);
 
         log::debug!("List of atoms after post-processing: {:?}", self.atoms);
     }
@@ -702,7 +709,7 @@ pub struct QueryPredicates {
     pub multi_line_scope_only: Option<String>,
 }
 
-fn collapse_antispace(v: &mut [Atom]) {
+fn collapse_spaces_before_antispace(v: &mut [Atom]) {
     let mut antispace_mode = false;
 
     for a in v.iter_mut().rev() {
