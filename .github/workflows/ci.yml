@@ -47,6 +47,10 @@ jobs:
         if: success() && matrix.os == 'ubuntu-latest'
         run: npm install --prefix web-playground
 
+      - name: Start web playground frontend
+        if: success() && matrix.os == 'ubuntu-latest'
+        run: npm start --prefix web-playground &
+
       - name: Test web playground frontend
         if: success() && matrix.os == 'ubuntu-latest'
         run: npm run e2e --prefix web-playground
