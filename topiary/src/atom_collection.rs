@@ -339,42 +339,40 @@ impl AtomCollection {
     }
 
     fn prepend(&mut self, atom: Atom, node: &Node, predicates: &QueryPredicates) {
-        if let Some(atom) = self.expand_multiline(atom, node) {
-            let atom = self.wrap(atom, predicates);
-            // TODO: Pre-populate these
-            let target_node = first_leaf(node);
+        let atom = self.expand_multiline(atom, node);
+        let atom = self.wrap(atom, predicates);
+        // TODO: Pre-populate these
+        let target_node = first_leaf(node);
 
-            // If this is a child of a node that we have deemed as a leaf node
-            // (e.g. a character in a string), we need to use that node id
-            // instead.
-            let target_node_id = self.parent_leaf_node(&target_node);
+        // If this is a child of a node that we have deemed as a leaf node
+        // (e.g. a character in a string), we need to use that node id
+        // instead.
+        let target_node_id = self.parent_leaf_node(&target_node);
 
-            log::debug!("Prepending {atom:?} to node {:?}", target_node,);
+        log::debug!("Prepending {atom:?} to node {:?}", target_node,);
 
-            self.prepend
-                .entry(target_node_id)
-                .or_insert(vec![])
-                .push(atom);
-        }
+        self.prepend
+            .entry(target_node_id)
+            .or_insert(vec![])
+            .push(atom);
     }
 
     fn append(&mut self, atom: Atom, node: &Node, predicates: &QueryPredicates) {
-        if let Some(atom) = self.expand_multiline(atom, node) {
-            let atom = self.wrap(atom, predicates);
-            let target_node = last_leaf(node);
+        let atom = self.expand_multiline(atom, node);
+        let atom = self.wrap(atom, predicates);
+        let target_node = last_leaf(node);
 
-            // If this is a child of a node that we have deemed as a leaf node
-            // (e.g. a character in a string), we need to use that node id
-            // instead.
-            let target_node_id = self.parent_leaf_node(&target_node);
+        // If this is a child of a node that we have deemed as a leaf node
+        // (e.g. a character in a string), we need to use that node id
+        // instead.
+        let target_node_id = self.parent_leaf_node(&target_node);
 
-            log::debug!("Appending {atom:?} to node {:?}", target_node,);
+        log::debug!("Appending {atom:?} to node {:?}", target_node,);
 
-            self.append
-                .entry(target_node_id)
-                .or_insert(vec![])
-                .push(atom);
-        }
+        self.append
+            .entry(target_node_id)
+            .or_insert(vec![])
+            .push(atom);
     }
 
     fn begin_scope_before(&mut self, node: &Node, scope_id: &str) {
@@ -427,7 +425,7 @@ impl AtomCollection {
         }
     }
 
-    fn expand_multiline(&self, atom: Atom, node: &Node) -> Option<Atom> {
+    fn expand_multiline(&self, atom: Atom, node: &Node) -> Atom {
         if let Atom::Softline { spaced } = atom {
             if let Some(parent) = node.parent() {
                 let parent_id = parent.id();
@@ -439,7 +437,7 @@ impl AtomCollection {
                         parent_id,
                         parent
                     );
-                    Some(Atom::Hardline)
+                    Atom::Hardline
                 } else if spaced {
                     log::debug!(
                         "Expanding softline to space in node {:?} with parent {}: {:?}",
@@ -447,15 +445,15 @@ impl AtomCollection {
                         parent_id,
                         parent
                     );
-                    Some(Atom::Space)
+                    Atom::Space
                 } else {
-                    None
+                    Atom::Empty
                 }
             } else {
-                None
+                Atom::Empty
             }
         } else {
-            Some(atom)
+            atom
         }
     }
 
@@ -477,7 +475,7 @@ impl AtomCollection {
         // replace them with. Instead of in-place modifications, we associate a replacement
         // atom to each ScopedSoftline atom (identified by their `id` field), then apply
         // the modifications in a second pass over the atoms.
-        let mut modifications: HashMap<ScopedNodeId, Option<Atom>> = HashMap::new();
+        let mut modifications: HashMap<ScopedNodeId, Atom> = HashMap::new();
         // `force_apply_modifications` keeps track of whether something has gone wrong in the
         // post-processing (e.g. closing an unopened scope, finding a scoped atom outside
         // of its scope). If we detect any error, we don't skip the "Apply modifications" part
@@ -509,11 +507,11 @@ impl AtomCollection {
                             for atom in atoms {
                                 if let Atom::ScopedSoftline { id, spaced, .. } = atom {
                                     let new_atom = if multiline {
-                                        Some(Atom::Hardline)
+                                        Atom::Hardline
                                     } else if *spaced {
-                                        Some(Atom::Space)
+                                        Atom::Space
                                     } else {
-                                        None
+                                        Atom::Empty
                                     };
                                     modifications.insert(*id, new_atom);
                                 } else if let Atom::ScopedConditional {
@@ -526,9 +524,9 @@ impl AtomCollection {
                                     let multiline_only =
                                         *condition == ScopeCondition::MultiLineOnly;
                                     let new_atom = if multiline == multiline_only {
-                                        Some(atom.deref().clone())
+                                        atom.deref().clone()
                                     } else {
-                                        None
+                                        Atom::Empty
                                     };
                                     modifications.insert(*id, new_atom);
                                 }
@@ -579,8 +577,8 @@ impl AtomCollection {
         if !modifications.is_empty() || force_apply_modifications {
             for atom in &mut self.atoms {
                 if let Atom::ScopedSoftline { id, .. } = atom {
-                    if let Some(atom_option) = modifications.remove(id) {
-                        *atom = atom_option.unwrap_or(Atom::Empty);
+                    if let Some(replacement) = modifications.remove(id) {
+                        *atom = replacement;
                     } else {
                         log::warn!(
                             "Found scoped softline {:?}, but was unable to replace it.",
@@ -589,8 +587,8 @@ impl AtomCollection {
                         *atom = Atom::Empty
                     }
                 } else if let Atom::ScopedConditional { id, .. } = atom {
-                    if let Some(atom_option) = modifications.remove(id) {
-                        *atom = atom_option.unwrap_or(Atom::Empty);
+                    if let Some(replacement) = modifications.remove(id) {
+                        *atom = replacement;
                     } else {
                         log::warn!(
                             "Found scoped conditional {:?}, but was unable to replace it.",
