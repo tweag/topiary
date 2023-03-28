@@ -49,8 +49,7 @@
     "Bool"
     "Str"
     "->"
-    (interpolation_start)
-    (interpolation_end)
+    "=>"
     ; Infix operators
     "++"
     "@"
@@ -76,93 +75,169 @@
 ; Don't insert spaces before the following delimiters
 ; NOTE This will destroy the space in a polymorphic record tail. For
 ; example: forall. { x: Number; a } -> {; a}
+; WARNING We don't include "." as it is very common for it to appear in
+; string interpolation, for record field access, which will manifest the
+; bug documented in Issue #395. The remaining delimiters in this
+; alternation can also appear in such contexts, but they're much less
+; likely; i.e., this is a trade-off, to avoid over-complicating the
+; formatting rules.
 [
   ","
   ";"
-  "."
 ] @prepend_antispace
 
 ; Don't insert spaces immediately inside parentheses
+; WARNING Using parentheses in string interpolation will manifest the
+; bug documented in Issue #395
 "(" @append_antispace
 ")" @prepend_antispace
+
+; Don't insert spaces between infix operators and their operand
+(infix_expr
+  .
+  [
+    "-"
+    (infix_u_op_5 "!")
+  ] @append_antispace
+  .
+  (infix_expr)
+  .
+)
+
+; Flow a chain of infix expressions over new lines, in a multi-line
+; context. Note that we _don't_ want this to happen for comparison
+; operators, which fall under nodes (infix_b_op_7) and (infix_b_op_8).
+(uni_term
+  (#scope_id! "infix_chain")
+  (infix_expr) @begin_scope
+) @end_scope
+
+(infix_expr
+  (#scope_id! "infix_chain")
+  (infix_expr)
+  .
+  [
+    (infix_b_op_2) ; ++ and @
+    (infix_b_op_3) ; *, / and %
+    (infix_b_op_4) ; + and -
+    (infix_b_op_6) ; & and |>
+    (infix_lazy_b_op_9) ; &&
+    (infix_lazy_b_op_10) ; ||
+  ] @prepend_spaced_scoped_softline
+  .
+  (infix_expr)
+)
+
+; Surround all polymorphic type variables with spaces
+(forall
+  (ident) @prepend_space
+)
 
 ;; Comments
 
 (comment) @prepend_input_softline @append_hardline
 
 ;; Symbol Definitions
-; i.e., Let bindings and record fields
+; i.e., Let expressions and record fields
 
-; Create a scope that covers all annotation atoms, if any,
-; which are children of the (annot) node, *and* the equal sign. This
-; also defines an indentation block.
+; A let expression looks like:
 ;
-; NOTE This query will only match when annotations are present; thus a
-; "bare" signature, with just an equal sign, will not get a softline,
-; regardless of context. This behaviour can be changed by quantifying
-; the (annot) node with the Kleene star; with the consequence of keeping
-; the signature together if it's written on one line (albeit a different
-; one to the defined symbol). For example:
+;   let [rec] IDENT = EXPR in EXPR
 ;
-;   {
-;     foo
-;       | some | annotations = 1
-;   }
-;
-; The unquantified behaviour is probably a better trade-off, as bare
-; signatures are short and so more conducive to a single-line.
-;
-;   {
-;     foo
-;       | some
-;       | annotations
-;       = 1
-;   }
+; The binding expression should appear on a new line, indented, if its
+; RHS is multi-line (pushing the "in" to an unindented new line).
+; Similarly, the result expression (i.e., after the "in") should appear
+; on an new line, if that is multi-line. We don't start an indentation
+; block for the result expression, to avoid long diagonals in a series
+; of let expressions (which is idiomatic).
+
+(let_in_block
+  (#scope_id! "let_binding_rhs")
+  "=" @begin_scope
+  .
+  (term)
+  .
+  "in" @end_scope
+)
+
+(let_in_block
+  (#scope_id! "let_binding_rhs")
+  (term) @prepend_spaced_scoped_softline @prepend_indent_start
+  "in" @prepend_indent_end @prepend_spaced_scoped_softline
+)
+
+(let_expr
+  (#scope_id! "let_result")
+  (let_in_block
+    "in" @begin_scope
+  )
+  (term) @end_scope
+)
+
+(let_expr
+  (#scope_id! "let_result")
+  (term) @prepend_spaced_scoped_softline
+)
+
+;; Annotations
+
+; Create a scope that covers at least all annotation atoms; that is,
+; children of the (annot) node. When an assignment is also involved, we
+; have another scope that extents to also cover the equals sign.
 (
   (#scope_id! "signature")
   _ @begin_scope
   .
-  (annot) @prepend_indent_start
-  .
-  "=" @append_indent_end @end_scope
+  (annot) @end_scope
 )
+
+(
+  (#scope_id! "assignee")
+  (_) @begin_scope
+  .
+  (annot)*
+  .
+  "=" @end_scope
+)
+
+; Start an indentation block from the start of the annotations to the
+; end of the enclosing node
+(_
+  (annot) @prepend_indent_start
+) @append_indent_end
 
 ; Put each annotation and the equals sign on a new line, in a multi-line
-; context. Type annotations do not get a new line; this is because they
-; can be nested and it's not(?) possible to deduce the depth with
-; queries alone. For example:
-;
-;   {
-;     foo : { foo : String, bar : Number } = ...
-;   }
-;
-;   {
-;     foo : {
-;       foo : String,
-;       bar : Number
-;     }
-;     = ...
-;   }
+; context.
 (
   (#scope_id! "signature")
-  [
-    (annot_atom "|")
-    "="
-  ] @prepend_spaced_scoped_softline
+  (annot_atom) @prepend_spaced_scoped_softline
 )
 
-; Start a let binding's RHS on a new line, in a multi-line context.
-(let_in_block
-  (#scope_id! "let_term")
-  "=" @begin_scope
-  .
-  (term) @end_scope
+; FIXME This breaks idempotency for multi-line let expressions with two
+; or more annotations on the same line as the equals sign! For example:
+;
+;  let x
+;    : TYPE | ANNOT = 1 in x
+;
+; It also doesn't do the right thing (push the equals sign to a new
+; line) if it lives on the same line as the last annotation in the
+; input. For example:
+;
+;   let x
+;     : TYPE = 1 in x
+;
+; These forms are not attested in the Nickel standard library, as of
+; writing.
+(_
+  (#scope_id! "assignee")
+  "=" @prepend_spaced_scoped_softline
 )
 
-(let_in_block
-  (#scope_id! "let_term")
-  (term) @prepend_spaced_scoped_softline
-)
+; Break a multi-line polymorphic type annotation after the type
+; variables, starting an indentation block
+(forall
+  "." @append_spaced_softline @append_indent_start
+) @append_indent_end
 
 ;; Functions
 
@@ -187,11 +262,36 @@
   t1: (applicative) @append_space
 )
 
-;; Container Types
-; Arrays, records, dictionaries and enums
+;; Conditionals
 
-; We don't want to add spaces/newlines in empty records, so the
+; Flow multi-line match cases into an indented block after the =>
+(match_case
+  "=>" @append_spaced_softline @append_indent_start
+) @append_indent_end
+
+; if...then...else expressions can either be single or multi-line. In a
+; multi-line context, they will be formatted like so:
+;
+;  if CONDITION then
+;    TRUE_TERM
+;  else
+;    FALSE_TERM
+;
+; This style has precedent from the manually formatted stdlib. (An
+; alternative style is to give the "then" token its own line.)
+(ite_expr
+  "then" @append_spaced_softline @append_indent_start
+  t1: (term) @append_indent_end
+  "else" @prepend_spaced_softline @append_spaced_softline @append_indent_start
+  t2: (term) @append_indent_end
+)
+
+;; Container Types
+; i.e., Arrays, records (and dictionaries, vicariously) and enums
+
+; We don't want to add spaces/new lines in empty records, so the
 ; following query only matches if a named node exists within the record
+; NOTE This rule also applies to (match) and (destruct) patterns
 (_
   (#scope_id! "container")
   .
@@ -230,63 +330,4 @@
     ","
     ";"
   ] @append_spaced_scoped_softline
-)
-
-;; TIDY FROM HERE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(let_expr
-  (let_in_block) @append_spaced_softline
-)
-
-(let_in_block
-  "=" @append_indent_start
-  .
-  t1: (_) @append_indent_end @append_spaced_softline
-)
-
-(match_expr
-  "{" @append_spaced_softline @append_indent_start
-  "}" @prepend_indent_end @prepend_spaced_softline @append_spaced_softline
-)
-
-(match_expr
-  "," @append_spaced_softline
-)
-
-(ite_expr
-  "then" @prepend_spaced_softline @append_spaced_softline @append_indent_start
-  t1: (term) @append_spaced_softline @append_indent_end
-  "else" @append_indent_start @append_spaced_softline
-  t2: (term) @append_indent_end
-)
-
-(infix_b_op_6
-  "&"
-) @prepend_spaced_softline
-
-(forall
-  "." @append_spaced_softline @append_indent_start
-  (_) @append_indent_end
-  .
-)
-
-(forall
-  (ident) @append_space
-  .
-  (ident)
-)
-
-(destruct
-  "{" @append_spaced_softline @append_indent_start
-  "}" @prepend_indent_end @prepend_spaced_softline
-)
-
-(destruct
-  "," @append_spaced_softline
-)
-
-(match_case
-  "=>" @append_spaced_softline @append_indent_start
-  (_) @append_indent_end
-  .
 )
