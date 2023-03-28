@@ -329,19 +329,19 @@ fn check_input_exhaustivity(
     root: &Node,
     source: &[u8],
 ) -> FormatterResult<()> {
-    let pattern_count = original_query.inner.pattern_count();
+    let pattern_count = original_query.pattern_count();
     for i in 0..pattern_count {
         let mut query = Query::new(grammar, query_content)
             .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
-        query.inner.disable_pattern(i);
+        query.disable_pattern(i);
         let mut cursor = QueryCursor::new();
         let match_count = query.matches(root, source, &mut cursor).count();
         if match_count == ref_match_count {
-            let index_start = query.inner.start_byte_for_pattern(i);
+            let index_start = query.start_byte_for_pattern(i);
             let index_end = if i == pattern_count - 1 {
                 query_content.len()
             } else {
-                query.inner.start_byte_for_pattern(i + 1)
+                query.start_byte_for_pattern(i + 1)
             };
             let pattern_content = &query_content[index_start..index_end];
             return Err(FormatterError::PatternDoesNotMatch(pattern_content.into()));
