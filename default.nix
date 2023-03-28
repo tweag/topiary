@@ -66,6 +66,11 @@ in
     cargoTestCommand = "cargo bench --profile release";
   });
 
+  topiary-lib = craneLib.buildPackage (commonArgs // {
+    inherit cargoArtifacts;
+    cargoExtraArgs = "-p topiary";
+  });
+
   topiary-cli = craneLib.buildPackage (commonArgs // {
     inherit cargoArtifacts;
     pname = "topiary";
