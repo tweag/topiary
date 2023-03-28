@@ -37,7 +37,7 @@ const waitForOutput = async (
         (await page.waitForSelector(sel)) : sel;
 
     return page.waitForFunction(
-        (el, originalText) => el.textContent !== "" && el.textContent !== "Formatting ...",
+        el => el.textContent !== "" && el.textContent !== "Formatting ...",
         opts,
         el
     );
