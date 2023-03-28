@@ -109,11 +109,6 @@
   "." @prepend_empty_softline
 )
 
-; dyn
-(dynamic_type
-  (scoped_type_identifier) @prepend_space
-)
-
 ; enum
 (enum_item
   (type_identifier) @prepend_space
@@ -139,14 +134,6 @@
   _
   "}" @prepend_spaced_softline @prepend_indent_end
   .
-)
-
-; extern
-(extern_crate_declaration
-  [
-    (crate)
-    (identifier)
-  ] @prepend_space
 )
 
 ; field
@@ -181,20 +168,6 @@
   .
 )
 
-; for
-(for_expression
-  [
-    (call_expression)
-    (field_expression)
-    (identifier)
-  ] @prepend_space @append_space
-)
-
-; if
-(if_expression
-  (binary_expression) @prepend_space
-)
-
 ; impl
 (impl_item
   (type_identifier) @prepend_space
@@ -205,53 +178,8 @@
   "{" @prepend_space
 )
 
-(declaration_list
-  .
-  "{" @append_spaced_softline @append_indent_start
-  _
-  "}" @prepend_spaced_softline @prepend_indent_end
-  .
-)
-
-; let
-(let_declaration
-  [
-    (identifier)
-    (mutable_specifier)
-  ] @prepend_space
-)
-
-; match
-(match_expression
-  [
-    (call_expression)
-    (field_expression)
-    (identifier)
-  ] @prepend_space
-)
-
-; mod
-(mod_item
-  (identifier) @prepend_space
-)
-
-; return
-(return_expression
-  (identifier) @prepend_space
-)
-
-; type
-(bounded_type
-  "+" @prepend_space @append_space
-)
-
 ; PhantomData<&'a ()>
 (_
   (lifetime) @append_space
   [(array_type) (generic_type) (primitive_type) (unit_type)]
-)
-
-; use
-(use_declaration
-  (scoped_identifier) @prepend_space
 )
