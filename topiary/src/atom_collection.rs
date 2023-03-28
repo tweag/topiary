@@ -276,7 +276,8 @@ impl AtomCollection {
                     let appends = self.append.entry(*id).or_default();
 
                     // Rather than cloning the atom from the old vector, we
-                    // swap it out with an empty one.
+                    // simply take it. This will leave a default (empty) atom
+                    // in its place.
                     let swapped_atom = mem::take(atom);
 
                     log::debug!("Applying prepend of {prepends:?} to {atom:?}.");
