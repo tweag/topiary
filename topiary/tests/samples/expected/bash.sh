@@ -12,6 +12,9 @@ if some_command; then
   do_something
   another_thing --foo --bar
 
+else
+  do_something_else
+
 fi
 
 if [[ -e "/some/file" ]] || true; then
