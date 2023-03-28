@@ -31,22 +31,22 @@ function App() {
     return (
         <div className="App">
             <div className="header">
-                <button className="btn btn-primary" onClick={runFormat}>
+                <button id="formatButton" className="btn btn-primary" onClick={runFormat}>
                     Format
                 </button>
             </div>
             <div className="columns">
                 <div className="column">
                     <h1>Query</h1>
-                    <textarea value={query} onChange={e => setQuery(e.target.value)} />
+                    <textarea id="query" value={query} onChange={e => setQuery(e.target.value)} />
                 </div>
                 <div className="column">
                     <h1>Input</h1>
-                    <textarea value={input} onChange={e => setInput(e.target.value)} />
+                    <textarea id="input" value={input} onChange={e => setInput(e.target.value)} />
                 </div>
                 <div className="column">
                     <h1>Output</h1>
-                    <textarea value={output} readOnly></textarea>
+                    <textarea id="output" value={output} readOnly></textarea>
                 </div>
             </div>
         </div>
