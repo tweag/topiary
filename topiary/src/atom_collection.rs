@@ -279,11 +279,15 @@ impl AtomCollection {
                     // swap it out with an empty one.
                     let swapped_atom = mem::take(atom);
 
+                    log::debug!("Applying prepend of {prepends:?} to {atom:?}.");
                     expanded.append(prepends);
                     expanded.push(swapped_atom);
+
+                    log::debug!("Applying append of {appends:?} to {atom:?}.");
                     expanded.append(appends);
                 }
                 _ => {
+                    log::debug!("Not a leaf: {atom:?}");
                     expanded.push(mem::take(atom));
                 }
             }
