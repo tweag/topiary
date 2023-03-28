@@ -43,7 +43,7 @@ jobs:
 
       - name: Start web playground frontend
         if: success() && matrix.os == 'ubuntu-latest'
-        run: npm start --prefix web-playground
+        run: npm start --prefix web-playground &
 
       - name: Test web playground frontend
         if: success() && matrix.os == 'ubuntu-latest'
