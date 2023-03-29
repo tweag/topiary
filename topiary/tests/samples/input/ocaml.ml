@@ -811,6 +811,13 @@ type message = {
   payload : bytes;
 }
 
+let _ = {
+  bar = 0.0;
+  foo = True
+  [@some tag]
+  [@some other_tag]
+}
+
 type controller =
   | C : Slug.t -> controller
 
@@ -916,10 +923,18 @@ module Foo = struct
 # 1 "v1/pervasives.mli"
 end
 
+module MyTime = struct include Time end
+
 (* Nested match cases *)
 let foo = function
   | x -> (
     try foo with _ -> None )
+
+let _ = try%foo
+    bar
+  with
+    | Not_found -> baz
+    | _ -> qux
 
 let f = function
   | None -> ()
@@ -955,3 +970,5 @@ let not =
 let not = function true -> false | false -> true
 
 let not x = match x with | true -> false | false -> true
+
+exception MyException of string
