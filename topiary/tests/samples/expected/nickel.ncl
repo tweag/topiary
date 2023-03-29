@@ -1898,11 +1898,10 @@
         if %typeof% s == `String then
           if s == "true" || s == "True" then
             "true"
+          else if s == "false" || s == "False" then
+            "false"
           else
-            if s == "false" || s == "False" then
-              "false"
-            else
-              %blame% (%label_with_message% "expected \"true\" or \"false\", got %{s}" l)
+            %blame% (%label_with_message% "expected \"true\" or \"false\", got %{s}" l)
         else
           %blame% (%label_with_message% "not a string" l),
 
