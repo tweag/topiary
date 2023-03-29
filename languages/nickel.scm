@@ -277,18 +277,36 @@
 ; if...then...else expressions can either be single or multi-line. In a
 ; multi-line context, they will be formatted like so:
 ;
-;  if CONDITION then
-;    TRUE_TERM
-;  else
-;    FALSE_TERM
+;   if CONDITION then
+;     TRUE_TERM
+;   else
+;     FALSE_TERM
+;
+; NOTE If the FALSE_TERM is another if...then...else expression, in a
+; multi-line context, then the indentation block is "cancelled" to
+; create the illusion of an "else if" term:
+;
+;   if CONDITION1 then
+;     TRUE_TERM1
+;   else if CONDITION2 then
+;     TRUE_TERM2
+;   else
+;     FALSE_TERM2
 ;
 ; This style has precedent from the manually formatted stdlib. (An
 ; alternative style is to give the "then" token its own line.)
 (ite_expr
   "then" @append_spaced_softline @append_indent_start
-  t1: (term) @append_indent_end
-  "else" @prepend_spaced_softline @append_spaced_softline @append_indent_start
-  t2: (term) @append_indent_end
+  t1: (term) @append_indent_end @append_spaced_softline
+)
+
+(ite_expr
+  "else" @append_spaced_softline @append_indent_start
+  t2: (term
+    (uni_term
+      (ite_expr)
+    )? @do_nothing
+  ) @append_indent_end
 )
 
 ;; Container Types
