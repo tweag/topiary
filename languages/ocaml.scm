@@ -609,20 +609,6 @@
   [
     (comment)
     (if_expression)
-    "%"
-  ]? @do_nothing
-)
-
-(
-  "else"
-  .
-  "%"
-  .
-  (attribute_id) @append_spaced_softline
-  .
-  [
-    (comment)
-    (if_expression)
   ]? @do_nothing
 )
 
@@ -1183,21 +1169,6 @@
   "->" @append_indent_start
   (_) @append_indent_end
   .
-)
-
-; Make an indented block where a function type arrow starts. Only for the root
-; level, not for each arrow.
-;
-; (?used_slot:bool ref ->
-;   Longident.t loc ->
-;   Path.t * Env.t)
-;
-(constructed_type
-  (function_type
-    "->" @append_indent_start
-    (_) @append_indent_end
-    .
-  )
 )
 
 ; Make an indented block where a function/match starts in PPX syntax.
