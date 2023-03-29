@@ -262,9 +262,21 @@
   (pattern) @append_space
 )
 
-; Application operator is space, so we put it between identifiers.
-(applicative
-  t1: (applicative) @append_space
+; The applicative operator is a space, but in a multi-line context, we'd
+; like the operands to start on their own line, each indented.
+(infix_expr
+  (#scope_id! "applicative_chain")
+  (applicative) @begin_scope
+) @end_scope
+
+; NOTE Unlike infix chains, applicatives bind to the left. So rather
+; than creating a single indent block for all operands, we have to
+; create one for each operand independently.
+(
+  (#scope_id! "applicative_chain")
+  (applicative
+    (applicative) @append_spaced_scoped_softline @append_indent_start
+  ) @append_indent_end
 )
 
 ;; Conditionals
