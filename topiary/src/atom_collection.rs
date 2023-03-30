@@ -113,12 +113,18 @@ impl AtomCollection {
             }
         }
         if is_multi_line && predicates.single_line_only {
-            log::debug!("Aborting because context is multi-line and #single_line_only! is set");
+            log::debug!("Skipping because context is multi-line and #single_line_only! is set");
             return Ok(());
         }
         if !is_multi_line && predicates.multi_line_only {
-            log::debug!("Aborting because context is single-line and #multi_line_only! is set");
+            log::debug!("Skipping because context is single-line and #multi_line_only! is set");
             return Ok(());
+        }
+        if let Some(parent_id) = self.parent_leaf_nodes.get(&node.id()) {
+            if *parent_id != node.id() {
+                log::warn!("Skipping because the match occurred below a leaf node: {node:?}");
+                return Ok(());
+            }
         }
 
         match name {
@@ -342,17 +348,12 @@ impl AtomCollection {
         let atom = self.expand_multiline(atom, node);
         let atom = self.wrap(atom, predicates);
         // TODO: Pre-populate these
-        let target_node = first_leaf(node);
-
-        // If this is a child of a node that we have deemed as a leaf node
-        // (e.g. a character in a string), we need to use that node id
-        // instead.
-        let target_node_id = self.parent_leaf_node(&target_node);
+        let target_node = self.first_leaf(node);
 
         log::debug!("Prepending {atom:?} to node {:?}", target_node,);
 
         self.prepend
-            .entry(target_node_id)
+            .entry(target_node.id())
             .or_insert(vec![])
             .push(atom);
     }
@@ -360,33 +361,23 @@ impl AtomCollection {
     fn append(&mut self, atom: Atom, node: &Node, predicates: &QueryPredicates) {
         let atom = self.expand_multiline(atom, node);
         let atom = self.wrap(atom, predicates);
-        let target_node = last_leaf(node);
-
-        // If this is a child of a node that we have deemed as a leaf node
-        // (e.g. a character in a string), we need to use that node id
-        // instead.
-        let target_node_id = self.parent_leaf_node(&target_node);
+        let target_node = self.last_leaf(node);
 
         log::debug!("Appending {atom:?} to node {:?}", target_node,);
 
         self.append
-            .entry(target_node_id)
+            .entry(target_node.id())
             .or_insert(vec![])
             .push(atom);
     }
 
     fn begin_scope_before(&mut self, node: &Node, scope_id: &str) {
-        let target_node = first_leaf(node);
-
-        // If this is a child of a node that we have deemed as a leaf node
-        // (e.g. a character in a string), we need to use that node id
-        // instead.
-        let target_node_id = self.parent_leaf_node(&target_node);
+        let target_node = self.first_leaf(node);
 
         log::debug!("Begin scope {scope_id:?} before node {:?}", target_node,);
 
         self.scope_begin
-            .entry(target_node_id)
+            .entry(target_node.id())
             .and_modify(|(_, scope_ids)| scope_ids.push(String::from(scope_id)))
             .or_insert_with(|| {
                 (
@@ -397,17 +388,12 @@ impl AtomCollection {
     }
 
     fn end_scope_after(&mut self, node: &Node, scope_id: &str) {
-        let target_node = last_leaf(node);
-
-        // If this is a child of a node that we have deemed as a leaf node
-        // (e.g. a character in a string), we need to use that node id
-        // instead.
-        let target_node_id = self.parent_leaf_node(&target_node);
+        let target_node = self.last_leaf(node);
 
         log::debug!("End scope {scope_id:?} after node {:?}", target_node,);
 
         self.scope_end
-            .entry(target_node_id)
+            .entry(target_node.id())
             .and_modify(|(_, scope_ids)| scope_ids.push(String::from(scope_id)))
             .or_insert_with(|| {
                 (
@@ -415,14 +401,6 @@ impl AtomCollection {
                     vec![String::from(scope_id)],
                 )
             });
-    }
-
-    fn parent_leaf_node(&mut self, node: &Node) -> usize {
-        if let Some(id) = self.parent_leaf_nodes.get(&node.id()) {
-            *id
-        } else {
-            node.id()
-        }
     }
 
     fn expand_multiline(&self, atom: Atom, node: &Node) -> Atom {
@@ -696,6 +674,43 @@ impl AtomCollection {
         self.counter += 1;
         self.counter
     }
+
+    // TODO: first_leaf and last_leaf can probably be simplified.
+
+    /// Given a node, returns the id of the first leaf in the subtree.
+    fn first_leaf<'tree, 'node: 'tree>(&self, node: &'node Node<'tree>) -> Cow<'node, Node<'tree>> {
+        self.first_leaf_inner(Cow::Borrowed(node))
+    }
+
+    fn first_leaf_inner<'tree, 'node: 'tree>(
+        &self,
+        node: Cow<'node, Node<'tree>>,
+    ) -> Cow<'node, Node<'tree>> {
+        if node.child_count() == 0 || self.specified_leaf_nodes.contains(&node.id()) {
+            node
+        } else {
+            let node = Cow::Owned(node.child(0).unwrap());
+            self.first_leaf_inner(node)
+        }
+    }
+
+    /// Given a node, returns the id of the last leaf in the subtree.
+    fn last_leaf<'tree, 'node: 'tree>(&self, node: &'node Node<'tree>) -> Cow<'node, Node<'tree>> {
+        self.last_leaf_inner(Cow::Borrowed(node))
+    }
+
+    fn last_leaf_inner<'tree, 'node: 'tree>(
+        &self,
+        node: Cow<'node, Node<'tree>>,
+    ) -> Cow<'node, Node<'tree>> {
+        let nr_children = node.child_count();
+        if nr_children == 0 || self.specified_leaf_nodes.contains(&node.id()) {
+            node
+        } else {
+            let node = Cow::Owned(node.child(nr_children - 1).unwrap());
+            self.last_leaf_inner(node)
+        }
+    }
 }
 
 #[derive(Clone, Debug, Default)]
@@ -813,37 +828,6 @@ fn detect_line_breaks_inner(
         previous_node_id,
         previous_end,
     )
-}
-
-// TODO: first_leaf and last_leaf can probably be simplified.
-
-/// Given a node, returns the id of the first leaf in the subtree.
-fn first_leaf<'tree, 'node: 'tree>(node: &'node Node<'tree>) -> Cow<'node, Node<'tree>> {
-    first_leaf_inner(Cow::Borrowed(node))
-}
-
-fn first_leaf_inner<'tree, 'node: 'tree>(node: Cow<'node, Node<'tree>>) -> Cow<'node, Node<'tree>> {
-    if node.child_count() == 0 {
-        node
-    } else {
-        let node = Cow::Owned(node.child(0).unwrap());
-        first_leaf_inner(node)
-    }
-}
-
-/// Given a node, returns the id of the last leaf in the subtree.
-fn last_leaf<'tree, 'node: 'tree>(node: &'node Node<'tree>) -> Cow<'node, Node<'tree>> {
-    last_leaf_inner(Cow::Borrowed(node))
-}
-
-fn last_leaf_inner<'tree, 'node: 'tree>(node: Cow<'node, Node<'tree>>) -> Cow<'node, Node<'tree>> {
-    let nr_children = node.child_count();
-    if nr_children == 0 {
-        node
-    } else {
-        let node = Cow::Owned(node.child(nr_children - 1).unwrap());
-        last_leaf_inner(node)
-    }
 }
 
 /// So that we can easily extract the atoms using &atom_collection[..]
