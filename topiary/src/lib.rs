@@ -18,7 +18,7 @@ pub use crate::{
     configuration::Configuration,
     error::{FormatterError, IoError},
     language::Language,
-    tree_sitter::{SyntaxNode, Visualisation},
+    tree_sitter::{apply_query, SyntaxNode, Visualisation},
 };
 
 mod atom_collection;
@@ -107,13 +107,8 @@ pub type FormatterResult<T> = std::result::Result<T, FormatterError>;
 
 /// Operations that can be performed by the formatter.
 pub enum Operation {
-    Format {
-        check_input_exhaustivity: bool,
-        skip_idempotence: bool,
-    },
-    Visualise {
-        output_format: Visualisation,
-    },
+    Format { skip_idempotence: bool },
+    Visualise { output_format: Visualisation },
 }
 
 /// The function that takes an input and formats, or visualises an output.
@@ -140,17 +135,7 @@ pub enum Operation {
 ///     .await
 ///     .expect("grammars");
 ///
-/// match formatter(
-///     &mut input,
-///     &mut output,
-///     &query,
-///     &configuration,
-///     &grammars,
-///     Operation::Format{
-///         check_input_exhaustivity: false,
-///         skip_idempotence: false,
-///     }
-/// ) {
+/// match formatter(&mut input, &mut output, &query, &configuration, &grammars, Operation::Format{ skip_idempotence: false }) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
@@ -179,14 +164,10 @@ pub fn formatter(
     })?;
 
     match operation {
-        Operation::Format {
-            check_input_exhaustivity,
-            skip_idempotence,
-        } => {
+        Operation::Format { skip_idempotence } => {
             // All the work related to tree-sitter and the query is done here
             log::info!("Apply Tree-sitter query");
-            let mut atoms =
-                tree_sitter::apply_query(&content, query, grammars, check_input_exhaustivity)?;
+            let mut atoms = tree_sitter::apply_query(&content, query, grammars, false)?;
 
             // Various post-processing of whitespace
             atoms.post_process();
@@ -248,7 +229,6 @@ fn idempotence_check(
         configuration,
         grammars,
         Operation::Format {
-            check_input_exhaustivity: false,
             skip_idempotence: true,
         },
     )?;
@@ -291,7 +271,6 @@ async fn parse_error_fails_formatting() {
         &configuration,
         &grammars,
         Operation::Format {
-            check_input_exhaustivity: false,
             skip_idempotence: true,
         },
     ) {
