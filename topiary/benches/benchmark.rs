@@ -21,7 +21,6 @@ async fn format() {
         &configuration,
         &grammars,
         Operation::Format {
-            check_input_exhaustivity: false,
             skip_idempotence: true,
         },
     )

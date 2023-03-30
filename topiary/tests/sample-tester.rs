@@ -4,7 +4,7 @@ use std::path::Path;
 
 use pretty_assertions::assert_eq;
 
-use topiary::{formatter, Configuration, FormatterError, Language, Operation};
+use topiary::{apply_query, formatter, Configuration, FormatterError, Language, Operation};
 
 #[tokio::test]
 async fn input_output_tester() {
@@ -34,7 +34,6 @@ async fn input_output_tester() {
             &configuration,
             &grammars,
             Operation::Format {
-                check_input_exhaustivity: false,
                 skip_idempotence: false,
             },
         )
@@ -74,7 +73,6 @@ async fn formatted_query_tester() {
             &configuration,
             &grammars,
             Operation::Format {
-                check_input_exhaustivity: false,
                 skip_idempotence: false,
             },
         )
@@ -101,32 +99,17 @@ async fn exhaustive_query_tester() {
         let language = Language::detect(file.path()).unwrap();
         let query_file = language.query_file().unwrap();
 
-        let mut input = BufReader::new(fs::File::open(file.path()).unwrap());
-        let mut output = Vec::new();
-        let query = fs::read_to_string(&query_file).unwrap();
+        let input_content = fs::read_to_string(&file.path()).unwrap();
+        let query_content = fs::read_to_string(&query_file).unwrap();
 
-        let mut configuration = Configuration::parse(&query).unwrap();
-        configuration.language = language;
+        let grammars = language.grammars().await.unwrap();
 
-        let grammars = configuration.language.grammars().await.unwrap();
-
-        formatter(
-            &mut input,
-            &mut output,
-            &query,
-            &configuration,
-            &grammars,
-            Operation::Format {
-                check_input_exhaustivity: true,
-                skip_idempotence: false,
-            },
-        )
-        .unwrap_or_else(|e| {
+        apply_query(&input_content, &query_content, &grammars, true).unwrap_or_else(|e| {
             if let FormatterError::PatternDoesNotMatch(_) = e {
                 panic!("Found untested query in file {query_file:?}:\n{e}");
             } else {
                 panic!("{e}");
             }
-        })
+        });
     }
 }
