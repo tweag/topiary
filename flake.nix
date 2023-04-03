@@ -40,8 +40,12 @@
           inherit topiary-playground;
           default = topiary-cli;
         };
-        checks = with code; {
-          inherit clippy clippy-wasm fmt topiary-lib topiary-cli topiary-playground audit benchmark;
+
+        checks = {
+          inherit (code) clippy clippy-wasm fmt topiary-lib topiary-cli topiary-playground audit benchmark;
+
+          ## Check that the `lib.pre-commit-hook` output builds correctly.
+          pre-commit-hook = builtins.deepSeq self.lib.${system}.pre-commit-hook pkgs.hello;
         };
 
         ## For easy use in https://github.com/cachix/pre-commit-hooks.nix
