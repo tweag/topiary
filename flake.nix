@@ -59,7 +59,7 @@
                 name = "topiary-inplace";
                 text = ''
                   for FILE; do
-                    if ${code.app}/bin/topiary --in-place --input-file "$FILE"; then
+                    if ${code.topiary-cli}/bin/topiary --in-place --input-file "$FILE"; then
                       continue
                     else
                       EXIT=$?
