@@ -2,6 +2,7 @@ use crate::error::CLIResult;
 use std::{
     ffi::OsString,
     io::{stdout, Write},
+    path::Path,
 };
 use tempfile::NamedTempFile;
 
@@ -20,10 +21,14 @@ impl OutputFile {
     pub fn new(path: Option<&str>) -> CLIResult<Self> {
         match path {
             Some("-") | None => Ok(Self::Stdout),
-            Some(file) => Ok(Self::Disk {
-                staged: NamedTempFile::new()?,
-                output: file.into(),
-            }),
+            Some(file) => {
+                let path = Path::new(file).canonicalize()?;
+                let parent = path.parent().unwrap();
+                Ok(Self::Disk {
+                    staged: NamedTempFile::new_in(parent)?,
+                    output: file.into(),
+                })
+            }
         }
     }
 
