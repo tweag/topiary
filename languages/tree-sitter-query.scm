@@ -26,7 +26,6 @@
     (grouping)
     (named_node)
     (parameters)
-    (predicate_type)
     (quantifier)
     ":"
     "."
@@ -41,7 +40,6 @@
     (capture)
     (grouping)
     (named_node)
-    (parameters)
     "."
     "("
     "["
@@ -50,6 +48,13 @@
 )
 (anonymous_node
   (capture) @prepend_space
+)
+
+; The grammar always includes a (parameters) child node under
+; (predicate), even when there are none. Topiary will deal with the
+; zero-byte nodes, so we just need to set the spacing correctly.
+(predicate
+  (parameters) @prepend_space
 )
 
 ; Line breaks and indentation in multi-line lists and nodes

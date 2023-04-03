@@ -679,7 +679,7 @@
   "|" @delete
   .
   (match_case)
-  (#single_line_only! )
+  (#single_line_only!)
 )
 
 (
@@ -689,7 +689,7 @@
   .
   (match_case) @prepend_delimiter
   (#delimiter! "| ") ; sic
-  (#multi_line_only! )
+  (#multi_line_only!)
 )
 
 ; Multi-line definitions must have a linebreak after "=" and before "in":
