@@ -40,8 +40,15 @@
           inherit topiary-playground;
           default = topiary-cli;
         };
-        checks = with code; {
-          inherit clippy clippy-wasm fmt topiary-lib topiary-cli topiary-playground audit benchmark;
+
+        checks = {
+          inherit (code) clippy clippy-wasm fmt topiary-lib topiary-cli topiary-playground audit benchmark;
+
+          ## Check that the `lib.pre-commit-hook` output builds/evaluates
+          ## correctly. `deepSeq e1 e2` evaluates `e1` strictly in depth before
+          ## returning `e2`. We use this trick because checks need to be
+          ## derivations, which `lib.pre-commit-hook` is not.
+          pre-commit-hook = builtins.deepSeq self.lib.${system}.pre-commit-hook pkgs.hello;
         };
 
         ## For easy use in https://github.com/cachix/pre-commit-hooks.nix
@@ -55,7 +62,7 @@
                 name = "topiary-inplace";
                 text = ''
                   for FILE; do
-                    if ${code.app}/bin/topiary --in-place --input-file "$FILE"; then
+                    if ${code.topiary-cli}/bin/topiary --in-place --input-file "$FILE"; then
                       continue
                     else
                       EXIT=$?
@@ -76,4 +83,3 @@
       }
     );
 }
-
