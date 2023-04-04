@@ -773,29 +773,29 @@ fn detect_multi_line_nodes(node: &Node) -> HashSet<usize> {
 }
 
 fn detect_blank_lines_before(node: &Node) -> HashSet<usize> {
-    detect_line_breaks_inner(node, 2, None, None).0
+    detect_line_breaks_inner(node, 2, None).0
 }
 
 fn detect_line_break_before_and_after(node: &Node) -> (HashSet<usize>, HashSet<usize>) {
-    let result = detect_line_breaks_inner(node, 1, None, None);
+    let result = detect_line_breaks_inner(node, 1, None);
     (result.0, result.1)
 }
 
 // TODO: This is taking a bit too much time, and would benefit from an
 // optimization.
 // TODO 2: The whole function is a mess now, and should be rewritten.
-fn detect_line_breaks_inner(
-    node: &Node,
+fn detect_line_breaks_inner<'tree>(
+    node: &'tree Node<'tree>,
     minimum_line_breaks: u32,
-
-    // TODO: Replace these with just previous_node: Option<&Node>
-    previous_node_id: Option<usize>,
-    previous_end: Option<u32>,
-) -> (HashSet<usize>, HashSet<usize>, Option<usize>, Option<u32>) {
+    previous_node: Option<&'tree Node<'tree>>,
+) -> (HashSet<usize>, HashSet<usize>, Option<&'tree Node<'tree>>) {
     let mut nodes_with_breaks_before = HashSet::new();
     let mut nodes_with_breaks_after = HashSet::new();
 
-    if let (Some(previous_node_id), Some(previous_end)) = (previous_node_id, previous_end) {
+    //if let (Some(previous_node_id), Some(previous_end)) = (previous_node_id, previous_end) {
+    if let Some(previous_node) = previous_node {
+        let previous_node_id = previous_node.id();
+        let previous_end = previous_node.end_position().row();
         let current_start = node.start_position().row();
 
         if current_start >= previous_end + minimum_line_breaks {
@@ -811,15 +811,13 @@ fn detect_line_breaks_inner(
         }
     }
 
-    let mut previous_node_id = Some(node.id());
-    let mut previous_end = Some(node.end_position().row());
+    let mut previous_node = Some(node);
 
     for child in node.children(&mut node.walk()) {
-        let (before, after, node_id, end) =
-            detect_line_breaks_inner(&child, minimum_line_breaks, previous_node_id, previous_end);
+        let (before, after, previous) =
+            detect_line_breaks_inner(&child, minimum_line_breaks, previous_node);
 
-        previous_node_id = node_id;
-        previous_end = end;
+        previous_node = previous;
         nodes_with_breaks_before.extend(before);
         nodes_with_breaks_after.extend(after);
     }
@@ -827,8 +825,7 @@ fn detect_line_breaks_inner(
     (
         nodes_with_breaks_before,
         nodes_with_breaks_after,
-        previous_node_id,
-        previous_end,
+        previous_node,
     )
 }
 
