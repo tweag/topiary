@@ -2,9 +2,25 @@ use std::fs;
 use std::io::BufReader;
 use std::path::Path;
 
-use pretty_assertions::assert_eq;
+use prettydiff::text::{diff_lines, ContextConfig};
 
 use topiary::{apply_query, formatter, Configuration, FormatterError, Language, Operation};
+
+fn pretty_assert_eq(v1: String, v2: String) {
+    if v1 != v2 {
+        let diff = diff_lines(&v1, &v2);
+        panic!(
+            "\n{}",
+            diff.format_with_context(
+                Some(ContextConfig {
+                    context_size: 2,
+                    skipping_marker: "...",
+                }),
+                true,
+            )
+        )
+    }
+}
 
 #[tokio::test]
 async fn input_output_tester() {
@@ -42,7 +58,7 @@ async fn input_output_tester() {
         let formatted = String::from_utf8(output).unwrap();
         log::debug!("{}", formatted);
 
-        assert_eq!(expected, formatted);
+        pretty_assert_eq(expected, formatted)
     }
 }
 
@@ -81,7 +97,7 @@ async fn formatted_query_tester() {
         let formatted = String::from_utf8(output).unwrap();
         log::debug!("{}", formatted);
 
-        assert_eq!(expected, formatted);
+        pretty_assert_eq(expected, formatted)
     }
 }
 
