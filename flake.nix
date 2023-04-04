@@ -44,7 +44,10 @@
         checks = {
           inherit (code) clippy clippy-wasm fmt topiary-lib topiary-cli topiary-playground audit benchmark;
 
-          ## Check that the `lib.pre-commit-hook` output builds correctly.
+          ## Check that the `lib.pre-commit-hook` output builds/evaluates
+          ## correctly. `deepSeq e1 e2` evaluates `e1` strictly in depth before
+          ## returning `e2`. We use this trick because checks need to be
+          ## derivations, which `lib.pre-commit-hook` is not.
           pre-commit-hook = builtins.deepSeq self.lib.${system}.pre-commit-hook pkgs.hello;
         };
 
@@ -80,4 +83,3 @@
       }
     );
 }
-
