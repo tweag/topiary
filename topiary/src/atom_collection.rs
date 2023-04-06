@@ -37,10 +37,13 @@ impl AtomCollection {
         source: &[u8],
         specified_leaf_nodes: HashSet<usize>,
     ) -> FormatterResult<AtomCollection> {
+        // Flatten the tree, from the root node, in a depth-first traversal
+        let dfs_nodes = dfs_flatten(root);
+
         // Detect user specified line breaks
         let multi_line_nodes = detect_multi_line_nodes(root);
-        let blank_lines_before = detect_blank_lines_before(root);
-        let (line_break_before, line_break_after) = detect_line_break_before_and_after(root);
+        let blank_lines_before = detect_blank_lines_before(&dfs_nodes);
+        let (line_break_after, line_break_before) = detect_line_break_before_and_after(&dfs_nodes);
 
         let mut atoms = AtomCollection {
             atoms: Vec::new(),
@@ -753,6 +756,27 @@ fn is_dominant(next: &Atom, prev: &Atom) -> bool {
     }
 }
 
+fn dfs_flatten<'tree>(node: &Node<'tree>) -> Vec<Node<'tree>> {
+    // Flatten the tree, depth-first, into a vector of nodes
+    let mut walker = node.walk();
+    let mut dfs_nodes = Vec::new();
+
+    // NOTE Could this be written in functional style?
+    'walk: loop {
+        dfs_nodes.push(walker.node());
+
+        if !walker.goto_first_child() {
+            while !walker.goto_next_sibling() {
+                if !walker.goto_parent() {
+                    break 'walk;
+                }
+            }
+        }
+    }
+
+    dfs_nodes
+}
+
 fn detect_multi_line_nodes(node: &Node) -> HashSet<usize> {
     let mut ids = HashSet::new();
 
@@ -772,39 +796,21 @@ fn detect_multi_line_nodes(node: &Node) -> HashSet<usize> {
     ids
 }
 
-fn detect_blank_lines_before(node: &Node) -> HashSet<usize> {
-    detect_line_breaks_inner(node, 2).0
+fn detect_blank_lines_before(dfs_nodes: &[Node]) -> HashSet<usize> {
+    detect_line_breaks_inner(dfs_nodes, 2).1
 }
 
-fn detect_line_break_before_and_after(node: &Node) -> (HashSet<usize>, HashSet<usize>) {
-    detect_line_breaks_inner(node, 1)
+fn detect_line_break_before_and_after(dfs_nodes: &[Node]) -> (HashSet<usize>, HashSet<usize>) {
+    detect_line_breaks_inner(dfs_nodes, 1)
 }
 
 pub fn detect_line_breaks_inner(
-    node: &Node,
+    dfs_nodes: &[Node],
     minimum_line_breaks: u32,
 ) -> (HashSet<usize>, HashSet<usize>) {
-    // Flatten the tree, depth-first, into a vector of nodes
-    let mut walker = node.walk();
-    let mut dfs_nodes: Vec<Node> = Vec::new();
-
-    // NOTE Could this be written in functional style?
-    // Either way, it can be factored out to avoid running twice.
-    'walk: loop {
-        dfs_nodes.push(walker.node());
-
-        if !walker.goto_first_child() {
-            while !walker.goto_next_sibling() {
-                if !walker.goto_parent() {
-                    break 'walk;
-                }
-            }
-        }
-    }
-
     // Zip the flattened vector with its own tail => Iterator of pairs of adjacent nodes
     // Filter this by the threshold distance between pair components
-    // Unzip into "after" and "before" sets, respectively
+    // Unzip into "nodes with spaces after" and "before" sets, respectively
     dfs_nodes
         .iter()
         .zip(dfs_nodes[1..].iter())
@@ -820,9 +826,8 @@ pub fn detect_line_breaks_inner(
                     omega.id()
                 );
 
-                // We only need the node IDs and, to preserve the API,
-                // flip the output to ("before", "after") sets.
-                return Some((omega.id(), alpha.id()));
+                // We only need the node IDs
+                return Some((alpha.id(), omega.id()));
             }
 
             None
