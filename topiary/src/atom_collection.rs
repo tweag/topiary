@@ -41,7 +41,7 @@ impl AtomCollection {
         let dfs_nodes = dfs_flatten(root);
 
         // Detect user specified line breaks
-        let multi_line_nodes = detect_multi_line_nodes(root);
+        let multi_line_nodes = detect_multi_line_nodes(&dfs_nodes);
         let blank_lines_before = detect_blank_lines_before(&dfs_nodes);
         let (line_break_after, line_break_before) = detect_line_break_before_and_after(&dfs_nodes);
 
@@ -777,23 +777,21 @@ fn dfs_flatten<'tree>(node: &Node<'tree>) -> Vec<Node<'tree>> {
     dfs_nodes
 }
 
-fn detect_multi_line_nodes(node: &Node) -> HashSet<usize> {
-    let mut ids = HashSet::new();
+fn detect_multi_line_nodes(dfs_nodes: &[Node]) -> HashSet<usize> {
+    dfs_nodes
+        .iter()
+        .filter_map(|node| {
+            let start_line = node.start_position().row();
+            let end_line = node.end_position().row();
 
-    for child in node.children(&mut node.walk()) {
-        ids.extend(detect_multi_line_nodes(&child));
-    }
+            if end_line > start_line {
+                log::debug!("Multi-line node {}: {:?}", node.id(), node,);
+                return Some(node.id());
+            }
 
-    let start_line = node.start_position().row();
-    let end_line = node.end_position().row();
-
-    if end_line > start_line {
-        let id = node.id();
-        ids.insert(id);
-        log::debug!("Multi-line node {}: {:?}", id, node,);
-    }
-
-    ids
+            None
+        })
+        .collect()
 }
 
 fn detect_blank_lines_before(dfs_nodes: &[Node]) -> HashSet<usize> {
