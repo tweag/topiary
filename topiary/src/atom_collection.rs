@@ -773,63 +773,64 @@ fn detect_multi_line_nodes(node: &Node) -> HashSet<usize> {
 }
 
 fn detect_blank_lines_before(node: &Node) -> HashSet<usize> {
-    detect_line_breaks_inner(node, 2, None, None).0
+    detect_line_breaks_inner(node, 2).0
 }
 
 fn detect_line_break_before_and_after(node: &Node) -> (HashSet<usize>, HashSet<usize>) {
-    let result = detect_line_breaks_inner(node, 1, None, None);
-    (result.0, result.1)
+    detect_line_breaks_inner(node, 1)
 }
 
-// TODO: This is taking a bit too much time, and would benefit from an
-// optimization.
-// TODO 2: The whole function is a mess now, and should be rewritten.
-fn detect_line_breaks_inner(
+pub fn detect_line_breaks_inner(
     node: &Node,
     minimum_line_breaks: u32,
+) -> (HashSet<usize>, HashSet<usize>) {
+    // Flatten the tree, depth-first, into a vector of nodes
+    let mut walker = node.walk();
+    let mut dfs_nodes: Vec<Node> = Vec::new();
 
-    // TODO: Replace these with just previous_node: Option<&Node>
-    previous_node_id: Option<usize>,
-    previous_end: Option<u32>,
-) -> (HashSet<usize>, HashSet<usize>, Option<usize>, Option<u32>) {
-    let mut nodes_with_breaks_before = HashSet::new();
-    let mut nodes_with_breaks_after = HashSet::new();
+    // NOTE Could this be written in functional style?
+    // Either way, it can be factored out to avoid running twice.
+    'walk: loop {
+        dfs_nodes.push(walker.node());
 
-    if let (Some(previous_node_id), Some(previous_end)) = (previous_node_id, previous_end) {
-        let current_start = node.start_position().row();
-
-        if current_start >= previous_end + minimum_line_breaks {
-            nodes_with_breaks_before.insert(node.id());
-            nodes_with_breaks_after.insert(previous_node_id);
-
-            log::debug!(
-                "There are at least {} blank lines between {:?} and {:?}",
-                minimum_line_breaks,
-                previous_node_id,
-                node.id()
-            );
+        if !walker.goto_first_child() {
+            while !walker.goto_next_sibling() {
+                if !walker.goto_parent() {
+                    break 'walk;
+                }
+            }
         }
     }
 
-    let mut previous_node_id = Some(node.id());
-    let mut previous_end = Some(node.end_position().row());
+    // Zip the flattened vector with its own tail => Iterator of pairs of adjacent nodes
+    // Filter this by the threshold distance between pair components
+    // Unzip into "after" and "before" sets, respectively
+    dfs_nodes
+        .iter()
+        .zip(dfs_nodes[1..].iter())
+        .filter(|(alpha, omega)| {
+            let last = alpha.end_position().row();
+            let next = omega.start_position().row();
 
-    for child in node.children(&mut node.walk()) {
-        let (before, after, node_id, end) =
-            detect_line_breaks_inner(&child, minimum_line_breaks, previous_node_id, previous_end);
+            if next < last + minimum_line_breaks {
+                return false;
+            }
 
-        previous_node_id = node_id;
-        previous_end = end;
-        nodes_with_breaks_before.extend(before);
-        nodes_with_breaks_after.extend(after);
-    }
+            log::debug!(
+                "There are at least {} line breaks between {:?} and {:?}",
+                minimum_line_breaks,
+                alpha.id(),
+                omega.id()
+            );
 
-    (
-        nodes_with_breaks_before,
-        nodes_with_breaks_after,
-        previous_node_id,
-        previous_end,
-    )
+            true
+        })
+        .map(|(alpha, omega)| {
+            // We only need the node IDs and, to preserve the API,
+            // flip the output to ("before", "after") sets.
+            (omega.id(), alpha.id())
+        })
+        .unzip()
 }
 
 /// So that we can easily extract the atoms using &atom_collection[..]
