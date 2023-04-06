@@ -9,6 +9,11 @@ use tree_sitter_facade::Node;
 
 use crate::{Atom, FormatterError, FormatterResult, ScopeCondition};
 
+struct NodesWithLinebreaks {
+    before: HashSet<usize>,
+    after: HashSet<usize>,
+}
+
 #[derive(Debug)]
 pub struct AtomCollection {
     atoms: Vec<Atom>,
@@ -37,10 +42,13 @@ impl AtomCollection {
         source: &[u8],
         specified_leaf_nodes: HashSet<usize>,
     ) -> FormatterResult<AtomCollection> {
+        // Flatten the tree, from the root node, in a depth-first traversal
+        let dfs_nodes = dfs_flatten(root);
+
         // Detect user specified line breaks
-        let multi_line_nodes = detect_multi_line_nodes(root);
-        let blank_lines_before = detect_blank_lines_before(root);
-        let (line_break_before, line_break_after) = detect_line_break_before_and_after(root);
+        let multi_line_nodes = detect_multi_line_nodes(&dfs_nodes);
+        let blank_line_nodes = detect_line_breaks(&dfs_nodes, 2);
+        let line_break_nodes = detect_line_breaks(&dfs_nodes, 1);
 
         let mut atoms = AtomCollection {
             atoms: Vec::new(),
@@ -49,9 +57,9 @@ impl AtomCollection {
             specified_leaf_nodes,
             parent_leaf_nodes: HashMap::new(),
             multi_line_nodes,
-            blank_lines_before,
-            line_break_before,
-            line_break_after,
+            blank_lines_before: blank_line_nodes.before,
+            line_break_before: line_break_nodes.before,
+            line_break_after: line_break_nodes.after,
             scope_begin: HashMap::new(),
             scope_end: HashMap::new(),
             counter: 0,
@@ -753,43 +761,15 @@ fn is_dominant(next: &Atom, prev: &Atom) -> bool {
     }
 }
 
-fn detect_multi_line_nodes(node: &Node) -> HashSet<usize> {
-    let mut ids = HashSet::new();
-
-    for child in node.children(&mut node.walk()) {
-        ids.extend(detect_multi_line_nodes(&child));
-    }
-
-    let start_line = node.start_position().row();
-    let end_line = node.end_position().row();
-
-    if end_line > start_line {
-        let id = node.id();
-        ids.insert(id);
-        log::debug!("Multi-line node {}: {:?}", id, node,);
-    }
-
-    ids
-}
-
-fn detect_blank_lines_before(node: &Node) -> HashSet<usize> {
-    detect_line_breaks_inner(node, 2).0
-}
-
-fn detect_line_break_before_and_after(node: &Node) -> (HashSet<usize>, HashSet<usize>) {
-    detect_line_breaks_inner(node, 1)
-}
-
-pub fn detect_line_breaks_inner(
-    node: &Node,
-    minimum_line_breaks: u32,
-) -> (HashSet<usize>, HashSet<usize>) {
+fn dfs_flatten<'tree>(node: &Node<'tree>) -> Vec<Node<'tree>> {
     // Flatten the tree, depth-first, into a vector of nodes
     let mut walker = node.walk();
-    let mut dfs_nodes: Vec<Node> = Vec::new();
+    let mut dfs_nodes = Vec::new();
 
-    // NOTE Could this be written in functional style?
-    // Either way, it can be factored out to avoid running twice.
+    // This can be written recursively (and in functional style,
+    // if needs be), but -- subjectively -- it is no clearer.
+    // Objectively, the loop is also faster :)
+    // See https://github.com/tweag/topiary/pull/417#issuecomment-1499085230
     'walk: loop {
         dfs_nodes.push(walker.node());
 
@@ -802,32 +782,60 @@ pub fn detect_line_breaks_inner(
         }
     }
 
-    // Zip the flattened vector with its own tail => Iterator of pairs of adjacent nodes
-    // Filter this by the threshold distance between pair components
-    // Unzip into "after" and "before" sets, respectively
+    dfs_nodes
+}
+
+fn detect_multi_line_nodes(dfs_nodes: &[Node]) -> HashSet<usize> {
     dfs_nodes
         .iter()
+        .filter_map(|node| {
+            let start_line = node.start_position().row();
+            let end_line = node.end_position().row();
+
+            if end_line > start_line {
+                log::debug!("Multi-line node {}: {:?}", node.id(), node,);
+                return Some(node.id());
+            }
+
+            None
+        })
+        .collect()
+}
+
+fn detect_line_breaks(dfs_nodes: &[Node], minimum_line_breaks: u32) -> NodesWithLinebreaks {
+    // Zip the flattened vector with its own tail => Iterator of pairs of adjacent nodes
+    // Filter this by the threshold distance between pair components
+    // Unzip into "nodes with spaces before" and "after" sets, respectively
+    let (before, after) = dfs_nodes
+        .iter()
         .zip(dfs_nodes[1..].iter())
-        .filter_map(|(alpha, omega)| {
-            let last = alpha.end_position().row();
-            let next = omega.start_position().row();
+        .filter_map(|(left, right)| {
+            let last = left.end_position().row();
+            let next = right.start_position().row();
 
             if next >= last + minimum_line_breaks {
                 log::debug!(
                     "There are at least {} line breaks between {:?} and {:?}",
                     minimum_line_breaks,
-                    alpha.id(),
-                    omega.id()
+                    left.id(),
+                    right.id()
                 );
 
-                // We only need the node IDs and, to preserve the API,
-                // flip the output to ("before", "after") sets.
-                return Some((omega.id(), alpha.id()));
+                // Our node pairs look like this, hence the flip:
+                //
+                //          /------ before -----\
+                //   <Left> <Line Breaks> <Right>
+                //   \----- after ------/
+                //
+                // NOTE We only need the node IDs
+                return Some((right.id(), left.id()));
             }
 
             None
         })
-        .unzip()
+        .unzip();
+
+    NodesWithLinebreaks { before, after }
 }
 
 /// So that we can easily extract the atoms using &atom_collection[..]
