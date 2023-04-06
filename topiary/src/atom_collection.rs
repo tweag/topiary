@@ -766,7 +766,10 @@ fn dfs_flatten<'tree>(node: &Node<'tree>) -> Vec<Node<'tree>> {
     let mut walker = node.walk();
     let mut dfs_nodes = Vec::new();
 
-    // NOTE Could this be written in functional style?
+    // This can be written recursively (and in functional style,
+    // if needs be), but -- subjectively -- it is no clearer.
+    // Objectively, the loop is also faster :)
+    // See https://github.com/tweag/topiary/pull/417#issuecomment-1499085230
     'walk: loop {
         dfs_nodes.push(walker.node());
 
