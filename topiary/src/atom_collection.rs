@@ -808,27 +808,24 @@ pub fn detect_line_breaks_inner(
     dfs_nodes
         .iter()
         .zip(dfs_nodes[1..].iter())
-        .filter(|(alpha, omega)| {
+        .filter_map(|(alpha, omega)| {
             let last = alpha.end_position().row();
             let next = omega.start_position().row();
 
-            if next < last + minimum_line_breaks {
-                return false;
+            if next >= last + minimum_line_breaks {
+                log::debug!(
+                    "There are at least {} line breaks between {:?} and {:?}",
+                    minimum_line_breaks,
+                    alpha.id(),
+                    omega.id()
+                );
+
+                // We only need the node IDs and, to preserve the API,
+                // flip the output to ("before", "after") sets.
+                return Some((omega.id(), alpha.id()));
             }
 
-            log::debug!(
-                "There are at least {} line breaks between {:?} and {:?}",
-                minimum_line_breaks,
-                alpha.id(),
-                omega.id()
-            );
-
-            true
-        })
-        .map(|(alpha, omega)| {
-            // We only need the node IDs and, to preserve the API,
-            // flip the output to ("before", "after") sets.
-            (omega.id(), alpha.id())
+            None
         })
         .unzip()
 }
