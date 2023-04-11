@@ -22,7 +22,7 @@ jobs:
           authToken: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
       - name: Clippy, test, and benchmark
-        run: nix -L flake check
+        run: export GC_DONT_GC=1; nix -L flake check
 
       - name: Build and test executable
         run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- -l json'
