@@ -2,6 +2,8 @@ import { FrameWaitForFunctionOptions, Page } from "puppeteer";
 import * as fs from 'fs';
 import * as path from 'path';
 
+const TimeoutMs = 20000;
+
 describe('test all grammars with puppeteer', () => {
     beforeEach(async () => {
         await page.goto('http://localhost:3000/playground');
@@ -28,7 +30,7 @@ describe('test all grammars with puppeteer', () => {
 
             await testInputFile(input, expected, query);
         }
-    }, 20000);
+    }, TimeoutMs);
 })
 
 async function testInputFile(input: string, expected: string, query: string) {
