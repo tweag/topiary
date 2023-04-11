@@ -895,8 +895,9 @@ dependencies = [
 
 [[package]]
 name = "prettydiff"
-version = "0.6.3"
-source = "git+https://github.com/nbacquey/prettydiff?branch=format_with_context#02dcef5d2e61f8b8062f46fb8f9d9bed4a76e536"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ff1fec61082821f8236cf6c0c14e8172b62ce8a72a0eedc30d3b247bb68dc11"
 dependencies = [
  "ansi_term",
  "pad",
