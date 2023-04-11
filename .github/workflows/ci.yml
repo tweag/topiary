@@ -51,8 +51,10 @@ jobs:
         if: success() && matrix.os == 'ubuntu-latest'
         run: |
           npm start --prefix web-playground &
-          # Wait until there's a response
-          curl --silent --connect-timeout 10 http://localhost:3000
+          # Loop until there's a response
+          while [[ "$(curl --silent --output /dev/null --write-out "%{http_code}" http://localhost:3000)" != "200" ]]; do
+            sleep 2
+          done
 
       - name: Test web playground frontend
         if: success() && matrix.os == 'ubuntu-latest'
