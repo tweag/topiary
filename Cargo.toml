@@ -1,4 +1,6 @@
 [workspace]
+package.name = "topiary"
+package.version = "0.1.0"
 
 members = [
     "topiary",
