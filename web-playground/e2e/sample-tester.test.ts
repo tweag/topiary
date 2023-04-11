@@ -19,7 +19,7 @@ describe('test all grammars with puppeteer', () => {
             const queryFileName = inputFileName.replace(/\..*$/, ".scm");
             const queryPath = path.join(queryDir, queryFileName);
 
-            console.log(`Testing ${inputPath} ${expectedPath} ${queryPath}`);
+            console.log(`Testing ${inputPath} - ${expectedPath} - ${queryPath}`);
 
             const encoding = "utf8";
             const input = await fs.promises.readFile(inputPath, encoding);
@@ -32,33 +32,29 @@ describe('test all grammars with puppeteer', () => {
 })
 
 async function testInputFile(input: string, expected: string, query: string) {
-    await page.evaluate((input) => {
-        (<HTMLInputElement>document.querySelector('#input')).value = input;
-    }, input);
-
-    // Without this hack, the textarea simply won't get updated.
-    await page.focus('#input')
-    await page.keyboard.type(" ")
-
-    await page.evaluate((query) => {
-        (<HTMLInputElement>document.querySelector('#query')).value = query;
-    }, query);
-
-    // Without this hack, the textarea simply won't get updated.
-    await page.focus('#query')
-    await page.keyboard.type(" ")
+    await setTextarea("#input", input);
+    await setTextarea("#query", query);
 
     const button = await page.$('#formatButton') ?? fail('Did not find button');
     await button.click();
 
     await waitForOutput(page, "#output");
-
     const output = await readOutput();
 
     // Useful for debugging:
     //await page.screenshot({ path: 'screenshot.png' });
 
     expect(output).toBe(expected);
+}
+
+async function setTextarea(selector: string, text: string) {
+    await page.evaluate((selector, text) => {
+        (<HTMLInputElement>document.querySelector(selector)).value = text;
+    }, selector, text);
+
+    // Without this hack, the textarea simply won't get updated.
+    await page.focus(selector);
+    await page.keyboard.type(" ");
 }
 
 async function readOutput() {
