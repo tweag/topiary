@@ -3,7 +3,4 @@ module.exports = {
     transform: {
         "^.+\\.ts?$": "ts-jest"
     },
-    globals: {
-        URL: "http://localhost:3000/playground"
-    },
 };

@@ -4,8 +4,8 @@ import init, {
     topiaryInit,
     format,
 } from "./wasm-app/topiary_playground.js";
-import inputSample from './samples/input.js';
-import querySample from './samples/query.js';
+import inputSample from './samples/input';
+import querySample from './samples/query';
 
 function App() {
     const [isInitialised, setIsInitialised] = useState(false);

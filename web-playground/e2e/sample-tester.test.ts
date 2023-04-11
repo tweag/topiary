@@ -1,4 +1,6 @@
 import { FrameWaitForFunctionOptions, Page } from "puppeteer";
+import * as fs from 'fs';
+import * as path from 'path';
 
 describe('test all grammars with puppeteer', () => {
     beforeEach(async () => {
@@ -6,38 +8,58 @@ describe('test all grammars with puppeteer', () => {
     });
 
     it('can format', async () => {
-        const fs = require("fs");
-        const path = require("path");
+        const rootDir = path.join(__dirname, "../../");
+        const inputDir = path.join(rootDir, "topiary/tests/samples/input/");
+        const expectedDir = path.join(rootDir, "topiary/tests/samples/expected/");
+        const queryDir = path.join(rootDir, "languages/");
 
-        const file = path.join(__dirname, "../../topiary/tests/samples/input/", "json.json");
-        const fdr = fs.readFileSync(file, "utf8", function (err: any, data: any) {
-            return data;
-        });
+        for (let inputFileName of await fs.promises.readdir(inputDir)) {
+            const inputPath = path.join(inputDir, inputFileName);
+            const expectedPath = path.join(expectedDir, inputFileName);
+            const queryFileName = inputFileName.replace(/\..*$/, ".scm");
+            const queryPath = path.join(queryDir, queryFileName);
 
-        const s = "foo"
+            console.log(`Testing ${inputPath} ${expectedPath} ${queryPath}`);
 
-        expect(s).toBe(fdr)
+            const encoding = "utf8";
+            const input = await fs.promises.readFile(inputPath, encoding);
+            const expected = await fs.promises.readFile(expectedPath, encoding);
+            const query = await fs.promises.readFile(queryPath, encoding);
 
-        const queryElement = await page.waitForSelector('#query') ?? fail('Did not find query element');
-        queryElement.type("foo");
-
-        await page.type('#query', 'automate beyond recorder');
-        await page.type('#input', 'automate beyond recorder');
-
-        const button = await page.$('#formatButton') ?? fail('Did not find button');
-        expect(button).not.toBeNull();
-
-        await button.click();
-        await waitForOutput(page, "#output");
-
-        // Useful for debugging:
-        // await page.screenshot({ path: 'screenshot.png' });
-
-        const output = await readOutput();
-
-        expect(output).toBe("foo");
-    }, 30000);
+            await testInputFile(input, expected, query);
+        }
+    }, 20000);
 })
+
+async function testInputFile(input: string, expected: string, query: string) {
+    await page.evaluate((input) => {
+        (<HTMLInputElement>document.querySelector('#input')).value = input;
+    }, input);
+
+    // Without this hack, the textarea simply won't get updated.
+    await page.focus('#input')
+    await page.keyboard.type(" ")
+
+    await page.evaluate((query) => {
+        (<HTMLInputElement>document.querySelector('#query')).value = query;
+    }, query);
+
+    // Without this hack, the textarea simply won't get updated.
+    await page.focus('#query')
+    await page.keyboard.type(" ")
+
+    const button = await page.$('#formatButton') ?? fail('Did not find button');
+    await button.click();
+
+    await waitForOutput(page, "#output");
+
+    const output = await readOutput();
+
+    // Useful for debugging:
+    //await page.screenshot({ path: 'screenshot.png' });
+
+    expect(output).toBe(expected);
+}
 
 async function readOutput() {
     const outputElement = await page.$("#output");
