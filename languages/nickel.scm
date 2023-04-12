@@ -142,41 +142,65 @@
 
 (comment) @prepend_input_softline @append_hardline
 
-;; Symbol Definitions
+;; Bound Expressions
 ; i.e., Let expressions and record fields
+
+; The default, multi-line behaviour for the RHS of a bound expression is
+; for it to start an indentation block on a new line. However, the
+; following idiomatic exceptions should not behave in this way:
+;
+; * Record literals                   { ... }
+; * Array literals                    [ ... ]
+; * Enum literals                     [| ... |]
+; * Parentheticals                    ( ... )
+; * Function declarations             fun ... => ...
+; * Match statements                  match { ... }
+; * Multi-line and symbolic strings   m%"..."% / xxx-s%"..."%
+;
+; These should remain in-line.
+
+;(_
+;  (#scope_id! "bound_rhs")
+;  "="
+;  .
+;  (term) @begin_scope @end_scope
+;)
+
+(_
+  ;(#scope_id! "bound_rhs")
+  "=" @append_spaced_softline @append_indent_start
+  .
+  (term
+    ;(uni_term
+    ;  [
+    ;    (infix_expr (applicative (record_operand (atom [(uni_record) "[" "("]))))
+    ;    (infix_expr (applicative (match_expr)))
+    ;    (fun_expr)
+    ;  ] @do_nothing
+    ;)
+  ) @append_indent_end
+)
+
 
 ; A let expression looks like:
 ;
 ;   let [rec] IDENT = EXPR in EXPR
 ;
-; The binding expression should appear on a new line, indented, if its
-; RHS is multi-line (pushing the "in" to an unindented new line).
-; Similarly, the result expression (i.e., after the "in") should appear
-; on an new line, if that is multi-line. We don't start an indentation
-; block for the result expression, to avoid long diagonals in a series
-; of let expressions (which is idiomatic).
+; The formatting for the bound expression is handled by the above rules,
+; which also apply to record field values. The result expression (i.e.,
+; after the "in") should appear on an new line, if that is multi-line.
+; We don't start an indentation block for the result expression, to
+; avoid long diagonals in a series of let expressions (which is
+; idiomatic).
 
-(let_in_block
-  (#scope_id! "let_binding_rhs")
-  "=" @begin_scope
-  .
-  (term)
-  .
-  "in" @end_scope
-)
-
-(let_in_block
-  (#scope_id! "let_binding_rhs")
-  (term) @prepend_spaced_scoped_softline @prepend_indent_start
-  "in" @prepend_indent_end @prepend_spaced_scoped_softline
-)
+; FIXME
 
 (let_expr
   (#scope_id! "let_result")
   (let_in_block
-    "in" @begin_scope
+    "in"
   )
-  (term) @end_scope
+  (term) @begin_scope @end_scope
 )
 
 (let_expr
