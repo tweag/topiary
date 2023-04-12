@@ -21,6 +21,12 @@ jobs:
           name: tweag-topiary
           authToken: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
+      - name: Set up frontend cache
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: node_modules-${{ hashFiles('**/package-lock.json')}}
+
       - name: Clippy, test, and benchmark
         run: export GC_DONT_GC=1; nix -L flake check
 
@@ -41,7 +47,20 @@ jobs:
         if: success() && matrix.os == 'ubuntu-latest'
         run: npm install --prefix web-playground
 
-      - name: Build web playground frontend
+      - name: Start web playground frontend
+        if: success() && matrix.os == 'ubuntu-latest'
+        run: |
+          npm start --prefix web-playground &
+          # Loop until there's a response
+          while [[ "$(curl --silent --output /dev/null --write-out "%{http_code}" http://localhost:3000)" != "200" ]]; do
+            sleep 2
+          done
+
+      - name: Test web playground frontend
+        if: success() && matrix.os == 'ubuntu-latest'
+        run: npm run e2e --prefix web-playground
+
+      - name: Make web playground frontend release build
         if: success() && matrix.os == 'ubuntu-latest'
         run: npm run build --prefix web-playground
 
