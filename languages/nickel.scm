@@ -159,28 +159,22 @@
 ;
 ; These should remain in-line.
 
-;(_
-;  (#scope_id! "bound_rhs")
-;  "="
-;  .
-;  (term) @begin_scope @end_scope
-;)
+; TODO Tidy this up
 
 (_
-  ;(#scope_id! "bound_rhs")
   "=" @append_spaced_softline @append_indent_start
   .
   (term
-    ;(uni_term
-    ;  [
-    ;    (infix_expr (applicative (record_operand (atom [(uni_record) "[" "("]))))
-    ;    (infix_expr (applicative (match_expr)))
-    ;    (fun_expr)
-    ;  ] @do_nothing
-    ;)
+    (uni_term
+      [
+        (infix_expr (applicative (record_operand (atom [(str_chunks) (uni_record) "[" "("]))))
+        (infix_expr (applicative (record_operand (atom (type_atom "[|")))))
+        (infix_expr (applicative (match_expr)))
+        (fun_expr)
+      ]? @do_nothing
+    )
   ) @append_indent_end
 )
-
 
 ; A let expression looks like:
 ;
@@ -193,14 +187,14 @@
 ; avoid long diagonals in a series of let expressions (which is
 ; idiomatic).
 
-; FIXME
+; TODO Tidy this up
 
 (let_expr
   (#scope_id! "let_result")
   (let_in_block
-    "in"
+    "in" @begin_scope
   )
-  (term) @begin_scope @end_scope
+  (term) @end_scope
 )
 
 (let_expr
