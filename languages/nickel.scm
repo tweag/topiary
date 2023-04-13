@@ -171,32 +171,34 @@
   "=" @append_spaced_scoped_softline @append_indent_start
   .
   (term
+    .
     (uni_term
+      .
       [
         ; There is scope for factoring these patterns with
         ; embedded alternations. Keeping them separate is probably more
         ; efficient to process and certainly easier to read.
 
         ; Record literals
-        (infix_expr (applicative (record_operand (atom (uni_record)))))
+        (infix_expr . (applicative . (record_operand . (atom . (uni_record)))))
 
         ; Array literals
-        (infix_expr (applicative (record_operand (atom "["))))
+        (infix_expr . (applicative . (record_operand . (atom . "["))))
 
         ; Enum literals
-        (infix_expr (applicative (record_operand (atom (type_atom "[|")))))
+        (infix_expr . (applicative . (record_operand . (atom . (type_atom . "[|")))))
 
         ; Parentheticals
-        (infix_expr (applicative (record_operand (atom "("))))
+        (infix_expr . (applicative . (record_operand . (atom . "("))))
 
         ; Function declarations
         (fun_expr)
 
         ; Match statements
-        (infix_expr (applicative (match_expr)))
+        (infix_expr . (applicative . (match_expr)))
 
         ; Multi-line and symbolic strings
-        (infix_expr (applicative (record_operand (atom (str_chunks)))))
+        (infix_expr . (applicative . (record_operand . (atom . (str_chunks)))))
       ]? @do_nothing
     )
   ) @append_indent_end

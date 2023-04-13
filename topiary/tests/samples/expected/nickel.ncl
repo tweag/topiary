@@ -1385,19 +1385,20 @@
       let missing_fields = %fields% contracts_not_in_value in
       if %length% missing_fields == 0 then
         let tail_fields = field_diff value field_contracts in
-        let fields_with_contracts = array.fold_left
-          (
-            fun acc field =>
-              if %has_field% field field_contracts then
-                let contract = field_contracts."%{field}" in
-                let label = %go_field% field label in
-                let val = value."%{field}" in
-                %record_insert% field acc (%assume% contract label val)
-              else
-                acc
-          )
-          {}
-          (%fields% value)
+        let fields_with_contracts =
+          array.fold_left
+            (
+              fun acc field =>
+                if %has_field% field field_contracts then
+                  let contract = field_contracts."%{field}" in
+                  let label = %go_field% field label in
+                  let val = value."%{field}" in
+                  %record_insert% field acc (%assume% contract label val)
+                else
+                  acc
+            )
+            {}
+            (%fields% value)
         in
         tail_contract fields_with_contracts label tail_fields
       else
@@ -1980,16 +1981,17 @@
           error
       ```
       "%
-      = contract.from_predicate
-        (
-          fun value =>
-            let type = builtin.typeof value in
-            value == null
-            || type == `Number
-            || type == `Bool
-            || type == `String
-            || type == `Enum
-        ),
+      =
+        contract.from_predicate
+          (
+            fun value =>
+              let type = builtin.typeof value in
+              value == null
+              || type == `Number
+              || type == `Bool
+              || type == `String
+              || type == `Enum
+          ),
 
     NonEmpty
       | doc m%"
