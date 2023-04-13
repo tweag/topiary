@@ -96,9 +96,15 @@ main() {
     hr
     printf "Idempotent    %s\n" "$(idempotency "${query}" "${input}")"
 
-    # NOTE We don't wait for specific inotify events because different
-    # editors have different strategies for modifying files
-    inotifywait --quiet "${query}" "${input}"
+    # NOTE Different editors have different strategies for modifying
+    # files, so we wait on multiple events. This *may* not be an
+    # exhaustive list; you are encouraged to experiment if the
+    # playground doesn't refresh when you expect it to!
+    inotifywait \
+      -qq \
+      --event modify \
+      --event move_self \
+      "${query}" "${input}"
   done
 
 }

@@ -142,39 +142,84 @@
 
 (comment) @prepend_input_softline @append_hardline
 
-;; Symbol Definitions
+;; Bound Expressions
 ; i.e., Let expressions and record fields
+
+; The default, multi-line behaviour for the RHS of a bound expression is
+; for it to start an indentation block on a new line. However, the
+; following idiomatic exceptions should not behave in this way:
+;
+; * Record literals                   { ... }
+; * Array literals                    [ ... ]
+; * Enum literals                     [| ... |]
+; * Parentheticals                    ( ... )
+; * Function declarations             fun ... => ...
+; * Match statements                  match { ... }
+; * Multi-line and symbolic strings   m%"..."% / xxx-s%"..."%
+;
+; These should remain in-line.
+
+(_
+  (#scope_id! "bound_rhs")
+  "=" @begin_scope
+  .
+  (term) @end_scope
+)
+
+(_
+  (#scope_id! "bound_rhs")
+  "=" @append_spaced_scoped_softline @append_indent_start
+  .
+  (term
+    .
+    (uni_term
+      .
+      [
+        ; There is scope for factoring these patterns with
+        ; embedded alternations. Keeping them separate is probably more
+        ; efficient to process and certainly easier to read.
+
+        ; Record literals
+        (infix_expr . (applicative . (record_operand . (atom . (uni_record)))))
+
+        ; Array literals
+        (infix_expr . (applicative . (record_operand . (atom . "["))))
+
+        ; Enum literals
+        (infix_expr . (applicative . (record_operand . (atom . (type_atom . "[|")))))
+
+        ; Parentheticals
+        (infix_expr . (applicative . (record_operand . (atom . "("))))
+
+        ; Function declarations
+        (fun_expr)
+
+        ; Match statements
+        (infix_expr . (applicative . (match_expr)))
+
+        ; Multi-line and symbolic strings
+        (infix_expr . (applicative . (record_operand . (atom . (str_chunks)))))
+      ]? @do_nothing
+    )
+  ) @append_indent_end
+)
 
 ; A let expression looks like:
 ;
 ;   let [rec] IDENT = EXPR in EXPR
 ;
-; The binding expression should appear on a new line, indented, if its
-; RHS is multi-line (pushing the "in" to an unindented new line).
-; Similarly, the result expression (i.e., after the "in") should appear
-; on an new line, if that is multi-line. We don't start an indentation
-; block for the result expression, to avoid long diagonals in a series
-; of let expressions (which is idiomatic).
-
-(let_in_block
-  (#scope_id! "let_binding_rhs")
-  "=" @begin_scope
-  .
-  (term)
-  .
-  "in" @end_scope
-)
-
-(let_in_block
-  (#scope_id! "let_binding_rhs")
-  (term) @prepend_spaced_scoped_softline @prepend_indent_start
-  "in" @prepend_indent_end @prepend_spaced_scoped_softline
-)
+; The formatting for the bound expression is handled by the above rules,
+; which also apply to record field values. The "in" should appear on a
+; new line, if the entire let expression is multi-line. The result
+; expression (i.e., after the "in") should appear on an new line, if
+; that is multi-line. We don't start an indentation block for the result
+; expression, to avoid long diagonals in a series of let expressions
+; (which is idiomatic).
 
 (let_expr
   (#scope_id! "let_result")
   (let_in_block
-    "in" @begin_scope
+    "in" @begin_scope @prepend_spaced_softline
   )
   (term) @end_scope
 )
@@ -186,21 +231,11 @@
 
 ;; Annotations
 
-; Create a scope that covers at least all annotation atoms; that is,
-; children of the (annot) node. When an assignment is also involved, we
-; have another scope that extents to also cover the equals sign.
+; We want the equals sign to be aligned with the annotations, if they
+; coexist, so create a scope that covers them both.
 (
-  (#scope_id! "signature")
-  _ @begin_scope
-  .
-  (annot) @end_scope
-)
-
-(
-  (#scope_id! "assignee")
-  (_) @begin_scope
-  .
-  (annot)*
+  (#scope_id! "annotated_assignment")
+  (annot) @begin_scope
   .
   "=" @end_scope
 )
@@ -211,30 +246,14 @@
   (annot) @prepend_indent_start
 ) @append_indent_end
 
-; Put each annotation and the equals sign on a new line, in a multi-line
-; context.
-(
-  (#scope_id! "signature")
-  (annot_atom) @prepend_spaced_scoped_softline
+; Put each annotation -- and the equals sign, if it follows annotations
+; -- on a new line, in a multi-line context.
+(annot
+  (annot_atom) @prepend_spaced_softline
 )
 
-; FIXME This breaks idempotency for multi-line let expressions with two
-; or more annotations on the same line as the equals sign! For example:
-;
-;  let x
-;    : TYPE | ANNOT = 1 in x
-;
-; It also doesn't do the right thing (push the equals sign to a new
-; line) if it lives on the same line as the last annotation in the
-; input. For example:
-;
-;   let x
-;     : TYPE = 1 in x
-;
-; These forms are not attested in the Nickel standard library, as of
-; writing.
-(_
-  (#scope_id! "assignee")
+(
+  (#scope_id! "annotated_assignment")
   "=" @prepend_spaced_scoped_softline
 )
 
@@ -315,9 +334,8 @@
 (ite_expr
   "else" @append_spaced_softline @append_indent_start
   t2: (term
-    (uni_term
-      (ite_expr)
-    )? @do_nothing
+    ; Don't apply formatting if an "else" is followed by an "if"
+    (uni_term (ite_expr))? @do_nothing
   ) @append_indent_end
 )
 
