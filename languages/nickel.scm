@@ -159,18 +159,36 @@
 ;
 ; These should remain in-line.
 
-; TODO Tidy this up
-
 (_
   "=" @append_spaced_softline @append_indent_start
   .
   (term
     (uni_term
       [
-        (infix_expr (applicative (record_operand (atom [(str_chunks) (uni_record) "[" "("]))))
+        ; There is scope for factoring these patterns with
+        ; embedded alternations. Keeping them separate is probably more
+        ; efficient to process and certainly easier to read.
+
+        ; Record literals
+        (infix_expr (applicative (record_operand (atom (uni_record)))))
+
+        ; Array literals
+        (infix_expr (applicative (record_operand (atom "["))))
+
+        ; Enum literals
         (infix_expr (applicative (record_operand (atom (type_atom "[|")))))
-        (infix_expr (applicative (match_expr)))
+
+        ; Parentheticals
+        (infix_expr (applicative (record_operand (atom "("))))
+
+        ; Function declarations
         (fun_expr)
+
+        ; Match statements
+        (infix_expr (applicative (match_expr)))
+
+        ; Multi-line and symbolic strings
+        (infix_expr (applicative (record_operand (atom (str_chunks)))))
       ]? @do_nothing
     )
   ) @append_indent_end
@@ -333,9 +351,8 @@
 (ite_expr
   "else" @append_spaced_softline @append_indent_start
   t2: (term
-    (uni_term
-      (ite_expr)
-    )? @do_nothing
+    ; Don't apply formatting if an "else" is followed by an "if"
+    (uni_term (ite_expr))? @do_nothing
   ) @append_indent_end
 )
 
