@@ -222,21 +222,11 @@
 
 ;; Annotations
 
-; Create a scope that covers at least all annotation atoms; that is,
-; children of the (annot) node. When an assignment is also involved, we
-; have another scope that extents to also cover the equals sign.
+; We want the equals sign to be aligned with the annotations, if they
+; coexist, so create a scope that covers them both.
 (
-  (#scope_id! "signature")
-  _ @begin_scope
-  .
-  (annot) @end_scope
-)
-
-(
-  (#scope_id! "assignee")
-  (_) @begin_scope
-  .
-  (annot)*
+  (#scope_id! "annotated_assignment")
+  (annot) @begin_scope
   .
   "=" @end_scope
 )
@@ -247,30 +237,14 @@
   (annot) @prepend_indent_start
 ) @append_indent_end
 
-; Put each annotation and the equals sign on a new line, in a multi-line
-; context.
-(
-  (#scope_id! "signature")
-  (annot_atom) @prepend_spaced_scoped_softline
+; Put each annotation -- and the equals sign, if it follows annotations
+; -- on a new line, in a multi-line context.
+(annot
+  (annot_atom) @prepend_spaced_softline
 )
 
-; FIXME This breaks idempotency for multi-line let expressions with two
-; or more annotations on the same line as the equals sign! For example:
-;
-;  let x
-;    : TYPE | ANNOT = 1 in x
-;
-; It also doesn't do the right thing (push the equals sign to a new
-; line) if it lives on the same line as the last annotation in the
-; input. For example:
-;
-;   let x
-;     : TYPE = 1 in x
-;
-; These forms are not attested in the Nickel standard library, as of
-; writing.
-(_
-  (#scope_id! "assignee")
+(
+  (#scope_id! "annotated_assignment")
   "=" @prepend_spaced_scoped_softline
 )
 
