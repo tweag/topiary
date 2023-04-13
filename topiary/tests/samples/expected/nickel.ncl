@@ -211,13 +211,12 @@
         if length == 0 then
           acc
         else
-          let rec go =
-            fun acc n =>
-              if n == length then
-                acc
-              else
-                let next_acc = %elem_at% l n |> f acc in
-                %seq% next_acc (go next_acc (n + 1))
+          let rec go = fun acc n =>
+            if n == length then
+              acc
+            else
+              let next_acc = %elem_at% l n |> f acc in
+              %seq% next_acc (go next_acc (n + 1))
           in
           go acc 0,
 
@@ -247,13 +246,12 @@
         "%
       = fun f fst l =>
         let length = %length% l in
-        let rec go =
-          fun n =>
-            if n == length then
-              fst
-            else
-              go (n + 1)
-              |> f (%elem_at% l n)
+        let rec go = fun n =>
+          if n == length then
+            fst
+          else
+            go (n + 1)
+            |> f (%elem_at% l n)
         in go 0,
 
     prepend
@@ -377,12 +375,11 @@
         ```
         "%
       = fun pred l =>
-        let aux =
-          fun acc x =>
-            if (pred x) then
-              { right = acc.right @ [x], wrong = acc.wrong }
-            else
-              { right = acc.right, wrong = acc.wrong @ [x] }
+        let aux = fun acc x =>
+          if (pred x) then
+            { right = acc.right @ [x], wrong = acc.wrong }
+          else
+            { right = acc.right, wrong = acc.wrong @ [x] }
         in
         fold_left aux { right = [], wrong = [] } l,
 
@@ -1372,37 +1369,35 @@
       # Returns the sub-record of `l` containing only those fields which are not
       # present in `r`. If `l` has a sealed polymorphic tail then it will be
       # preserved.
-      let field_diff =
-        fun left right =>
-          array.fold_left
-            (
-              fun acc field =>
-                if %has_field% field right then
-                  acc
-                else
-                  %record_insert% field acc (left."%{field}")
-            )
-            (%record_empty_with_tail% left)
-            (%fields% left)
+      let field_diff = fun left right =>
+        array.fold_left
+          (
+            fun acc field =>
+              if %has_field% field right then
+                acc
+              else
+                %record_insert% field acc (left."%{field}")
+          )
+          (%record_empty_with_tail% left)
+          (%fields% left)
       in
       let contracts_not_in_value = field_diff field_contracts value in
       let missing_fields = %fields% contracts_not_in_value in
       if %length% missing_fields == 0 then
         let tail_fields = field_diff value field_contracts in
-        let fields_with_contracts =
-          array.fold_left
-            (
-              fun acc field =>
-                if %has_field% field field_contracts then
-                  let contract = field_contracts."%{field}" in
-                  let label = %go_field% field label in
-                  let val = value."%{field}" in
-                  %record_insert% field acc (%assume% contract label val)
-                else
-                  acc
-            )
-            {}
-            (%fields% value)
+        let fields_with_contracts = array.fold_left
+          (
+            fun acc field =>
+              if %has_field% field field_contracts then
+                let contract = field_contracts."%{field}" in
+                let label = %go_field% field label in
+                let val = value."%{field}" in
+                %record_insert% field acc (%assume% contract label val)
+              else
+                acc
+          )
+          {}
+          (%fields% value)
         in
         tail_contract fields_with_contracts label tail_fields
       else
@@ -1925,16 +1920,17 @@
           error
       ```
       "%
-      = let pattern = m%"^[+-]?(\d+(\.\d*)?(e[+-]?\d+)?|\.\d+(e[+-]?\d+)?)$"% in
-      let is_num_literal = %str_is_match% pattern in
-      fun l s =>
-        if %typeof% s == `String then
-          if is_num_literal s then
-            s
+      =
+        let pattern = m%"^[+-]?(\d+(\.\d*)?(e[+-]?\d+)?|\.\d+(e[+-]?\d+)?)$"% in
+        let is_num_literal = %str_is_match% pattern in
+        fun l s =>
+          if %typeof% s == `String then
+            if is_num_literal s then
+              s
+            else
+              %blame% (%label_with_message% "invalid num literal" l)
           else
-            %blame% (%label_with_message% "invalid num literal" l)
-        else
-          %blame% (%label_with_message% "not a string" l),
+            %blame% (%label_with_message% "not a string" l),
 
     Character
       | doc m%"

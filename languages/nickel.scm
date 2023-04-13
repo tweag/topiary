@@ -160,7 +160,15 @@
 ; These should remain in-line.
 
 (_
-  "=" @append_spaced_softline @append_indent_start
+  (#scope_id! "bound_rhs")
+  "=" @begin_scope
+  .
+  (term) @end_scope
+)
+
+(_
+  (#scope_id! "bound_rhs")
+  "=" @append_spaced_scoped_softline @append_indent_start
   .
   (term
     (uni_term
