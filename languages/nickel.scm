@@ -199,18 +199,17 @@
 ;   let [rec] IDENT = EXPR in EXPR
 ;
 ; The formatting for the bound expression is handled by the above rules,
-; which also apply to record field values. The result expression (i.e.,
-; after the "in") should appear on an new line, if that is multi-line.
-; We don't start an indentation block for the result expression, to
-; avoid long diagonals in a series of let expressions (which is
-; idiomatic).
-
-; TODO Tidy this up
+; which also apply to record field values. The "in" should appear on a
+; new line, if the entire let expression is multi-line. The result
+; expression (i.e., after the "in") should appear on an new line, if
+; that is multi-line. We don't start an indentation block for the result
+; expression, to avoid long diagonals in a series of let expressions
+; (which is idiomatic).
 
 (let_expr
   (#scope_id! "let_result")
   (let_in_block
-    "in" @begin_scope
+    "in" @begin_scope @prepend_spaced_softline
   )
   (term) @end_scope
 )
