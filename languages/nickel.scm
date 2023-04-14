@@ -361,16 +361,15 @@
   .
 )
 
-; As with records, we don't want internal spacing to apply if the array
-; is empty; this restriction also applies to arrays of exactly one
-; element, which is usually short (e.g., [x]).
+; Unlike records, arrays should never have internal spacing, similar to
+; parentheticals. (This is a conscious choice by the Nickel team; see
+; Issue #407.)
 (_
   (#scope_id! "container")
   .
-  "[" @append_spaced_softline @append_indent_start @begin_scope
+  "[" @append_empty_softline @append_indent_start @begin_scope
   (_)
-  (_)
-  "]" @prepend_indent_end @prepend_spaced_softline @end_scope
+  "]" @prepend_indent_end @prepend_empty_softline @end_scope
   .
 )
 
