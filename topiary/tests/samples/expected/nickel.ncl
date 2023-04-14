@@ -13,7 +13,7 @@
     let x = 1 in
     let y = 2 in
 
-    [ x, y ]
+    [x, y]
   ],
 
   # Nickel standard library as of af0d5ee
@@ -461,7 +461,7 @@
         else
           let first = %elem_at% array 0 in
           let rest = %array_slice% 1 length array in
-          [first] @ (flat_map (fun a => [ v, a ]) rest),
+          [first] @ (flat_map (fun a => [v, a]) rest),
 
     slice
       : forall a. Number -> Number -> Array a -> Array a
