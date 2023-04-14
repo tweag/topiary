@@ -18,6 +18,13 @@
   (record_last_field)
 ] @allow_blank_line_before
 
+; Allow blank lines to appear between a let bind and its result
+(let_expr
+  (let_in_block)
+  .
+  (term) @allow_blank_line_before
+)
+
 ; Surround with spaces: keywords, operators, annotation markers
 (
   [
