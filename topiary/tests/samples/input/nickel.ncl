@@ -7,7 +7,13 @@
 
       # An interpolated (record_operation_chain) breaks the spacing
       bad = "%{interpolated.string}"
-    }
+    },
+
+    # Blank lines between a let bind and its result
+    let x = 1 in
+    let y = 2 in
+
+    [ x, y ]
   ],
 
   # Nickel standard library as of af0d5ee
