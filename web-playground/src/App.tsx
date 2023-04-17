@@ -4,14 +4,21 @@ import init, {
     topiaryInit,
     format,
 } from "./wasm-app/topiary_playground.js";
-import inputSample from './samples/input';
-import querySample from './samples/query';
+import languages from './samples/languages_export';
 
 function App() {
     const [isInitialised, setIsInitialised] = useState(false);
-    const [query, setQuery] = useState(querySample);
-    const [input, setInput] = useState(inputSample);
+    const defaultLanguage = "json";
+    const defaultQuery = languages[defaultLanguage].query;
+    const defaultInput = languages[defaultLanguage].input;
+    const [query, setQuery] = useState(defaultQuery);
+    const [input, setInput] = useState(defaultInput);
     const [output, setOutput] = useState("");
+
+    let languageItems = [];
+    for (let l in languages) {
+        languageItems.push(<option key={l} value={l}>{l}</option>)
+    }
 
     async function runFormat() {
         try {
@@ -28,9 +35,20 @@ function App() {
         }
     }
 
+    function changeLanguage(l: string) {
+        if (languages[l]) {
+            setInput(languages[l].input);
+            setQuery(languages[l].query);
+        }
+    }
+
     return (
         <div className="App">
             <div className="header">
+                <select onChange={e => changeLanguage(e.target.value)}>
+                    <option value="">Choose a reference language</option>
+                    {languageItems}
+                </select>
                 <button id="formatButton" className="btn btn-primary" onClick={runFormat}>
                     Format
                 </button>
