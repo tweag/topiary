@@ -389,4 +389,5 @@
     ","
     ";"
   ] @append_spaced_scoped_softline
+  (comment)? @do_nothing
 )
