@@ -211,6 +211,16 @@
   ) @append_indent_end
 )
 
+; If the RHS starts with a comment, which itself is followed by a hard
+; line, then we apply the normal indent block formatting in a multi-line
+; context (i.e., no exceptions)
+(_
+  "=" @append_indent_start
+  .
+  (comment)
+  (term) @append_indent_end
+)
+
 ; A let expression looks like:
 ;
 ;   let [rec] IDENT = EXPR in EXPR
