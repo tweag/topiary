@@ -295,15 +295,20 @@
   (applicative) @begin_scope
 ) @end_scope
 
-; NOTE Unlike infix chains, applicatives bind to the left. So rather
-; than creating a single indent block for all operands, we have to
-; create one for each operand independently.
 (
   (#scope_id! "applicative_chain")
   (applicative
-    (applicative) @append_spaced_scoped_softline @append_indent_start
-  ) @append_indent_end
+    (applicative) @append_spaced_scoped_softline
+    (comment)? @do_nothing
+  )
 )
+
+; NOTE Unlike infix chains, applicatives bind to the left. So rather
+; than creating a single indent block for all operands, we have to
+; create one for each operand independently.
+(applicative
+  (applicative) @append_indent_start
+) @append_indent_end
 
 ;; Conditionals
 
