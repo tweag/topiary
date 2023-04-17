@@ -335,7 +335,7 @@
 ; alternative style is to give the "then" token its own line.)
 (ite_expr
   "then" @append_spaced_softline @append_indent_start
-  t1: (term) @append_indent_end @append_spaced_softline
+  "else" @prepend_indent_end @prepend_spaced_softline
 )
 
 (ite_expr
