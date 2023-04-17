@@ -13,7 +13,29 @@
     let x = 1 in
     let y = 2 in
 
-    [x, y]
+    [x, y],
+
+    # Trailing comments
+    {
+      a = # In bound expression
+        123,
+
+      b =
+        if something then
+          foo # After the truthy clause
+        else
+          bar,
+
+      c = [
+        foo, # After items in a compound value
+        bar
+      ],
+
+      d =
+        fn
+          arg # After function arguments
+          arg
+    }
   ],
 
   # Nickel standard library as of af0d5ee

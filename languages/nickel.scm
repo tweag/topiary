@@ -211,6 +211,16 @@
   ) @append_indent_end
 )
 
+; If the RHS starts with a comment, which itself is followed by a hard
+; line, then we apply the normal indent block formatting in a multi-line
+; context (i.e., no exceptions)
+(_
+  "=" @append_indent_start
+  .
+  (comment)
+  (term) @append_indent_end
+)
+
 ; A let expression looks like:
 ;
 ;   let [rec] IDENT = EXPR in EXPR
@@ -295,15 +305,20 @@
   (applicative) @begin_scope
 ) @end_scope
 
-; NOTE Unlike infix chains, applicatives bind to the left. So rather
-; than creating a single indent block for all operands, we have to
-; create one for each operand independently.
 (
   (#scope_id! "applicative_chain")
   (applicative
-    (applicative) @append_spaced_scoped_softline @append_indent_start
-  ) @append_indent_end
+    (applicative) @append_spaced_scoped_softline
+    (comment)? @do_nothing
+  )
 )
+
+; NOTE Unlike infix chains, applicatives bind to the left. So rather
+; than creating a single indent block for all operands, we have to
+; create one for each operand independently.
+(applicative
+  (applicative) @append_indent_start
+) @append_indent_end
 
 ;; Conditionals
 
@@ -335,7 +350,7 @@
 ; alternative style is to give the "then" token its own line.)
 (ite_expr
   "then" @append_spaced_softline @append_indent_start
-  t1: (term) @append_indent_end @append_spaced_softline
+  "else" @prepend_indent_end @prepend_spaced_softline
 )
 
 (ite_expr
@@ -389,4 +404,5 @@
     ","
     ";"
   ] @append_spaced_scoped_softline
+  (comment)? @do_nothing
 )
