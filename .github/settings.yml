@@ -53,3 +53,7 @@ labels:
   - name: "language: Tree-sitter queries"
     color: f8451f
     description: "Tree-sitter queries formatting issues"
+  - name: "website"
+    color: 558821
+  - name: "playground"
+    color: e0c3fc
