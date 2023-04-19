@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::io;
 use std::path::{Path, PathBuf};
 
@@ -62,6 +63,16 @@ impl Language {
     /// Convenience alias to return the query file path for the Language.
     pub fn query_file(&self) -> FormatterResult<PathBuf> {
         self.try_into()
+    }
+
+    pub fn known_extensions() -> HashSet<&'static str> {
+        let mut res = HashSet::new();
+        for (_, exts) in EXTENSIONS.iter() {
+            for ext in exts.iter() {
+                res.insert(*ext);
+            }
+        }
+        res
     }
 
     /// Convert a Language into a vector of supported Tree-sitter grammars, ordered by priority.
