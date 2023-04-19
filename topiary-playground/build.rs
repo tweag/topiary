@@ -4,6 +4,8 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::{env::current_dir, fs};
 
+use topiary::Language;
+
 fn to_js_string(path: PathBuf) -> String {
     fs::read_to_string(path)
         .unwrap()
@@ -27,6 +29,15 @@ fn main() {
     let mut language_map: HashMap<String, String> = HashMap::new();
     for path in language_files {
         let path = path.unwrap().path();
+        if let Some(ext) = path
+            .extension()
+            .map(|ext| ext.to_string_lossy()) {
+            if ext != "scm" {
+                continue
+            }
+        } else {
+            continue
+        }
         let prefix: String = path.file_stem().unwrap().to_string_lossy().to_string();
         let content = to_js_string(path);
         language_map.insert(prefix, content);
@@ -38,10 +49,15 @@ fn main() {
     let mut input_map: HashMap<String, String> = HashMap::new();
     for path in input_files {
         let path = path.unwrap().path();
-        let ext = path.extension().unwrap();
-        if ext == "mli" {
-            // skip ocaml.mli, keep ocaml.ml
-            continue;
+        if let Some(ext) = path
+            .extension()
+            .map(|ext| ext.to_string_lossy()) {
+            if !Language::known_extensions().contains(&*ext) || ext == "mli" {
+                // skip ocaml.mli, keep ocaml.ml
+                continue
+            }
+        } else {
+            continue
         }
         let prefix: String = path.file_stem().unwrap().to_string_lossy().to_string();
         let content = to_js_string(path);

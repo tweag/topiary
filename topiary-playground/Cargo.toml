@@ -16,3 +16,4 @@ wasm-bindgen-futures = "0.4.34"
 
 [build-dependencies]
 itertools = "0.10"
+topiary = { path = "../topiary" }
