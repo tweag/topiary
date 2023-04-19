@@ -18,7 +18,7 @@ fn to_js_string(path: PathBuf) -> String {
 
 fn main() {
     println!("cargo:rerun-if-changed=../languages/");
-    println!("cargo:rerun-if-changed=./tests/samples/input/");
+    println!("cargo:rerun-if-changed=../topiary/tests/samples/input/");
 
     // Export test samples and queries as JS files
     let language_dir = current_dir().unwrap().join("../languages/");
@@ -32,7 +32,7 @@ fn main() {
         language_map.insert(prefix, content);
     }
 
-    let input_dir = current_dir().unwrap().join("./tests/samples/input/");
+    let input_dir = current_dir().unwrap().join("../topiary/tests/samples/input/");
     let input_files = fs::read_dir(input_dir).unwrap();
 
     let mut input_map: HashMap<String, String> = HashMap::new();
