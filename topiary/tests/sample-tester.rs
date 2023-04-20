@@ -29,15 +29,12 @@ async fn input_output_tester() {
 
     for file in input_dir {
         let file = file.unwrap();
-        if let Some(ext) = file
-            .path()
-            .extension()
-            .map(|ext| ext.to_string_lossy()) {
+        if let Some(ext) = file.path().extension().map(|ext| ext.to_string_lossy()) {
             if !Language::known_extensions().contains(&*ext) {
-                continue
+                continue;
             }
         } else {
-            continue
+            continue;
         }
         let language = Language::detect(file.path()).unwrap();
 

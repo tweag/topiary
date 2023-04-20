@@ -29,35 +29,33 @@ fn main() {
     let mut language_map: HashMap<String, String> = HashMap::new();
     for path in language_files {
         let path = path.unwrap().path();
-        if let Some(ext) = path
-            .extension()
-            .map(|ext| ext.to_string_lossy()) {
+        if let Some(ext) = path.extension().map(|ext| ext.to_string_lossy()) {
             if ext != "scm" {
-                continue
+                continue;
             }
         } else {
-            continue
+            continue;
         }
         let prefix: String = path.file_stem().unwrap().to_string_lossy().to_string();
         let content = to_js_string(path);
         language_map.insert(prefix, content);
     }
 
-    let input_dir = current_dir().unwrap().join("../topiary/tests/samples/input/");
+    let input_dir = current_dir()
+        .unwrap()
+        .join("../topiary/tests/samples/input/");
     let input_files = fs::read_dir(input_dir).unwrap();
 
     let mut input_map: HashMap<String, String> = HashMap::new();
     for path in input_files {
         let path = path.unwrap().path();
-        if let Some(ext) = path
-            .extension()
-            .map(|ext| ext.to_string_lossy()) {
+        if let Some(ext) = path.extension().map(|ext| ext.to_string_lossy()) {
             if !Language::known_extensions().contains(&*ext) || ext == "mli" {
                 // skip ocaml.mli, keep ocaml.ml
-                continue
+                continue;
             }
         } else {
-            continue
+            continue;
         }
         let prefix: String = path.file_stem().unwrap().to_string_lossy().to_string();
         let content = to_js_string(path);
