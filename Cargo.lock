@@ -1351,6 +1351,7 @@ name = "topiary-playground"
 version = "0.0.1"
 dependencies = [
  "cfg-if",
+ "itertools",
  "topiary",
  "tree-sitter-facade",
  "wasm-bindgen",

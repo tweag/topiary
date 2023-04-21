@@ -29,6 +29,13 @@ async fn input_output_tester() {
 
     for file in input_dir {
         let file = file.unwrap();
+        if let Some(ext) = file.path().extension().map(|ext| ext.to_string_lossy()) {
+            if !Language::known_extensions().contains(&*ext) {
+                continue;
+            }
+        } else {
+            continue;
+        }
         let language = Language::detect(file.path()).unwrap();
 
         let expected_path = expected_dir.join(file.file_name());
