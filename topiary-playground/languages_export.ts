@@ -1240,6 +1240,7 @@ export xyzzy=$(
     ","
     ";"
   ] @append_spaced_scoped_softline
+  .
   (comment)? @do_nothing
 )
 `,
@@ -1280,7 +1281,15 @@ export xyzzy=$(
         fn
           arg # After function arguments
           arg
-    }
+    },
+
+    # Container containing a comment
+    [
+      1,
+      2,
+      # Comment
+      3
+    ]
   ],
 
   # Nickel standard library as of af0d5ee
