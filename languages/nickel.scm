@@ -52,9 +52,9 @@
     "rec"
     "Array"
     "Dyn"
-    "Num"
+    "Number"
     "Bool"
-    "Str"
+    "String"
     "->"
     "=>"
     ; Infix operators
