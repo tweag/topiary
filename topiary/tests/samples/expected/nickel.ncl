@@ -62,7 +62,7 @@
         ```
         "%
       = fun label value =>
-        if %typeof% value == `Array then
+        if %typeof% value == 'Array then
           if %length% value != 0 then
             value
           else
@@ -434,13 +434,13 @@
       = fun f n => %generate% n f,
 
     sort
-      | forall a. (a -> a -> [| `Lesser, `Equal, `Greater |]) -> Array a -> Array a
+      | forall a. (a -> a -> [| 'Lesser, 'Equal, 'Greater |]) -> Array a -> Array a
       | doc m%"
         Sorts the given arrays based on the provided comparison operator.
 
         For example:
         ```nickel
-          sort (fun x y => if x < y then `Lesser else if (x == y) then `Equal else `Greater) [ 4, 5, 1, 2 ] =>
+          sort (fun x y => if x < y then 'Lesser else if (x == y) then 'Equal else 'Greater) [ 4, 5, 1, 2 ] =>
             [ 1, 2, 4, 5 ]
         ```
         "%
@@ -696,7 +696,7 @@
           false
       ```
       "%
-      = fun x => %typeof% x == `Number,
+      = fun x => %typeof% x == 'Number,
 
     is_bool
       : Dyn -> Bool
@@ -711,7 +711,7 @@
           false
       ```
       "%
-      = fun x => %typeof% x == `Bool,
+      = fun x => %typeof% x == 'Bool,
 
     is_string
       : Dyn -> Bool
@@ -726,7 +726,7 @@
           true
       ```
       "%
-      = fun x => %typeof% x == `String,
+      = fun x => %typeof% x == 'String,
 
     is_enum
       : Dyn -> Bool
@@ -741,7 +741,7 @@
           true
       ```
       "%
-      = fun x => %typeof% x == `Enum,
+      = fun x => %typeof% x == 'Enum,
 
     is_function
       : Dyn -> Bool
@@ -756,7 +756,7 @@
           false
       ```
       "%
-      = fun x => %typeof% x == `Function,
+      = fun x => %typeof% x == 'Function,
 
     is_array
       : Dyn -> Bool
@@ -771,7 +771,7 @@
           false
       ```
       "%
-      = fun x => %typeof% x == `Array,
+      = fun x => %typeof% x == 'Array,
 
     is_record
       : Dyn -> Bool
@@ -786,19 +786,19 @@
           true
       ```
       "%
-      = fun x => %typeof% x == `Record,
+      = fun x => %typeof% x == 'Record,
 
     typeof
       : Dyn -> [|
-        `Number,
-        `Bool,
-        `String,
-        `Enum,
-        `Label,
-        `Function,
-        `Array,
-        `Record,
-        `Other
+        'Number,
+        'Bool,
+        'String,
+        'Enum,
+        'Label,
+        'Function,
+        'Array,
+        'Record,
+        'Other
       |]
       | doc m%"
       Results in a value representing the type of the typed value.
@@ -806,9 +806,9 @@
       For example:
       ```nickel
         typeof [ 1, 2 ] =>
-          `Array
+          'Array
         typeof (fun x => x) =>
-          `Function
+          'Function
       ```
       "%
       = fun x => %typeof% x,
@@ -848,26 +848,26 @@
       = fun x y => %deep_seq% x y,
 
     hash
-      : [| `Md5, `Sha1, `Sha256, `Sha512 |] -> String -> String
+      : [| 'Md5, 'Sha1, 'Sha256, 'Sha512 |] -> String -> String
       | doc m%"
       Hashes the given string provided the desired hash algorithm.
 
       For example:
       ```nickel
-        hash `Md5 "hunter2" =>
+        hash 'Md5 "hunter2" =>
           "2ab96390c7dbe3439de74d0c9b0b1767"
       ```
       "%
       = fun type s => %hash% type s,
 
     serialize
-      : [| `Json, `Toml, `Yaml |] -> Dyn -> String
+      : [| 'Json, 'Toml, 'Yaml |] -> Dyn -> String
       | doc m%"
       Serializes the given value to the desired representation.
 
       For example:
       ```nickel
-        serialize `Json { hello = "Hello", world = "World" } =>
+        serialize 'Json { hello = "Hello", world = "World" } =>
           "{
             "hello": "Hello",
             "world": "World"
@@ -877,13 +877,13 @@
       = fun format x => %serialize% format (%force% x),
 
     deserialize
-      : [| `Json, `Toml, `Yaml |] -> String -> Dyn
+      : [| 'Json, 'Toml, 'Yaml |] -> String -> Dyn
       | doc m%"
       Deserializes the given string to a nickel value given the encoding of the string.
 
       For example:
       ```nickel
-        deserialize `Json "{ \"hello\": \"Hello\", \"world\": \"World\" }"
+        deserialize 'Json "{ \"hello\": \"Hello\", \"world\": \"World\" }"
           { hello = "Hello", world = "World" }
       ```
       "%
@@ -899,7 +899,7 @@
       ```nickel
       from 42 =>
         "42"
-      from `Foo =>
+      from 'Foo =>
         "Foo"
       from null =>
         "null"
@@ -1217,10 +1217,10 @@
           # Examples
 
           ```nickel
-            (`foo | Tag) =>
-              `foo
-            (`FooBar | Tag) =>
-              `FooBar
+            ('foo | Tag) =>
+              'foo
+            ('FooBar | Tag) =>
+              'FooBar
             ("tag" | Tag) =>
               error
           ```
@@ -1242,18 +1242,18 @@
             let Schema = {
               protocol
                 | enum.TagOrString
-                | [| `http, `ftp |],
+                | [| 'http, 'ftp |],
               port
                 | Number,
               method
                 | enum.TagOrString
-                | [| `GET, `POST |]
+                | [| 'GET, 'POST |]
             } in
             let serialized =
               m%"
                 {"protocol": "http", "port": 80, "method": "GET"}
               "%
-              |> builtin.deserialize `Json
+              |> builtin.deserialize 'Json
             in
 
             serialized | Schema
@@ -1262,8 +1262,8 @@
       = fun label value =>
         %typeof% value
         |> match {
-          `String => %enum_from_str% value,
-          `Enum => value,
+          'String => %enum_from_str% value,
+          'Enum => value,
           _ =>
             contract.blame_with_message "expected either a string or an enum tag" label,
         },
@@ -1343,7 +1343,7 @@
       ```nickel
       pipe 2 [ (+) 2, (+) 3 ]
         => 7
-      pipe `World [ string.from, fun s => "Hello, %{s}!" ]
+      pipe 'World [ string.from, fun s => "Hello, %{s}!" ]
         => "Hello, World!"
       ```
     "%%
@@ -1356,22 +1356,22 @@
   # Contract implementations
   "$dyn" = fun _label value => value,
 
-  "$num" = fun label value => if %typeof% value == `Number then value else %blame% label,
+  "$num" = fun label value => if %typeof% value == 'Number then value else %blame% label,
 
-  "$bool" = fun label value => if %typeof% value == `Bool then value else %blame% label,
+  "$bool" = fun label value => if %typeof% value == 'Bool then value else %blame% label,
 
-  "$string" = fun label value => if %typeof% value == `String then value else %blame% label,
+  "$string" = fun label value => if %typeof% value == 'String then value else %blame% label,
 
   "$fail" = fun label _value => %blame% label,
 
   "$array" = fun element_contract label value =>
-    if %typeof% value == `Array then
+    if %typeof% value == 'Array then
       %array_lazy_assume% (%go_array% label) value element_contract
     else
       %blame% label,
 
   "$func" = fun domain codomain label value =>
-    if %typeof% value == `Function then
+    if %typeof% value == 'Function then
       (fun x => %assume% codomain (%go_codom% label) (value (%assume% domain (%chng_pol% (%go_dom% label)) x)))
     else
       %blame% label,
@@ -1392,7 +1392,7 @@
     contract (%insert_type_variable% sealing_key polarity label) value,
 
   "$enums" = fun case label value =>
-    if %typeof% value == `Enum then
+    if %typeof% value == 'Enum then
       %assume% case label value
     else
       %blame% (%label_with_message% "not an enum tag" label),
@@ -1401,7 +1401,7 @@
     %blame% (%label_with_message% "tag not included in the enum type" label),
 
   "$record" = fun field_contracts tail_contract label value =>
-    if %typeof% value == `Record then
+    if %typeof% value == 'Record then
       # Returns the sub-record of `l` containing only those fields which are not
       # present in `r`. If `l` has a sealed polymorphic tail then it will be
       # preserved.
@@ -1444,7 +1444,7 @@
       %blame% (%label_with_message% "not a record" label),
 
   "$dyn_record" = fun contract label value =>
-    if %typeof% value == `Record then
+    if %typeof% value == 'Record then
       %dictionary_assume% (%go_dict% label) value contract
     else
       %blame% (%label_with_message% "not a record" label),
@@ -1498,7 +1498,7 @@
       ```
       "%
       = fun label value =>
-        if %typeof% value == `Number then
+        if %typeof% value == 'Number then
           if value % 1 == 0 then
             value
           else
@@ -1521,7 +1521,7 @@
       ```
       "%
       = fun label value =>
-        if %typeof% value == `Number then
+        if %typeof% value == 'Number then
           if value % 1 == 0 && value >= 0 then
             value
           else
@@ -1544,7 +1544,7 @@
       ```
       "%
       = fun label value =>
-        if %typeof% value == `Number then
+        if %typeof% value == 'Number then
           if value % 1 == 0 && value > 0 then
             value
           else
@@ -1565,7 +1565,7 @@
       ```
       "%
       = fun label value =>
-        if %typeof% value == `Number then
+        if %typeof% value == 'Number then
           if value != 0 then
             value
           else
@@ -1933,7 +1933,7 @@
       ```
       "%
       = fun l s =>
-        if %typeof% s == `String then
+        if %typeof% s == 'String then
           if s == "true" || s == "True" then
             "true"
           else if s == "false" || s == "False" then
@@ -1961,7 +1961,7 @@
         let pattern = m%"^[+-]?(\d+(\.\d*)?(e[+-]?\d+)?|\.\d+(e[+-]?\d+)?)$"% in
         let is_num_literal = %str_is_match% pattern in
         fun l s =>
-          if %typeof% s == `String then
+          if %typeof% s == 'String then
             if is_num_literal s then
               s
             else
@@ -1986,7 +1986,7 @@
       ```
       "%
       = fun l s =>
-        if %typeof% s == `String then
+        if %typeof% s == 'String then
           if length s == 1 then
             s
           else
@@ -2007,8 +2007,8 @@
 
       For example:
       ```nickel
-        (`Foo | Stringable) =>
-          `Foo
+        ('Foo | Stringable) =>
+          'Foo
         (false | Stringable) =>
           false
         ("bar" ++ "foo" | Stringable) =>
@@ -2023,10 +2023,10 @@
             fun value =>
               let type = builtin.typeof value in
               value == null
-              || type == `Number
-              || type == `Bool
-              || type == `String
-              || type == `Enum
+              || type == 'Number
+              || type == 'Bool
+              || type == 'String
+              || type == 'Enum
           ),
 
     NonEmpty
@@ -2044,7 +2044,7 @@
       ```
       "%
       = fun l s =>
-        if %typeof% s == `String then
+        if %typeof% s == 'String then
           if %str_length% s > 0 then
             s
           else
@@ -2370,7 +2370,7 @@
 
       For example:
       ```nickel
-      from_enum `MyEnum =>
+      from_enum 'MyEnum =>
         "MyEnum"
       ```
       "%
