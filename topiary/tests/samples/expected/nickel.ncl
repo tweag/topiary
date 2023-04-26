@@ -449,7 +449,7 @@
         let length = %length% array in
         let first = %elem_at% array 0 in
         let rest = %array_slice% 1 length array in
-        let parts = partition (fun x => (cmp x first == `Lesser)) rest in
+        let parts = partition (fun x => (cmp x first == 'Lesser)) rest in
         if length <= 1 then
           array
         else
@@ -737,7 +737,7 @@
       ```nickel
         is_enum true =>
           false
-        is_enum `false =>
+        is_enum 'false =>
           true
       ```
       "%
@@ -2342,7 +2342,7 @@
       ```nickel
       from 42 =>
         "42"
-      from `Foo =>
+      from 'Foo =>
         "Foo"
       from null =>
         "null"
