@@ -80,7 +80,7 @@
     (module_definition)
     (module_type_definition)
     (type_definition)
-  ] @append_hardline
+  ] @append_spaced_softline
   .
   "in"? @do_nothing
   .
@@ -125,7 +125,7 @@
   [
     (value_definition)
     (value_specification)
-  ] @append_hardline
+  ] @append_spaced_softline
   .
   [
     (exception_definition)
