@@ -1,0 +1,32 @@
+[[language]]
+name = "bash"
+extensions = ["sh", "bash"]
+
+[[language]]
+name = "json"
+extensions = ["json", "avsc", "geojson", "gltf", "har", "ice", "JSON-tmLanguage", "jsonl", "mcmeta", "tfstate", "tfstate.backup", "topojson", "webapp", "webmanifest"]
+
+[[language]]
+name = "Nickel"
+extensions = ["ncl"]
+
+[[language]]
+name = "OcamlImplementation"
+extensions = ["ml"]
+
+[[language]]
+name = "OcamlInterface"
+extensions = ["mli"]
+
+[[language]]
+name = "Rust"
+extensions = ["rs"]
+
+[[language]]
+name = "Toml"
+extensions = ["toml"]
+
+[[language]]
+name = "TreeSitterQuery"
+extensions = ["scm"]
+

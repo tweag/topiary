@@ -1,5 +1,5 @@
 use clap::ValueEnum;
-use topiary::Language;
+use topiary::{Configuration, Language};
 
 #[derive(ValueEnum, Clone, Copy, Debug)]
 pub enum SupportedLanguage {
@@ -14,15 +14,23 @@ pub enum SupportedLanguage {
     // instead.
 }
 
-impl From<SupportedLanguage> for Language {
-    fn from(language: SupportedLanguage) -> Self {
-        match language {
-            SupportedLanguage::Json => Language::Json,
-            SupportedLanguage::Nickel => Language::Nickel,
-            SupportedLanguage::Ocaml => Language::Ocaml,
-            SupportedLanguage::OcamlImplementation => Language::OcamlImplementation,
-            SupportedLanguage::OcamlInterface => Language::OcamlInterface,
-            SupportedLanguage::Toml => Language::Toml,
+impl SupportedLanguage {
+    pub fn to_language(self: Self, configuration: &Configuration) -> &Language {
+        let name = match self {
+            SupportedLanguage::Json => "json",
+            SupportedLanguage::Nickel => "nickel",
+            SupportedLanguage::Ocaml => "ocaml",
+            SupportedLanguage::OcamlImplementation => "ocaml",
+            SupportedLanguage::OcamlInterface => "ocaml_interface",
+            SupportedLanguage::Toml => "toml",
+        };
+        for lang in &configuration.language {
+            if lang.name == name {
+                return &lang;
+            }
         }
+        // Every supported language MUST have an entry in the builtin
+        // configuration, and so there should always be a match.
+        unreachable!()
     }
 }
