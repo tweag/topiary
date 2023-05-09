@@ -4762,6 +4762,7 @@ export xyzzy=$(
     (function_type)
     (hash_type)
     (object_type)
+    (package_type)
     (parenthesized_type)
     (tuple_type)
     (type_constructor_path)
@@ -4782,6 +4783,7 @@ export xyzzy=$(
     (function_type)
     (hash_type)
     (object_type)
+    (package_type)
     (parenthesized_type)
     (tuple_type)
     (type_constructor_path)
@@ -4791,6 +4793,13 @@ export xyzzy=$(
   .
   (type_constraint) @append_indent_end
 )
+
+(package_type
+  .
+  "(" @append_empty_softline @append_indent_start
+  ")" @prepend_empty_softline @prepend_indent_end
+  .
+) @prepend_spaced_softline
 
 ; Make an indented block after "of" or ":" in constructor declarations
 ;

@@ -3658,10 +3658,13 @@ module Sc_rollup: sig
       end
     end
 
-    type ('state, 'proof, 'output) implementation = (module S with
-    type state = 'state
-    and type proof = 'proof
-    and type output_proof = 'output)
+    type ('state, 'proof, 'output) implementation =
+      (
+        module S with
+        type state = 'state
+        and type proof = 'proof
+        and type output_proof = 'output
+      )
 
     type t =
       Packed : ('state, 'proof, 'output) implementation -> t
