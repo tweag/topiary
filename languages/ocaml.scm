@@ -37,6 +37,7 @@
 ; Allow blank line before
 [
   (class_definition)
+  (class_initializer)
   (class_type_definition)
   (comment)
   (exception_definition)
@@ -156,6 +157,7 @@
     "include"
     (infix_operator)
     "inherit"
+    "initializer"
     (item_attribute)
     "let"
     "match"
@@ -296,6 +298,11 @@
   "("* @do_nothing
   .
   "inherit" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "initializer" @prepend_space
 )
 (
   "("* @do_nothing
@@ -852,6 +859,7 @@
     (inheritance_definition)
     (instance_variable_definition)
     (method_definition)
+    (class_initializer)
   ] @append_spaced_softline @prepend_spaced_softline
 )
 
@@ -861,6 +869,7 @@
     (inheritance_specification)
     (instance_variable_definition)
     (method_definition)
+    (class_initializer)
   ] @append_spaced_softline @prepend_spaced_softline
 )
 

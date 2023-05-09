@@ -3703,6 +3703,7 @@ export xyzzy=$(
 ; Allow blank line before
 [
   (class_definition)
+  (class_initializer)
   (class_type_definition)
   (comment)
   (exception_definition)
@@ -3822,6 +3823,7 @@ export xyzzy=$(
     "include"
     (infix_operator)
     "inherit"
+    "initializer"
     (item_attribute)
     "let"
     "match"
@@ -3962,6 +3964,11 @@ export xyzzy=$(
   "("* @do_nothing
   .
   "inherit" @prepend_space
+)
+(
+  "("* @do_nothing
+  .
+  "initializer" @prepend_space
 )
 (
   "("* @do_nothing
@@ -4518,6 +4525,7 @@ export xyzzy=$(
     (inheritance_definition)
     (instance_variable_definition)
     (method_definition)
+    (class_initializer)
   ] @append_spaced_softline @prepend_spaced_softline
 )
 
@@ -4527,6 +4535,7 @@ export xyzzy=$(
     (inheritance_specification)
     (instance_variable_definition)
     (method_definition)
+    (class_initializer)
   ] @append_spaced_softline @prepend_spaced_softline
 )
 
@@ -5895,6 +5904,11 @@ module Inner2 = struct
         | _::_ -> super#pop
         | _ -> None
     end
+end
+
+class memoized = object
+  method __memo__ : __memo__ = __memo__
+  initializer memoize_obj this
 end
 
 let (Some 2) =

@@ -699,6 +699,12 @@ module Inner2 = struct
     end
 end
 
+class memoized =
+  object
+    method __memo__: __memo__ = __memo__
+    initializer memoize_obj this
+  end
+
 let (Some 2) =
   let my_stack = new Inner2.stack_impl in
   my_stack#push 1;
