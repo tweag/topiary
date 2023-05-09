@@ -982,6 +982,8 @@ exception MyException of string
 let _ =
   let module Lift = Mlfi_types.TypEq.Lift (struct type 'a c = 'a S.t end) in ()
 
+let _ = function | Error s -> failwith s | Ok x -> x
+
 (* Slight variant of #441 *)
 let _ =
   let module Foo = struct let f = 0 let g = 1 in ()
