@@ -589,12 +589,38 @@ impl AtomCollection {
         }
     }
 
+    // Separate post_processing of Delete sections, to avoid interference with whitespace logic
+    fn post_process_deletes(&mut self) {
+        let mut delete_level = 0;
+        for atom in &mut self.atoms {
+            match atom {
+                Atom::DeleteBegin => {
+                    delete_level += 1;
+                    *atom = Atom::Empty
+                }
+                Atom::DeleteEnd => {
+                    delete_level -= 1;
+                    *atom = Atom::Empty
+                }
+                _ => {
+                    if delete_level > 0 {
+                        *atom = Atom::Empty
+                    }
+                }
+            }
+        }
+        if delete_level != 0 {
+            log::warn!("The number of DeleteBegin is different from the number of DeleteEnd.")
+        }
+    }
+
     // This function merges the spaces, new lines and blank lines.
     // If there are several tokens of different kind one after the other,
     // the blank line is kept over the new line which itself is kept over the space.
     // Furthermore, this function put the indentation delimiters before any space/line atom.
     pub fn post_process(&mut self) {
         self.post_process_scopes();
+        self.post_process_deletes();
         let mut prev: Option<&mut Atom> = None;
         for next in &mut self.atoms {
             if let Some(prev) = prev.as_mut() {
@@ -634,19 +660,6 @@ impl AtomCollection {
 
                             _ => {}
                         }
-                    }
-
-                    // If the last one is a DeleteBegin,
-                    // we ignore all the atoms until a DeleteEnd is met.
-                    Atom::DeleteBegin => {
-                        if *next == Atom::DeleteEnd {
-                            // Break this pattern. We no longer want prev to
-                            // match DeleteBegin.
-                            **prev = Atom::Empty;
-                        }
-
-                        // We're inside a delete section, so set atom to empty.
-                        *next = Atom::Empty;
                     }
 
                     _ => {}
