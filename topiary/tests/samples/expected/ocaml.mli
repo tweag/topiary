@@ -4895,8 +4895,7 @@ module Operation: sig
 
   val contents_list_encoding : packed_contents_list Data_encoding.t
 
-  type 'kind t =
-    'kind operation = {
+  type 'kind t = 'kind operation = {
     shell: Operation.shell_header;
     protocol_data: 'kind protocol_data;
   }
@@ -5261,7 +5260,8 @@ end
 (** This module re-exports definitions from {!Liquidity_baking_repr} and
     {!Liquidity_baking_storage}. *)
 module Liquidity_baking: sig
-  type liquidity_baking_toggle_vote = Liquidity_baking_repr.liquidity_baking_toggle_vote =
+  type liquidity_baking_toggle_vote =
+    Liquidity_baking_repr.liquidity_baking_toggle_vote =
     | LB_on
     | LB_off
     | LB_pass

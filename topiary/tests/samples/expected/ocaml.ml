@@ -936,10 +936,13 @@ let id (type s) (x : s) : s = x
 type foo = { a: 'a. ('a, mandatory) arg -> 'a; }
 type foo = (int, int) result
 
-(* exotic types *)
+(* types with constraints *)
 type (+'meth, 'prefix, 'params, 'query, 'input, 'output) service =
   ('meth, 'prefix, 'params, 'query, 'input, 'output, error) raw
   constraint 'meth = [< meth]
+
+type 'a x = 'a option
+  constraint 'a = 'b
 
 (* Indentation of multi-line types in PPX syntax *)
 let h =

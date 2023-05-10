@@ -598,10 +598,6 @@
   (comment)* @do_nothing
 )
 
-(type_binding
-  (type_constraint) @prepend_spaced_softline
-)
-
 ; only add softlines after "else" if it's not part of an "else if" construction
 (
   "else" @append_spaced_softline
@@ -815,7 +811,6 @@
   [
     (application_expression)
     (class_body_type)
-    (constructed_type)
     (if_expression)
     (function_type)
     (let_expression)
@@ -1074,6 +1069,7 @@
   (_) @append_indent_end
 )
 
+; Some more rules for type bindings:
 ; Don't indent for record types nor polymorphic variant types:
 ; they are already indented, and we don't process double indentation well enough
 (type_binding
@@ -1097,6 +1093,7 @@
   .
   (type_constraint)? @do_nothing
 )
+
 (type_binding
   [
     "="
@@ -1125,6 +1122,37 @@
   ")" @prepend_empty_softline @prepend_indent_end
   .
 ) @prepend_spaced_softline
+
+; Consider type constraints to be "out of the block" when deciding
+; whether to add a newline between "=" and a constructed type.
+; This allows the following to be formatted as it is:
+;
+; type 'a x = 'a option
+;   constraint 'a = ('b,'c)
+(type_binding
+  [
+    "="
+    "+="
+  ] @begin_scope @append_spaced_scoped_softline
+  .
+  [
+    (constructed_type)
+    (function_type)
+    (hash_type)
+    (object_type)
+    (package_type)
+    (parenthesized_type)
+    (tuple_type)
+    (type_constructor_path)
+    (type_variable)
+    (variant_declaration)
+  ] @end_scope
+  (#scope_id! "type_binding_before_constraint")
+)
+
+(type_binding
+  (type_constraint) @prepend_spaced_softline
+)
 
 ; Make an indented block after "of" or ":" in constructor declarations
 ;
