@@ -442,8 +442,8 @@ let topological_sort deps =
           | Not_found ->
             if !ignore then []
             else
-              raise
-              @@ Files_legacy.Files_error (ObjectFileNotFound (mk_mident node))
+              raise @@
+                Files_legacy.Files_error (ObjectFileNotFound (mk_mident node))
           | _ -> assert false
       in
       node :: List.fold_left
@@ -1037,4 +1037,15 @@ let _ =
 
 (* Slight variant of #441 *)
 let _ =
-  let module Foo = struct let f = 0 let g = 1 in ()
+  let module Foo = struct let f = 0 let g = 1 end in ()
+
+(* Indentation/newlines after non-specific infix operators *)
+let _ =
+  foo bar @@
+    let () = qux in
+    baz
+
+let _ =
+  myBlockIntroducingFunction @@
+    fun x ->
+      something horrible onto x

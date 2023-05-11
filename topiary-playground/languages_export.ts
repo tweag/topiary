@@ -3888,6 +3888,7 @@ export xyzzy=$(
   "downto"
   "else"
   "in"
+  (infix_operator) ; This one can, but we want a space before anyway.
   "nonrec"
   "of"
   "rec"
@@ -3968,11 +3969,6 @@ export xyzzy=$(
   "("* @do_nothing
   .
   "include" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  (infix_operator) @prepend_space
 )
 (
   "("* @do_nothing
@@ -4319,7 +4315,6 @@ export xyzzy=$(
   "done"
   "end"
   (else_clause)
-  (infix_operator)
   (item_attribute)
   "*"
   "|"
@@ -5068,6 +5063,19 @@ export xyzzy=$(
     ]
   ) @prepend_spaced_scoped_softline
   (#scope_id! "infix_expression")
+)
+
+; Put softline and indented blocks after infix operators
+; that have no particular treatment (e.g. "@@")
+(infix_expression
+  (infix_operator
+    [
+      "||"
+      "&&"
+    ]? @do_nothing
+  ) @append_spaced_softline @append_indent_start
+  .
+  (_) @append_indent_end
 )
 
 ; Allow softlines in sequences and ppx sequences, such as
@@ -6204,7 +6212,15 @@ let _ =
 
 (* Slight variant of #441 *)
 let _ =
-  let module Foo = struct let f = 0 let g = 1 in ()
+  let module Foo = struct let f = 0 let g = 1 end in ()
+
+(* Indentation/newlines after non-specific infix operators *)
+let _ = foo bar @@ let () = qux in
+  baz
+
+let _ =
+  myBlockIntroducingFunction @@ fun x ->
+    something horrible onto x
 `,
   },
   "rust": {
