@@ -213,6 +213,7 @@
   "downto"
   "else"
   "in"
+  (infix_operator) ; This one can, but we want a space before anyway.
   "nonrec"
   "of"
   "rec"
@@ -293,11 +294,6 @@
   "("* @do_nothing
   .
   "include" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  (infix_operator) @prepend_space
 )
 (
   "("* @do_nothing
@@ -644,7 +640,6 @@
   "done"
   "end"
   (else_clause)
-  (infix_operator)
   (item_attribute)
   "*"
   "|"
@@ -1393,6 +1388,19 @@
     ]
   ) @prepend_spaced_scoped_softline
   (#scope_id! "infix_expression")
+)
+
+; Put softline and indented blocks after infix operators
+; that have no particular treatment (e.g. "@@")
+(infix_expression
+  (infix_operator
+    [
+      "||"
+      "&&"
+    ]? @do_nothing
+  ) @append_spaced_softline @append_indent_start
+  .
+  (_) @append_indent_end
 )
 
 ; Allow softlines in sequences and ppx sequences, such as

@@ -982,4 +982,12 @@ let _ =
 
 (* Slight variant of #441 *)
 let _ =
-  let module Foo = struct let f = 0 let g = 1 in ()
+  let module Foo = struct let f = 0 let g = 1 end in ()
+
+(* Indentation/newlines after non-specific infix operators *)
+let _ = foo bar @@ let () = qux in
+  baz
+
+let _ =
+  myBlockIntroducingFunction @@ fun x ->
+    something horrible onto x
