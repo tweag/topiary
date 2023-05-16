@@ -21,6 +21,7 @@ let
         "benches"
         "Cargo.lock"
         "Cargo.toml"
+        "languages.toml"
         "languages"
         "topiary"
         "topiary-cli"
