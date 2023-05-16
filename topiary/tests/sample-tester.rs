@@ -22,120 +22,115 @@ fn pretty_assert_eq(v1: String, v2: String) {
     }
 }
 
-// ERIN: TODO
-// #[tokio::test]
-// async fn input_output_tester() {
-//     let input_dir = fs::read_dir("tests/samples/input").unwrap();
-//     let expected_dir = Path::new("tests/samples/expected");
+#[tokio::test]
+async fn input_output_tester() {
+    let input_dir = fs::read_dir("tests/samples/input").unwrap();
+    let expected_dir = Path::new("tests/samples/expected");
+    let config = Configuration::parse_default_config();
+    let extensions = config.known_extensions();
 
-//     for file in input_dir {
-//         let file = file.unwrap();
-//         if let Some(ext) = file.path().extension().map(|ext| ext.to_string_lossy()) {
-//             if !Language::known_extensions().contains(&*ext) {
-//                 continue;
-//             }
-//         } else {
-//             continue;
-//         }
-//         let language = Language::detect(file.path()).unwrap();
+    for file in input_dir {
+        let file = file.unwrap();
+        if let Some(ext) = file.path().extension().map(|ext| ext.to_string_lossy()) {
+            if !extensions.contains(ext.as_ref()) {
+                continue;
+            }
+        } else {
+            continue;
+        }
+        let language = Language::detect(file.path(), &config).unwrap();
 
-//         let expected_path = expected_dir.join(file.file_name());
-//         let expected = fs::read_to_string(expected_path).unwrap();
+        let expected_path = expected_dir.join(file.file_name());
+        let expected = fs::read_to_string(expected_path).unwrap();
 
-//         let mut input = BufReader::new(fs::File::open(file.path()).unwrap());
-//         let mut output = Vec::new();
-//         let query = fs::read_to_string(language.query_file().unwrap()).unwrap();
+        let mut input = BufReader::new(fs::File::open(file.path()).unwrap());
+        let mut output = Vec::new();
+        let query = fs::read_to_string(language.query_file().unwrap()).unwrap();
 
-//         let mut configuration = Configuration::parse(&query).unwrap();
-//         configuration.language = language;
+        let grammars = language.grammars().await.unwrap();
 
-//         let grammars = configuration.language.grammars().await.unwrap();
+        formatter(
+            &mut input,
+            &mut output,
+            &query,
+            &language,
+            &grammars,
+            Operation::Format {
+                skip_idempotence: false,
+            },
+        )
+        .unwrap();
 
-//         formatter(
-//             &mut input,
-//             &mut output,
-//             &query,
-//             &configuration,
-//             &grammars,
-//             Operation::Format {
-//                 skip_idempotence: false,
-//             },
-//         )
-//         .unwrap();
+        let formatted = String::from_utf8(output).unwrap();
+        log::debug!("{}", formatted);
 
-//         let formatted = String::from_utf8(output).unwrap();
-//         log::debug!("{}", formatted);
+        pretty_assert_eq(expected, formatted)
+    }
+}
 
-//         pretty_assert_eq(expected, formatted)
-//     }
-// }
-
-// ERIN: TODO
 // Test that our query files are properly formatted
-// #[tokio::test]
-// async fn formatted_query_tester() {
-//     let language_dir = fs::read_dir("../languages").unwrap();
+#[tokio::test]
+async fn formatted_query_tester() {
+    let config = Configuration::parse_default_config();
+    let language_dir = fs::read_dir("../languages").unwrap();
 
-//     for file in language_dir {
-//         let file = file.unwrap();
-//         let language = Language::TreeSitterQuery;
+    for file in language_dir {
+        let file = file.unwrap();
+        let language = Language::detect(file.path(), &config).unwrap();
 
-//         let expected = fs::read_to_string(file.path()).unwrap();
+        let expected = fs::read_to_string(file.path()).unwrap();
 
-//         let mut input = BufReader::new(fs::File::open(file.path()).unwrap());
-//         let mut output = Vec::new();
-//         let query = fs::read_to_string(language.query_file().unwrap()).unwrap();
+        let mut input = BufReader::new(fs::File::open(file.path()).unwrap());
+        let mut output = Vec::new();
+        let query = fs::read_to_string(language.query_file().unwrap()).unwrap();
 
-//         let mut configuration = Configuration::parse(&query).unwrap();
-//         configuration.language = language;
+        let grammars = language.grammars().await.unwrap();
 
-//         let grammars = configuration.language.grammars().await.unwrap();
+        formatter(
+            &mut input,
+            &mut output,
+            &query,
+            &language,
+            &grammars,
+            Operation::Format {
+                skip_idempotence: false,
+            },
+        )
+        .unwrap();
 
-//         formatter(
-//             &mut input,
-//             &mut output,
-//             &query,
-//             &configuration,
-//             &grammars,
-//             Operation::Format {
-//                 skip_idempotence: false,
-//             },
-//         )
-//         .unwrap();
+        let formatted = String::from_utf8(output).unwrap();
+        log::debug!("{}", formatted);
 
-//         let formatted = String::from_utf8(output).unwrap();
-//         log::debug!("{}", formatted);
+        pretty_assert_eq(expected, formatted)
+    }
+}
 
-//         pretty_assert_eq(expected, formatted)
-//     }
-// }
-
-// ERIN: TODO
 // Test that all queries are used on sample files
-// #[tokio::test]
-// async fn exhaustive_query_tester() {
-//     let input_dir = fs::read_dir("tests/samples/input").unwrap();
+#[tokio::test]
+async fn exhaustive_query_tester() {
+    let config = Configuration::parse_default_config();
+    let input_dir = fs::read_dir("tests/samples/input").unwrap();
 
-//     for file in input_dir {
-//         let file = file.unwrap();
-//         // We skip "ocaml.mli", as its query file is already tested by "ocaml.ml"
-//         if file.file_name().to_string_lossy() == "ocaml.mli" {
-//             continue;
-//         }
-//         let language = Language::detect(file.path()).unwrap();
-//         let query_file = language.query_file().unwrap();
+    for file in input_dir {
+        let file = file.unwrap();
+        // We skip "ocaml.mli", as its query file is already tested by "ocaml.ml"
+        if file.file_name().to_string_lossy() == "ocaml.mli" {
+            continue;
+        }
+        let language = Language::detect(file.path(), &config).unwrap();
+        let query_file = language.query_file().unwrap();
 
-//         let input_content = fs::read_to_string(&file.path()).unwrap();
-//         let query_content = fs::read_to_string(&query_file).unwrap();
+        let input_content = fs::read_to_string(&file.path()).unwrap();
+        let query_content = fs::read_to_string(&query_file).unwrap();
 
-//         let grammars = language.grammars().await.unwrap();
+        let grammars = language.grammars().await.unwrap();
 
-//         apply_query(&input_content, &query_content, &grammars, true).unwrap_or_else(|e| {
-//             if let FormatterError::PatternDoesNotMatch(_) = e {
-//                 panic!("Found untested query in file {query_file:?}:\n{e}");
-//             } else {
-//                 panic!("{e}");
-//             }
-//         });
-//     }
-// }
+        apply_query(&input_content, &query_content, &grammars, true).unwrap_or_else(|e| {
+            if let FormatterError::PatternDoesNotMatch(_) = e {
+                panic!("Found untested query in file {query_file:?}:\n{e}");
+            } else {
+                panic!("{e}");
+            }
+        });
+    }
+}

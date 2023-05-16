@@ -128,14 +128,14 @@ pub enum Operation {
 /// let mut query = String::new();
 /// query_file.read_to_string(&mut query).expect("read query file");
 ///
-/// let mut configuration = Configuration::parse(&query).expect("valid configuration");
-/// let grammars = configuration
-///     .language
+/// let config = Configuration::parse_default_config();
+/// let language = config.get_language("json");
+/// let grammars = language
 ///     .grammars()
 ///     .await
 ///     .expect("grammars");
 ///
-/// match formatter(&mut input, &mut output, &query, &configuration, &grammars, Operation::Format{ skip_idempotence: false }) {
+/// match formatter(&mut input, &mut output, &query, &language, &grammars, Operation::Format{ skip_idempotence: false }) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }

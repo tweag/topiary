@@ -17,10 +17,12 @@ impl Configuration {
         default_config
     }
 
-    pub fn known_extensions<'a>(self: Self) -> HashSet<String> {
-        let mut res = HashSet::new();
-        for lang in self.language {
-            res.extend(lang.extensions);
+    pub fn known_extensions<'a>(&'a self) -> HashSet<&str> {
+        let mut res: HashSet<&str> = HashSet::new();
+        for lang in self.language.iter() {
+            for ext in lang.extensions.iter() {
+                res.insert(ext);
+            }
         }
         res
     }

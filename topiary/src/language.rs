@@ -47,11 +47,12 @@ impl Language {
                 tree_sitter_ocaml::language_ocaml(),
                 tree_sitter_ocaml::language_ocaml_interface(),
             ],
+            "ocaml_implementation" => vec![tree_sitter_ocaml::language_ocaml()],
             "ocaml_interface" => vec![tree_sitter_ocaml::language_ocaml_interface()],
             "rust" => vec![tree_sitter_rust::language()],
             "toml" => vec![tree_sitter_toml::language()],
-            "query" => vec![tree_sitter_query::language()],
-            _ => todo!("ERIN: Error?"),
+            "tree_sitter_query" => vec![tree_sitter_query::language()],
+            name => todo!("ERIN: Error: {name}"),
         }
         .into_iter()
         .map(Into::into)
@@ -116,10 +117,11 @@ impl TryFrom<&Language> for PathBuf {
             "nickel" => "nickel",
             "ocaml" => "ocaml",
             "ocaml_interface" => "ocaml",
+            "ocaml_implementation" => "ocaml",
             "rust" => "rust",
             "toml" => "toml",
-            "query" => "tree-sitter-query",
-            _ => todo!("ERIN: Error?"),
+            "tree_sitter_query" => "tree-sitter-query",
+            name => todo!("ERIN: Error: {name}"),
         })
         .with_extension("scm");
 

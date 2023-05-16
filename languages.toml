@@ -7,26 +7,30 @@ name = "json"
 extensions = ["json", "avsc", "geojson", "gltf", "har", "ice", "JSON-tmLanguage", "jsonl", "mcmeta", "tfstate", "tfstate.backup", "topojson", "webapp", "webmanifest"]
 
 [[language]]
-name = "Nickel"
+name = "nickel"
 extensions = ["ncl"]
 
 [[language]]
-name = "OcamlImplementation"
+name = "ocaml"
+extensions = ["ml", "mli"]
+
+[[language]]
+name = "ocaml_implementation"
 extensions = ["ml"]
 
 [[language]]
-name = "OcamlInterface"
+name = "ocaml_interface"
 extensions = ["mli"]
 
 [[language]]
-name = "Rust"
+name = "rust"
 extensions = ["rs"]
 
 [[language]]
-name = "Toml"
+name = "toml"
 extensions = ["toml"]
 
 [[language]]
-name = "TreeSitterQuery"
+name = "tree_sitter_query"
 extensions = ["scm"]
 
