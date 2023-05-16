@@ -9,6 +9,7 @@ import languages from './samples/languages_export';
 function App() {
     const [isInitialised, setIsInitialised] = useState(false);
     const defaultLanguage = "json";
+    var currentLanguage = defaultLanguage;
     const defaultQuery = languages[defaultLanguage].query;
     const defaultInput = languages[defaultLanguage].input;
     const [query, setQuery] = useState(defaultQuery);
@@ -29,7 +30,7 @@ function App() {
             }
 
             setOutput("Formatting ...");
-            setOutput(await format(input, query));
+            setOutput(await format(input, query, currentLanguage));
         } catch (e) {
             setOutput(String(e));
         }
@@ -39,6 +40,7 @@ function App() {
         if (languages[l]) {
             setInput(languages[l].input);
             setQuery(languages[l].query);
+            currentLanguage = l;
         }
     }
 

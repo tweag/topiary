@@ -19,24 +19,25 @@ pub async fn topiary_init() -> Result<(), JsError> {
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
-pub async fn format(input: &str, query: &str) -> Result<String, JsError> {
-    format_inner(input, query)
+pub async fn format(input: &str, query: &str, language: &str) -> Result<String, JsError> {
+    format_inner(input, query, language)
         .await
         .map_err(|e| format_error(&e))
 }
 
 #[cfg(target_arch = "wasm32")]
-async fn format_inner(input: &str, query: &str) -> FormatterResult<String> {
+async fn format_inner(input: &str, query: &str, language_name: &str) -> FormatterResult<String> {
     let mut output = Vec::new();
 
-    let configuration = Configuration::parse(query)?;
-    let grammars = configuration.language.grammars_wasm().await?;
+    let configuration = Configuration::parse_default_config();
+    let language = configuration.get_language(language_name)?;
+    let grammars = language.grammars_wasm().await?;
 
     formatter(
         &mut input.as_bytes(),
         &mut output,
         query,
-        &configuration,
+        language,
         &grammars,
         Operation::Format {
             skip_idempotence: true,

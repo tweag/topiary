@@ -72,11 +72,12 @@ impl Language {
             "json" => vec!["json"],
             "nickel" => vec!["nickel"],
             "ocaml" => vec!["ocaml", "ocaml_interface"],
-            "ocamlImplementation" => vec!["ocaml"],
-            "ocamlInterface" => vec!["ocaml_interface"],
+            "ocaml_implementation" => vec!["ocaml"],
+            "ocaml_interface" => vec!["ocaml_interface"],
             "rust" => vec!["rust"],
             "toml" => vec!["toml"],
-            "treeSitterQuery" => vec!["query"],
+            "tree_sitter_query" => vec!["query"],
+            name => return Err(FormatterError::UnsupportedLanguage(name.to_string())),
         };
 
         Ok(join_all(language_names.iter().map(|name| async move {
