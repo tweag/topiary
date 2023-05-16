@@ -25,6 +25,7 @@ extensions = ["mli"]
 [[language]]
 name = "rust"
 extensions = ["rs"]
+indent = "    " # 4 spaces
 
 [[language]]
 name = "toml"
