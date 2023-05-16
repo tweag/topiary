@@ -147,7 +147,7 @@ async fn run() -> CLIResult<()> {
         &mut input,
         &mut output,
         &query,
-        &language,
+        language,
         &grammars,
         operation,
     )?;

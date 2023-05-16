@@ -24,9 +24,12 @@ impl Language {
                     return Ok(lang);
                 }
             }
-            return Err(FormatterError::LanguageDetection(pb.to_path_buf(), Some(extension.to_string())))
+            return Err(FormatterError::LanguageDetection(
+                pb.to_path_buf(),
+                Some(extension.to_string()),
+            ));
         }
-        return Err(FormatterError::LanguageDetection(pb.to_path_buf(), None))
+        Err(FormatterError::LanguageDetection(pb.to_path_buf(), None))
     }
 
     /// Convenience alias to return the query file path for the Language.

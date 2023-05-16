@@ -109,10 +109,7 @@ impl fmt::Display for FormatterError {
             }
 
             Self::UnsupportedLanguage(language) => {
-                write!(
-                    f,
-                    "The following language is not supported: {language}"
-                )
+                write!(f, "The following language is not supported: {language}")
             }
         }
     }

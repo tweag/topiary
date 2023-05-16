@@ -17,7 +17,7 @@ impl Configuration {
         default_config
     }
 
-    pub fn known_extensions<'a>(&'a self) -> HashSet<&str> {
+    pub fn known_extensions(&self) -> HashSet<&str> {
         let mut res: HashSet<&str> = HashSet::new();
         for lang in self.language.iter() {
             for ext in lang.extensions.iter() {
@@ -27,12 +27,14 @@ impl Configuration {
         res
     }
 
-    pub fn get_language<'a, T: AsRef<str>>(&'a self, name: T) -> FormatterResult<&'a Language> {
+    pub fn get_language<T: AsRef<str>>(&self, name: T) -> FormatterResult<&Language> {
         for lang in &self.language {
             if lang.name == name.as_ref() {
-                return Ok(&lang)
+                return Ok(lang);
             }
         }
-        return Err(FormatterError::UnsupportedLanguage(name.as_ref().to_string()))
+        return Err(FormatterError::UnsupportedLanguage(
+            name.as_ref().to_string(),
+        ));
     }
 }

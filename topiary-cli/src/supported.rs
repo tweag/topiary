@@ -15,7 +15,7 @@ pub enum SupportedLanguage {
 }
 
 impl SupportedLanguage {
-    pub fn to_language(self: Self, configuration: &Configuration) -> &Language {
+    pub fn to_language(self, configuration: &Configuration) -> &Language {
         let name = match self {
             SupportedLanguage::Json => "json",
             SupportedLanguage::Nickel => "nickel",
@@ -26,7 +26,7 @@ impl SupportedLanguage {
         };
         for lang in &configuration.language {
             if lang.name == name {
-                return &lang;
+                return lang;
             }
         }
         // Every supported language MUST have an entry in the builtin
