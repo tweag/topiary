@@ -1,6 +1,6 @@
 use std::{collections::HashSet, str::from_utf8};
 
-use crate::{language::Language, FormatterError, FormatterResult};
+use crate::{language::Language};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]

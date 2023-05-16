@@ -4,13 +4,11 @@ mod supported;
 mod visualise;
 
 use std::{
-    collections::HashSet,
     error::Error,
     fs::File,
     io::{stdin, BufReader, BufWriter, Read},
     path::PathBuf,
     process::ExitCode,
-    str::from_utf8,
 };
 
 use clap::{ArgGroup, Parser};
