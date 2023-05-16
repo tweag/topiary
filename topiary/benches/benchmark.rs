@@ -9,7 +9,7 @@ async fn format() {
     let input = fs::read_to_string("tests/samples/input/ocaml.ml").unwrap();
     let query = fs::read_to_string("../languages/ocaml.scm").unwrap();
     let configuration = Configuration::parse_default_config();
-    let language = configuration.get_language("ocaml_implementation");
+    let language = configuration.get_language("ocaml_implementation").unwrap();
     let grammars = language.grammars().await.unwrap();
 
     let mut input = input.as_bytes();

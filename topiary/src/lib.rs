@@ -129,7 +129,7 @@ pub enum Operation {
 /// query_file.read_to_string(&mut query).expect("read query file");
 ///
 /// let config = Configuration::parse_default_config();
-/// let language = config.get_language("json");
+/// let language = config.get_language("json").unwrap();
 /// let grammars = language
 ///     .grammars()
 ///     .await

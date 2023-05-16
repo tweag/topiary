@@ -1,6 +1,6 @@
 use std::{collections::HashSet, str::from_utf8};
 
-use crate::{language::Language};
+use crate::{language::Language, FormatterError, FormatterResult};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
@@ -27,12 +27,12 @@ impl Configuration {
         res
     }
 
-    pub fn get_language<'a, T: AsRef<str>>(&'a self, name: T) -> &'a Language {
+    pub fn get_language<'a, T: AsRef<str>>(&'a self, name: T) -> FormatterResult<&'a Language> {
         for lang in &self.language {
             if lang.name == name.as_ref() {
-                return &lang;
+                return Ok(&lang)
             }
         }
-        todo!("ERIN: Error")
+        return Err(FormatterError::UnsupportedLanguage(name.as_ref().to_string()))
     }
 }

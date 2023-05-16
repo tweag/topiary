@@ -17,15 +17,16 @@ pub struct Language {
 impl Language {
     /// Convenience alias to detect the Language from a Path-like value's extension.
     pub fn detect<P: AsRef<Path>>(path: P, config: &Configuration) -> FormatterResult<&Self> {
-        let pb = path.as_ref().to_path_buf();
+        let pb = &path.as_ref().to_path_buf();
         if let Some(extension) = pb.extension().map(|ext| ext.to_string_lossy()) {
             for lang in &config.language {
                 if lang.extensions.contains::<String>(&extension.to_string()) {
                     return Ok(lang);
                 }
             }
+            return Err(FormatterError::LanguageDetection(pb.to_path_buf(), Some(extension.to_string())))
         }
-        todo!("ERIN: Error")
+        return Err(FormatterError::LanguageDetection(pb.to_path_buf(), None))
     }
 
     /// Convenience alias to return the query file path for the Language.
@@ -52,7 +53,7 @@ impl Language {
             "rust" => vec![tree_sitter_rust::language()],
             "toml" => vec![tree_sitter_toml::language()],
             "tree_sitter_query" => vec![tree_sitter_query::language()],
-            name => todo!("ERIN: Error: {name}"),
+            name => return Err(FormatterError::UnsupportedLanguage(name.to_string())),
         }
         .into_iter()
         .map(Into::into)
@@ -121,7 +122,7 @@ impl TryFrom<&Language> for PathBuf {
             "rust" => "rust",
             "toml" => "toml",
             "tree_sitter_query" => "tree-sitter-query",
-            name => todo!("ERIN: Error: {name}"),
+            name => return Err(FormatterError::UnsupportedLanguage(name.to_string())),
         })
         .with_extension("scm");
 
