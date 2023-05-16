@@ -260,32 +260,32 @@ fn idempotence_check(
     }
 }
 
-// ERIN: TODO
-// #[tokio::test]
-// async fn parse_error_fails_formatting() {
-//     let mut input = "[ 1, % ]".as_bytes();
-//     let mut output = Vec::new();
-//     let query = "(#language! json)";
-//     let configuration = Configuration::parse(query).unwrap();
-//     let grammars = configuration.language.grammars().await.unwrap();
+#[tokio::test]
+async fn parse_error_fails_formatting() {
+    let mut input = "[ 1, % ]".as_bytes();
+    let mut output = Vec::new();
+    let query = "(#language! json)";
+    let configuration = Configuration::parse_default_config();
+    let language = configuration.get_language("json").unwrap();
+    let grammars = language.grammars().await.unwrap();
 
-//     match formatter(
-//         &mut input,
-//         &mut output,
-//         query,
-//         &configuration,
-//         &grammars,
-//         Operation::Format {
-//             skip_idempotence: true,
-//         },
-//     ) {
-//         Err(FormatterError::Parsing {
-//             start_line: 1,
-//             end_line: 1,
-//             ..
-//         }) => {}
-//         result => {
-//             panic!("Expected a parsing error on line 1, but got {result:?}");
-//         }
-//     }
-// }
+    match formatter(
+        &mut input,
+        &mut output,
+        query,
+        language,
+        &grammars,
+        Operation::Format {
+            skip_idempotence: true,
+        },
+    ) {
+        Err(FormatterError::Parsing {
+            start_line: 1,
+            end_line: 1,
+            ..
+        }) => {}
+        result => {
+            panic!("Expected a parsing error on line 1, but got {result:?}");
+        }
+    }
+}
