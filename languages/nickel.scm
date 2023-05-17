@@ -1,6 +1,3 @@
-; Configuration
-(#language! nickel)
-
 ;; General Spacing
 
 ; The following nodes in our source text should not be formatted

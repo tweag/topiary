@@ -3,10 +3,7 @@
 // To generate, please run `cargo build -p topiary`
 const languages: {[index: string]: any} = {
   "bash": {
-    query: `; Configuration
-(#language! bash)
-
-; NOTE There is (currently) no support for line continuations. As such,
+    query: `; NOTE There is (currently) no support for line continuations. As such,
 ; any which are encountered by Topiary will be forcibly collapsed on to
 ; a single line. (See Issue #172)
 
@@ -743,10 +740,7 @@ export xyzzy=$(
 `,
   },
   "json": {
-    query: `; Configuration
-(#language! json)
-
-; Sometimes we want to indicate that certain parts of our source text should
+    query: `; Sometimes we want to indicate that certain parts of our source text should
 ; not be formatted, but taken as is. We use the leaf capture name to inform the
 ; tool of this.
 (string) @leaf
@@ -834,10 +828,7 @@ export xyzzy=$(
 `,
   },
   "nickel": {
-    query: `; Configuration
-(#language! nickel)
-
-;; General Spacing
+    query: `;; General Spacing
 
 ; The following nodes in our source text should not be formatted
 [
@@ -3673,10 +3664,7 @@ export xyzzy=$(
 `,
   },
   "ocaml": {
-    query: `; Configuration
-(#language! ocaml)
-
-; This query file is used to format trees produced by two different grammars:
+    query: `; This query file is used to format trees produced by two different grammars:
 ; - the grammar for OCaml interface files \`tree_sitter_ocaml::language_ocaml_interface()\`
 ; - the grammar for OCaml implementation files \`tree_sitter_ocaml::language_ocaml()\`
 
@@ -6208,11 +6196,7 @@ let _ =
 `,
   },
   "rust": {
-    query: `; Configuration
-(#language! rust)
-(#indent! "    ")
-
-; Sometimes we want to indicate that certain parts of our source text should
+    query: `; Sometimes we want to indicate that certain parts of our source text should
 ; not be formatted, but taken as is. We use the leaf capture name to inform the
 ; tool of this.
 (string_literal) @leaf
@@ -6481,10 +6465,7 @@ enum Mode6 {
 `,
   },
   "toml": {
-    query: `; Configuration
-(#language! toml)
-
-; Sometimes we want to indicate that certain parts of our source text should
+    query: `; Sometimes we want to indicate that certain parts of our source text should
 ; not be formatted, but taken as is. We use the leaf capture name to inform the
 ; tool of this.
 (string) @leaf
@@ -6620,10 +6601,7 @@ hosts = [
 `,
   },
   "tree-sitter-query": {
-    query: `; Configuration
-(#language! tree-sitter-query)
-
-; Sometimes we want to indicate that certain parts of our source text should
+    query: `; Sometimes we want to indicate that certain parts of our source text should
 ; not be formatted, but taken as is. We use the leaf capture name to inform the
 ; tool of this.
 [
