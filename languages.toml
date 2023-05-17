@@ -1,0 +1,37 @@
+[[language]]
+name = "bash"
+extensions = ["sh", "bash"]
+
+[[language]]
+name = "json"
+extensions = ["json", "avsc", "geojson", "gltf", "har", "ice", "JSON-tmLanguage", "jsonl", "mcmeta", "tfstate", "tfstate.backup", "topojson", "webapp", "webmanifest"]
+
+[[language]]
+name = "nickel"
+extensions = ["ncl"]
+
+[[language]]
+name = "ocaml"
+extensions = ["ml", "mli"]
+
+[[language]]
+name = "ocaml_implementation"
+extensions = ["ml"]
+
+[[language]]
+name = "ocaml_interface"
+extensions = ["mli"]
+
+[[language]]
+name = "rust"
+extensions = ["rs"]
+indent = "    " # 4 spaces
+
+[[language]]
+name = "toml"
+extensions = ["toml"]
+
+[[language]]
+name = "tree_sitter_query"
+extensions = ["scm"]
+

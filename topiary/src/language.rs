@@ -2,77 +2,39 @@ use std::collections::HashSet;
 use std::io;
 use std::path::{Path, PathBuf};
 
-use crate::{FormatterError, FormatterResult, IoError};
+use serde::{Deserialize, Serialize};
+
+use crate::{Configuration, FormatterError, FormatterResult, IoError};
 
 /// The languages that we support with query files.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum Language {
-    Bash,
-    Json,
-    Nickel,
-    Ocaml,
-    OcamlImplementation,
-    OcamlInterface,
-    Rust,
-    Toml,
-    TreeSitterQuery,
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
+pub struct Language {
+    pub name: String,
+    pub extensions: HashSet<String>,
+    pub indent: Option<String>,
 }
 
-// NOTE This list of extension mappings is influenced by Wilfred Hughes' Difftastic
-// https://github.com/Wilfred/difftastic/blob/master/src/parse/guess_language.rs
-const EXTENSIONS: &[(Language, &[&str])] = &[
-    (Language::Bash, &["sh", "bash"]),
-    (
-        Language::Json,
-        &[
-            "json",
-            "avsc",
-            "geojson",
-            "gltf",
-            "har",
-            "ice",
-            "JSON-tmLanguage",
-            "jsonl",
-            "mcmeta",
-            "tfstate",
-            "tfstate.backup",
-            "topojson",
-            "webapp",
-            "webmanifest",
-        ],
-    ),
-    (Language::Nickel, &["ncl"]),
-    (Language::OcamlImplementation, &["ml"]),
-    (Language::OcamlInterface, &["mli"]),
-    (Language::Rust, &["rs"]),
-    (Language::Toml, &["toml"]),
-    (Language::TreeSitterQuery, &["scm"]),
-];
-
 impl Language {
-    /// Convenience alias to create a Language from "magic strings".
-    pub fn new(s: &str) -> FormatterResult<Self> {
-        s.try_into()
-    }
-
     /// Convenience alias to detect the Language from a Path-like value's extension.
-    pub fn detect<P: AsRef<Path>>(path: P) -> FormatterResult<Self> {
-        path.as_ref().to_path_buf().try_into()
+    pub fn detect<P: AsRef<Path>>(path: P, config: &Configuration) -> FormatterResult<&Self> {
+        let pb = &path.as_ref().to_path_buf();
+        if let Some(extension) = pb.extension().map(|ext| ext.to_string_lossy()) {
+            for lang in &config.language {
+                if lang.extensions.contains::<String>(&extension.to_string()) {
+                    return Ok(lang);
+                }
+            }
+            return Err(FormatterError::LanguageDetection(
+                pb.to_path_buf(),
+                Some(extension.to_string()),
+            ));
+        }
+        Err(FormatterError::LanguageDetection(pb.to_path_buf(), None))
     }
 
     /// Convenience alias to return the query file path for the Language.
     pub fn query_file(&self) -> FormatterResult<PathBuf> {
         self.try_into()
-    }
-
-    pub fn known_extensions() -> HashSet<&'static str> {
-        let mut res = HashSet::new();
-        for (_, exts) in EXTENSIONS.iter() {
-            for ext in exts.iter() {
-                res.insert(*ext);
-            }
-        }
-        res
     }
 
     /// Convert a Language into a vector of supported Tree-sitter grammars, ordered by priority.
@@ -81,19 +43,20 @@ impl Language {
     /// is implemented (see Issue #4).
     #[cfg(not(target_arch = "wasm32"))]
     pub async fn grammars(&self) -> FormatterResult<Vec<tree_sitter_facade::Language>> {
-        Ok(match self {
-            Language::Bash => vec![tree_sitter_bash::language()],
-            Language::Json => vec![tree_sitter_json::language()],
-            Language::Nickel => vec![tree_sitter_nickel::language()],
-            Language::Ocaml => vec![
+        Ok(match self.name.as_str() {
+            "bash" => vec![tree_sitter_bash::language()],
+            "json" => vec![tree_sitter_json::language()],
+            "nickel" => vec![tree_sitter_nickel::language()],
+            "ocaml" => vec![
                 tree_sitter_ocaml::language_ocaml(),
                 tree_sitter_ocaml::language_ocaml_interface(),
             ],
-            Language::OcamlImplementation => vec![tree_sitter_ocaml::language_ocaml()],
-            Language::OcamlInterface => vec![tree_sitter_ocaml::language_ocaml_interface()],
-            Language::Rust => vec![tree_sitter_rust::language()],
-            Language::Toml => vec![tree_sitter_toml::language()],
-            Language::TreeSitterQuery => vec![tree_sitter_query::language()],
+            "ocaml_implementation" => vec![tree_sitter_ocaml::language_ocaml()],
+            "ocaml_interface" => vec![tree_sitter_ocaml::language_ocaml_interface()],
+            "rust" => vec![tree_sitter_rust::language()],
+            "toml" => vec![tree_sitter_toml::language()],
+            "tree_sitter_query" => vec![tree_sitter_query::language()],
+            name => return Err(FormatterError::UnsupportedLanguage(name.to_string())),
         }
         .into_iter()
         .map(Into::into)
@@ -104,16 +67,17 @@ impl Language {
     pub async fn grammars_wasm(&self) -> FormatterResult<Vec<tree_sitter_facade::Language>> {
         use futures::future::join_all;
 
-        let language_names = match self {
-            Language::Bash => vec!["bash"],
-            Language::Json => vec!["json"],
-            Language::Nickel => vec!["nickel"],
-            Language::Ocaml => vec!["ocaml", "ocaml_interface"],
-            Language::OcamlImplementation => vec!["ocaml"],
-            Language::OcamlInterface => vec!["ocaml_interface"],
-            Language::Rust => vec!["rust"],
-            Language::Toml => vec!["toml"],
-            Language::TreeSitterQuery => vec!["query"],
+        let language_names = match self.name.as_str() {
+            "bash" => vec!["bash"],
+            "json" => vec!["json"],
+            "nickel" => vec!["nickel"],
+            "ocaml" => vec!["ocaml", "ocaml_interface"],
+            "ocaml_implementation" => vec!["ocaml"],
+            "ocaml_interface" => vec!["ocaml_interface"],
+            "rust" => vec!["rust"],
+            "toml" => vec!["toml"],
+            "tree_sitter_query" => vec!["query"],
+            name => return Err(FormatterError::UnsupportedLanguage(name.to_string())),
         };
 
         Ok(join_all(language_names.iter().map(|name| async move {
@@ -136,32 +100,6 @@ impl Language {
     }
 }
 
-/// Convert a string into a Language, if possible.
-impl TryFrom<&str> for Language {
-    type Error = FormatterError;
-
-    fn try_from(s: &str) -> FormatterResult<Self> {
-        Ok(match s.to_lowercase().as_str() {
-            "bash" => Language::Bash,
-            "json" => Language::Json,
-            "nickel" => Language::Nickel,
-            "ocaml" => Language::Ocaml,
-            "ocaml-implementation" => Language::OcamlImplementation,
-            "ocaml-interface" => Language::OcamlInterface,
-            "rust" => Language::Rust,
-            "toml" => Language::Toml,
-            "tree-sitter-query" => Language::TreeSitterQuery,
-
-            _ => {
-                return Err(FormatterError::Query(
-                    format!("Unsupported language specified: '{s}'"),
-                    None,
-                ))
-            }
-        })
-    }
-}
-
 /// Convert a Language into the canonical basename of its query file, under the most appropriate
 /// search path. We test 3 different locations for query files, in the following priority order,
 /// returning the first that exists:
@@ -178,16 +116,17 @@ impl TryFrom<&Language> for PathBuf {
     type Error = FormatterError;
 
     fn try_from(language: &Language) -> FormatterResult<Self> {
-        let basename = Self::from(match language {
-            Language::Bash => "bash",
-            Language::Json => "json",
-            Language::Nickel => "nickel",
-            Language::Ocaml => "ocaml",
-            Language::OcamlImplementation => "ocaml",
-            Language::OcamlInterface => "ocaml",
-            Language::Rust => "rust",
-            Language::Toml => "toml",
-            Language::TreeSitterQuery => "tree-sitter-query",
+        let basename = Self::from(match language.name.as_str() {
+            "bash" => "bash",
+            "json" => "json",
+            "nickel" => "nickel",
+            "ocaml" => "ocaml",
+            "ocaml_interface" => "ocaml",
+            "ocaml_implementation" => "ocaml",
+            "rust" => "rust",
+            "toml" => "toml",
+            "tree_sitter_query" => "tree-sitter-query",
+            name => return Err(FormatterError::UnsupportedLanguage(name.to_string())),
         })
         .with_extension("scm");
 
@@ -210,32 +149,5 @@ impl TryFrom<&Language> for PathBuf {
                     io::Error::from(io::ErrorKind::NotFound),
                 ))
             })
-    }
-}
-
-/// Extract the extension from a Path and use it to detect the Language.
-///
-/// Note that, ideally, we'd like to TryFrom AsRef<Path>, but this collides with a blanket
-/// implementation in core :(
-impl TryFrom<PathBuf> for Language {
-    type Error = FormatterError;
-
-    fn try_from(path: PathBuf) -> FormatterResult<Self> {
-        let extension = path.extension().map(|ext| ext.to_string_lossy());
-
-        if let Some(extension) = &extension {
-            // NOTE This extension search is influenced by Wilfred Hughes' Difftastic
-            // https://github.com/Wilfred/difftastic/blob/master/src/parse/guess_language.rs
-            for (language, extensions) in EXTENSIONS {
-                if extensions.iter().any(|&candidate| candidate == extension) {
-                    return Ok(*language);
-                }
-            }
-        }
-
-        Err(FormatterError::LanguageDetection(
-            path.clone(),
-            extension.map(|v| v.into()),
-        ))
     }
 }

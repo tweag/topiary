@@ -23,8 +23,8 @@ use topiary::{formatter, Configuration, Language, Operation};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
-// Require at least one of --language, --input-file or --query (n.b., language > input > query)
-#[command(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "input_file", "query"]),))]
+// Require at least one of --language or --input-file (n.b., language > input)
+#[command(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "input_file"]),))]
 struct Args {
     /// Which language to parse and format
     #[arg(short, long, value_enum, display_order = 1)]
@@ -82,6 +82,8 @@ async fn run() -> CLIResult<()> {
     env_logger::init();
     let args = Args::parse();
 
+    let configuration = Configuration::parse_default_config();
+
     // The as_deref() gives us an Option<&str>, which we can match against
     // string literals
     let mut input: Box<(dyn Read)> = match args.input_file.as_deref() {
@@ -100,23 +102,19 @@ async fn run() -> CLIResult<()> {
     });
 
     let language = if let Some(language) = args.language {
-        Some(language.into())
+        language.to_language(&configuration)
     } else if let Some(filename) = args.input_file.as_deref() {
-        Some(Language::detect(filename)?)
+        Language::detect(filename, &configuration)?
     } else {
-        // At this point, Clap ensures that args.query must be present.
-        // We will read the language from the query file later.
-        None
+        // Clap ensures we won't get here
+        unreachable!();
     };
 
     let query_path = if let Some(query) = args.query {
         query
-    } else if let Some(language) = language {
+    } else {
         // Deduce the query file from the language, if the argument is missing
         language.query_file()?
-    } else {
-        // Clap ensures we won't get here
-        unreachable!();
     };
 
     let query = (|| {
@@ -133,14 +131,7 @@ async fn run() -> CLIResult<()> {
         )
     })?;
 
-    let mut configuration = Configuration::parse(&query)?;
-
-    // Replace the language deduced from the query file by the one from the CLI, if any
-    if let Some(l) = language {
-        configuration.language = l
-    }
-
-    let grammars = configuration.language.grammars().await?;
+    let grammars = language.grammars().await?;
 
     let operation = if let Some(visualisation) = args.visualise {
         Operation::Visualise {
@@ -156,7 +147,7 @@ async fn run() -> CLIResult<()> {
         &mut input,
         &mut output,
         &query,
-        &configuration,
+        language,
         &grammars,
         operation,
     )?;

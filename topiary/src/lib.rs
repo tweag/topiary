@@ -128,14 +128,14 @@ pub enum Operation {
 /// let mut query = String::new();
 /// query_file.read_to_string(&mut query).expect("read query file");
 ///
-/// let mut configuration = Configuration::parse(&query).expect("valid configuration");
-/// let grammars = configuration
-///     .language
+/// let config = Configuration::parse_default_config();
+/// let language = config.get_language("json").unwrap();
+/// let grammars = language
 ///     .grammars()
 ///     .await
 ///     .expect("grammars");
 ///
-/// match formatter(&mut input, &mut output, &query, &configuration, &grammars, Operation::Format{ skip_idempotence: false }) {
+/// match formatter(&mut input, &mut output, &query, &language, &grammars, Operation::Format{ skip_idempotence: false }) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
@@ -152,7 +152,7 @@ pub fn formatter(
     input: &mut impl io::Read,
     output: &mut impl io::Write,
     query: &str,
-    configuration: &Configuration,
+    language: &Language,
     grammars: &[tree_sitter_facade::Language],
     operation: Operation,
 ) -> FormatterResult<()> {
@@ -174,11 +174,15 @@ pub fn formatter(
 
             // Pretty-print atoms
             log::info!("Pretty-print output");
-            let rendered = pretty::render(&atoms[..], &configuration.indent)?;
+            let rendered = pretty::render(
+                &atoms[..],
+                // Default to "  " is the language has no indentation specified
+                language.indent.as_ref().map_or("  ", |v| v.as_str()),
+            )?;
             let trimmed = trim_whitespace(&rendered);
 
             if !skip_idempotence {
-                idempotence_check(&trimmed, query, configuration, grammars)?
+                idempotence_check(&trimmed, query, language, grammars)?
             }
 
             write!(output, "{trimmed}")?;
@@ -214,7 +218,7 @@ fn trim_whitespace(s: &str) -> String {
 fn idempotence_check(
     content: &str,
     query: &str,
-    configuration: &Configuration,
+    language: &Language,
     grammars: &[tree_sitter_facade::Language],
 ) -> FormatterResult<()> {
     log::info!("Checking for idempotence ...");
@@ -226,7 +230,7 @@ fn idempotence_check(
         &mut input,
         &mut output,
         query,
-        configuration,
+        language,
         grammars,
         Operation::Format {
             skip_idempotence: true,
@@ -261,14 +265,15 @@ async fn parse_error_fails_formatting() {
     let mut input = "[ 1, % ]".as_bytes();
     let mut output = Vec::new();
     let query = "(#language! json)";
-    let configuration = Configuration::parse(query).unwrap();
-    let grammars = configuration.language.grammars().await.unwrap();
+    let configuration = Configuration::parse_default_config();
+    let language = configuration.get_language("json").unwrap();
+    let grammars = language.grammars().await.unwrap();
 
     match formatter(
         &mut input,
         &mut output,
         query,
-        &configuration,
+        language,
         &grammars,
         Operation::Format {
             skip_idempotence: true,

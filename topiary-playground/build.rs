@@ -4,7 +4,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::{env::current_dir, fs};
 
-use topiary::Language;
+use topiary::Configuration;
 
 fn to_js_string(path: PathBuf) -> String {
     fs::read_to_string(path)
@@ -50,7 +50,11 @@ fn main() {
     for path in input_files {
         let path = path.unwrap().path();
         if let Some(ext) = path.extension().map(|ext| ext.to_string_lossy()) {
-            if !Language::known_extensions().contains(&*ext) || ext == "mli" {
+            if !Configuration::parse_default_config()
+                .known_extensions()
+                .contains(&*ext)
+                || ext == "mli"
+            {
                 // skip ocaml.mli, keep ocaml.ml
                 continue;
             }

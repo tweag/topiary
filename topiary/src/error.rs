@@ -37,6 +37,9 @@ pub enum FormatterError {
 
     /// I/O-related errors
     Io(IoError),
+
+    /// The configuration file or command line mentions an unsupported language
+    UnsupportedLanguage(String),
 }
 
 /// A subtype of `FormatterError::Io`
@@ -104,6 +107,10 @@ impl fmt::Display for FormatterError {
             | Self::Io(IoError::Generic(message, _)) => {
                 write!(f, "{message}")
             }
+
+            Self::UnsupportedLanguage(language) => {
+                write!(f, "The following language is not supported: {language}")
+            }
         }
     }
 }
@@ -121,6 +128,7 @@ impl Error for FormatterError {
             Self::Io(IoError::Generic(_, Some(source))) => Some(source.as_ref()),
             Self::Io(IoError::Generic(_, None)) => None,
             Self::Formatting(err) => Some(err),
+            Self::UnsupportedLanguage(_) => None,
         }
     }
 }

@@ -1,87 +1,40 @@
-use crate::{language::Language, FormatterError, FormatterResult};
-use regex::Regex;
-use unescape::unescape;
+use std::{collections::HashSet, str::from_utf8};
 
+use crate::{language::Language, FormatterError, FormatterResult};
+use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize, Serialize)]
 pub struct Configuration {
-    pub language: Language,
-    pub indent: String,
+    pub language: Vec<Language>,
 }
 
 impl Configuration {
-    pub fn parse(query: &str) -> FormatterResult<Self> {
-        let mut language: Option<Language> = None;
-        let mut indent: String = String::from("  ");
+    // TODO: Should be able to take a filepath
+    pub fn parse_default_config() -> Self {
+        let default_config = include_bytes!("../../languages.toml");
+        let default_config = toml::from_str(from_utf8(default_config).unwrap())
+            .expect("Could not parse built-in languages.toml");
+        default_config
+    }
 
-        // Match lines beginning with a predicate like this:
-        // (#language! rust)
-        // (#indent! "    ")
-        // (#foo! 1 2 bar)
-        let regex =
-            Regex::new(r"(?m)^\(#(?P<predicate>.*?)!\s+(?P<arguments>.*?)\)").expect("valid regex");
-
-        for capture in regex.captures_iter(query) {
-            let predicate = capture
-                .name("predicate")
-                .expect("predicate capture group")
-                .as_str();
-            let argument = capture.name("arguments").map(|arg| arg.as_str());
-
-            log::info!("Predicate: {predicate} -  Argument: {argument:?}");
-
-            match predicate {
-                "language" => {
-                    if let Some(arg) = argument {
-                        language = Some(Language::new(arg)?);
-                    } else {
-                        return Err(FormatterError::Query(
-                            "The #language! configuration predicate must have a parameter".into(),
-                            None,
-                        ));
-                    }
-                }
-                "indent" => {
-                    if let Some(arg) = argument {
-                        // Strip first and last " or ' from the string
-                        // and unescape characters like \t
-                        let arg = unescape(&arg[1..arg.len() - 1]).ok_or_else(|| {
-                            FormatterError::Query(
-                                format!(
-                                    "The #indent! parameter could not be unescaped, got '{arg}'"
-                                ),
-                                None,
-                            )
-                        })?;
-
-                        if arg.chars().all(char::is_whitespace) {
-                            indent = arg;
-                        } else {
-                            return Err(FormatterError::Query(
-                                format!(
-                                    "The #indent! parameter must only contain whitespace, but got '{arg}'"
-                                ),
-                                None,
-                            ));
-                        };
-                    } else {
-                        return Err(FormatterError::Query(
-                            "The #indent! configuration predicate must have a parameter".into(),
-                            None,
-                        ));
-                    }
-                }
-                _ => {
-                    return Err(FormatterError::Query(
-                        format!("Unknown configuration predicate '{predicate}'"),
-                        None,
-                    ))
-                }
-            };
+    pub fn known_extensions(&self) -> HashSet<&str> {
+        let mut res: HashSet<&str> = HashSet::new();
+        for lang in self.language.iter() {
+            for ext in lang.extensions.iter() {
+                res.insert(ext);
+            }
         }
+        res
+    }
 
-        if let Some(language) = language {
-            Ok(Configuration { language, indent })
-        } else {
-            Err(FormatterError::Query("The query file must configure a language using the #language! configuration predicate".into(), None))
+    pub fn get_language<T: AsRef<str>>(&self, name: T) -> FormatterResult<&Language> {
+        for lang in &self.language {
+            if lang.name == name.as_ref() {
+                return Ok(lang);
+            }
         }
+        return Err(FormatterError::UnsupportedLanguage(
+            name.as_ref().to_string(),
+        ));
     }
 }

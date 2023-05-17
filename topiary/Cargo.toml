@@ -14,6 +14,7 @@ prettydiff = "0.6.4"
 regex = "1.7.1"
 serde = { version = "1.0.156", features = ["derive"] }
 serde_json = "1.0"
+toml = "0.7.3"
 tree-sitter-facade = { git = "https://github.com/tweag/tree-sitter-facade" }
 unescape = "0.1"
 

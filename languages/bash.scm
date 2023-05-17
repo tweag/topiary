@@ -1,6 +1,3 @@
-; Configuration
-(#language! bash)
-
 ; NOTE There is (currently) no support for line continuations. As such,
 ; any which are encountered by Topiary will be forcibly collapsed on to
 ; a single line. (See Issue #172)

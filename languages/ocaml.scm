@@ -1,6 +1,3 @@
-; Configuration
-(#language! ocaml)
-
 ; This query file is used to format trees produced by two different grammars:
 ; - the grammar for OCaml interface files `tree_sitter_ocaml::language_ocaml_interface()`
 ; - the grammar for OCaml implementation files `tree_sitter_ocaml::language_ocaml()`
