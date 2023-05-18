@@ -40,13 +40,13 @@ This name should be decided amongst the team before the release.
 ## [Unreleased]
 [unreleased]: https://github.com/tweag/topiary/compare/v0.2.0...HEAD
 
-## [0.2.0]: Cyclic Cypress - 2023-05-18
+## [0.2.0]: Cyclic Cypress - 2023-05-19
 [0.2.0]: https://github.com/tweag/topiary/compare/v0.1.0...v0.2.0
 
 ### Added
 * Topiary [website](https://topiary.tweag.io), web-based
   [playground](https://topiary.tweag.io/playground) and logos.
-* Nickel formatting support.
+* Full Nickel formatting support.
 * Improved OCaml formatting support.
 * `@append_antispace` and `@prepend_antispace` formatting capture names.
 * WASM build target, for the web-based playground.
