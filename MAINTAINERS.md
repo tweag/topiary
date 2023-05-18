@@ -16,10 +16,11 @@
     alphabetically. This name should be decided amongst the team before
     the release.
 
-  * Commit (squash, if necessary) and tag with the release version,
-    prefixed with a `v` (e.g., `v1.0.0`).
+  * Commit and merge (squash, if necessary) on green CI and peer
+    approval.
 
-  * Merge into `main` on green CI and peer approval.
+  * Tag the merged commit with the release version, prefixed with a `v`
+    (e.g., `v1.0.0`).
 
 * [Draft a new release][draft-release] in GitHub.
   * Set the tag to that created in the previous step, now on `main`.
