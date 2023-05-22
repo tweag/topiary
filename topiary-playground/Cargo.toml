@@ -1,7 +1,7 @@
 [package]
 name = "topiary-playground"
 description = "The WebAssembly code that runs at https://topiary.tweag.io/playground"
-version = "0.0.1"
+version.workspace = true
 edition = "2021"
 
 [lib]
