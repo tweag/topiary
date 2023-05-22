@@ -55,8 +55,8 @@ This name should be decided amongst the team before the release.
 * Maintain a CHANGELOG and a documented release process.
 
 ### Changed
-* Move to a configuration file, rather than a mixture of hardcoding and
-  query predicates.
+* Move to a build configuration file, rather than a mixture of
+  hardcoding and parsing query predicates at runtime.
 * Conditional predicates, in the query language, to reduce the number of
   formatting capture names.
 * Higher fidelity exit codes.
