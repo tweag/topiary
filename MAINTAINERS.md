@@ -16,6 +16,8 @@
     alphabetically. This name should be decided amongst the team before
     the release.
 
+  * Bump the package version number in `Cargo.toml` at project root.
+
   * Commit and merge (squash, if necessary) on green CI and peer
     approval.
 
