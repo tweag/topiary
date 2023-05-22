@@ -1,7 +1,7 @@
 [package]
 name = "topiary-cli"
 description = "CLI app for Topiary, the universal code formatter."
-version = "0.1.0"
+version.workspace = true
 edition = "2021"
 
 [[bin]]
