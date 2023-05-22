@@ -1393,7 +1393,7 @@ dependencies = [
 
 [[package]]
 name = "topiary-playground"
-version = "0.0.1"
+version = "0.2.0"
 dependencies = [
  "cfg-if",
  "itertools",
