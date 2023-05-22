@@ -20,7 +20,8 @@ pub async fn topiary_init() -> Result<(), JsError> {
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub async fn format(input: &str, query: &str, language: &str) -> Result<String, JsError> {
-    format_inner(input, query, language)
+    let language_normalized = language.replace('-', "_");
+    format_inner(input, query, language_normalized.as_str())
         .await
         .map_err(|e| format_error(&e))
 }
