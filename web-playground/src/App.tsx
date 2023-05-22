@@ -47,7 +47,7 @@ function App() {
     return (
         <div className="App">
             <div className="header">
-                <select onChange={e => changeLanguage(e.target.value)}>
+                <select id="languageMenu" onChange={e => changeLanguage(e.target.value)}>
                     <option value="">Choose a reference language</option>
                     {languageItems}
                 </select>
