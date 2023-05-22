@@ -48,6 +48,7 @@ describe('test all grammars with puppeteer', () => {
                 continue;
             }
             const ext = String(parts.pop());
+            const language = String(parts);
             if (!known_extensions.includes(ext)) {
                 continue;
             }
@@ -63,12 +64,15 @@ describe('test all grammars with puppeteer', () => {
             const expected = await fs.promises.readFile(expectedPath, encoding);
             const query = await fs.promises.readFile(queryPath, encoding);
 
-            await testInputFile(input, expected, query);
+            await testInputFile(input, expected, query, language);
         }
     }, TimeoutMs);
 })
 
-async function testInputFile(input: string, expected: string, query: string) {
+async function testInputFile(input: string, expected: string, query: string, language: string) {
+    // Set language before input/query, otherwise they will get overwritten.
+    await page.select('#languageMenu', language);
+
     await setTextarea("#input", input);
     await setTextarea("#query", query);
 
