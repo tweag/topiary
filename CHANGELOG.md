@@ -38,13 +38,39 @@ This name should be decided amongst the team before the release.
 ----------------------------------------------------------------------->
 
 ## [Unreleased]
-[unreleased]: https://github.com/tweag/topiary/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/tweag/topiary/compare/v0.2.0...HEAD
+
+## [0.2.0]: Cyclic Cypress - 2023-05-22
+[0.2.0]: https://github.com/tweag/topiary/compare/v0.1.0...v0.2.0
 
 ### Added
-- Maintain a CHANGELOG and a documented release process.
+* Topiary [website](https://topiary.tweag.io), web-based
+  [playground](https://topiary.tweag.io/playground) and logos.
+* Full Nickel formatting support.
+* Improved OCaml formatting support.
+* `@append_antispace` and `@prepend_antispace` formatting capture names.
+* WASM build target, for the web-based playground.
+* Arbitrary whitespace indentation support.
+* Exhaustive query checking in tests.
+* Maintain a CHANGELOG and a documented release process.
 
 ### Changed
-- Updated clap dependency to v4.1.
+* Move to a build configuration file, rather than a mixture of
+  hardcoding and parsing query predicates at runtime.
+* Conditional predicates, in the query language, to reduce the number of
+  formatting capture names.
+* Higher fidelity exit codes.
+* Idempotency check in terminal-based playground.
+* Reduced verbosity of failed integration test output.
+* Various improvements to the test suite.
+* Idiomatic improvements to the Rust codebase.
+* Restructured repository into a Cargo workspace.
+
+### Fixed
+* OCaml idempotency issues.
+* Idempotency checking in integration tests.
+* Don't process queries that match below leaf nodes.
+* Skip over zero-byte matched nodes.
 
 ## [0.1.0]: Benevolent Beech - 2023-03-09
 [0.1.0]: https://github.com/tweag/topiary/compare/v0.0.1-prototype...v0.1.0
