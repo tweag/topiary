@@ -48,7 +48,7 @@ describe('test all grammars with puppeteer', () => {
                 continue;
             }
             const ext = String(parts.pop());
-            if (! (ext in known_extensions)) {
+            if (!known_extensions.includes(ext)) {
                 continue;
             }
             const inputPath = path.join(inputDir, inputFileName);
