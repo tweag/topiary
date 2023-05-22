@@ -1,7 +1,7 @@
 [package]
 name = "topiary"
 description = "Formats input source code in a style defined for that language."
-version = "0.1.0"
+version.workspace = true
 edition = "2021"
 
 [dependencies]
