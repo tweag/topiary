@@ -9,12 +9,12 @@ import languages from './samples/languages_export';
 function App() {
     const [isInitialised, setIsInitialised] = useState(false);
     const defaultLanguage = "json";
-    var currentLanguage = defaultLanguage;
     const defaultQuery = languages[defaultLanguage].query;
     const defaultInput = languages[defaultLanguage].input;
     const [query, setQuery] = useState(defaultQuery);
     const [input, setInput] = useState(defaultInput);
     const [output, setOutput] = useState("");
+    const [currentLanguage, setCurrentLanguage] = useState(defaultLanguage);
 
     let languageItems = [];
     for (let l in languages) {
@@ -40,7 +40,7 @@ function App() {
         if (languages[l]) {
             setInput(languages[l].input);
             setQuery(languages[l].query);
-            currentLanguage = l;
+            setCurrentLanguage(l);
         }
     }
 
