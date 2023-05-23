@@ -38,7 +38,13 @@ This name should be decided amongst the team before the release.
 ----------------------------------------------------------------------->
 
 ## [Unreleased]
-[unreleased]: https://github.com/tweag/topiary/compare/v0.2.0...HEAD
+[unreleased]: https://github.com/tweag/topiary/compare/v0.2.1...HEAD
+
+## [0.2.1] - 2023-05-23
+[0.2.1]: https://github.com/tweag/topiary/compare/v0.2.0...v0.2.1
+
+### Fixed
+* Correctly bumped version number in `Cargo.toml`.
 
 ## [0.2.0]: Cyclic Cypress - 2023-05-22
 [0.2.0]: https://github.com/tweag/topiary/compare/v0.1.0...v0.2.0
