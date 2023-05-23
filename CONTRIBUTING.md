@@ -89,16 +89,12 @@ this (using JSON as an example):
 The playground frontend is a small React app. You can run a development server for that like this:
 
 ```bash
+mkdir -p web-playground/src/samples
+cp topiary-playground/languages_export.ts web-playground/src/samples/
 cd web-playground
 npm install
 npm start
 ```
 
 If you want to build the playground so it works with the full website running with Deno as above,
-you can do:
-
-```bash
-cd web-playground
-npm install
-npm run build
-```
+you can now just do `npm run build`.

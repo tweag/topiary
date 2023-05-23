@@ -103,8 +103,7 @@ impl fmt::Display for FormatterError {
 
             Self::Internal(message, _)
             | Self::Query(message, _)
-            | Self::Io(IoError::Filesystem(message, _))
-            | Self::Io(IoError::Generic(message, _)) => {
+            | Self::Io(IoError::Filesystem(message, _) | IoError::Generic(message, _)) => {
                 write!(f, "{message}")
             }
 
@@ -118,17 +117,17 @@ impl fmt::Display for FormatterError {
 impl Error for FormatterError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
-            Self::Idempotence => None,
-            Self::Internal(_, source) => source.as_ref().map(|e| e.deref()),
-            Self::Parsing { .. } => None,
-            Self::PatternDoesNotMatch(_) => None,
+            Self::Idempotence
+            | Self::Parsing { .. }
+            | Self::PatternDoesNotMatch(_)
+            | Self::LanguageDetection(_, _)
+            | Self::Io(IoError::Generic(_, None))
+            | Self::UnsupportedLanguage(_) => None,
+            Self::Internal(_, source) => source.as_ref().map(Deref::deref),
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
-            Self::LanguageDetection(_, _) => None,
             Self::Io(IoError::Filesystem(_, source)) => Some(source),
             Self::Io(IoError::Generic(_, Some(source))) => Some(source.as_ref()),
-            Self::Io(IoError::Generic(_, None)) => None,
             Self::Formatting(err) => Some(err),
-            Self::UnsupportedLanguage(_) => None,
         }
     }
 }
@@ -138,11 +137,9 @@ impl Error for FormatterError {
 impl From<io::Error> for FormatterError {
     fn from(e: io::Error) -> Self {
         match e.kind() {
-            io::ErrorKind::NotFound => {
-                FormatterError::Io(IoError::Filesystem("File not found".into(), e))
-            }
+            io::ErrorKind::NotFound => Self::Io(IoError::Filesystem("File not found".into(), e)),
 
-            _ => FormatterError::Io(IoError::Filesystem(
+            _ => Self::Io(IoError::Filesystem(
                 "Could not read or write to file".into(),
                 e,
             )),
@@ -152,7 +149,7 @@ impl From<io::Error> for FormatterError {
 
 impl From<str::Utf8Error> for FormatterError {
     fn from(e: str::Utf8Error) -> Self {
-        FormatterError::Io(IoError::Generic(
+        Self::Io(IoError::Generic(
             "Input is not valid UTF-8".into(),
             Some(Box::new(e)),
         ))
@@ -161,7 +158,7 @@ impl From<str::Utf8Error> for FormatterError {
 
 impl From<string::FromUtf8Error> for FormatterError {
     fn from(e: string::FromUtf8Error) -> Self {
-        FormatterError::Io(IoError::Generic(
+        Self::Io(IoError::Generic(
             "Input is not valid UTF-8".into(),
             Some(Box::new(e)),
         ))
@@ -170,7 +167,7 @@ impl From<string::FromUtf8Error> for FormatterError {
 
 impl From<fmt::Error> for FormatterError {
     fn from(e: fmt::Error) -> Self {
-        FormatterError::Io(IoError::Generic(
+        Self::Io(IoError::Generic(
             "Failed to format output".into(),
             Some(Box::new(e)),
         ))
@@ -183,7 +180,7 @@ where
     W: io::Write + fmt::Debug + Send + 'static,
 {
     fn from(e: io::IntoInnerError<W>) -> Self {
-        FormatterError::Io(IoError::Generic(
+        Self::Io(IoError::Generic(
             "Cannot flush internal buffer".into(),
             Some(Box::new(e)),
         ))

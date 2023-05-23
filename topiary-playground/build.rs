@@ -33,12 +33,10 @@ fn main() {
             if ext != "scm" {
                 continue;
             }
-        } else {
-            continue;
+            let prefix: String = path.file_stem().unwrap().to_string_lossy().to_string();
+            let content = to_js_string(path);
+            language_map.insert(prefix, content);
         }
-        let prefix: String = path.file_stem().unwrap().to_string_lossy().to_string();
-        let content = to_js_string(path);
-        language_map.insert(prefix, content);
     }
 
     let input_dir = current_dir()
@@ -58,12 +56,11 @@ fn main() {
                 // skip ocaml.mli, keep ocaml.ml
                 continue;
             }
-        } else {
-            continue;
+
+            let prefix: String = path.file_stem().unwrap().to_string_lossy().to_string();
+            let content = to_js_string(path);
+            input_map.insert(prefix, content);
         }
-        let prefix: String = path.file_stem().unwrap().to_string_lossy().to_string();
-        let content = to_js_string(path);
-        input_map.insert(prefix, content);
     }
 
     let mut buffer = String::new();

@@ -10,9 +10,10 @@
 //! More details can be found on
 //! [GitHub](https://github.com/tweag/topiary).
 
+use std::io;
+
 use itertools::Itertools;
 use pretty_assertions::StrComparison;
-use std::io;
 
 pub use crate::{
     configuration::Configuration,
@@ -96,7 +97,7 @@ pub enum Atom {
     },
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ScopeCondition {
     SingleLineOnly,
     MultiLineOnly,
@@ -106,12 +107,17 @@ pub enum ScopeCondition {
 pub type FormatterResult<T> = std::result::Result<T, FormatterError>;
 
 /// Operations that can be performed by the formatter.
+#[derive(Clone, Copy, Debug)]
 pub enum Operation {
     Format { skip_idempotence: bool },
     Visualise { output_format: Visualisation },
 }
 
 /// The function that takes an input and formats, or visualises an output.
+///
+/// # Errors
+///
+/// If formatting fails for any reason, a `FormatterError` will be returned.
 ///
 /// # Examples
 ///
@@ -182,7 +188,7 @@ pub fn formatter(
             let trimmed = trim_whitespace(&rendered);
 
             if !skip_idempotence {
-                idempotence_check(&trimmed, query, language, grammars)?
+                idempotence_check(&trimmed, query, language, grammars)?;
             }
 
             write!(output, "{trimmed}")?;

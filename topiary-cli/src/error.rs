@@ -59,8 +59,8 @@ impl From<TopiaryError> for ExitCode {
             TopiaryError::Lib(FormatterError::Query(_, _)) => 4,
 
             // I/O errors: Exit 3
-            TopiaryError::Lib(FormatterError::Io(_)) => 3,
-            TopiaryError::Bin(_, Some(CLIError::IOError(_))) => 3,
+            TopiaryError::Lib(FormatterError::Io(_))
+            | TopiaryError::Bin(_, Some(CLIError::IOError(_))) => 3,
 
             // Bad arguments: Exit 2
             // (Handled by clap: https://github.com/clap-rs/clap/issues/3426)

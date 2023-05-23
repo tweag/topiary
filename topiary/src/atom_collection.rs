@@ -36,12 +36,12 @@ pub struct AtomCollection {
 }
 
 impl AtomCollection {
-    /// Use this to create an initial AtomCollection
+    /// Use this to create an initial `AtomCollection`
     pub fn collect_leafs(
         root: &Node,
         source: &[u8],
         specified_leaf_nodes: HashSet<usize>,
-    ) -> FormatterResult<AtomCollection> {
+    ) -> FormatterResult<Self> {
         // Flatten the tree, from the root node, in a depth-first traversal
         let dfs_nodes = dfs_flatten(root);
 
@@ -50,7 +50,7 @@ impl AtomCollection {
         let blank_line_nodes = detect_line_breaks(&dfs_nodes, 2);
         let line_break_nodes = detect_line_breaks(&dfs_nodes, 1);
 
-        let mut atoms = AtomCollection {
+        let mut atoms = Self {
             atoms: Vec::new(),
             prepend: HashMap::new(),
             append: HashMap::new(),
@@ -117,7 +117,7 @@ impl AtomCollection {
         if let Some(parent) = node.parent() {
             let parent_id = parent.id();
             if self.multi_line_nodes.contains(&parent_id) {
-                is_multi_line = true
+                is_multi_line = true;
             }
         }
         if is_multi_line && predicates.single_line_only {
@@ -147,7 +147,7 @@ impl AtomCollection {
                 predicates,
             ),
             "append_empty_softline" => {
-                self.append(Atom::Softline { spaced: false }, node, predicates)
+                self.append(Atom::Softline { spaced: false }, node, predicates);
             }
             "append_hardline" => self.append(Atom::Hardline, node, predicates),
             "append_indent_start" => self.append(Atom::IndentStart, node, predicates),
@@ -164,7 +164,7 @@ impl AtomCollection {
             "append_space" => self.append(Atom::Space, node, predicates),
             "append_antispace" => self.append(Atom::Antispace, node, predicates),
             "append_spaced_softline" => {
-                self.append(Atom::Softline { spaced: true }, node, predicates)
+                self.append(Atom::Softline { spaced: true }, node, predicates);
             }
             "prepend_delimiter" => self.prepend(
                 Atom::Literal(requires_delimiter()?.to_string()),
@@ -172,7 +172,7 @@ impl AtomCollection {
                 predicates,
             ),
             "prepend_empty_softline" => {
-                self.prepend(Atom::Softline { spaced: false }, node, predicates)
+                self.prepend(Atom::Softline { spaced: false }, node, predicates);
             }
             "prepend_hardline" => self.prepend(Atom::Hardline, node, predicates),
             "prepend_indent_start" => self.prepend(Atom::IndentStart, node, predicates),
@@ -189,14 +189,14 @@ impl AtomCollection {
             "prepend_space" => self.prepend(Atom::Space, node, predicates),
             "prepend_antispace" => self.prepend(Atom::Antispace, node, predicates),
             "prepend_spaced_softline" => {
-                self.prepend(Atom::Softline { spaced: true }, node, predicates)
+                self.prepend(Atom::Softline { spaced: true }, node, predicates);
             }
             // Skip over leafs
             "leaf" => {}
             // Deletion
             "delete" => {
                 self.prepend(Atom::DeleteBegin, node, predicates);
-                self.append(Atom::DeleteEnd, node, predicates)
+                self.append(Atom::DeleteEnd, node, predicates);
             }
             // Scope manipulation
             "begin_scope" => self.begin_scope_before(node, requires_scope_id()?),
@@ -212,7 +212,7 @@ impl AtomCollection {
                     },
                     node,
                     predicates,
-                )
+                );
             }
             "append_spaced_scoped_softline" => {
                 let id = self.next_id();
@@ -224,7 +224,7 @@ impl AtomCollection {
                     },
                     node,
                     predicates,
-                )
+                );
             }
             "prepend_empty_scoped_softline" => {
                 let id = self.next_id();
@@ -236,7 +236,7 @@ impl AtomCollection {
                     },
                     node,
                     predicates,
-                )
+                );
             }
             "prepend_spaced_scoped_softline" => {
                 let id = self.next_id();
@@ -248,11 +248,11 @@ impl AtomCollection {
                     },
                     node,
                     predicates,
-                )
+                );
             }
             // Mark a leaf to be printed on an single line, with no indentation
             "single_line_no_indent" => {
-                for a in self.atoms.iter_mut() {
+                for a in &mut self.atoms {
                     if let Atom::Leaf {
                         id,
                         single_line_no_indent,
@@ -265,7 +265,7 @@ impl AtomCollection {
                     }
                 }
 
-                self.append(Atom::Hardline, node, predicates)
+                self.append(Atom::Hardline, node, predicates);
             }
             // Return a query parsing error on unknown capture names
             unknown => {
@@ -283,28 +283,25 @@ impl AtomCollection {
     pub fn apply_prepends_and_appends(&mut self) {
         let mut expanded: Vec<Atom> = Vec::new();
 
-        for atom in self.atoms.iter_mut() {
-            match atom {
-                Atom::Leaf { id, .. } => {
-                    let prepends = self.prepend.entry(*id).or_default();
-                    let appends = self.append.entry(*id).or_default();
+        for atom in &mut self.atoms {
+            if let Atom::Leaf { id, .. } = atom {
+                let prepends = self.prepend.entry(*id).or_default();
+                let appends = self.append.entry(*id).or_default();
 
-                    // Rather than cloning the atom from the old vector, we
-                    // simply take it. This will leave a default (empty) atom
-                    // in its place.
-                    let swapped_atom = mem::take(atom);
+                // Rather than cloning the atom from the old vector, we
+                // simply take it. This will leave a default (empty) atom
+                // in its place.
+                let swapped_atom = mem::take(atom);
 
-                    log::debug!("Applying prepend of {prepends:?} to {atom:?}.");
-                    expanded.append(prepends);
-                    expanded.push(swapped_atom);
+                log::debug!("Applying prepend of {prepends:?} to {atom:?}.");
+                expanded.append(prepends);
+                expanded.push(swapped_atom);
 
-                    log::debug!("Applying append of {appends:?} to {atom:?}.");
-                    expanded.append(appends);
-                }
-                _ => {
-                    log::debug!("Not a leaf: {atom:?}");
-                    expanded.push(mem::take(atom));
-                }
+                log::debug!("Applying append of {appends:?} to {atom:?}.");
+                expanded.append(appends);
+            } else {
+                log::debug!("Not a leaf: {atom:?}");
+                expanded.push(mem::take(atom));
             }
         }
 
@@ -314,7 +311,7 @@ impl AtomCollection {
     fn mark_leaf_parent(&mut self, node: &Node, parent_id: usize) {
         self.parent_leaf_nodes.insert(node.id(), parent_id);
         for child in node.children(&mut node.walk()) {
-            self.mark_leaf_parent(&child, parent_id)
+            self.mark_leaf_parent(&child, parent_id);
         }
     }
 
@@ -344,7 +341,7 @@ impl AtomCollection {
                 single_line_no_indent: false,
             });
             // Mark all sub-nodes as having this node as a "leaf parent"
-            self.mark_leaf_parent(node, node.id())
+            self.mark_leaf_parent(node, node.id());
         } else {
             for child in node.children(&mut node.walk()) {
                 self.collect_leafs_inner(&child, source, &parent_ids, level + 1)?;
@@ -362,10 +359,7 @@ impl AtomCollection {
 
         log::debug!("Prepending {atom:?} to node {:?}", target_node,);
 
-        self.prepend
-            .entry(target_node.id())
-            .or_insert(vec![])
-            .push(atom);
+        self.prepend.entry(target_node.id()).or_default().push(atom);
     }
 
     fn append(&mut self, atom: Atom, node: &Node, predicates: &QueryPredicates) {
@@ -375,10 +369,7 @@ impl AtomCollection {
 
         log::debug!("Appending {atom:?} to node {:?}", target_node,);
 
-        self.append
-            .entry(target_node.id())
-            .or_insert(vec![])
-            .push(atom);
+        self.append.entry(target_node.id()).or_default().push(atom);
     }
 
     fn begin_scope_before(&mut self, node: &Node, scope_id: &str) {
@@ -445,9 +436,9 @@ impl AtomCollection {
         }
     }
 
-    /// This function expands ScopedSoftline atoms depending on whether the context
+    /// This function expands `ScopedSoftline` atoms depending on whether the context
     // containing them is multiline.
-    // It does two passes over the atom collection: the first one associates each ScopedSoftline
+    // It does two passes over the atom collection: the first one associates each `ScopedSoftline`
     // to its scope, and decides what to replace them with when the scope ends.
     // The second pass applies the modifications to the atoms.
     fn post_process_scopes(&mut self) {
@@ -456,12 +447,12 @@ impl AtomCollection {
         type ScopedNodeId = usize;
         // `opened_scopes` maintains stacks of opened scopes,
         // the line at which they started,
-        // and the list of ScopedSoftline they contain.
+        // and the list of `ScopedSoftline` they contain.
         let mut opened_scopes: HashMap<&ScopeId, Vec<(LineIndex, Vec<&Atom>)>> = HashMap::new();
-        // We can't process ScopedSoftlines in-place as we encounter them in the list of
+        // We can't process `ScopedSoftline` in-place as we encounter them in the list of
         // atoms: we need to know when their encompassing scope ends to decide what to
         // replace them with. Instead of in-place modifications, we associate a replacement
-        // atom to each ScopedSoftline atom (identified by their `id` field), then apply
+        // atom to each `ScopedSoftline` atom (identified by their `id` field), then apply
         // the modifications in a second pass over the atoms.
         let mut modifications: HashMap<ScopedNodeId, Atom> = HashMap::new();
         // `force_apply_modifications` keeps track of whether something has gone wrong in the
@@ -486,10 +477,8 @@ impl AtomCollection {
                 // in `modifications`
                 if let Some((line_end, scope_ids)) = self.scope_end.get(id) {
                     for scope_id in scope_ids {
-                        if let Some((line_start, atoms)) = opened_scopes
-                            .get_mut(scope_id)
-                            .map(Vec::pop)
-                            .unwrap_or(None)
+                        if let Some((line_start, atoms)) =
+                            opened_scopes.get_mut(scope_id).and_then(Vec::pop)
                         {
                             let multiline = line_start != *line_end;
                             for atom in atoms {
@@ -527,24 +516,18 @@ impl AtomCollection {
                 }
             // Register the ScopedSoftline in the correct scope
             } else if let Atom::ScopedSoftline { scope_id, .. } = atom {
-                if let Some((_, vec)) = opened_scopes
-                    .get_mut(&scope_id)
-                    .map(|v| v.last_mut())
-                    .unwrap_or(None)
+                if let Some((_, vec)) = opened_scopes.get_mut(&scope_id).and_then(|v| v.last_mut())
                 {
-                    vec.push(atom)
+                    vec.push(atom);
                 } else {
                     log::warn!("Found scoped softline {:?} outside of its scope", atom);
                     force_apply_modifications = true;
                 }
             // Register the ScopedConditional in the correct scope
             } else if let Atom::ScopedConditional { scope_id, .. } = atom {
-                if let Some((_, vec)) = opened_scopes
-                    .get_mut(&scope_id)
-                    .map(|v| v.last_mut())
-                    .unwrap_or(None)
+                if let Some((_, vec)) = opened_scopes.get_mut(&scope_id).and_then(|v| v.last_mut())
                 {
-                    vec.push(atom)
+                    vec.push(atom);
                 } else {
                     log::warn!("Found scoped conditional {:?} outside of its scope", atom);
                     force_apply_modifications = true;
@@ -572,7 +555,7 @@ impl AtomCollection {
                             "Found scoped softline {:?}, but was unable to replace it.",
                             atom
                         );
-                        *atom = Atom::Empty
+                        *atom = Atom::Empty;
                     }
                 } else if let Atom::ScopedConditional { id, .. } = atom {
                     if let Some(replacement) = modifications.remove(id) {
@@ -582,7 +565,7 @@ impl AtomCollection {
                             "Found scoped conditional {:?}, but was unable to replace it.",
                             atom
                         );
-                        *atom = Atom::Empty
+                        *atom = Atom::Empty;
                     }
                 }
             }
@@ -596,21 +579,21 @@ impl AtomCollection {
             match atom {
                 Atom::DeleteBegin => {
                     delete_level += 1;
-                    *atom = Atom::Empty
+                    *atom = Atom::Empty;
                 }
                 Atom::DeleteEnd => {
                     delete_level -= 1;
-                    *atom = Atom::Empty
+                    *atom = Atom::Empty;
                 }
                 _ => {
                     if delete_level > 0 {
-                        *atom = Atom::Empty
+                        *atom = Atom::Empty;
                     }
                 }
             }
         }
         if delete_level != 0 {
-            log::warn!("The number of DeleteBegin is different from the number of DeleteEnd.")
+            log::warn!("The number of DeleteBegin is different from the number of DeleteEnd.");
         }
     }
 
@@ -851,7 +834,7 @@ fn detect_line_breaks(dfs_nodes: &[Node], minimum_line_breaks: u32) -> NodesWith
     NodesWithLinebreaks { before, after }
 }
 
-/// So that we can easily extract the atoms using &atom_collection[..]
+/// So that we can easily extract the atoms using `&atom_collection[..]`
 impl<Idx> std::ops::Index<Idx> for AtomCollection
 where
     Idx: std::slice::SliceIndex<[Atom]>,

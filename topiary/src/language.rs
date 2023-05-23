@@ -16,6 +16,10 @@ pub struct Language {
 
 impl Language {
     /// Convenience alias to detect the Language from a Path-like value's extension.
+    ///
+    /// # Errors
+    ///
+    /// If the file extension is not supported, a `FormatterError` will be returned.
     pub fn detect<P: AsRef<Path>>(path: P, config: &Configuration) -> FormatterResult<&Self> {
         let pb = &path.as_ref().to_path_buf();
         if let Some(extension) = pb.extension().map(|ext| ext.to_string_lossy()) {
@@ -25,11 +29,11 @@ impl Language {
                 }
             }
             return Err(FormatterError::LanguageDetection(
-                pb.to_path_buf(),
+                pb.clone(),
                 Some(extension.to_string()),
             ));
         }
-        Err(FormatterError::LanguageDetection(pb.to_path_buf(), None))
+        Err(FormatterError::LanguageDetection(pb.clone(), None))
     }
 
     /// Convenience alias to return the query file path for the Language.
@@ -41,6 +45,10 @@ impl Language {
     ///
     /// Note that, currently, all grammars are statically linked. This will change once dynamic linking
     /// is implemented (see Issue #4).
+    ///
+    /// # Errors
+    ///
+    /// If the language is not supported, a `FormatterError` will be returned.
     #[cfg(not(target_arch = "wasm32"))]
     pub async fn grammars(&self) -> FormatterResult<Vec<tree_sitter_facade::Language>> {
         Ok(match self.name.as_str() {
@@ -82,8 +90,7 @@ impl Language {
 
         Ok(join_all(language_names.iter().map(|name| async move {
             web_tree_sitter::Language::load_path(&format!(
-                "/playground/scripts/tree-sitter-{}.wasm",
-                name
+                "/playground/scripts/tree-sitter-{name}.wasm"
             ))
             .await
         }))
@@ -104,8 +111,8 @@ impl Language {
 /// search path. We test 3 different locations for query files, in the following priority order,
 /// returning the first that exists:
 ///
-/// 1. Under the TOPIARY_LANGUAGE_DIR environment variable at runtime;
-/// 2. Under the TOPIARY_LANGUAGE_DIR environment variable at build time;
+/// 1. Under the `TOPIARY_LANGUAGE_DIR` environment variable at runtime;
+/// 2. Under the `TOPIARY_LANGUAGE_DIR` environment variable at build time;
 /// 3. Under the `./languages` subdirectory.
 ///
 /// If all of these fail, we return an I/O error.
@@ -120,9 +127,7 @@ impl TryFrom<&Language> for PathBuf {
             "bash" => "bash",
             "json" => "json",
             "nickel" => "nickel",
-            "ocaml" => "ocaml",
-            "ocaml_interface" => "ocaml",
-            "ocaml_implementation" => "ocaml",
+            "ocaml" | "ocaml_interface" | "ocaml_implementation" => "ocaml",
             "rust" => "rust",
             "toml" => "toml",
             "tree_sitter_query" => "tree-sitter-query",
@@ -131,11 +136,11 @@ impl TryFrom<&Language> for PathBuf {
         .with_extension("scm");
 
         #[rustfmt::skip]
-        let potentials: [Option<PathBuf>; 4] = [
-            std::env::var("TOPIARY_LANGUAGE_DIR").map(PathBuf::from).ok(),
-            option_env!("TOPIARY_LANGUAGE_DIR").map(PathBuf::from),
-            Some(PathBuf::from("./languages")),
-            Some(PathBuf::from("../languages")),
+        let potentials: [Option<Self>; 4] = [
+            std::env::var("TOPIARY_LANGUAGE_DIR").map(Self::from).ok(),
+            option_env!("TOPIARY_LANGUAGE_DIR").map(Self::from),
+            Some(Self::from("./languages")),
+            Some(Self::from("../languages")),
         ];
 
         potentials

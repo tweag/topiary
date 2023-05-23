@@ -64,10 +64,7 @@ fn escape(input: &str) -> Cow<str> {
 
 impl fmt::Display for SyntaxNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let shape = match self.is_named {
-            true => "ellipse",
-            false => "box",
-        };
+        let shape = if self.is_named { "ellipse" } else { "box" };
 
         writeln!(
             f,

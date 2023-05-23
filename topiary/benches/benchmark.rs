@@ -19,13 +19,13 @@ async fn format() {
         &mut input,
         &mut output,
         &query,
-        &language,
+        language,
         &grammars,
         Operation::Format {
             skip_idempotence: true,
         },
     )
-    .unwrap()
+    .unwrap();
 }
 
 fn criterion_benchmark(c: &mut Criterion) {

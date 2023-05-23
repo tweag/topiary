@@ -19,8 +19,7 @@ impl SupportedLanguage {
         let name = match self {
             SupportedLanguage::Json => "json",
             SupportedLanguage::Nickel => "nickel",
-            SupportedLanguage::Ocaml => "ocaml",
-            SupportedLanguage::OcamlImplementation => "ocaml",
+            SupportedLanguage::Ocaml | SupportedLanguage::OcamlImplementation => "ocaml",
             SupportedLanguage::OcamlInterface => "ocaml_interface",
             SupportedLanguage::Toml => "toml",
         };
