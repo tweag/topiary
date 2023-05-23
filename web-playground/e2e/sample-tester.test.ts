@@ -31,6 +31,11 @@ const known_extensions = [
     "scm",
 ];
 
+// automatically confirm dialogs
+page.on("dialog", (dialog) => {
+    dialog.accept();
+});
+
 describe('test all grammars with puppeteer', () => {
     beforeEach(async () => {
         await page.goto('http://localhost:3000/playground');
