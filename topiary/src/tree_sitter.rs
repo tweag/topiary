@@ -54,7 +54,7 @@ pub struct SyntaxNode {
 impl From<Node<'_>> for SyntaxNode {
     fn from(node: Node) -> Self {
         let mut walker = node.walk();
-        let children = node.children(&mut walker).map(SyntaxNode::from).collect();
+        let children = node.children(&mut walker).map(Self::from).collect();
 
         Self {
             id: node.id(),
@@ -242,7 +242,7 @@ fn handle_predicate(
     predicates: &QueryPredicates,
 ) -> FormatterResult<QueryPredicates> {
     let operator = &*predicate.operator();
-    if let "delimiter!" = operator {
+    if "delimiter!" == operator {
         let arg =
             predicate.args().into_iter().next().ok_or_else(|| {
                 FormatterError::Query(format!("{operator} needs an argument"), None)
@@ -251,7 +251,7 @@ fn handle_predicate(
             delimiter: Some(arg),
             ..predicates.clone()
         })
-    } else if let "scope_id!" = operator {
+    } else if "scope_id!" == operator {
         let arg =
             predicate.args().into_iter().next().ok_or_else(|| {
                 FormatterError::Query(format!("{operator} needs an argument"), None)
@@ -260,17 +260,17 @@ fn handle_predicate(
             scope_id: Some(arg),
             ..predicates.clone()
         })
-    } else if let "single_line_only!" = operator {
+    } else if "single_line_only!" == operator {
         Ok(QueryPredicates {
             single_line_only: true,
             ..predicates.clone()
         })
-    } else if let "multi_line_only!" = operator {
+    } else if "multi_line_only!" == operator {
         Ok(QueryPredicates {
             multi_line_only: true,
             ..predicates.clone()
         })
-    } else if let "single_line_scope_only!" = operator {
+    } else if "single_line_scope_only!" == operator {
         let arg =
             predicate.args().into_iter().next().ok_or_else(|| {
                 FormatterError::Query(format!("{operator} needs an argument"), None)
@@ -279,7 +279,7 @@ fn handle_predicate(
             single_line_scope_only: Some(arg),
             ..predicates.clone()
         })
-    } else if let "multi_line_scope_only!" = operator {
+    } else if "multi_line_scope_only!" == operator {
         let arg =
             predicate.args().into_iter().next().ok_or_else(|| {
                 FormatterError::Query(format!("{operator} needs an argument"), None)

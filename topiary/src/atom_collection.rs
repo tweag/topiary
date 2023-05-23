@@ -41,7 +41,7 @@ impl AtomCollection {
         root: &Node,
         source: &[u8],
         specified_leaf_nodes: HashSet<usize>,
-    ) -> FormatterResult<AtomCollection> {
+    ) -> FormatterResult<Self> {
         // Flatten the tree, from the root node, in a depth-first traversal
         let dfs_nodes = dfs_flatten(root);
 
@@ -50,7 +50,7 @@ impl AtomCollection {
         let blank_line_nodes = detect_line_breaks(&dfs_nodes, 2);
         let line_break_nodes = detect_line_breaks(&dfs_nodes, 1);
 
-        let mut atoms = AtomCollection {
+        let mut atoms = Self {
             atoms: Vec::new(),
             prepend: HashMap::new(),
             append: HashMap::new(),
@@ -359,10 +359,7 @@ impl AtomCollection {
 
         log::debug!("Prepending {atom:?} to node {:?}", target_node,);
 
-        self.prepend
-            .entry(target_node.id())
-            .or_insert(vec![])
-            .push(atom);
+        self.prepend.entry(target_node.id()).or_default().push(atom);
     }
 
     fn append(&mut self, atom: Atom, node: &Node, predicates: &QueryPredicates) {
@@ -372,10 +369,7 @@ impl AtomCollection {
 
         log::debug!("Appending {atom:?} to node {:?}", target_node,);
 
-        self.append
-            .entry(target_node.id())
-            .or_insert(vec![])
-            .push(atom);
+        self.append.entry(target_node.id()).or_default().push(atom);
     }
 
     fn begin_scope_before(&mut self, node: &Node, scope_id: &str) {

@@ -137,11 +137,9 @@ impl Error for FormatterError {
 impl From<io::Error> for FormatterError {
     fn from(e: io::Error) -> Self {
         match e.kind() {
-            io::ErrorKind::NotFound => {
-                FormatterError::Io(IoError::Filesystem("File not found".into(), e))
-            }
+            io::ErrorKind::NotFound => Self::Io(IoError::Filesystem("File not found".into(), e)),
 
-            _ => FormatterError::Io(IoError::Filesystem(
+            _ => Self::Io(IoError::Filesystem(
                 "Could not read or write to file".into(),
                 e,
             )),
@@ -151,7 +149,7 @@ impl From<io::Error> for FormatterError {
 
 impl From<str::Utf8Error> for FormatterError {
     fn from(e: str::Utf8Error) -> Self {
-        FormatterError::Io(IoError::Generic(
+        Self::Io(IoError::Generic(
             "Input is not valid UTF-8".into(),
             Some(Box::new(e)),
         ))
@@ -160,7 +158,7 @@ impl From<str::Utf8Error> for FormatterError {
 
 impl From<string::FromUtf8Error> for FormatterError {
     fn from(e: string::FromUtf8Error) -> Self {
-        FormatterError::Io(IoError::Generic(
+        Self::Io(IoError::Generic(
             "Input is not valid UTF-8".into(),
             Some(Box::new(e)),
         ))
@@ -169,7 +167,7 @@ impl From<string::FromUtf8Error> for FormatterError {
 
 impl From<fmt::Error> for FormatterError {
     fn from(e: fmt::Error) -> Self {
-        FormatterError::Io(IoError::Generic(
+        Self::Io(IoError::Generic(
             "Failed to format output".into(),
             Some(Box::new(e)),
         ))
@@ -182,7 +180,7 @@ where
     W: io::Write + fmt::Debug + Send + 'static,
 {
     fn from(e: io::IntoInnerError<W>) -> Self {
-        FormatterError::Io(IoError::Generic(
+        Self::Io(IoError::Generic(
             "Cannot flush internal buffer".into(),
             Some(Box::new(e)),
         ))

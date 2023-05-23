@@ -90,8 +90,7 @@ impl Language {
 
         Ok(join_all(language_names.iter().map(|name| async move {
             web_tree_sitter::Language::load_path(&format!(
-                "/playground/scripts/tree-sitter-{}.wasm",
-                name
+                "/playground/scripts/tree-sitter-{name}.wasm"
             ))
             .await
         }))
@@ -137,11 +136,11 @@ impl TryFrom<&Language> for PathBuf {
         .with_extension("scm");
 
         #[rustfmt::skip]
-        let potentials: [Option<PathBuf>; 4] = [
-            std::env::var("TOPIARY_LANGUAGE_DIR").map(PathBuf::from).ok(),
-            option_env!("TOPIARY_LANGUAGE_DIR").map(PathBuf::from),
-            Some(PathBuf::from("./languages")),
-            Some(PathBuf::from("../languages")),
+        let potentials: [Option<Self>; 4] = [
+            std::env::var("TOPIARY_LANGUAGE_DIR").map(Self::from).ok(),
+            option_env!("TOPIARY_LANGUAGE_DIR").map(Self::from),
+            Some(Self::from("./languages")),
+            Some(Self::from("../languages")),
         ];
 
         potentials
