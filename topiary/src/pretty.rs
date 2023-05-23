@@ -37,7 +37,7 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                     // as a `Hardline` in the atom stream.
                     writeln!(buffer)?;
                 }
-                write!(buffer, "{}", content.trim_end())?
+                write!(buffer, "{}", content.trim_end())?;
             }
 
             Atom::Literal(s) => write!(buffer, "{s}")?,
@@ -47,10 +47,7 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
             // All other atom kinds should have been post-processed at that point
             other => {
                 return Err(FormatterError::Internal(
-                    format!(
-                        "Found atom that should have been removed before rendering: {:?}",
-                        other
-                    ),
+                    format!("Found atom that should have been removed before rendering: {other:?}",),
                     None,
                 ))
             }

@@ -9,7 +9,9 @@ pub struct Configuration {
 }
 
 impl Configuration {
-    // TODO: Should be able to take a filepath
+    // TODO: Should be able to take a filepath.
+    // TODO: Should return a FormatterResult rather than panicking.
+    #[must_use]
     pub fn parse_default_config() -> Self {
         let default_config = include_bytes!("../../languages.toml");
         let default_config = toml::from_str(from_utf8(default_config).unwrap())
@@ -17,10 +19,11 @@ impl Configuration {
         default_config
     }
 
+    #[must_use]
     pub fn known_extensions(&self) -> HashSet<&str> {
         let mut res: HashSet<&str> = HashSet::new();
-        for lang in self.language.iter() {
-            for ext in lang.extensions.iter() {
+        for lang in &self.language {
+            for ext in &lang.extensions {
                 res.insert(ext);
             }
         }

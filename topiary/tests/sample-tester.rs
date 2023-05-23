@@ -6,9 +6,9 @@ use prettydiff::text::{diff_lines, ContextConfig};
 
 use topiary::{apply_query, formatter, Configuration, FormatterError, Language, Operation};
 
-fn pretty_assert_eq(v1: String, v2: String) {
+fn pretty_assert_eq(v1: &str, v2: &str) {
     if v1 != v2 {
-        let diff = diff_lines(&v1, &v2);
+        let diff = diff_lines(v1, v2);
         panic!(
             "\n{}",
             diff.format_with_context(
@@ -35,36 +35,35 @@ async fn input_output_tester() {
             if !extensions.contains(ext.as_ref()) {
                 continue;
             }
-        } else {
-            continue;
+
+            let language = Language::detect(file.path(), &config).unwrap();
+
+            let expected_path = expected_dir.join(file.file_name());
+            let expected = fs::read_to_string(expected_path).unwrap();
+
+            let mut input = BufReader::new(fs::File::open(file.path()).unwrap());
+            let mut output = Vec::new();
+            let query = fs::read_to_string(language.query_file().unwrap()).unwrap();
+
+            let grammars = language.grammars().await.unwrap();
+
+            formatter(
+                &mut input,
+                &mut output,
+                &query,
+                language,
+                &grammars,
+                Operation::Format {
+                    skip_idempotence: false,
+                },
+            )
+            .unwrap();
+
+            let formatted = String::from_utf8(output).unwrap();
+            log::debug!("{}", formatted);
+
+            pretty_assert_eq(&expected, &formatted);
         }
-        let language = Language::detect(file.path(), &config).unwrap();
-
-        let expected_path = expected_dir.join(file.file_name());
-        let expected = fs::read_to_string(expected_path).unwrap();
-
-        let mut input = BufReader::new(fs::File::open(file.path()).unwrap());
-        let mut output = Vec::new();
-        let query = fs::read_to_string(language.query_file().unwrap()).unwrap();
-
-        let grammars = language.grammars().await.unwrap();
-
-        formatter(
-            &mut input,
-            &mut output,
-            &query,
-            &language,
-            &grammars,
-            Operation::Format {
-                skip_idempotence: false,
-            },
-        )
-        .unwrap();
-
-        let formatted = String::from_utf8(output).unwrap();
-        log::debug!("{}", formatted);
-
-        pretty_assert_eq(expected, formatted)
     }
 }
 
@@ -90,7 +89,7 @@ async fn formatted_query_tester() {
             &mut input,
             &mut output,
             &query,
-            &language,
+            language,
             &grammars,
             Operation::Format {
                 skip_idempotence: false,
@@ -101,7 +100,7 @@ async fn formatted_query_tester() {
         let formatted = String::from_utf8(output).unwrap();
         log::debug!("{}", formatted);
 
-        pretty_assert_eq(expected, formatted)
+        pretty_assert_eq(&expected, &formatted);
     }
 }
 

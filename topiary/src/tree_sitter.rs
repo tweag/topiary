@@ -103,7 +103,7 @@ pub fn apply_query(
         matches.push(LocalQueryMatch {
             pattern_index: query_match.pattern_index(),
             captures: local_captures,
-        })
+        });
     }
 
     if should_check_input_exhaustivity {

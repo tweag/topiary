@@ -103,8 +103,7 @@ impl fmt::Display for FormatterError {
 
             Self::Internal(message, _)
             | Self::Query(message, _)
-            | Self::Io(IoError::Filesystem(message, _))
-            | Self::Io(IoError::Generic(message, _)) => {
+            | Self::Io(IoError::Filesystem(message, _) | IoError::Generic(message, _)) => {
                 write!(f, "{message}")
             }
 
@@ -118,17 +117,17 @@ impl fmt::Display for FormatterError {
 impl Error for FormatterError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
-            Self::Idempotence => None,
-            Self::Internal(_, source) => source.as_ref().map(|e| e.deref()),
-            Self::Parsing { .. } => None,
-            Self::PatternDoesNotMatch(_) => None,
+            Self::Idempotence
+            | Self::Parsing { .. }
+            | Self::PatternDoesNotMatch(_)
+            | Self::LanguageDetection(_, _)
+            | Self::Io(IoError::Generic(_, None))
+            | Self::UnsupportedLanguage(_) => None,
+            Self::Internal(_, source) => source.as_ref().map(Deref::deref),
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
-            Self::LanguageDetection(_, _) => None,
             Self::Io(IoError::Filesystem(_, source)) => Some(source),
             Self::Io(IoError::Generic(_, Some(source))) => Some(source.as_ref()),
-            Self::Io(IoError::Generic(_, None)) => None,
             Self::Formatting(err) => Some(err),
-            Self::UnsupportedLanguage(_) => None,
         }
     }
 }
