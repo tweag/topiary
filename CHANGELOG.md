@@ -41,7 +41,7 @@ This name should be decided amongst the team before the release.
 [unreleased]: https://github.com/tweag/topiary/compare/v0.2.1...HEAD
 
 ## [0.2.1] - 2023-05-23
-[unreleased]: https://github.com/tweag/topiary/compare/v0.2.0...v0.2.1
+[0.2.1]: https://github.com/tweag/topiary/compare/v0.2.0...v0.2.1
 
 ### Fixed
 * Correctly bumped version number in `Cargo.toml`.
