@@ -38,9 +38,17 @@ function App() {
 
     function changeLanguage(l: string) {
         if (languages[l]) {
-            setInput(languages[l].input);
-            setQuery(languages[l].query);
-            setCurrentLanguage(l);
+            let hasModification =
+                input !== languages[currentLanguage].input
+                || query !== languages[currentLanguage].query;
+            let confirmationMessage = "Modifications to the input and query\
+ are going to be overwritten if you change the language.\
+ Do you wish to proceed?";
+            if (!hasModification || window.confirm(confirmationMessage)) {
+                setInput(languages[l].input);
+                setQuery(languages[l].query);
+                setCurrentLanguage(l);
+            }
         }
     }
 
