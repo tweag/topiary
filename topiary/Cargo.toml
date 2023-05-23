@@ -1,42 +1,41 @@
 [package]
 name = "topiary"
 description = "Formats input source code in a style defined for that language."
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 [dependencies]
 # For now we just load the tree-sitter language parsers statically.
 # Eventually we will want to dynamically load them, like Helix does.
-itertools = "0.10"
-log = "0.4"
-pretty_assertions = "1.3"
-prettydiff = "0.6.4"
-regex = "1.7.1"
-serde = { version = "1.0.156", features = ["derive"] }
-serde_json = "1.0"
-toml = "0.7.3"
-tree-sitter-facade = { git = "https://github.com/tweag/tree-sitter-facade" }
-unescape = "0.1"
+itertools = { workspace = true }
+log = { workspace = true }
+pretty_assertions = { workspace = true }
+prettydiff = { workspace = true }
+regex = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+toml = { workspace = true }
+tree-sitter-facade = { workspace = true }
+unescape = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-tokio = "^1.26.0"
-tree-sitter-json = "0.19"
-tree-sitter-rust = "0.20.3"
-tree-sitter-toml = "0.20.0"
-tree-sitter-bash = { git = "https://github.com/tree-sitter/tree-sitter-bash" }
-tree-sitter-nickel = { git = "https://github.com/nickel-lang/tree-sitter-nickel", rev = "cf1c52a53a527505515add41da90f8a575798987" }
-tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-query" }
-# Needs a version > 0.19
-tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml" }
+tokio = { workspace = true }
+tree-sitter-json = { workspace = true }
+tree-sitter-rust = { workspace = true }
+tree-sitter-toml = { workspace = true }
+tree-sitter-bash = { workspace = true }
+tree-sitter-nickel = { workspace = true }
+tree-sitter-query = { workspace = true }
+tree-sitter-ocaml = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-futures = { version = "0.3.27" }
-tokio = { version = "^1.26.0", features = ["macros", "rt"] }
-web-tree-sitter = { git = "https://github.com/tweag/web-tree-sitter-sys", package = "web-tree-sitter-sys", default-features = false, features = ["web"] }
+futures = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt"] }
+web-tree-sitter = { workspace = true, features = ["web"] }
 
 [dev-dependencies]
-criterion = { version = "0.4", features=["async_futures"] }
-tokio-test = "0.4.2"
+criterion = { workspace = true, features = ["async_futures"] }
+tokio-test = { workspace = true }
 
 [[bench]]
 name = "benchmark"
