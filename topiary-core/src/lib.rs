@@ -14,20 +14,22 @@ use std::io;
 
 use itertools::Itertools;
 use pretty_assertions::StrComparison;
-use tree_sitter::Position;
 
 pub use crate::{
     error::{FormatterError, IoError},
     language::Language,
     tree_sitter::{apply_query, CoverageData, SyntaxNode, TopiaryQuery, Visualisation},
+    types::Position,
 };
 
 mod atom_collection;
+mod comments;
 mod error;
 mod graphviz;
 mod language;
 mod pretty;
 mod tree_sitter;
+mod types;
 
 #[doc(hidden)]
 pub mod test_utils;
