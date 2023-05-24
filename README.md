@@ -158,43 +158,22 @@ pre-commit-check = nix-pre-commit-hooks.run {
 
 ### Usage
 
-    topiary [OPTIONS] <--language <LANGUAGE>
-                      |--input-file <INPUT_FILE>
-                      |--query <QUERY>>
+```
+CLI app for Topiary, the universal code formatter.
+
+Usage: topiary [OPTIONS] <--language <LANGUAGE>|--input-file <INPUT_FILE>>
 
 Options:
-
-* `-l`, `--language <LANGUAGE>`\
-  Which language to parse and format [possible values: `json`, `nickel`,
-  `ocaml`, `ocaml-implementation`, `ocaml-interface`, `toml`].
-
-* `-f`, `--input-file <INPUT_FILE>`\
-  Path to an input file. If omitted, or equal to "-", read from standard
-  input.
-
-* `-q`, `--query <QUERY>`\
-  Which query file to use.
-
-* `-o`, `--output-file <OUTPUT_FILE>`\
-  Path to an output file. If omitted, or equal to "-", write to standard
-  output.
-
-* `-i`, `--in-place`\
-  Format the input file in place. (This has the effect of setting the
-  output file equal to the input file.)
-
-* `-v`, `--visualise`\
-  Visualise the syntax tree, rather than format [possible values: `json`
-  (default), `dot`].
-
-* `-s`, `--skip-idempotence`\
-  Do not check that formatting twice gives the same output.
-
-* `-h`, `--help`\
-  Print help information.
-
-* `-V`, `--version`\
-  Print version information.
+  -l, --language <LANGUAGE>          Which language to parse and format [possible values: json, nickel, ocaml, ocaml-implementation, ocaml-interface, toml]
+  -f, --input-file <INPUT_FILE>      Path to an input file. If omitted, or equal to "-", read from standard input
+  -q, --query <QUERY>                Which query file to use
+  -o, --output-file <OUTPUT_FILE>    Path to an output file. If omitted, or equal to "-", write to standard output
+  -i, --in-place                     Format the input file in place
+  -v, --visualise[=<OUTPUT_FORMAT>]  Visualise the syntax tree, rather than format [possible values: json, dot]
+  -s, --skip-idempotence             Do not check that formatting twice gives the same output
+  -h, --help                         Print help
+  -V, --version                      Print version
+```
 
 Language selection is based on precedence, in the following order:
 * A specified language
