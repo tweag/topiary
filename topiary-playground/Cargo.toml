@@ -1,8 +1,27 @@
 [package]
 name = "topiary-playground"
 description = "The WebAssembly code that runs at https://topiary.tweag.io/playground"
-version = { workspace = true }
-edition = "2021"
+categories = ["development-tools", "text-processing", "webassembly"]
+keywords = [
+    "code-formatter",
+    "formatter",
+    "text",
+    "tree-sitter",
+    "wasm",
+    "webassembly",
+]
+
+# Workaround for https://github.com/ipetkov/crane/issues/281#issuecomment-1560575302
+version = "0.2.1"
+
+edition.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+readme.workspace = true
+license-file.workspace = true
+license.workspace = true
 
 [lib]
 crate-type = ["cdylib"]
