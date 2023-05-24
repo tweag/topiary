@@ -5,8 +5,9 @@
     height: 100vh;
 }
 
-header {
-    flex: 0;
+.header {
+    display: flex;
+    gap: 1rem;
 }
 
 .columns {

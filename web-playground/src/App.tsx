@@ -57,13 +57,13 @@ function App() {
     return (
         <div className="App">
             <div className="header">
+                <button id="formatButton" className="btn btn-primary" onClick={runFormat}>
+                    Format
+                </button>
                 <select id="languageMenu" onChange={e => changeLanguage(e.target.value)}>
                     <option value="">Choose a reference language</option>
                     {languageItems}
                 </select>
-                <button id="formatButton" className="btn btn-primary" onClick={runFormat}>
-                    Format
-                </button>
             </div>
             <div className="columns">
                 <div className="column">
