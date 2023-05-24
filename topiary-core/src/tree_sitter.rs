@@ -2,11 +2,11 @@ use std::{collections::HashSet, fmt::Display};
 
 use serde::Serialize;
 use topiary_tree_sitter_facade::{
-    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryPredicate, Tree,
+    InputEdit, Language, Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryPredicate, Tree,
 };
 
 use crate::{
-    atom_collection::{AtomCollection, QueryPredicates},
+    atom_collection::{AtomCollection, CommentStream, QueryPredicates},
     error::FormatterError,
     FormatterResult,
 };
@@ -194,6 +194,55 @@ pub struct CoverageData {
     pub missing_patterns: Vec<String>,
 }
 
+fn is_comment(node: &Node) -> bool {
+    node.is_extra() && node.kind().to_string().contains("comment")
+}
+
+fn find_comments<'a>(node: Node<'a>, comments: &mut Vec<Node<'a>>) -> () {
+    if is_comment(&node) {
+        comments.push(node);
+    } else {
+        let mut walker = node.walk();
+        for child in node.children(&mut walker) {
+            find_comments(child, comments)
+        }
+    }
+}
+
+fn anchor(comment: Node, stream: &mut CommentStream) -> () {}
+
+// TODO: store comments instead of discarding them
+fn extract_comments<'a>(
+    tree: Tree,
+    input: &str,
+    grammar: &Language,
+) -> FormatterResult<(Tree, String)> {
+    let mut comments: Vec<Node> = Vec::new();
+    let mut new_input: String = input.to_string();
+    let mut new_tree: Tree = tree;
+    find_comments(new_tree.root_node(), &mut comments);
+    comments.sort_by_key(|node| node.start_byte());
+    comments.reverse();
+    let mut edits: Vec<InputEdit> = Vec::new();
+    for node in comments {
+        new_input.replace_range((node.start_byte() as usize)..(node.end_byte() as usize), "");
+        let edit = InputEdit::new(
+            node.start_byte(),
+            node.end_byte(),
+            node.start_byte(),
+            &node.start_position(),
+            &node.end_position(),
+            &node.start_position(),
+        );
+        edits.push(edit);
+    }
+    for edit in edits {
+        new_tree.edit(&edit);
+    }
+    new_tree = reparse(new_tree, new_input.as_str(), grammar)?;
+    Ok((new_tree, new_input))
+}
+
 /// Applies a query to an input content and returns a collection of atoms.
 ///
 /// # Errors
@@ -210,9 +259,14 @@ pub fn apply_query(
     grammar: &topiary_tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<AtomCollection> {
-    let (tree, _grammar) = parse(input_content, grammar, tolerate_parsing_errors)?;
+    let (tree, grammar) = parse(input_content, grammar, tolerate_parsing_errors)?;
+
+    // Remove comments in a separate stream before applying queries
+    let (tree, new_input) = extract_comments(tree, input_content, grammar)?;
+    let source = new_input.as_bytes();
     let root = tree.root_node();
-    let source = input_content.as_bytes();
+    // log::debug!("{tree:?}");
+    // return Err(FormatterError::Internal("TOTAL FAILURE".into(), None));
 
     // Match queries
     let mut cursor = QueryCursor::new();
@@ -333,6 +387,19 @@ pub fn parse<'a>(
     }
 
     Ok((tree, grammar))
+}
+
+fn reparse(
+    old_tree: Tree,
+    content: &str,
+    grammar: &tree_sitter_facade::Language,
+) -> FormatterResult<Tree> {
+    let mut parser = Parser::new()?;
+    parser.set_language(grammar)?;
+    let tree = parser
+        .parse(content, Some(&old_tree))?
+        .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))?;
+    Ok(tree)
 }
 
 fn check_for_error_nodes(node: &Node) -> FormatterResult<()> {
