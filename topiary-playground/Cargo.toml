@@ -1,7 +1,10 @@
 [package]
 name = "topiary-playground"
 description = "The WebAssembly code that runs at https://topiary.tweag.io/playground"
-version = "0.2.1"                                                                     # Workaround for https://github.com/ipetkov/crane/issues/281#issuecomment-1560575302
+
+# Workaround for https://github.com/ipetkov/crane/issues/281#issuecomment-1560575302
+version = "0.2.1"
+
 edition.workspace = true
 authors.workspace = true
 keywords.workspace = true
