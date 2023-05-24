@@ -14,15 +14,17 @@ use std::io;
 
 use itertools::Itertools;
 use pretty_assertions::StrComparison;
-use tree_sitter::Position;
 
 pub use crate::{
+    common::{parse, Position},
     error::{FormatterError, IoError},
     language::Language,
     tree_sitter::{apply_query, CoverageData, SyntaxNode, TopiaryQuery, Visualisation},
 };
 
 mod atom_collection;
+mod comments;
+mod common;
 mod error;
 mod graphviz;
 mod language;
@@ -262,7 +264,7 @@ pub fn formatter(
         }
 
         Operation::Visualise { output_format } => {
-            let tree = tree_sitter::parse(&content, &language.grammar, false)?;
+            let tree = parse(&content, &language.grammar, false, None)?;
             let root: SyntaxNode = tree.root_node().into();
 
             match output_format {

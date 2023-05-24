@@ -8,7 +8,8 @@ use std::{
 use topiary_tree_sitter_facade::Node;
 
 use crate::{
-    tree_sitter::NodeExt, Atom, FormatterError, FormatterResult, ScopeCondition, ScopeInformation,
+    tree_sitter::NodeExt,
+    Atom, FormatterError, FormatterResult, ScopeCondition, ScopeInformation,
 };
 
 /// A struct that holds sets of node IDs that have line breaks before or after them.
