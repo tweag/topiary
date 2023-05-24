@@ -70,14 +70,11 @@ fn main() {
 
     for (name, query) in language_map.into_iter().sorted() {
         if let Some(input) = input_map.get(&name) {
-            let name_modifier = if SupportedLanguage::is_supported(&name) {
-                ""
-            } else {
-                " (experimental)"
-            };
+            let supported = SupportedLanguage::is_supported(&name);
 
             buffer.push_str(&format!(
-                r#"  "{name}{name_modifier}": {{
+                r#"  "{name}": {{
+    supported: `{supported}`,
     query: `{query}`,
     input: `{input}`,
   }},
