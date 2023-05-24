@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-nix run . -- --help > usage.txt
+usage="$(nix run . -- --help)"
 
-cat usage.txt |
+echo "$usage" |
 {
     while IFS= read -r line
     do
         if ! grep -Fxq "$line" README.md
         then
             echo "Usage is not correctly documented in README.md. Update the file with the following:"
-            cat usage.txt
+            echo "$usage"
             exit 1
         fi
     done
