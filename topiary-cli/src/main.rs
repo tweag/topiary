@@ -1,6 +1,5 @@
 mod error;
 mod output;
-mod supported;
 mod visualise;
 
 use std::{
@@ -16,10 +15,9 @@ use clap::{ArgGroup, Parser};
 use crate::{
     error::{CLIError, CLIResult, TopiaryError},
     output::OutputFile,
-    supported::SupportedLanguage,
     visualise::Visualisation,
 };
-use topiary::{formatter, Configuration, Language, Operation};
+use topiary::{formatter, Configuration, Language, Operation, SupportedLanguage};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]

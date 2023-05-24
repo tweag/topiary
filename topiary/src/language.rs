@@ -2,6 +2,7 @@ use std::collections::HashSet;
 use std::io;
 use std::path::{Path, PathBuf};
 
+use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
 
 use crate::{Configuration, FormatterError, FormatterResult, IoError};
@@ -154,5 +155,48 @@ impl TryFrom<&Language> for PathBuf {
                     io::Error::from(io::ErrorKind::NotFound),
                 ))
             })
+    }
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+pub enum SupportedLanguage {
+    Json,
+    Nickel,
+    Ocaml,
+    OcamlImplementation,
+    OcamlInterface,
+    Toml,
+    // Any other entries in crate::Language are experimental and won't be
+    // exposed in the CLI. They can be accessed using --query language/foo.scm
+    // instead.
+}
+
+impl SupportedLanguage {
+    pub fn to_language<'config>(&self, configuration: &'config Configuration) -> &'config Language {
+        let name = self.name();
+
+        for lang in &configuration.language {
+            if lang.name == name {
+                return lang;
+            }
+        }
+
+        // Every supported language MUST have an entry in the builtin
+        // configuration, and so there should always be a match.
+        unreachable!()
+    }
+
+    pub fn name(&self) -> &str {
+        match self {
+            SupportedLanguage::Json => "json",
+            SupportedLanguage::Nickel => "nickel",
+            SupportedLanguage::Ocaml | SupportedLanguage::OcamlImplementation => "ocaml",
+            SupportedLanguage::OcamlInterface => "ocaml_interface",
+            SupportedLanguage::Toml => "toml",
+        }
+    }
+
+    pub fn is_supported(name: &str) -> bool {
+        SupportedLanguage::from_str(name, true).is_ok()
     }
 }
