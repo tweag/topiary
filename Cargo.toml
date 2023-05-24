@@ -1,6 +1,16 @@
-[workspace]
-package.version = "0.2.1"
+[workspace.package]
+name = "topiary"
+version = "0.2.1"
+edition = "2021"
+authors = ["Tweag"]
+keywords = ["code-formatter"]
+homepage = "https://topiary.tweag.io"
+documentation = "https://github.com/tweag/topiary#topiary"
+readme = "README.md"
+license-file = "LICENSE"
+license = "MIT"
 
+[workspace]
 members = ["topiary", "topiary-cli", "topiary-playground"]
 
 [profile.release]
