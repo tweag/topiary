@@ -43,11 +43,11 @@ jobs:
           mkdir -p web-playground/src/wasm-app
           cp -r result/* web-playground/src/wasm-app/
 
-      - name: Copy sample input and queries into playground frontend
+      - name: Move sample input and queries into playground frontend
         if: success() && matrix.os == 'ubuntu-latest'
         run: |
           mkdir -p web-playground/src/samples
-          cp topiary-playground/languages_export.ts web-playground/src/samples/
+          mv web-playground/src/wasm-app/languages_export.ts web-playground/src/samples/
 
       - name: Install web playground frontend dependencies
         if: success() && matrix.os == 'ubuntu-latest'
