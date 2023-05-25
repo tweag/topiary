@@ -15,6 +15,8 @@ let
   craneLib = crane.mkLib pkgs;
 
   commonArgs = {
+    pname = "topiary";
+
     src = nix-filter.lib.filter {
       root = ./.;
       include = [
@@ -48,28 +50,22 @@ in
 {
   clippy = craneLib.cargoClippy (commonArgs // {
     inherit cargoArtifacts;
-    pname = "topiary-foo";
     cargoClippyExtraArgs = "-- --deny warnings";
   });
 
   clippy-wasm = craneLibWasm.cargoClippy (commonArgs // {
     inherit cargoArtifacts;
-    pname = "topiary-foo";
     cargoClippyExtraArgs = "-p topiary-playground --target ${wasmTarget} -- --deny warnings";
   });
 
-  fmt = craneLib.cargoFmt (commonArgs // {
-    pname = "topiary-foo";
-  });
+  fmt = craneLib.cargoFmt (commonArgs);
 
   audit = craneLib.cargoAudit (commonArgs // {
     inherit advisory-db;
-    pname = "topiary-foo";
   });
 
   benchmark = craneLib.buildPackage (commonArgs // {
     inherit cargoArtifacts;
-    pname = "topiary-foo";
     cargoTestCommand = "cargo bench --profile release";
   });
 
@@ -100,7 +96,7 @@ in
 
   topiary-playground = craneLibWasm.buildPackage (commonArgs // {
     inherit cargoArtifacts;
-    pname = "topiary-foo";
+    pname = "topiary-playground";
     cargoExtraArgs = "-p topiary-playground --no-default-features --target ${wasmTarget}";
     
     # Tests currently need to be run via `cargo wasi` which
