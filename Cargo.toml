@@ -1,5 +1,4 @@
 [workspace.package]
-name = "topiary"
 version = "0.2.1"
 edition = "2021"
 authors = ["Tweag"]
@@ -7,7 +6,6 @@ homepage = "https://topiary.tweag.io"
 repository = "https://github.com/tweag/topiary"
 documentation = "https://github.com/tweag/topiary#topiary"
 readme = "README.md"
-license-file = "LICENSE"
 license = "MIT"
 
 [workspace]

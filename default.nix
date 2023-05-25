@@ -15,6 +15,8 @@ let
   craneLib = crane.mkLib pkgs;
 
   commonArgs = {
+    pname = "topiary";
+
     src = nix-filter.lib.filter {
       root = ./.;
       include = [
@@ -44,18 +46,6 @@ let
   # Instead, we just want to update the scope that crane will use by appending
   # our specific toolchain there.
   craneLibWasm = craneLib.overrideToolchain rustWithWasmTarget;
-
-  topiaryName = craneLib.crateNameFromCargoToml {
-    cargoToml = ./topiary/Cargo.toml;
-  };
-
-  topiaryCLIName = craneLib.crateNameFromCargoToml {
-    cargoToml = ./topiary-cli/Cargo.toml;
-  };
-
-  topiaryPlaygroundName = craneLib.crateNameFromCargoToml {
-    cargoToml = ./topiary-playground/Cargo.toml;
-  };
 in
 {
   clippy = craneLib.cargoClippy (commonArgs // {
@@ -81,14 +71,12 @@ in
 
   topiary-lib = craneLib.buildPackage (commonArgs // {
     inherit cargoArtifacts;
-    inherit (topiaryName) version;
     pname = "topiary-lib";
     cargoExtraArgs = "-p topiary";
   });
 
   topiary-cli = craneLib.buildPackage (commonArgs // {
     inherit cargoArtifacts;
-    inherit (topiaryCLIName) version;
     pname = "topiary";
     cargoExtraArgs = "-p topiary-cli";
     postInstall = ''
@@ -108,7 +96,7 @@ in
 
   topiary-playground = craneLibWasm.buildPackage (commonArgs // {
     inherit cargoArtifacts;
-    inherit (topiaryPlaygroundName) pname version;
+    pname = "topiary-playground";
     cargoExtraArgs = "-p topiary-playground --no-default-features --target ${wasmTarget}";
     
     # Tests currently need to be run via `cargo wasi` which
