@@ -77,6 +77,10 @@ describe('test all grammars with puppeteer', () => {
 
             await testInputFile(input, expected, query, language);
         }
+
+        console.log("Waiting for 3 seconds to make sure the last test is done.");
+        await sleep(3000);
+        console.log("Done waiting.");
     }, TimeoutMs);
 })
 
@@ -128,3 +132,7 @@ const waitForOutput = async (
         el
     );
 };
+
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
