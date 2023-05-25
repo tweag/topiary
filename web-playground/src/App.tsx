@@ -1,10 +1,13 @@
 import { ReactElement, useEffect, useState } from "react";
 import "./App.css";
+import useDebounce from "./hooks/useDebounce";
 import init, {
     topiaryInit,
     format,
 } from "./wasm-app/topiary_playground.js";
 import languages from './samples/languages_export';
+
+const debounceDelay = 500;
 
 function App() {
     const [isInitialised, setIsInitialised] = useState(false);
@@ -18,6 +21,11 @@ function App() {
     const [input, setInput] = useState(defaultInput);
     const [output, setOutput] = useState("");
 
+    // We want to debounce the input and query changes so that we can run
+    // on-the-fly formatting after the user stops typing.
+    const debouncedInput = useDebounce(input, debounceDelay);
+    const debouncedQuery = useDebounce(query, debounceDelay);
+
     // Init page (run only once)
     useEffect(() => {
         let languageItems: ReactElement[] = [];
@@ -30,11 +38,11 @@ function App() {
         setLanguageOptions(languageItems);
     }, [])
 
-    // Run on every input change
+    // Run on every (debounced) input change
     useEffect(() => {
         if (!onTheFlyFormatting) return;
         runFormat();
-    }, [query, input])
+    }, [onTheFlyFormatting, debouncedInput, debouncedQuery])
 
     async function runFormat() {
         try {
