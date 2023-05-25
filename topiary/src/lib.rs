@@ -18,7 +18,7 @@ use pretty_assertions::StrComparison;
 pub use crate::{
     configuration::Configuration,
     error::{FormatterError, IoError},
-    language::Language,
+    language::{Language, SupportedLanguage},
     tree_sitter::{apply_query, SyntaxNode, Visualisation},
 };
 

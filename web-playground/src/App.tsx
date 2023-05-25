@@ -18,7 +18,8 @@ function App() {
 
     let languageItems = [];
     for (let l in languages) {
-        languageItems.push(<option key={l} value={l}>{l}</option>)
+        let displayName = languages[l].supported === "true" ? l : l + " (experimental)";
+        languageItems.push(<option value={l}>{displayName}</option>)
     }
 
     async function runFormat() {
@@ -47,6 +48,7 @@ function App() {
             if (!hasModification || window.confirm(confirmationMessage)) {
                 setInput(languages[l].input);
                 setQuery(languages[l].query);
+                setOutput("");
                 setCurrentLanguage(l);
             }
         }
@@ -55,13 +57,13 @@ function App() {
     return (
         <div className="App">
             <div className="header">
+                <button id="formatButton" className="btn btn-primary" onClick={runFormat}>
+                    Format
+                </button>
                 <select id="languageMenu" onChange={e => changeLanguage(e.target.value)}>
                     <option value="">Choose a reference language</option>
                     {languageItems}
                 </select>
-                <button id="formatButton" className="btn btn-primary" onClick={runFormat}>
-                    Format
-                </button>
             </div>
             <div className="columns">
                 <div className="column">

@@ -1359,6 +1359,7 @@ dependencies = [
 name = "topiary"
 version = "0.2.1"
 dependencies = [
+ "clap 4.3.0",
  "criterion",
  "futures",
  "itertools",

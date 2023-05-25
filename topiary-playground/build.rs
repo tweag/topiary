@@ -5,7 +5,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::{env::current_dir, fs};
 
-use topiary::Configuration;
+use topiary::{Configuration, SupportedLanguage};
 
 fn to_js_string(path: PathBuf) -> String {
     fs::read_to_string(path)
@@ -34,9 +34,11 @@ fn main() {
             if ext != "scm" {
                 continue;
             }
-            let prefix: String = path.file_stem().unwrap().to_string_lossy().to_string();
+
+            let name: String = path.file_stem().unwrap().to_string_lossy().to_string();
+
             let content = to_js_string(path);
-            language_map.insert(prefix, content);
+            language_map.insert(name, content);
         }
     }
 
@@ -66,10 +68,13 @@ fn main() {
 
     let mut buffer = String::new();
 
-    for (key, query) in language_map.into_iter().sorted() {
-        if let Some(input) = input_map.get(&key) {
+    for (name, query) in language_map.into_iter().sorted() {
+        if let Some(input) = input_map.get(&name) {
+            let supported = SupportedLanguage::is_supported(&name);
+
             buffer.push_str(&format!(
-                r#"  "{key}": {{
+                r#"  "{name}": {{
+    supported: `{supported}`,
     query: `{query}`,
     input: `{input}`,
   }},
