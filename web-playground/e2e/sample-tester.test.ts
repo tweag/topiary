@@ -47,6 +47,12 @@ describe('test all grammars with puppeteer', () => {
         const expectedDir = path.join(rootDir, "topiary/tests/samples/expected/");
         const queryDir = path.join(rootDir, "languages/");
 
+        // Test without on-the-fly formatting
+        const checkboxEl = await page.waitForSelector("#onTheFlyFormatting");
+        if (checkboxEl) {
+            await checkboxEl.click();
+        }
+
         for (let inputFileName of await fs.promises.readdir(inputDir)) {
             let parts = inputFileName.split(".");
             if (parts.length < 2) {
