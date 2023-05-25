@@ -1,11 +1,11 @@
 import { ReactElement, useEffect, useState } from "react";
-import "./App.css";
 import useDebounce from "./hooks/useDebounce";
+import languages from './samples/languages_export';
 import init, {
     topiaryInit,
     format,
 } from "./wasm-app/topiary_playground.js";
-import languages from './samples/languages_export';
+import "./App.css";
 
 const debounceDelay = 500;
 
@@ -42,7 +42,7 @@ function App() {
     useEffect(() => {
         if (!onTheFlyFormatting) return;
         runFormat();
-    }, [onTheFlyFormatting, debouncedInput, debouncedQuery])
+    }, [debouncedInput, debouncedQuery])
 
     async function runFormat() {
         try {
