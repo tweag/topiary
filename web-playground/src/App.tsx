@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { ReactElement, useEffect, useState } from "react";
 import "./App.css";
 import init, {
     topiaryInit,
@@ -11,16 +11,30 @@ function App() {
     const defaultLanguage = "json";
     const defaultQuery = languages[defaultLanguage].query;
     const defaultInput = languages[defaultLanguage].input;
+    const [languageOptions, setLanguageOptions] = useState([] as ReactElement[]);
+    const [currentLanguage, setCurrentLanguage] = useState(defaultLanguage);
+    const [onTheFlyFormatting, setOnTheFlyFormatting] = useState(true);
     const [query, setQuery] = useState(defaultQuery);
     const [input, setInput] = useState(defaultInput);
     const [output, setOutput] = useState("");
-    const [currentLanguage, setCurrentLanguage] = useState(defaultLanguage);
 
-    let languageItems = [];
-    for (let l in languages) {
-        let displayName = languages[l].supported === "true" ? l : l + " (experimental)";
-        languageItems.push(<option value={l}>{displayName}</option>)
-    }
+    // Init page (run only once)
+    useEffect(() => {
+        let languageItems: ReactElement[] = [];
+
+        for (let l in languages) {
+            let displayName = languages[l].supported === "true" ? l : l + " (experimental)";
+            languageItems.push(<option value={l}>{displayName}</option>)
+        }
+
+        setLanguageOptions(languageItems);
+    }, [])
+
+    // Run on every input change
+    useEffect(() => {
+        if (!onTheFlyFormatting) return;
+        runFormat();
+    }, [query, input])
 
     async function runFormat() {
         try {
@@ -54,6 +68,10 @@ function App() {
         }
     }
 
+    function handleOnTheFlyFormatting() {
+        setOnTheFlyFormatting(!onTheFlyFormatting);
+    };
+
     return (
         <div className="App">
             <div className="header">
@@ -62,8 +80,14 @@ function App() {
                 </button>
                 <select id="languageMenu" onChange={e => changeLanguage(e.target.value)}>
                     <option value="">Choose a reference language</option>
-                    {languageItems}
+                    {languageOptions}
                 </select>
+                <div className="headerColumn">
+                    <label>
+                        <input type="checkbox" id="onTheFlyFormatting" checked={onTheFlyFormatting} onChange={handleOnTheFlyFormatting} />
+                        On-the-fly formatting
+                    </label>
+                </div>
             </div>
             <div className="columns">
                 <div className="column">
