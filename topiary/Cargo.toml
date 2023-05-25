@@ -13,7 +13,6 @@ homepage.workspace = true
 repository.workspace = true
 documentation.workspace = true
 readme.workspace = true
-license-file.workspace = true
 license.workspace = true
 
 [dependencies]
