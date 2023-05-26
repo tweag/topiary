@@ -42,6 +42,7 @@ describe('test all grammars with puppeteer', () => {
         page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
         await page.goto('http://localhost:3000/playground');
+        console.log("Page opened");
 
         // Test without on-the-fly formatting, because the debounce makes things
         // less explicit and predictable.
@@ -53,34 +54,42 @@ describe('test all grammars with puppeteer', () => {
     });
 
     it('can format', async () => {
-        const rootDir = path.join(__dirname, "../../");
-        const inputDir = path.join(rootDir, "topiary/tests/samples/input/");
-        const expectedDir = path.join(rootDir, "topiary/tests/samples/expected/");
-        const queryDir = path.join(rootDir, "languages/");
+        try {
+            console.log("Starting test");
 
-        for (let inputFileName of await fs.promises.readdir(inputDir)) {
-            let parts = inputFileName.split(".");
-            if (parts.length < 2) {
-                continue;
+            const rootDir = path.join(__dirname, "../../");
+            const inputDir = path.join(rootDir, "topiary/tests/samples/input/");
+            const expectedDir = path.join(rootDir, "topiary/tests/samples/expected/");
+            const queryDir = path.join(rootDir, "languages/");
+
+            for (let inputFileName of await fs.promises.readdir(inputDir)) {
+                console.log(`Considering ${inputFileName}`);
+
+                let parts = inputFileName.split(".");
+                if (parts.length < 2) {
+                    continue;
+                }
+                const ext = String(parts.pop());
+                const language = String(parts);
+                if (!known_extensions.includes(ext)) {
+                    continue;
+                }
+                const inputPath = path.join(inputDir, inputFileName);
+                const expectedPath = path.join(expectedDir, inputFileName);
+                const queryFileName = inputFileName.replace(/\..*$/, ".scm");
+                const queryPath = path.join(queryDir, queryFileName);
+
+                console.log(`Testing ${inputPath} - ${expectedPath} - ${queryPath}`);
+
+                const encoding = "utf8";
+                const input = await fs.promises.readFile(inputPath, encoding);
+                const expected = await fs.promises.readFile(expectedPath, encoding);
+                const query = await fs.promises.readFile(queryPath, encoding);
+
+                await testInputFile(input, expected, query, language);
             }
-            const ext = String(parts.pop());
-            const language = String(parts);
-            if (!known_extensions.includes(ext)) {
-                continue;
-            }
-            const inputPath = path.join(inputDir, inputFileName);
-            const expectedPath = path.join(expectedDir, inputFileName);
-            const queryFileName = inputFileName.replace(/\..*$/, ".scm");
-            const queryPath = path.join(queryDir, queryFileName);
-
-            console.log(`Testing ${inputPath} - ${expectedPath} - ${queryPath}`);
-
-            const encoding = "utf8";
-            const input = await fs.promises.readFile(inputPath, encoding);
-            const expected = await fs.promises.readFile(expectedPath, encoding);
-            const query = await fs.promises.readFile(queryPath, encoding);
-
-            await testInputFile(input, expected, query, language);
+        } catch (e) {
+            console.error(e);
         }
     }, TimeoutMs);
 
@@ -104,13 +113,20 @@ async function testInputFile(input: string, expected: string, query: string, lan
     // Set language before input/query, otherwise they will get overwritten.
     await page.select('#languageMenu', language);
 
+    console.log("About to set input/query");
     await setTextarea("#input", input);
     await setTextarea("#query", query);
+    console.log("Done setting input/query");
 
     const button = await page.$('#formatButton') ?? fail('Did not find button');
     await button.click();
 
-    await waitForOutput(page, "#output");
+    // await page.screenshot({ path: `screenshot-${language}.png` });
+    // const currentOutput = await readOutput();
+    // console.log(`Current output: ${currentOutput}`);
+    console.log("Waiting for output");
+    await waitForOutput(page, "#rawOutput");
+    console.log("Got output");
     const output = await readOutput();
 
     // Useful for debugging:
@@ -137,7 +153,7 @@ async function setTextarea(selector: string, text: string) {
 }
 
 async function readOutput() {
-    const outputElement = await page.$("#output");
+    const outputElement = await page.$("#rawOutput");
     return await page.evaluate(element => element?.textContent, outputElement);
 }
 
