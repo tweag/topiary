@@ -21,6 +21,7 @@ function App() {
     const [query, setQuery] = useState(defaultQuery);
     const [input, setInput] = useState(defaultInput);
     const [output, setOutput] = useState("");
+    const [processingTime, setProcessingTime] = useState(0);
 
     // We want to debounce the input and query changes so that we can run
     // on-the-fly formatting after the user stops typing.
@@ -30,7 +31,9 @@ function App() {
     const runFormat = useCallback((i: string, q: string) => {
         const outputFormat = async () => {
             try {
+                const start = performance.now();
                 setOutput(await format(i, q, currentLanguage));
+                setProcessingTime(performance.now() - start);
             } catch (e) {
                 setOutput(String(e));
             }
@@ -103,6 +106,10 @@ function App() {
         setOnTheFlyFormatting(!onTheFlyFormatting);
     };
 
+    function formatNumber(n: number, decimals: number) {
+        return n.toFixed(decimals);
+    }
+
     return (
         <div className="App">
             <div className="header">
@@ -118,6 +125,9 @@ function App() {
                         <input type="checkbox" id="onTheFlyFormatting" checked={onTheFlyFormatting} onChange={handleOnTheFlyFormatting} />
                         On-the-fly formatting
                     </label>
+                </div>
+                <div className="headerColumn growRightColumn">
+                    Processing time: {formatNumber(processingTime, 1)} ms
                 </div>
             </div>
             <div className="columns">
