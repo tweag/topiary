@@ -38,6 +38,7 @@ page.on("dialog", (dialog) => {
 
 describe('test all grammars with puppeteer', () => {
     beforeEach(async () => {
+        page.on('console', msg => console.log('PAGE LOG:', msg.text()));
         await page.goto('http://localhost:3000/playground');
     });
 
