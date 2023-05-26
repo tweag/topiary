@@ -1,4 +1,5 @@
 import { ReactElement, useCallback, useEffect, useRef, useState } from "react";
+import Editor from "./components/editor";
 import useDebounce from "./hooks/useDebounce";
 import languages from './samples/languages_export';
 import init, {
@@ -142,15 +143,15 @@ function App() {
             <div className="columns">
                 <div className="column">
                     <h1>Query</h1>
-                    <textarea id="query" value={query} onChange={e => setQuery(e.target.value)} />
+                    <Editor id="query" value={query} onChange={e => setQuery(e.target.value)} />
                 </div>
                 <div className="column">
                     <h1>Input</h1>
-                    <textarea id="input" value={input} onChange={e => setInput(e.target.value)} />
+                    <Editor id="input" value={input} onChange={e => setInput(e.target.value)} />
                 </div>
                 <div className="column">
                     <h1>Output</h1>
-                    <textarea id="output" value={output} readOnly></textarea>
+                    <Editor id="output" value={output} readOnly />
                 </div>
             </div>
         </div>
