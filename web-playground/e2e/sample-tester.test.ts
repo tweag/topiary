@@ -38,10 +38,13 @@ page.on("dialog", (dialog) => {
 
 describe('test all grammars with puppeteer', () => {
     beforeEach(async () => {
+        // Forward the console log from the browser
         page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+
         await page.goto('http://localhost:3000/playground');
 
-        // Test without on-the-fly formatting
+        // Test without on-the-fly formatting, because the debounce makes things
+        // less explicit and predictable.
         const checkboxEl = await page.waitForSelector("#onTheFlyFormatting") ?? fail('Did not find checkbox');
         await checkboxEl.click();
     });
