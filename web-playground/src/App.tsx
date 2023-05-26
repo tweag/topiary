@@ -1,4 +1,4 @@
-import { ReactElement, useEffect, useState } from "react";
+import { ReactElement, useEffect, useRef, useState } from "react";
 import useDebounce from "./hooks/useDebounce";
 import languages from './samples/languages_export';
 import init, {
@@ -11,6 +11,7 @@ const debounceDelay = 500;
 
 function App() {
     const [isInitialised, setIsInitialised] = useState(false);
+    const initCalled = useRef(false);
     const defaultLanguage = "json";
     const defaultQuery = languages[defaultLanguage].query;
     const defaultInput = languages[defaultLanguage].input;
@@ -26,30 +27,46 @@ function App() {
     const debouncedInput = useDebounce(input, debounceDelay);
     const debouncedQuery = useDebounce(query, debounceDelay);
 
-    // Init page (run only once)
+    // Init page (runs only once, but twice in strict mode in dev)
     useEffect(() => {
+        const initWasm = async () => {
+            // Make sure we only run this once
+            if (initCalled.current) return;
+            initCalled.current = true;
+
+            await init();
+            await topiaryInit();
+            setIsInitialised(true);
+        }
+
+        // Populate the language list
         let languageItems: ReactElement[] = [];
 
         for (let l in languages) {
             let displayName = languages[l].supported === "true" ? l : l + " (experimental)";
-            languageItems.push(<option value={l}>{displayName}</option>)
+            languageItems.push(<option key={l} value={l}>{displayName}</option>)
         }
 
         setLanguageOptions(languageItems);
-    }, [])
 
-    // Run on every (debounced) input change
+        // Async in useEffect needs to be handled like this:
+        initWasm()
+            .catch(console.error);
+    }, []);
+
+    // Run on every (debounced) input change, as well as when isInitialised is set.
     useEffect(() => {
         if (!onTheFlyFormatting) return;
         runFormat();
-    }, [debouncedInput, debouncedQuery])
+    }, [isInitialised, debouncedInput, debouncedQuery])
 
     async function runFormat() {
         try {
             if (!isInitialised) {
-                await init();
-                await topiaryInit();
-                setIsInitialised(true);
+                const message = "Cannot format yet, as the formatter engine is being initialised. Try again soon.";
+                console.warn(message);
+                setOutput(message);
+                return;
             }
 
             setOutput("Formatting ...");
