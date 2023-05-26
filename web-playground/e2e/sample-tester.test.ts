@@ -40,6 +40,10 @@ describe('test all grammars with puppeteer', () => {
     beforeEach(async () => {
         page.on('console', msg => console.log('PAGE LOG:', msg.text()));
         await page.goto('http://localhost:3000/playground');
+
+        // Test without on-the-fly formatting
+        const checkboxEl = await page.waitForSelector("#onTheFlyFormatting") ?? fail('Did not find checkbox');
+        await checkboxEl.click();
     });
 
     it('can format', async () => {
@@ -47,12 +51,6 @@ describe('test all grammars with puppeteer', () => {
         const inputDir = path.join(rootDir, "topiary/tests/samples/input/");
         const expectedDir = path.join(rootDir, "topiary/tests/samples/expected/");
         const queryDir = path.join(rootDir, "languages/");
-
-        // Test without on-the-fly formatting
-        const checkboxEl = await page.waitForSelector("#onTheFlyFormatting");
-        if (checkboxEl) {
-            await checkboxEl.click();
-        }
 
         for (let inputFileName of await fs.promises.readdir(inputDir)) {
             let parts = inputFileName.split(".");
@@ -78,10 +76,6 @@ describe('test all grammars with puppeteer', () => {
 
             await testInputFile(input, expected, query, language);
         }
-
-        console.log("Waiting for 3 seconds to make sure the last test is done.");
-        await sleep(3000);
-        console.log("Done waiting.");
     }, TimeoutMs);
 })
 
@@ -133,7 +127,3 @@ const waitForOutput = async (
         el
     );
 };
-
-function sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
