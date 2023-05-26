@@ -1,7 +1,9 @@
 .App {
     display: flex;
     flex-direction: column;
-    width: 100%;
+
+    /* account for the scrollbar */
+    width: calc(100vw - 17px);
     height: 100vh;
 }
 
@@ -14,6 +16,11 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+}
+
+.growRightColumn {
+    flex-grow: 1;
+    align-items: flex-end;
 }
 
 .columns {
