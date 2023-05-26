@@ -1,4 +1,4 @@
-import { ReactElement, useEffect, useRef, useState } from "react";
+import { ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import useDebounce from "./hooks/useDebounce";
 import languages from './samples/languages_export';
 import init, {
@@ -26,6 +26,24 @@ function App() {
     // on-the-fly formatting after the user stops typing.
     const debouncedInput = useDebounce(input, debounceDelay);
     const debouncedQuery = useDebounce(query, debounceDelay);
+
+    const runFormat = useCallback((i: string, q: string) => {
+        const outputFormat = async () => {
+            setOutput(await format(i, q, currentLanguage));
+        }
+
+        try {
+            if (!isInitialised) {
+                setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
+                return;
+            }
+
+            setOutput("Formatting ...");
+            outputFormat();
+        } catch (e) {
+            setOutput(String(e));
+        }
+    }, [currentLanguage, isInitialised]);
 
     // Init page (runs only once, but twice in strict mode in dev)
     useEffect(() => {
@@ -57,24 +75,8 @@ function App() {
     // Run on every (debounced) input change, as well as when isInitialised is set.
     useEffect(() => {
         if (!onTheFlyFormatting) return;
-        runFormat();
-    }, [isInitialised, debouncedInput, debouncedQuery])
-
-    async function runFormat() {
-        try {
-            if (!isInitialised) {
-                const message = "Cannot format yet, as the formatter engine is being initialised. Try again soon.";
-                console.warn(message);
-                setOutput(message);
-                return;
-            }
-
-            setOutput("Formatting ...");
-            setOutput(await format(input, query, currentLanguage));
-        } catch (e) {
-            setOutput(String(e));
-        }
-    }
+        runFormat(debouncedInput, debouncedQuery);
+    }, [isInitialised, debouncedInput, debouncedQuery, onTheFlyFormatting, runFormat])
 
     function changeLanguage(l: string) {
         if (languages[l]) {
@@ -93,6 +95,10 @@ function App() {
         }
     }
 
+    function handleFormat() {
+        runFormat(input, query);
+    };
+
     function handleOnTheFlyFormatting() {
         setOnTheFlyFormatting(!onTheFlyFormatting);
     };
@@ -100,7 +106,7 @@ function App() {
     return (
         <div className="App">
             <div className="header">
-                <button id="formatButton" className="btn btn-primary" onClick={runFormat}>
+                <button id="formatButton" className="btn btn-primary" onClick={handleFormat}>
                     Format
                 </button>
                 <select id="languageMenu" onChange={e => changeLanguage(e.target.value)}>
