@@ -330,6 +330,15 @@ fn check_input_exhaustivity(
     source: &[u8],
 ) -> FormatterResult<()> {
     let pattern_count = original_query.pattern_count();
+    // This particular test avoids a SIGSEGV error that occurs when trying
+    // to count the matches of an empty query (see #481)
+    if pattern_count == 1 {
+        if ref_match_count == 0 {
+            return Err(FormatterError::PatternDoesNotMatch(query_content.into()));
+        } else {
+            return Ok(());
+        }
+    }
     for i in 0..pattern_count {
         let mut query = Query::new(grammar, query_content)
             .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
