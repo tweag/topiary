@@ -37,7 +37,7 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                     // as a `Hardline` in the atom stream.
                     writeln!(buffer)?;
                 }
-                write!(buffer, "{}", content.trim_end())?;
+                write!(buffer, "{}", content.trim_end_matches('\n'))?;
             }
 
             Atom::Literal(s) => write!(buffer, "{s}")?,
