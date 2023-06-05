@@ -29,20 +29,20 @@ function App() {
 
     const runFormat = useCallback((i: string, q: string) => {
         const outputFormat = async () => {
-            setOutput(await format(i, q, currentLanguage));
-        }
-
-        try {
-            if (!isInitialised) {
-                setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
-                return;
+            try {
+                setOutput(await format(i, q, currentLanguage));
+            } catch (e) {
+                setOutput(String(e));
             }
-
-            setOutput("Formatting ...");
-            outputFormat();
-        } catch (e) {
-            setOutput(String(e));
         }
+
+        if (!isInitialised) {
+            setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
+            return;
+        }
+
+        setOutput("Formatting ...");
+        outputFormat();
     }, [currentLanguage, isInitialised]);
 
     // Init page (runs only once, but twice in strict mode in dev)
