@@ -10,6 +10,12 @@
     gap: 1rem;
 }
 
+.headerColumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
 .columns {
     display: flex;
     flex: 1;

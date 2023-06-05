@@ -38,7 +38,18 @@ page.on("dialog", (dialog) => {
 
 describe('test all grammars with puppeteer', () => {
     beforeEach(async () => {
+        // Forward the console log from the browser
+        page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+
         await page.goto('http://localhost:3000/playground');
+
+        // Test without on-the-fly formatting, because the debounce makes things
+        // less explicit and predictable.
+        const onTheFlyCheckbox = await page.waitForSelector("#onTheFlyFormatting") ?? fail('Did not find checkbox');
+        let isOnTheFlyEnabled = await (await onTheFlyCheckbox.getProperty("checked")).jsonValue();
+
+        if (isOnTheFlyEnabled)
+            await onTheFlyCheckbox.click();
     });
 
     it('can format', async () => {
@@ -72,6 +83,18 @@ describe('test all grammars with puppeteer', () => {
             await testInputFile(input, expected, query, language);
         }
     }, TimeoutMs);
+
+    it('outputs error messages', async () => {
+        await setTextarea("#input", "foo");
+
+        const button = await page.$('#formatButton') ?? fail('Did not find button');
+        await button.click();
+    
+        await waitForOutput(page, "#output");
+        const output = await readOutput();
+    
+        expect(output).toContain("Parsing error");
+        }, TimeoutMs);
 })
 
 async function testInputFile(input: string, expected: string, query: string, language: string) {
