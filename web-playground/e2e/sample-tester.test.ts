@@ -47,7 +47,7 @@ describe('test all grammars with puppeteer', () => {
         // less explicit and predictable.
         const onTheFlyCheckbox = await page.waitForSelector("#onTheFlyFormatting") ?? fail('Did not find checkbox');
         let isOnTheFlyEnabled = await (await onTheFlyCheckbox.getProperty("checked")).jsonValue();
-        
+
         if (isOnTheFlyEnabled)
             await onTheFlyCheckbox.click();
     });
@@ -83,6 +83,18 @@ describe('test all grammars with puppeteer', () => {
             await testInputFile(input, expected, query, language);
         }
     }, TimeoutMs);
+
+    it('outputs error messages', async () => {
+        await setTextarea("#input", "foo");
+
+        const button = await page.$('#formatButton') ?? fail('Did not find button');
+        await button.click();
+    
+        await waitForOutput(page, "#output");
+        const output = await readOutput();
+    
+        expect(output).toContain("Parsing error");
+        }, TimeoutMs);
 })
 
 async function testInputFile(input: string, expected: string, query: string, language: string) {
