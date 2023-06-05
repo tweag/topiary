@@ -45,8 +45,11 @@ describe('test all grammars with puppeteer', () => {
 
         // Test without on-the-fly formatting, because the debounce makes things
         // less explicit and predictable.
-        const checkboxEl = await page.waitForSelector("#onTheFlyFormatting") ?? fail('Did not find checkbox');
-        await checkboxEl.click();
+        const onTheFlyCheckbox = await page.waitForSelector("#onTheFlyFormatting") ?? fail('Did not find checkbox');
+        let isOnTheFlyEnabled = await (await onTheFlyCheckbox.getProperty("checked")).jsonValue();
+        
+        if (isOnTheFlyEnabled)
+            await onTheFlyCheckbox.click();
     });
 
     it('can format', async () => {
