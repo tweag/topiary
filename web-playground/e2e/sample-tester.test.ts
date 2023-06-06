@@ -43,7 +43,6 @@ describe('test all grammars with puppeteer', () => {
         page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
         await page.goto('http://localhost:3000/playground');
-        console.log("Page opened");
 
         // Test without on-the-fly formatting, because the debounce makes things
         // less explicit and predictable.
@@ -55,16 +54,12 @@ describe('test all grammars with puppeteer', () => {
     });
 
     it('can format', async () => {
-        console.log("Starting test");
-
         const rootDir = path.join(__dirname, "../../");
         const inputDir = path.join(rootDir, "topiary/tests/samples/input/");
         const expectedDir = path.join(rootDir, "topiary/tests/samples/expected/");
         const queryDir = path.join(rootDir, "languages/");
 
         for (let inputFileName of await fs.promises.readdir(inputDir)) {
-            console.log(`Considering ${inputFileName}`);
-
             let parts = inputFileName.split(".");
             if (parts.length < 2) {
                 continue;
@@ -110,17 +105,12 @@ async function testInputFile(input: string, expected: string, query: string, lan
     // Set language before input/query, otherwise they will get overwritten.
     await page.select('#languageMenu', language);
 
-    console.log("About to set input/query");
     await setTextarea("#input", input);
     await setTextarea("#query", query);
-    console.log("Done setting input/query");
 
     const button = await page.$('#formatButton') ?? fail('Did not find button');
     await button.click();
 
-    // await page.screenshot({ path: `screenshot-${language}.png` });
-    // const currentOutput = await readOutput();
-    // console.log(`Current output: ${currentOutput}`);
     await waitForOutput(page, outputSelector);
     const output = await readOutput();
 
@@ -170,5 +160,3 @@ const waitForOutput = async (
         el
     );
 };
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
