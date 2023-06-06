@@ -54,42 +54,38 @@ describe('test all grammars with puppeteer', () => {
     });
 
     it('can format', async () => {
-        try {
-            console.log("Starting test");
+        console.log("Starting test");
 
-            const rootDir = path.join(__dirname, "../../");
-            const inputDir = path.join(rootDir, "topiary/tests/samples/input/");
-            const expectedDir = path.join(rootDir, "topiary/tests/samples/expected/");
-            const queryDir = path.join(rootDir, "languages/");
+        const rootDir = path.join(__dirname, "../../");
+        const inputDir = path.join(rootDir, "topiary/tests/samples/input/");
+        const expectedDir = path.join(rootDir, "topiary/tests/samples/expected/");
+        const queryDir = path.join(rootDir, "languages/");
 
-            for (let inputFileName of await fs.promises.readdir(inputDir)) {
-                console.log(`Considering ${inputFileName}`);
+        for (let inputFileName of await fs.promises.readdir(inputDir)) {
+            console.log(`Considering ${inputFileName}`);
 
-                let parts = inputFileName.split(".");
-                if (parts.length < 2) {
-                    continue;
-                }
-                const ext = String(parts.pop());
-                const language = String(parts);
-                if (!known_extensions.includes(ext)) {
-                    continue;
-                }
-                const inputPath = path.join(inputDir, inputFileName);
-                const expectedPath = path.join(expectedDir, inputFileName);
-                const queryFileName = inputFileName.replace(/\..*$/, ".scm");
-                const queryPath = path.join(queryDir, queryFileName);
-
-                console.log(`Testing ${inputPath} - ${expectedPath} - ${queryPath}`);
-
-                const encoding = "utf8";
-                const input = await fs.promises.readFile(inputPath, encoding);
-                const expected = await fs.promises.readFile(expectedPath, encoding);
-                const query = await fs.promises.readFile(queryPath, encoding);
-
-                await testInputFile(input, expected, query, language);
+            let parts = inputFileName.split(".");
+            if (parts.length < 2) {
+                continue;
             }
-        } catch (e) {
-            console.error(e);
+            const ext = String(parts.pop());
+            const language = String(parts);
+            if (!known_extensions.includes(ext)) {
+                continue;
+            }
+            const inputPath = path.join(inputDir, inputFileName);
+            const expectedPath = path.join(expectedDir, inputFileName);
+            const queryFileName = inputFileName.replace(/\..*$/, ".scm");
+            const queryPath = path.join(queryDir, queryFileName);
+
+            console.log(`Testing ${inputPath} - ${expectedPath} - ${queryPath}`);
+
+            const encoding = "utf8";
+            const input = await fs.promises.readFile(inputPath, encoding);
+            const expected = await fs.promises.readFile(expectedPath, encoding);
+            const query = await fs.promises.readFile(queryPath, encoding);
+
+            await testInputFile(input, expected, query, language);
         }
     }, TimeoutMs);
 
@@ -99,7 +95,7 @@ describe('test all grammars with puppeteer', () => {
         const button = await page.$('#formatButton') ?? fail('Did not find button');
         await button.click();
 
-        await waitForOutput(page, "#output");
+        await waitForOutput(page, "#rawOutput");
         const output = await readOutput();
 
         // Useful for debugging:
@@ -124,9 +120,7 @@ async function testInputFile(input: string, expected: string, query: string, lan
     // await page.screenshot({ path: `screenshot-${language}.png` });
     // const currentOutput = await readOutput();
     // console.log(`Current output: ${currentOutput}`);
-    console.log("Waiting for output");
     await waitForOutput(page, "#rawOutput");
-    console.log("Got output");
     const output = await readOutput();
 
     // Useful for debugging:
@@ -171,3 +165,5 @@ const waitForOutput = async (
         el
     );
 };
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
