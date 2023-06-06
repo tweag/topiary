@@ -18,6 +18,7 @@ function App() {
     const [languageOptions, setLanguageOptions] = useState([] as ReactElement[]);
     const [currentLanguage, setCurrentLanguage] = useState(defaultLanguage);
     const [onTheFlyFormatting, setOnTheFlyFormatting] = useState(true);
+    const [idempotence, setIdempotence] = useState(false);
     const [query, setQuery] = useState(defaultQuery);
     const [input, setInput] = useState(defaultInput);
     const [output, setOutput] = useState("");
@@ -32,7 +33,7 @@ function App() {
         const outputFormat = async () => {
             try {
                 const start = performance.now();
-                setOutput(await format(i, q, currentLanguage));
+                setOutput(await format(i, q, currentLanguage, idempotence));
                 setProcessingTime(performance.now() - start);
             } catch (e) {
                 setOutput(String(e));
@@ -46,7 +47,7 @@ function App() {
 
         setOutput("Formatting ...");
         outputFormat();
-    }, [currentLanguage, isInitialised]);
+    }, [currentLanguage, idempotence, isInitialised]);
 
     // Init page (runs only once, but twice in strict mode in dev)
     useEffect(() => {
@@ -110,6 +111,10 @@ function App() {
         return n.toFixed(decimals);
     }
 
+    function handleIdempotence() {
+        setIdempotence(!idempotence);
+    };
+
     return (
         <div className="App">
             <div className="header">
@@ -124,6 +129,10 @@ function App() {
                     <label>
                         <input type="checkbox" id="onTheFlyFormatting" checked={onTheFlyFormatting} onChange={handleOnTheFlyFormatting} />
                         On-the-fly formatting
+                    </label>
+                    <label>
+                        <input type="checkbox" id="onTheFlyFormatting" checked={idempotence} onChange={handleIdempotence} />
+                        Check idempotence (formatting twice is the same as formatting once)
                     </label>
                 </div>
                 <div className="headerColumn growRightColumn">
