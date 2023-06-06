@@ -91,7 +91,6 @@ describe('test all grammars with puppeteer', () => {
         const button = await page.$('#formatButton') ?? fail('Did not find button');
         await button.click();
 
-        await waitForOutput(page, outputSelector);
         const output = await readOutput();
 
         // Useful for debugging:
@@ -111,7 +110,6 @@ async function testInputFile(input: string, expected: string, query: string, lan
     const button = await page.$('#formatButton') ?? fail('Did not find button');
     await button.click();
 
-    await waitForOutput(page, outputSelector);
     const output = await readOutput();
 
     // Useful for debugging:
@@ -142,21 +140,14 @@ async function setTextarea(selector: string, text: string) {
 }
 
 async function readOutput() {
+    const el = await page.waitForSelector(outputSelector);
+
+    await page.waitForFunction(
+        el => el?.textContent !== "" && el?.textContent !== "Formatting ...",
+        { polling: "mutation", timeout: 30000 },
+        el
+    );
+
     const outputElement = await page.$(outputSelector);
     return await page.evaluate(element => element?.textContent, outputElement);
 }
-
-const waitForOutput = async (
-    page: Page,
-    selector: string,
-    options: FrameWaitForFunctionOptions = { polling: "mutation", timeout: 30000 }
-) => {
-    const el = typeof selector === "string" ?
-        (await page.waitForSelector(selector)) : selector;
-
-    return page.waitForFunction(
-        el => el?.textContent !== "" && el?.textContent !== "Formatting ...",
-        options,
-        el
-    );
-};
