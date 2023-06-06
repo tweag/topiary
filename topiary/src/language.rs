@@ -64,6 +64,7 @@ impl Language {
             "ocaml_interface" => vec![tree_sitter_ocaml::language_ocaml_interface()],
             "rust" => vec![tree_sitter_rust::language()],
             "toml" => vec![tree_sitter_toml::language()],
+            "typst" => vec![tree_sitter_typst::language()],
             "tree_sitter_query" => vec![tree_sitter_query::language()],
             name => return Err(FormatterError::UnsupportedLanguage(name.to_string())),
         }

@@ -1380,6 +1380,7 @@ dependencies = [
  "tree-sitter-query",
  "tree-sitter-rust",
  "tree-sitter-toml",
+ "tree-sitter-typst",
  "unescape",
  "web-tree-sitter-sys",
 ]
@@ -1493,6 +1494,15 @@ name = "tree-sitter-toml"
 version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca517f578a98b23d20780247cc2688407fa81effad5b627a5a364ec3339b53e8"
+dependencies = [
+ "cc",
+ "tree-sitter",
+]
+
+[[package]]
+name = "tree-sitter-typst"
+version = "0.0.1"
+source = "git+https://github.com/SeniorMars/tree-sitter-typst#2e66ef4b798a26f0b82144143711f3f7a9e8ea35"
 dependencies = [
  "cc",
  "tree-sitter",
