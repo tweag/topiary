@@ -130,20 +130,27 @@ async function testInputFile(input: string, expected: string, query: string, lan
 }
 
 async function setTextarea(selector: string, text: string) {
-    let textInput = await page.$(selector) ?? fail('Did not find text area');
+    let textInput = await page.$(selector) ?? fail('Did not find text input control');
+    let textAreaSelector = `${selector} textarea`;
 
     // Clear the text area first, otherwise the following doesn't work.
-    await textInput.click({ clickCount: 3 });
+    await textInput.click();
+    await page.keyboard.down('ControlLeft')
+    await page.keyboard.press('KeyA')
+    await page.keyboard.up('ControlLeft')
     await textInput.press('Backspace');
+    await page.screenshot({ path: `screenshot-cleared.png` });
 
     // Quick way to enter text into a field. See https://github.com/puppeteer/puppeteer/issues/4192
     await page.evaluate((selector, text) => {
         (<HTMLInputElement>document.querySelector(selector)).value = text;
-    }, selector, text);
+    }, textAreaSelector, text);
 
     // Without this hack, the textarea simply won't get updated.
     await page.keyboard.type("X");
+    await page.screenshot({ path: `screenshot-X.png` });
     await textInput.press('Backspace');
+    await page.screenshot({ path: `screenshot-backspaced.png` });
 }
 
 async function readOutput() {

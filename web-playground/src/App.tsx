@@ -143,17 +143,15 @@ function App() {
             <div className="columns">
                 <div className="column">
                     <h1>Query</h1>
-                    {/* <Editor id="query" value={query} onChange={s => setQuery(s)} /> */}
-                    <textarea id="query" value={query} onChange={e => setQuery(e.target.value)} />
+                    <Editor id="query" value={query} onChange={s => setQuery(s)} />
                 </div>
                 <div className="column">
                     <h1>Input</h1>
-                    {/* <Editor id="input" value={input} onChange={s => setInput(s)} /> */}
-                    <textarea id="input" value={input} onChange={e => setInput(e.target.value)} />
+                    <Editor id="input" value={input} onChange={s => setInput(s)} />
                 </div>
                 <div className="column">
                     <h1>Output</h1>
-                    {/* <Editor id="output" value={output} readOnly /> */}
+                    <Editor id="output" value={output} readOnly />
                     <textarea id="rawOutput" value={output} readOnly></textarea>
                 </div>
             </div>
