@@ -89,12 +89,15 @@ describe('test all grammars with puppeteer', () => {
 
         const button = await page.$('#formatButton') ?? fail('Did not find button');
         await button.click();
-    
+
         await waitForOutput(page, "#output");
         const output = await readOutput();
-    
+
+        // Useful for debugging:
+        //await page.screenshot({ path: 'screenshot-error.png' });
+
         expect(output).toContain("Parsing error");
-        }, TimeoutMs);
+    }, TimeoutMs);
 })
 
 async function testInputFile(input: string, expected: string, query: string, language: string) {
@@ -111,19 +114,26 @@ async function testInputFile(input: string, expected: string, query: string, lan
     const output = await readOutput();
 
     // Useful for debugging:
-    //await page.screenshot({ path: 'screenshot.png' });
+    //await page.screenshot({ path: `screenshot-${language}.png` });
 
     expect(output).toBe(expected);
 }
 
 async function setTextarea(selector: string, text: string) {
+    let textInput = await page.$(selector) ?? fail('Did not find text area');
+
+    // Clear the text area first, otherwise the following doesn't work.
+    await textInput.click({ clickCount: 3 });
+    await textInput.press('Backspace');
+
+    // Quick way to enter text into a field. See https://github.com/puppeteer/puppeteer/issues/4192
     await page.evaluate((selector, text) => {
         (<HTMLInputElement>document.querySelector(selector)).value = text;
     }, selector, text);
 
     // Without this hack, the textarea simply won't get updated.
-    await page.focus(selector);
-    await page.keyboard.type(" ");
+    await page.keyboard.type("X");
+    await textInput.press('Backspace');
 }
 
 async function readOutput() {
