@@ -266,14 +266,10 @@ fn idempotence_check(
     }
 }
 
-#[tokio::test]
-async fn parse_error_fails_formatting() {
-    let mut input = "[ 1, % ]".as_bytes();
-    let mut output = Vec::new();
-    let query = "(#language! json)";
-    let configuration = Configuration::parse_default_config();
-    let language = configuration.get_language("json").unwrap();
-    let grammar = language.grammar().await.unwrap();
+#[cfg(test)]
+mod test {
+    use crate::{configuration::Configuration, error::FormatterError, formatter, Operation};
+    use test_log::test;
 
     #[test(tokio::test)]
     async fn parse_error_fails_formatting() {
@@ -282,7 +278,7 @@ async fn parse_error_fails_formatting() {
         let query = "(#language! json)";
         let configuration = Configuration::parse_default_configuration().unwrap();
         let language = configuration.get_language("json").unwrap();
-        let grammars = language.grammars().await.unwrap();
+        let grammar = language.grammar().await.unwrap();
 
         match formatter(
             &mut input,
