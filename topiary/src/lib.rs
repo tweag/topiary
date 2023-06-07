@@ -30,6 +30,9 @@ mod language;
 mod pretty;
 mod tree_sitter;
 
+#[doc(hidden)]
+pub mod test_utils;
+
 /// An atom represents a small piece of the output. We turn Tree-sitter nodes
 /// into atoms, and we add white-space atoms where appropriate. The final list
 /// of atoms is rendered to the output.
@@ -109,8 +112,13 @@ pub type FormatterResult<T> = std::result::Result<T, FormatterError>;
 /// Operations that can be performed by the formatter.
 #[derive(Clone, Copy, Debug)]
 pub enum Operation {
-    Format { skip_idempotence: bool },
-    Visualise { output_format: Visualisation },
+    Format {
+        skip_idempotence: bool,
+        tolerate_parse_errors: bool,
+    },
+    Visualise {
+        output_format: Visualisation,
+    },
 }
 
 /// The function that takes an input and formats, or visualises an output.
@@ -170,10 +178,14 @@ pub fn formatter(
     })?;
 
     match operation {
-        Operation::Format { skip_idempotence } => {
+        Operation::Format {
+            skip_idempotence,
+            tolerate_parse_errors,
+        } => {
             // All the work related to tree-sitter and the query is done here
             log::info!("Apply Tree-sitter query");
-            let mut atoms = tree_sitter::apply_query(&content, query, grammar, false)?;
+            let mut atoms =
+                tree_sitter::apply_query(&content, query, grammar, tolerate_parse_errors, false)?;
 
             // Various post-processing of whitespace
             atoms.post_process();
@@ -188,14 +200,14 @@ pub fn formatter(
             let trimmed = trim_whitespace(&rendered);
 
             if !skip_idempotence {
-                idempotence_check(&trimmed, query, language, grammar)?;
+                idempotence_check(&trimmed, query, language, grammar, tolerate_parse_errors)?;
             }
 
             write!(output, "{trimmed}")?;
         }
 
         Operation::Visualise { output_format } => {
-            let (tree, _) = tree_sitter::parse(&content, grammar)?;
+            let (tree, _) = tree_sitter::parse(&content, grammar, false)?;
             let root: SyntaxNode = tree.root_node().into();
 
             match output_format {
@@ -226,6 +238,7 @@ fn idempotence_check(
     query: &str,
     language: &Language,
     grammar: &tree_sitter_facade::Language,
+    tolerate_parse_errors: bool,
 ) -> FormatterResult<()> {
     log::info!("Checking for idempotence ...");
 
@@ -240,6 +253,7 @@ fn idempotence_check(
         grammar,
         Operation::Format {
             skip_idempotence: true,
+            tolerate_parse_errors,
         },
     )?;
     let reformatted = String::from_utf8(output.into_inner()?)?;
@@ -267,13 +281,19 @@ fn idempotence_check(
 }
 
 #[cfg(test)]
-mod test {
-    use crate::{configuration::Configuration, error::FormatterError, formatter, Operation};
+mod tests {
+    use std::fs;
+
     use test_log::test;
+
+    use crate::{
+        configuration::Configuration, error::FormatterError, formatter,
+        test_utils::pretty_assert_eq, Operation,
+    };
 
     #[test(tokio::test)]
     async fn parse_error_fails_formatting() {
-        let mut input = "[ 1, % ]".as_bytes();
+        let mut input = r#"{"foo":{"bar"}}"#.as_bytes();
         let mut output = Vec::new();
         let query = "(#language! json)";
         let configuration = Configuration::parse_default_configuration().unwrap();
@@ -288,6 +308,7 @@ mod test {
             &grammar,
             Operation::Format {
                 skip_idempotence: true,
+                tolerate_parse_errors: false,
             },
         ) {
             Err(FormatterError::Parsing {
@@ -299,5 +320,35 @@ mod test {
                 panic!("Expected a parsing error on line 1, but got {result:?}");
             }
         }
+    }
+
+    #[test(tokio::test)]
+    async fn tolerate_parse_errors() {
+        let mut input = "{\"one\":{\"bar\"   \"baz\"},\"two\":\"bar\"}".as_bytes();
+        let expected = "{ \"one\": {\"bar\"   \"baz\"}, \"two\": \"bar\" }\n";
+
+        let mut output = Vec::new();
+        let query = fs::read_to_string("../languages/json.scm").unwrap();
+        let configuration = Configuration::parse_default_config();
+        let language = configuration.get_language("json").unwrap();
+        let grammars = language.grammars().await.unwrap();
+
+        formatter(
+            &mut input,
+            &mut output,
+            &query,
+            language,
+            &grammars,
+            Operation::Format {
+                skip_idempotence: true,
+                tolerate_parse_errors: true,
+            },
+        )
+        .unwrap();
+
+        let formatted = String::from_utf8(output).unwrap();
+        log::debug!("{}", formatted);
+
+        pretty_assert_eq(expected, &formatted);
     }
 }

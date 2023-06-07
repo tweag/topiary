@@ -23,6 +23,7 @@ async fn format() {
         &grammar,
         Operation::Format {
             skip_idempotence: true,
+            tolerate_parse_errors: false,
         },
     )
     .unwrap();
