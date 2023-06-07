@@ -12,10 +12,6 @@ extensions = ["ncl"]
 
 [[language]]
 name = "ocaml"
-extensions = ["ml", "mli"]
-
-[[language]]
-name = "ocaml_implementation"
 extensions = ["ml"]
 
 [[language]]
