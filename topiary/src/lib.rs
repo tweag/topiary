@@ -159,7 +159,7 @@ pub fn formatter(
     output: &mut impl io::Write,
     query: &str,
     language: &Language,
-    grammars: &[tree_sitter_facade::Language],
+    grammar: &tree_sitter_facade::Language,
     operation: Operation,
 ) -> FormatterResult<()> {
     let content = read_input(input).map_err(|e| {
@@ -173,7 +173,7 @@ pub fn formatter(
         Operation::Format { skip_idempotence } => {
             // All the work related to tree-sitter and the query is done here
             log::info!("Apply Tree-sitter query");
-            let mut atoms = tree_sitter::apply_query(&content, query, grammars, false)?;
+            let mut atoms = tree_sitter::apply_query(&content, query, grammar, false)?;
 
             // Various post-processing of whitespace
             atoms.post_process();
@@ -188,14 +188,14 @@ pub fn formatter(
             let trimmed = trim_whitespace(&rendered);
 
             if !skip_idempotence {
-                idempotence_check(&trimmed, query, language, grammars)?;
+                idempotence_check(&trimmed, query, language, grammar)?;
             }
 
             write!(output, "{trimmed}")?;
         }
 
         Operation::Visualise { output_format } => {
-            let (tree, _) = tree_sitter::parse(&content, grammars)?;
+            let (tree, _) = tree_sitter::parse(&content, grammar)?;
             let root: SyntaxNode = tree.root_node().into();
 
             match output_format {
@@ -225,7 +225,7 @@ fn idempotence_check(
     content: &str,
     query: &str,
     language: &Language,
-    grammars: &[tree_sitter_facade::Language],
+    grammar: &tree_sitter_facade::Language,
 ) -> FormatterResult<()> {
     log::info!("Checking for idempotence ...");
 
@@ -237,7 +237,7 @@ fn idempotence_check(
         &mut output,
         query,
         language,
-        grammars,
+        grammar,
         Operation::Format {
             skip_idempotence: true,
         },
@@ -266,10 +266,14 @@ fn idempotence_check(
     }
 }
 
-#[cfg(test)]
-mod test {
-    use crate::{configuration::Configuration, error::FormatterError, formatter, Operation};
-    use test_log::test;
+#[tokio::test]
+async fn parse_error_fails_formatting() {
+    let mut input = "[ 1, % ]".as_bytes();
+    let mut output = Vec::new();
+    let query = "(#language! json)";
+    let configuration = Configuration::parse_default_config();
+    let language = configuration.get_language("json").unwrap();
+    let grammar = language.grammar().await.unwrap();
 
     #[test(tokio::test)]
     async fn parse_error_fails_formatting() {
@@ -285,7 +289,7 @@ mod test {
             &mut output,
             query,
             language,
-            &grammars,
+            &grammar,
             Operation::Format {
                 skip_idempotence: true,
             },

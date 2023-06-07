@@ -46,14 +46,14 @@ async fn input_output_tester() {
             let mut output = Vec::new();
             let query = fs::read_to_string(language.query_file().unwrap()).unwrap();
 
-            let grammars = language.grammars().await.unwrap();
+            let grammar = language.grammar().await.unwrap();
 
             formatter(
                 &mut input,
                 &mut output,
                 &query,
                 language,
-                &grammars,
+                &grammar,
                 Operation::Format {
                     skip_idempotence: false,
                 },
@@ -84,14 +84,14 @@ async fn formatted_query_tester() {
         let mut output = Vec::new();
         let query = fs::read_to_string(language.query_file().unwrap()).unwrap();
 
-        let grammars = language.grammars().await.unwrap();
+        let grammar = language.grammar().await.unwrap();
 
         formatter(
             &mut input,
             &mut output,
             &query,
             language,
-            &grammars,
+            &grammar,
             Operation::Format {
                 skip_idempotence: false,
             },
@@ -123,9 +123,9 @@ async fn exhaustive_query_tester() {
         let input_content = fs::read_to_string(&file.path()).unwrap();
         let query_content = fs::read_to_string(&query_file).unwrap();
 
-        let grammars = language.grammars().await.unwrap();
+        let grammar = language.grammar().await.unwrap();
 
-        apply_query(&input_content, &query_content, &grammars, true).unwrap_or_else(|e| {
+        apply_query(&input_content, &query_content, &grammar, true).unwrap_or_else(|e| {
             if let FormatterError::PatternDoesNotMatch(_) = e {
                 panic!("Found untested query in file {query_file:?}:\n{e}");
             } else {

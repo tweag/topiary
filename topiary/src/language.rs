@@ -51,41 +51,34 @@ impl Language {
     ///
     /// If the language is not supported, a `FormatterError` will be returned.
     #[cfg(not(target_arch = "wasm32"))]
-    pub async fn grammars(&self) -> FormatterResult<Vec<tree_sitter_facade::Language>> {
+    pub async fn grammar(&self) -> FormatterResult<tree_sitter_facade::Language> {
         Ok(match self.name.as_str() {
-            "bash" => vec![tree_sitter_bash::language()],
-            "json" => vec![tree_sitter_json::language()],
-            "nickel" => vec![tree_sitter_nickel::language()],
-            "ocaml" => vec![
-                tree_sitter_ocaml::language_ocaml(),
-                tree_sitter_ocaml::language_ocaml_interface(),
-            ],
-            "ocaml_implementation" => vec![tree_sitter_ocaml::language_ocaml()],
-            "ocaml_interface" => vec![tree_sitter_ocaml::language_ocaml_interface()],
-            "rust" => vec![tree_sitter_rust::language()],
-            "toml" => vec![tree_sitter_toml::language()],
-            "tree_sitter_query" => vec![tree_sitter_query::language()],
+            "bash" => tree_sitter_bash::language(),
+            "json" => tree_sitter_json::language(),
+            "nickel" => tree_sitter_nickel::language(),
+            "ocaml" => tree_sitter_ocaml::language_ocaml(),
+            "ocaml_interface" => tree_sitter_ocaml::language_ocaml_interface(),
+            "rust" => tree_sitter_rust::language(),
+            "toml" => tree_sitter_toml::language(),
+            "tree_sitter_query" => tree_sitter_query::language(),
             name => return Err(FormatterError::UnsupportedLanguage(name.to_string())),
         }
-        .into_iter()
-        .map(Into::into)
-        .collect())
+        .into())
     }
 
     #[cfg(target_arch = "wasm32")]
-    pub async fn grammars_wasm(&self) -> FormatterResult<Vec<tree_sitter_facade::Language>> {
+    pub async fn grammar_wasm(&self) -> FormatterResult<tree_sitter_facade::Language> {
         use futures::future::join_all;
 
         let language_names = match self.name.as_str() {
-            "bash" => vec!["bash"],
-            "json" => vec!["json"],
-            "nickel" => vec!["nickel"],
-            "ocaml" => vec!["ocaml", "ocaml_interface"],
-            "ocaml_implementation" => vec!["ocaml"],
-            "ocaml_interface" => vec!["ocaml_interface"],
-            "rust" => vec!["rust"],
-            "toml" => vec!["toml"],
-            "tree_sitter_query" => vec!["query"],
+            "bash" => "bash",
+            "json" => "json",
+            "nickel" => "nickel",
+            "ocaml" => "ocaml",
+            "ocaml_interface" => "ocaml_interface",
+            "rust" => "rust",
+            "toml" => "toml",
+            "tree_sitter_query" => "query",
             name => return Err(FormatterError::UnsupportedLanguage(name.to_string())),
         };
 
@@ -128,7 +121,7 @@ impl TryFrom<&Language> for PathBuf {
             "bash" => "bash",
             "json" => "json",
             "nickel" => "nickel",
-            "ocaml" | "ocaml_interface" | "ocaml_implementation" => "ocaml",
+            "ocaml" | "ocaml_interface" => "ocaml",
             "rust" => "rust",
             "toml" => "toml",
             "tree_sitter_query" => "tree-sitter-query",
@@ -163,7 +156,6 @@ pub enum SupportedLanguage {
     Json,
     Nickel,
     Ocaml,
-    OcamlImplementation,
     OcamlInterface,
     Toml,
     // Any other entries in crate::Language are experimental and won't be
@@ -190,7 +182,7 @@ impl SupportedLanguage {
         match self {
             SupportedLanguage::Json => "json",
             SupportedLanguage::Nickel => "nickel",
-            SupportedLanguage::Ocaml | SupportedLanguage::OcamlImplementation => "ocaml",
+            SupportedLanguage::Ocaml => "ocaml",
             SupportedLanguage::OcamlInterface => "ocaml_interface",
             SupportedLanguage::Toml => "toml",
         }

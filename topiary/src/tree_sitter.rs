@@ -83,10 +83,10 @@ struct LocalQueryMatch<'a> {
 pub fn apply_query(
     input_content: &str,
     query_content: &str,
-    grammars: &[tree_sitter_facade::Language],
+    grammar: &tree_sitter_facade::Language,
     should_check_input_exhaustivity: bool,
 ) -> FormatterResult<AtomCollection> {
-    let (tree, grammar) = parse(input_content, grammars)?;
+    let (tree, grammar) = parse(input_content, grammar)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
     let query = Query::new(grammar, query_content)
@@ -175,32 +175,21 @@ pub fn apply_query(
 // or the last error if all grammars fail.
 pub fn parse<'a>(
     content: &str,
-    grammars: &'a [tree_sitter_facade::Language],
+    grammar: &'a tree_sitter_facade::Language,
 ) -> FormatterResult<(Tree, &'a tree_sitter_facade::Language)> {
     let mut parser = Parser::new()?;
-    grammars
-        .iter()
-        .map(|grammar| {
-            parser.set_language(grammar).map_err(|_| {
-                FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
-            })?;
+    parser.set_language(grammar).map_err(|_| {
+        FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
+    })?;
 
-            let tree = parser
-                .parse(content, None)?
-                .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))?;
+    let tree = parser
+        .parse(content, None)?
+        .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))?;
 
-            // Fail parsing if we don't get a complete syntax tree.
-            check_for_error_nodes(&tree.root_node())?;
+    // Fail parsing if we don't get a complete syntax tree.
+    check_for_error_nodes(&tree.root_node())?;
 
-            Ok((tree, grammar))
-        })
-        .fold(
-            Err(FormatterError::Internal(
-                "Could not find any grammar".into(),
-                None,
-            )),
-            Result::or,
-        )
+    Ok((tree, grammar))
 }
 
 fn check_for_error_nodes(node: &Node) -> FormatterResult<()> {
