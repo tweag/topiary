@@ -82,3 +82,7 @@ button:not(:disabled) {
     border-color: #c792fa;
     color: #212529;
 }
+
+.hidden {
+    display: none;
+}
