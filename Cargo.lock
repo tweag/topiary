@@ -1229,6 +1229,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3369f5ac52d5eb6ab48c6b4ffdc8efbcad6b89c765749064ba298f2c68a16a76"
 
 [[package]]
+name = "test-log"
+version = "0.2.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38f0c854faeb68a048f0f2dc410c5ddae3bf83854ef0e4977d58306a5edef50e"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "textwrap"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1361,6 +1372,7 @@ version = "0.2.1"
 dependencies = [
  "clap 4.3.0",
  "criterion",
+ "env_logger",
  "futures",
  "itertools",
  "log",
@@ -1369,6 +1381,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+ "test-log",
  "tokio",
  "tokio-test",
  "toml",

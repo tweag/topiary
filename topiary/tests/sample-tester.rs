@@ -3,6 +3,7 @@ use std::io::BufReader;
 use std::path::Path;
 
 use prettydiff::text::{diff_lines, ContextConfig};
+use test_log::test;
 
 use topiary::{apply_query, formatter, Configuration, FormatterError, Language, Operation};
 
@@ -22,7 +23,7 @@ fn pretty_assert_eq(v1: &str, v2: &str) {
     }
 }
 
-#[tokio::test]
+#[test(tokio::test)]
 async fn input_output_tester() {
     let input_dir = fs::read_dir("tests/samples/input").unwrap();
     let expected_dir = Path::new("tests/samples/expected");
@@ -68,7 +69,7 @@ async fn input_output_tester() {
 }
 
 // Test that our query files are properly formatted
-#[tokio::test]
+#[test(tokio::test)]
 async fn formatted_query_tester() {
     let config = Configuration::parse_default_config();
     let language_dir = fs::read_dir("../languages").unwrap();
@@ -105,7 +106,7 @@ async fn formatted_query_tester() {
 }
 
 // Test that all queries are used on sample files
-#[tokio::test]
+#[test(tokio::test)]
 async fn exhaustive_query_tester() {
     let config = Configuration::parse_default_config();
     let input_dir = fs::read_dir("tests/samples/input").unwrap();
