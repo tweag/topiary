@@ -44,6 +44,8 @@ web-tree-sitter = { workspace = true, features = ["web"] }
 
 [dev-dependencies]
 criterion = { workspace = true, features = ["async_futures"] }
+env_logger = { workspace = true }
+test-log = { workspace = true }
 tokio-test = { workspace = true }
 
 [[bench]]
