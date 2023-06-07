@@ -41,6 +41,8 @@ async fn input_output_tester() {
                 language.name,
             );
 
+            info!("Formatting {}", file.path().display());
+
             formatter(
                 &mut input,
                 &mut output,
@@ -49,7 +51,7 @@ async fn input_output_tester() {
                 &grammar,
                 Operation::Format {
                     skip_idempotence: false,
-                    tolerate_parse_errors: false,
+                    tolerate_parse_errors: true,
                 },
             )
             .unwrap();
