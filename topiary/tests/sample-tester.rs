@@ -2,6 +2,7 @@ use std::fs;
 use std::io::BufReader;
 use std::path::Path;
 
+use log::info;
 use prettydiff::text::{diff_lines, ContextConfig};
 use test_log::test;
 
@@ -47,6 +48,12 @@ async fn input_output_tester() {
             let query = fs::read_to_string(language.query_file().unwrap()).unwrap();
 
             let grammar = language.grammar().await.unwrap();
+
+            info!(
+                "Formatting file {} as {}.",
+                file.path().display(),
+                language.name,
+            );
 
             formatter(
                 &mut input,
