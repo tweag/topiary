@@ -1475,8 +1475,9 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter-ocaml"
-version = "0.20.1"
-source = "git+https://github.com/tree-sitter/tree-sitter-ocaml#f1106bf834703f1f2f795da1a3b5f8f40174ffcc"
+version = "0.20.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fd16598f40f35974b5e5ec503fcea921d20cefbd8eaf0914ce6bd6edfbb5cee4"
 dependencies = [
  "cc",
  "tree-sitter",

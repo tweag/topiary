@@ -65,7 +65,7 @@
   "and" @allow_blank_line_before
 )
 (value_definition
-  (and_operator) @allow_blank_line_before
+  (let_and_operator) @allow_blank_line_before
 )
 
 ; Append line breaks. If there is a comment following, we don't add anything,
@@ -155,7 +155,15 @@
     "if"
     "in"
     "include"
-    (infix_operator)
+    ; Infix operators
+    (pow_operator)
+    (mult_operator)
+    (add_operator)
+    (concat_operator)
+    (rel_operator)
+    (and_operator)
+    (or_operator)
+    (assign_operator)
     "inherit"
     "initializer"
     (item_attribute)
@@ -186,7 +194,6 @@
     "*"
     "="
     "|"
-    "||"
     "->"
     "<-"
     "{"
@@ -212,7 +219,15 @@
   "downto"
   "else"
   "in"
-  (infix_operator) ; This one can, but we want a space before anyway.
+  ; Infix operators can come after an open parenthesis, but we want a space before anyway
+  (pow_operator)
+  (mult_operator)
+  (add_operator)
+  (concat_operator)
+  (rel_operator)
+  (and_operator)
+  (or_operator)
+  (assign_operator)
   "nonrec"
   "of"
   "rec"
@@ -234,7 +249,7 @@
 ; during their definition, in which case no space must be appended.
 ; space must be appended otherwise
 (
-  (and_operator) @append_space
+  (let_and_operator) @append_space
   .
   ")"* @do_nothing
 )
@@ -393,11 +408,6 @@
   "("* @do_nothing
   .
   "=" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "||" @prepend_space
 )
 (
   "("* @do_nothing
@@ -800,7 +810,7 @@
 )
 
 (value_definition
-  (and_operator) @prepend_spaced_softline
+  (let_and_operator) @prepend_spaced_softline
 )
 
 ; There is a large class of terms which should be separated from "=" by a soft line break.
@@ -1374,37 +1384,34 @@
 
 ; As above, infix expressions are nested grammar elements, so we must identify the
 ; top-level one: it is the one that is not preceded by an infix operator.
-; We only consider the common logic operators, as not to mess with arithmetic expressions
+; We only consider logic operators, as not to mess with arithmetic expressions
 (
-  (infix_operator
-    [
-      "||"
-      "&&"
-    ]
-  )? @do_nothing
+  [
+    (and_operator)
+    (or_operator)
+  ]? @do_nothing
   .
   (infix_expression) @begin_scope @end_scope
   (#scope_id! "infix_expression")
 )
 (infix_expression
-  (infix_operator
-    [
-      "||"
-      "&&"
-    ]
-  ) @prepend_spaced_scoped_softline
+  [
+    (and_operator)
+    (or_operator)
+  ] @prepend_spaced_scoped_softline
   (#scope_id! "infix_expression")
 )
 
-; Put softline and indented blocks after infix operators
-; that have no particular treatment (e.g. "@@")
+; Put softline and indented blocks after all other infix operators
 (infix_expression
-  (infix_operator
-    [
-      "||"
-      "&&"
-    ]? @do_nothing
-  ) @append_spaced_softline @append_indent_start
+  [
+    (pow_operator)
+    (mult_operator)
+    (add_operator)
+    (concat_operator)
+    (rel_operator)
+    (assign_operator)
+  ] @append_spaced_softline @append_indent_start
   .
   (_) @append_indent_end
 )
