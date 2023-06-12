@@ -38,7 +38,27 @@ This name should be decided amongst the team before the release.
 ----------------------------------------------------------------------->
 
 ## [Unreleased]
-[unreleased]: https://github.com/tweag/topiary/compare/v0.2.1...HEAD
+[unreleased]: https://github.com/tweag/topiary/compare/v0.2.2...HEAD
+
+## [0.2.2] - 2023-06-12
+[0.2.1]: https://github.com/tweag/topiary/compare/v0.2.1...v0.2.2
+
+### Added
+ * [#498](https://github.com/tweag/topiary/pull/498) Updated the playground to include a nicer editor.
+ * [#487](https://github.com/tweag/topiary/pull/487) Added a flag to `format` function that allows skipping the idempotency check.
+ * [#486](https://github.com/tweag/topiary/pull/486) Added the processing time to the online playground.
+ * [#484](https://github.com/tweag/topiary/pull/484) Enabled the playground to perform on-the-fly formatting.
+ * [#480](https://github.com/tweag/topiary/pull/480) Shows which languages are marked as experimental in the playground.
+
+### Changed
+ * [#490](https://github.com/tweag/topiary/pull/490) Bumped the Nickel grammar.
+ * [#494](https://github.com/tweag/topiary/pull/494) Bumped the OCaml grammar, and fixed for the renamed `infix_operator` named node.
+
+### Fixed
+ * [#493](https://github.com/tweag/topiary/pull/493) Fixed
+   [#492](https://github.com/tweag/topiary/issues/492) by only trimming newlines in prettyprinting.
+ * [#491](https://github.com/tweag/topiary/pull/493) Fixed
+   [#481](https://github.com/tweag/topiary/issues/492), a SIGSEGV in exhaustivity testing.
 
 ## [0.2.1] - 2023-05-23
 [0.2.1]: https://github.com/tweag/topiary/compare/v0.2.0...v0.2.1
