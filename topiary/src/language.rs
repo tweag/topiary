@@ -133,6 +133,7 @@ impl TryFrom<&Language> for PathBuf {
             "rust" => "rust",
             "toml" => "toml",
             "tree_sitter_query" => "tree-sitter-query",
+            "typst" => "typst",
             name => return Err(FormatterError::UnsupportedLanguage(name.to_string())),
         })
         .with_extension("scm");
