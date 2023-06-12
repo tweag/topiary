@@ -57,7 +57,7 @@ This name should be decided amongst the team before the release.
  * [#493](https://github.com/tweag/topiary/pull/493) Fixed
    [#492](https://github.com/tweag/topiary/issues/492) by only trimming newlines in prettyprinting.
  * [#491](https://github.com/tweag/topiary/pull/493) Fixed
-   [#481](https://github.com/tweag/topiary/issues/492), a SEGSEGV in exhaustivity testing.
+   [#481](https://github.com/tweag/topiary/issues/492), a SIGSEGV in exhaustivity testing.
 
 ## [0.2.1] - 2023-05-23
 [0.2.1]: https://github.com/tweag/topiary/compare/v0.2.0...v0.2.1
