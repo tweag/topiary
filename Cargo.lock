@@ -1502,7 +1502,7 @@ dependencies = [
 [[package]]
 name = "tree-sitter-typst"
 version = "0.0.1"
-source = "git+https://github.com/ErinvanderVeen/tree-sitter-typst?branch=scanner-in-build#143d7a1789df6d8c2d61f994a690cc9b601b882f"
+source = "git+https://github.com/ErinvanderVeen/tree-sitter-typst-2?branch=scanner-build#fbf1be39deff9c1f5b41c46aee36616eeb69bda9"
 dependencies = [
  "cc",
  "tree-sitter",
