@@ -52,6 +52,7 @@ This name should be decided amongst the team before the release.
 
 ### Changed
  * [#490](https://github.com/tweag/topiary/pull/490) Bumped the Nickel grammar.
+ * [#494](https://github.com/tweag/topiary/pull/494) Bumped the OCaml grammar, and fixed for the renamed `infix_operator` named node.
 
 ### Fixed
  * [#493](https://github.com/tweag/topiary/pull/493) Fixed
