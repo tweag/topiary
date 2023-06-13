@@ -40,6 +40,9 @@ pub enum FormatterError {
 
     /// The configuration file or command line mentions an unsupported language
     UnsupportedLanguage(String),
+
+    /// Configuration file parsing error
+    ConfigurationParsing(PathBuf, toml::de::Error),
 }
 
 /// A subtype of `FormatterError::Io`
@@ -110,6 +113,12 @@ impl fmt::Display for FormatterError {
             Self::UnsupportedLanguage(language) => {
                 write!(f, "The following language is not supported: {language}")
             }
+
+            Self::ConfigurationParsing(filepath, err) => {
+                let filepath = filepath.to_string_lossy();
+                let message = err.message();
+                write!(f, "Could not parse the configuration file at {filepath}. Parsing returned the following error: {message}")
+            }
         }
     }
 }
@@ -128,6 +137,7 @@ impl Error for FormatterError {
             Self::Io(IoError::Filesystem(_, source)) => Some(source),
             Self::Io(IoError::Generic(_, Some(source))) => Some(source.as_ref()),
             Self::Formatting(err) => Some(err),
+            Self::ConfigurationParsing(_, err) => Some(err),
         }
     }
 }

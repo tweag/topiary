@@ -45,7 +45,7 @@ async fn format_inner(
 ) -> FormatterResult<String> {
     let mut output = Vec::new();
 
-    let configuration = Configuration::parse_default_config();
+    let configuration = Configuration::parse_default_configuration();
     let language = configuration.get_language(language_name)?;
     let grammars = language.grammars_wasm().await?;
 
