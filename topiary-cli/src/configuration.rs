@@ -2,16 +2,16 @@ use serde_toml_merge::merge;
 use std::{env::current_dir, path::PathBuf};
 use topiary::{default_configuration_toml, Configuration};
 
-pub fn parse_configuration() -> Configuration {
-    user_configuration_toml()
-        .expect("TODO: Error")
+use crate::error::{CLIError, CLIResult, TopiaryError};
+
+pub fn parse_configuration() -> CLIResult<Configuration> {
+    user_configuration_toml()?
         .try_into()
-        .expect("TODO: Error")
+        .map_err(TopiaryError::from)
 }
 
 /// User configured languages.toml file, merged with the default config.
-fn user_configuration_toml() -> Result<toml::Value, toml::de::Error> {
-    // TODO(Erin): Error on failure to find workspace
+fn user_configuration_toml() -> CLIResult<toml::Value> {
     let config = [find_workspace().join(".topiary")]
         .into_iter()
         .map(|path| path.join("languages.toml"))

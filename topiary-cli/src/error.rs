@@ -116,3 +116,12 @@ where
         )
     }
 }
+
+impl From<toml::de::Error> for TopiaryError {
+    fn from(e: toml::de::Error) -> Self {
+        TopiaryError::Bin(
+            "Could not parse user configuration".to_owned(),
+            Some(CLIError::Generic(Box::new(e))),
+        )
+    }
+}
