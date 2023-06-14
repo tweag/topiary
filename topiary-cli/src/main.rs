@@ -68,6 +68,7 @@ struct Args {
     #[arg(short, long, display_order = 7)]
     skip_idempotence: bool,
 
+    /// Output the full configuration to stderr before continuing
     #[arg(long, display_order = 8)]
     output_configuration: bool,
 }
