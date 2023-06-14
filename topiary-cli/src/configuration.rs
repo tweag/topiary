@@ -2,7 +2,7 @@ use serde_toml_merge::merge;
 use std::{env::current_dir, path::PathBuf};
 use topiary::{default_configuration_toml, Configuration};
 
-use crate::error::{CLIError, CLIResult, TopiaryError};
+use crate::error::{CLIResult, TopiaryError};
 
 pub fn parse_configuration() -> CLIResult<Configuration> {
     user_configuration_toml()?

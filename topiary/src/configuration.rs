@@ -35,10 +35,10 @@ impl Configuration {
         ));
     }
 
-    pub fn parse_default_configuration() -> Self {
+    pub fn parse_default_configuration() -> FormatterResult<Self> {
         default_configuration_toml()
             .try_into()
-            .expect("TODO: Error")
+            .map_err(FormatterError::from)
     }
 }
 

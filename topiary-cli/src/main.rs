@@ -87,7 +87,7 @@ async fn run() -> CLIResult<()> {
     env_logger::init();
     let args = Args::parse();
 
-    let configuration = parse_configuration();
+    let configuration = parse_configuration()?;
 
     if args.output_configuration {
         eprintln!("{:#?}", configuration);
