@@ -42,6 +42,12 @@ impl Configuration {
     }
 }
 
+impl Default for Configuration {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Default built-in languages.toml.
 pub fn default_configuration_toml() -> toml::Value {
     let default_config = include_bytes!("../../languages.toml");
