@@ -22,9 +22,7 @@ fn user_configuration_toml() -> CLIResult<toml::Value> {
         })
         .collect::<Result<Vec<_>, _>>()?
         .into_iter()
-        .fold(default_configuration_toml(), |a, b| {
-            merge(a, b).expect("TODO: Gracefull fail")
-        });
+        .try_fold(default_configuration_toml(), |a, b| merge(a, b))?;
 
     Ok(config)
 }

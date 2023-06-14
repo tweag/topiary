@@ -125,3 +125,12 @@ impl From<toml::de::Error> for TopiaryError {
         )
     }
 }
+
+impl From<serde_toml_merge::Error> for TopiaryError {
+    fn from(e: serde_toml_merge::Error) -> Self {
+        TopiaryError::Bin(
+            format!("Could not merge the default configuration and user configurations. Error occured while merging: {}", e.path),
+            None,
+        )
+    }
+}
