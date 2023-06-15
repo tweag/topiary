@@ -3,20 +3,14 @@ use std::{collections::HashSet, str::from_utf8};
 use crate::{language::Language, FormatterError, FormatterResult};
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Configuration {
     pub language: Vec<Language>,
 }
 
 impl Configuration {
-    // TODO: Should be able to take a filepath.
-    // TODO: Should return a FormatterResult rather than panicking.
-    #[must_use]
-    pub fn parse_default_config() -> Self {
-        let default_config = include_bytes!("../../languages.toml");
-        let default_config = toml::from_str(from_utf8(default_config).unwrap())
-            .expect("Could not parse built-in languages.toml");
-        default_config
+    pub fn new() -> Self {
+        Configuration { language: vec![] }
     }
 
     #[must_use]
@@ -40,4 +34,23 @@ impl Configuration {
             name.as_ref().to_string(),
         ));
     }
+
+    pub fn parse_default_configuration() -> FormatterResult<Self> {
+        default_configuration_toml()
+            .try_into()
+            .map_err(FormatterError::from)
+    }
+}
+
+impl Default for Configuration {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Default built-in languages.toml.
+pub fn default_configuration_toml() -> toml::Value {
+    let default_config = include_bytes!("../../languages.toml");
+    toml::from_str(from_utf8(default_config).unwrap())
+        .expect("Could not parse built-in languages.toml to valid toml")
 }

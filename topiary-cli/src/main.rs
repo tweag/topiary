@@ -1,8 +1,10 @@
+mod configuration;
 mod error;
 mod output;
 mod visualise;
 
 use std::{
+    eprintln,
     error::Error,
     fs::File,
     io::{stdin, BufReader, BufWriter, Read},
@@ -11,13 +13,14 @@ use std::{
 };
 
 use clap::{ArgGroup, Parser};
+use configuration::parse_configuration;
 
 use crate::{
     error::{CLIError, CLIResult, TopiaryError},
     output::OutputFile,
     visualise::Visualisation,
 };
-use topiary::{formatter, Configuration, Language, Operation, SupportedLanguage};
+use topiary::{formatter, Language, Operation, SupportedLanguage};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -64,6 +67,10 @@ struct Args {
     /// Do not check that formatting twice gives the same output
     #[arg(short, long, display_order = 7)]
     skip_idempotence: bool,
+
+    /// Output the full configuration to stderr before continuing
+    #[arg(long, display_order = 8)]
+    output_configuration: bool,
 }
 
 #[tokio::main]
@@ -80,7 +87,11 @@ async fn run() -> CLIResult<()> {
     env_logger::init();
     let args = Args::parse();
 
-    let configuration = Configuration::parse_default_config();
+    let configuration = parse_configuration()?;
+
+    if args.output_configuration {
+        eprintln!("{:#?}", configuration);
+    }
 
     // The as_deref() gives us an Option<&str>, which we can match against
     // string literals

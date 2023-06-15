@@ -27,7 +27,7 @@ fn pretty_assert_eq(v1: &str, v2: &str) {
 async fn input_output_tester() {
     let input_dir = fs::read_dir("tests/samples/input").unwrap();
     let expected_dir = Path::new("tests/samples/expected");
-    let config = Configuration::parse_default_config();
+    let config = Configuration::parse_default_configuration().unwrap();
     let extensions = config.known_extensions();
 
     for file in input_dir {
@@ -71,7 +71,7 @@ async fn input_output_tester() {
 // Test that our query files are properly formatted
 #[test(tokio::test)]
 async fn formatted_query_tester() {
-    let config = Configuration::parse_default_config();
+    let config = Configuration::parse_default_configuration().unwrap();
     let language_dir = fs::read_dir("../languages").unwrap();
 
     for file in language_dir {
@@ -108,7 +108,7 @@ async fn formatted_query_tester() {
 // Test that all queries are used on sample files
 #[test(tokio::test)]
 async fn exhaustive_query_tester() {
-    let config = Configuration::parse_default_config();
+    let config = Configuration::parse_default_configuration().unwrap();
     let input_dir = fs::read_dir("tests/samples/input").unwrap();
 
     for file in input_dir {

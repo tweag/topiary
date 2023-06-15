@@ -16,7 +16,7 @@ use itertools::Itertools;
 use pretty_assertions::StrComparison;
 
 pub use crate::{
-    configuration::Configuration,
+    configuration::{default_configuration_toml, Configuration},
     error::{FormatterError, IoError},
     language::{Language, SupportedLanguage},
     tree_sitter::{apply_query, SyntaxNode, Visualisation},
@@ -134,7 +134,7 @@ pub enum Operation {
 /// let mut query = String::new();
 /// query_file.read_to_string(&mut query).expect("read query file");
 ///
-/// let config = Configuration::parse_default_config();
+/// let config = Configuration::parse_default_configuration().unwrap();
 /// let language = config.get_language("json").unwrap();
 /// let grammars = language
 ///     .grammars()
@@ -276,7 +276,7 @@ mod test {
         let mut input = "[ 1, % ]".as_bytes();
         let mut output = Vec::new();
         let query = "(#language! json)";
-        let configuration = Configuration::parse_default_config();
+        let configuration = Configuration::parse_default_configuration().unwrap();
         let language = configuration.get_language("json").unwrap();
         let grammars = language.grammars().await.unwrap();
 

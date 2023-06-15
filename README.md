@@ -171,6 +171,7 @@ Options:
   -i, --in-place                     Format the input file in place
   -v, --visualise[=<OUTPUT_FORMAT>]  Visualise the syntax tree, rather than format [possible values: json, dot]
   -s, --skip-idempotence             Do not check that formatting twice gives the same output
+      --output-configuration         Output the full configuration to stderr before continuing
   -h, --help                         Print help
   -V, --version                      Print version
 ```

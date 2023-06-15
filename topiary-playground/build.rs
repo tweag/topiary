@@ -51,7 +51,8 @@ fn main() {
     for path in input_files {
         let path = path.unwrap().path();
         if let Some(ext) = path.extension().map(|ext| ext.to_string_lossy()) {
-            if !Configuration::parse_default_config()
+            if !Configuration::parse_default_configuration()
+                .unwrap()
                 .known_extensions()
                 .contains(&*ext)
                 || ext == "mli"

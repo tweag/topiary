@@ -207,3 +207,12 @@ impl From<tree_sitter_facade::ParserError> for FormatterError {
         Self::Internal("Error while parsing".into(), Some(Box::new(e)))
     }
 }
+
+impl From<toml::de::Error> for FormatterError {
+    fn from(e: toml::de::Error) -> Self {
+        Self::Internal(
+            "Error while parsing the internal configuration file".to_owned(),
+            Some(Box::new(e)),
+        )
+    }
+}
