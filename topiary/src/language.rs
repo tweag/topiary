@@ -68,8 +68,6 @@ impl Language {
 
     #[cfg(target_arch = "wasm32")]
     pub async fn grammar_wasm(&self) -> FormatterResult<tree_sitter_facade::Language> {
-        use futures::future::join_all;
-
         let language_name = match self.name.as_str() {
             "bash" => "bash",
             "json" => "json",
