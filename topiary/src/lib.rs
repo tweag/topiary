@@ -136,12 +136,12 @@ pub enum Operation {
 ///
 /// let config = Configuration::parse_default_configuration().unwrap();
 /// let language = config.get_language("json").unwrap();
-/// let grammars = language
-///     .grammars()
+/// let grammar = language
+///     .grammar()
 ///     .await
-///     .expect("grammars");
+///     .expect("grammar");
 ///
-/// match formatter(&mut input, &mut output, &query, &language, &grammars, Operation::Format{ skip_idempotence: false }) {
+/// match formatter(&mut input, &mut output, &query, &language, &grammar, Operation::Format{ skip_idempotence: false }) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
