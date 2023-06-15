@@ -38,6 +38,12 @@ fn main() {
             let name: String = path.file_stem().unwrap().to_string_lossy().to_string();
 
             let content = to_js_string(path);
+
+            // Copy the ocaml query for ocaml-interface as well
+            if name == "ocaml" {
+                language_map.insert("ocaml-interface".to_string(), content.clone());
+            }
+
             language_map.insert(name, content);
         }
     }
@@ -67,8 +73,8 @@ fn main() {
 
     let mut buffer = String::new();
 
-    for (name, query) in language_map.into_iter().sorted() {
-        if let Some(input) = input_map.get(&name) {
+    for (name, input) in input_map.into_iter().sorted() {
+        if let Some(query) = language_map.get(&name) {
             let supported = SupportedLanguage::is_supported(&name);
 
             buffer.push_str(&format!(
