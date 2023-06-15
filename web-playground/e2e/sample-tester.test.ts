@@ -70,7 +70,7 @@ describe('test all grammars with puppeteer', () => {
             }
             const inputPath = path.join(inputDir, inputFileName);
             const expectedPath = path.join(expectedDir, inputFileName);
-            const queryFileName = inputFileName.replace(/\..*$/, ".scm");
+            const queryFileName = inputFileName === "ocaml-interface.mli" ? "ocaml.scm" : inputFileName.replace(/\..*$/, ".scm");
             const queryPath = path.join(queryDir, queryFileName);
 
             console.log(`Testing ${inputPath} - ${expectedPath} - ${queryPath}`);

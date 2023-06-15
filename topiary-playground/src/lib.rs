@@ -47,14 +47,14 @@ async fn format_inner(
 
     let configuration = Configuration::parse_default_configuration()?;
     let language = configuration.get_language(language_name)?;
-    let grammars = language.grammars_wasm().await?;
+    let grammar = language.grammar_wasm().await?;
 
     formatter(
         &mut input.as_bytes(),
         &mut output,
         query,
         language,
-        &grammars,
+        &grammar,
         Operation::Format {
             skip_idempotence: !check_idempotence,
         },

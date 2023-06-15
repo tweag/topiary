@@ -164,7 +164,7 @@ CLI app for Topiary, the universal code formatter.
 Usage: topiary [OPTIONS] <--language <LANGUAGE>|--input-file <INPUT_FILE>>
 
 Options:
-  -l, --language <LANGUAGE>          Which language to parse and format [possible values: json, nickel, ocaml, ocaml-implementation, ocaml-interface, toml]
+  -l, --language <LANGUAGE>          Which language to parse and format [possible values: json, nickel, ocaml, ocaml-interface, toml]
   -f, --input-file <INPUT_FILE>      Path to an input file. If omitted, or equal to "-", read from standard input
   -q, --query <QUERY>                Which query file to use
   -o, --output-file <OUTPUT_FILE>    Path to an output file. If omitted, or equal to "-", write to standard output

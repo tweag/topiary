@@ -136,12 +136,12 @@ pub enum Operation {
 ///
 /// let config = Configuration::parse_default_configuration().unwrap();
 /// let language = config.get_language("json").unwrap();
-/// let grammars = language
-///     .grammars()
+/// let grammar = language
+///     .grammar()
 ///     .await
-///     .expect("grammars");
+///     .expect("grammar");
 ///
-/// match formatter(&mut input, &mut output, &query, &language, &grammars, Operation::Format{ skip_idempotence: false }) {
+/// match formatter(&mut input, &mut output, &query, &language, &grammar, Operation::Format{ skip_idempotence: false }) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
@@ -159,7 +159,7 @@ pub fn formatter(
     output: &mut impl io::Write,
     query: &str,
     language: &Language,
-    grammars: &[tree_sitter_facade::Language],
+    grammar: &tree_sitter_facade::Language,
     operation: Operation,
 ) -> FormatterResult<()> {
     let content = read_input(input).map_err(|e| {
@@ -173,7 +173,7 @@ pub fn formatter(
         Operation::Format { skip_idempotence } => {
             // All the work related to tree-sitter and the query is done here
             log::info!("Apply Tree-sitter query");
-            let mut atoms = tree_sitter::apply_query(&content, query, grammars, false)?;
+            let mut atoms = tree_sitter::apply_query(&content, query, grammar, false)?;
 
             // Various post-processing of whitespace
             atoms.post_process();
@@ -188,14 +188,14 @@ pub fn formatter(
             let trimmed = trim_whitespace(&rendered);
 
             if !skip_idempotence {
-                idempotence_check(&trimmed, query, language, grammars)?;
+                idempotence_check(&trimmed, query, language, grammar)?;
             }
 
             write!(output, "{trimmed}")?;
         }
 
         Operation::Visualise { output_format } => {
-            let (tree, _) = tree_sitter::parse(&content, grammars)?;
+            let (tree, _) = tree_sitter::parse(&content, grammar)?;
             let root: SyntaxNode = tree.root_node().into();
 
             match output_format {
@@ -225,7 +225,7 @@ fn idempotence_check(
     content: &str,
     query: &str,
     language: &Language,
-    grammars: &[tree_sitter_facade::Language],
+    grammar: &tree_sitter_facade::Language,
 ) -> FormatterResult<()> {
     log::info!("Checking for idempotence ...");
 
@@ -237,7 +237,7 @@ fn idempotence_check(
         &mut output,
         query,
         language,
-        grammars,
+        grammar,
         Operation::Format {
             skip_idempotence: true,
         },
@@ -278,14 +278,14 @@ mod test {
         let query = "(#language! json)";
         let configuration = Configuration::parse_default_configuration().unwrap();
         let language = configuration.get_language("json").unwrap();
-        let grammars = language.grammars().await.unwrap();
+        let grammar = language.grammar().await.unwrap();
 
         match formatter(
             &mut input,
             &mut output,
             query,
             language,
-            &grammars,
+            &grammar,
             Operation::Format {
                 skip_idempotence: true,
             },

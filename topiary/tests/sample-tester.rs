@@ -2,6 +2,7 @@ use std::fs;
 use std::io::BufReader;
 use std::path::Path;
 
+use log::info;
 use prettydiff::text::{diff_lines, ContextConfig};
 use test_log::test;
 
@@ -46,14 +47,20 @@ async fn input_output_tester() {
             let mut output = Vec::new();
             let query = fs::read_to_string(language.query_file().unwrap()).unwrap();
 
-            let grammars = language.grammars().await.unwrap();
+            let grammar = language.grammar().await.unwrap();
+
+            info!(
+                "Formatting file {} as {}.",
+                file.path().display(),
+                language.name,
+            );
 
             formatter(
                 &mut input,
                 &mut output,
                 &query,
                 language,
-                &grammars,
+                &grammar,
                 Operation::Format {
                     skip_idempotence: false,
                 },
@@ -84,14 +91,14 @@ async fn formatted_query_tester() {
         let mut output = Vec::new();
         let query = fs::read_to_string(language.query_file().unwrap()).unwrap();
 
-        let grammars = language.grammars().await.unwrap();
+        let grammar = language.grammar().await.unwrap();
 
         formatter(
             &mut input,
             &mut output,
             &query,
             language,
-            &grammars,
+            &grammar,
             Operation::Format {
                 skip_idempotence: false,
             },
@@ -113,8 +120,8 @@ async fn exhaustive_query_tester() {
 
     for file in input_dir {
         let file = file.unwrap();
-        // We skip "ocaml.mli", as its query file is already tested by "ocaml.ml"
-        if file.file_name().to_string_lossy() == "ocaml.mli" {
+        // We skip "ocaml-interface.mli", as its query file is already tested by "ocaml.ml"
+        if file.file_name().to_string_lossy() == "ocaml-interface.mli" {
             continue;
         }
         let language = Language::detect(file.path(), &config).unwrap();
@@ -123,9 +130,9 @@ async fn exhaustive_query_tester() {
         let input_content = fs::read_to_string(&file.path()).unwrap();
         let query_content = fs::read_to_string(&query_file).unwrap();
 
-        let grammars = language.grammars().await.unwrap();
+        let grammar = language.grammar().await.unwrap();
 
-        apply_query(&input_content, &query_content, &grammars, true).unwrap_or_else(|e| {
+        apply_query(&input_content, &query_content, &grammar, true).unwrap_or_else(|e| {
             if let FormatterError::PatternDoesNotMatch(_) = e {
                 panic!("Found untested query in file {query_file:?}:\n{e}");
             } else {
