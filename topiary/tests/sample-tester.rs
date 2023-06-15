@@ -120,7 +120,7 @@ async fn exhaustive_query_tester() {
 
     for file in input_dir {
         let file = file.unwrap();
-        // We skip "ocaml.mli", as its query file is already tested by "ocaml.ml"
+        // We skip "ocaml-interface.mli", as its query file is already tested by "ocaml.ml"
         if file.file_name().to_string_lossy() == "ocaml-interface.mli" {
             continue;
         }
