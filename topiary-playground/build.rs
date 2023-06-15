@@ -55,9 +55,7 @@ fn main() {
                 .unwrap()
                 .known_extensions()
                 .contains(&*ext)
-                || ext == "mli"
             {
-                // skip ocaml.mli, keep ocaml.ml
                 continue;
             }
 
