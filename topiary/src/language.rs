@@ -70,7 +70,7 @@ impl Language {
     pub async fn grammar_wasm(&self) -> FormatterResult<tree_sitter_facade::Language> {
         use futures::future::join_all;
 
-        let language_names = match self.name.as_str() {
+        let language_name = match self.name.as_str() {
             "bash" => "bash",
             "json" => "json",
             "nickel" => "nickel",
@@ -82,22 +82,15 @@ impl Language {
             name => return Err(FormatterError::UnsupportedLanguage(name.to_string())),
         };
 
-        Ok(join_all(language_names.iter().map(|name| async move {
-            web_tree_sitter::Language::load_path(&format!(
-                "/playground/scripts/tree-sitter-{name}.wasm"
-            ))
-            .await
-        }))
+        Ok(web_tree_sitter::Language::load_path(&format!(
+            "/playground/scripts/tree-sitter-{language_name}.wasm"
+        ))
         .await
-        .into_iter()
-        .collect::<Result<Vec<_>, _>>()
         .map_err(|e| {
             let error: tree_sitter_facade::LanguageError = e.into();
             error
         })?
-        .into_iter()
-        .map(Into::into)
-        .collect())
+        .into())
     }
 }
 
