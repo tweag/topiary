@@ -9,26 +9,57 @@ use tree_sitter_facade::Node;
 
 use crate::{Atom, FormatterError, FormatterResult, ScopeCondition};
 
+/// A struct that holds sets of node IDs that have line breaks before or after them.
+///
+/// This struct is used by the `detect_line_breaks` function to return the node IDs that
+/// have at least `minimum_line_breaks` number of line breaks before or after them in the
+/// flattened vector of nodes.
 struct NodesWithLinebreaks {
+    /// A set of node IDs that have line breaks before them.
     before: HashSet<usize>,
+    /// A set of node IDs that have line breaks after them.
     after: HashSet<usize>,
 }
 
+/// Contains Topiary's internal representation parsed document.
 #[derive(Debug)]
 pub struct AtomCollection {
+    /// A flat list of all Atoms. This is is updated by some formatting
+    /// directives, but most require some more complexity.
     atoms: Vec<Atom>,
+    /// Whenever a formatting directive instructs tree-sitter to prepend
+    /// something to a node, a new Atom is added to this HashMap.
+    /// The key of the hashmap is the identifier of the node.
     prepend: HashMap<usize, Vec<Atom>>,
+    /// Whenever a formatting directive instructs tree-sitter to append
+    /// something to a node, a new Atom is added to this HashMap.
+    /// The key of the hashmap is the identifier of the node.
     append: HashMap<usize, Vec<Atom>>,
+    /// A query file can define custom leaf nodes (nodes that Topiary should not
+    /// touch during formatting). When such a node is encountered, its id is stored in
+    /// this HashSet.
     specified_leaf_nodes: HashSet<usize>,
+    /// If a node is a leaf, or if it is explicitly marked as such by the
+    /// formatting directives, it is added to this HashMap as the key. The value
+    /// of the Map contains all child nodes.
     parent_leaf_nodes: HashMap<usize, usize>,
+    /// Topiary has some formatting directives that only apply if a node spans
+    /// multiple lines. During initial collection all such nodes are added to this
+    /// HashSet for easy checking if a node spans multiple lines.
     multi_line_nodes: HashSet<usize>,
+    /// During initial Atom collection, any node that has a blank lines above
+    /// the node is added to this HashSet.
     blank_lines_before: HashSet<usize>,
+    /// During initial Atom collection, any node that has a linebreak directly
+    /// before it the node is added to this HashSet.
     line_break_before: HashSet<usize>,
+    /// During initial Atom collection, any node that has a linebreak directly
+    /// after it the node is added to this HashSet.
     line_break_after: HashSet<usize>,
     /// The semantics of the types of scope_begin and scope_end is
-    // HashMap<leaf_node_id, (line_number, Vec<scope_id>)>
-    // The line number is passed here because otherwise the information
-    // is lost at post-processing time.
+    /// HashMap<leaf_node_id, (line_number, Vec<scope_id>)>
+    /// The line number is passed here because otherwise the information
+    /// is lost at post-processing time.
     scope_begin: HashMap<usize, (u32, Vec<String>)>,
     scope_end: HashMap<usize, (u32, Vec<String>)>,
     /// Used to generate unique IDs
@@ -93,7 +124,21 @@ impl AtomCollection {
         }
     }
 
-    /// This gets called a lot during query processing, and needs to be efficient.
+    /// Resolves a capture name by modifying the AtomCollection based on the
+    /// instructions provided by the capture name on the Node.
+    ///
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - The name of the capture, starting with `@`.
+    /// * `node` - The node that matches the capture in the syntax tree.
+    /// * `predicates` - The query predicates that modify the formatting behavior for the capture.
+    ///
+    /// # Errors
+    ///
+    /// This function returns an error if the capture name requires a predicate that is not present.
+    /// It also returns an error if the capture name is not recognized by Topiary.
+    // NOTE: This gets called a lot during query processing, and needs to be efficient.
     pub fn resolve_capture(
         &mut self,
         name: &str,
@@ -308,6 +353,8 @@ impl AtomCollection {
         self.atoms = expanded;
     }
 
+    /// Marks the provided node as the parent of all its child nodes by adding
+    /// it to the `parent_leaf_nodes` HashMap.
     fn mark_leaf_parent(&mut self, node: &Node, parent_id: usize) {
         self.parent_leaf_nodes.insert(node.id(), parent_id);
         for child in node.children(&mut node.walk()) {
@@ -315,6 +362,21 @@ impl AtomCollection {
         }
     }
 
+    /// This function collects the leaf nodes of a tree-sitter CST tree and stores them in the `atoms` field of the internal formatter state.
+    /// It also marks the leaf parent of each node in the `leaf_parent` field of the formatter.
+    /// A leaf node is either a node with no children or a node that is specified as a leaf node by the formatter.
+    /// A leaf parent is the closest ancestor of a node that is a leaf node.
+    ///
+    /// # Arguments
+    ///
+    /// * `node` - The current node to process.
+    /// * `source` - The full source code as a byte slice.
+    /// * `parent_ids` - A vector of node ids that are the ancestors of the current node.
+    /// * `level` - The depth of the current node in the CST tree.
+    ///
+    /// # Errors
+    ///
+    /// This function returns an error if it fails to convert the source code belonging to the node to UTF-8.
     fn collect_leafs_inner(
         &mut self,
         node: &Node,
@@ -358,6 +420,13 @@ impl AtomCollection {
         Ok(())
     }
 
+    /// Prepend an atom to the first leaf node in the subtree of a given node.
+    ///
+    /// # Arguments
+    ///
+    /// * `atom` - The atom to prepend.
+    /// * `node` - The node to which the atom is prepended.
+    /// * `predicates` - The query predicates to wrap the atom with.
     fn prepend(&mut self, atom: Atom, node: &Node, predicates: &QueryPredicates) {
         let atom = self.expand_multiline(atom, node);
         let atom = self.wrap(atom, predicates);
@@ -369,6 +438,13 @@ impl AtomCollection {
         self.prepend.entry(target_node.id()).or_default().push(atom);
     }
 
+    /// Append an atom to the last leaf node in the subtree of a given node.
+    ///
+    /// # Arguments
+    ///
+    /// * `atom` - The atom to append.
+    /// * `node` - The node to which the atom is appended.
+    /// * `predicates` - The query predicates to wrap the atom with.
     fn append(&mut self, atom: Atom, node: &Node, predicates: &QueryPredicates) {
         let atom = self.expand_multiline(atom, node);
         let atom = self.wrap(atom, predicates);
@@ -379,6 +455,12 @@ impl AtomCollection {
         self.append.entry(target_node.id()).or_default().push(atom);
     }
 
+    /// Begins a scope with the given `scope_id` before the first leaf node of the given `node`'s subtree.
+    ///
+    /// # Arguments
+    ///
+    /// * `node` - A reference to a `Node` object that represents a subtree in the syntax tree.
+    /// * `scope_id` - A reference to a string that identifies the scope to begin.
     fn begin_scope_before(&mut self, node: &Node, scope_id: &str) {
         let target_node = self.first_leaf(node);
 
@@ -395,6 +477,12 @@ impl AtomCollection {
             });
     }
 
+    /// Ends a scope with the given `scope_id` after the last leaf node of the given `node`'s subtree.
+    ///
+    /// # Arguments
+    ///
+    /// * `node` - A reference to a `Node` object that represents a subtree in the syntax tree.
+    /// * `scope_id` - A reference to a string that identifies the scope to end.
     fn end_scope_after(&mut self, node: &Node, scope_id: &str) {
         let target_node = self.last_leaf(node);
 
@@ -411,6 +499,23 @@ impl AtomCollection {
             });
     }
 
+    /// Expands a softline atom to a hardline, space or empty atom depending on
+    /// if we are in a multiline context or not.
+    ///
+    /// If the node's parent is labelled as a multi-line node, it expands the
+    /// softline to a hardline, otherwise it is turned into a space.
+    /// If the node has no parent, the softline atom is discarded by returning an empty atom.
+    ///
+    /// The function ignores all atoms that are not softlines.
+    ///
+    /// # Arguments
+    ///
+    /// * `atom` - An atom to be expanded.
+    /// * `node` - The node to which the atom applies.
+    ///
+    /// # Returns
+    ///
+    /// A new atom after expanding the softline if applicable.
     fn expand_multiline(&self, atom: Atom, node: &Node) -> Atom {
         if let Atom::Softline { spaced } = atom {
             if let Some(parent) = node.parent() {
@@ -444,10 +549,10 @@ impl AtomCollection {
     }
 
     /// This function expands `ScopedSoftline` atoms depending on whether the context
-    // containing them is multiline.
-    // It does two passes over the atom collection: the first one associates each `ScopedSoftline`
-    // to its scope, and decides what to replace them with when the scope ends.
-    // The second pass applies the modifications to the atoms.
+    /// containing them is multiline.
+    /// It does two passes over the atom collection: the first one associates each `ScopedSoftline`
+    /// to its scope, and decides what to replace them with when the scope ends.
+    /// The second pass applies the modifications to the atoms.
     fn post_process_scopes(&mut self) {
         type ScopeId = String;
         type LineIndex = u32;
@@ -579,7 +684,7 @@ impl AtomCollection {
         }
     }
 
-    // Separate post_processing of Delete sections, to avoid interference with whitespace logic
+    /// Separate post_processing of Delete sections, to avoid interference with whitespace logic
     fn post_process_deletes(&mut self) {
         let mut delete_level = 0;
         for atom in &mut self.atoms {
@@ -604,10 +709,10 @@ impl AtomCollection {
         }
     }
 
-    // This function merges the spaces, new lines and blank lines.
-    // If there are several tokens of different kind one after the other,
-    // the blank line is kept over the new line which itself is kept over the space.
-    // Furthermore, this function put the indentation delimiters before any space/line atom.
+    /// This function merges the spaces, new lines and blank lines.
+    /// If there are several tokens of different kind one after the other,
+    /// the blank line is kept over the new line which itself is kept over the space.
+    /// Furthermore, this function put the indentation delimiters before any space/line atom.
     pub fn post_process(&mut self) {
         self.post_process_scopes();
         self.post_process_deletes();
@@ -690,11 +795,27 @@ impl AtomCollection {
 
     // TODO: first_leaf and last_leaf can probably be simplified.
 
-    /// Given a node, returns the id of the first leaf in the subtree.
+    /// Returns the first leaf node of a given node's subtree.
+    ///
+    /// This function recursively traverses the tree from the given node
+    /// and returns the first leaf.
+    /// A leaf node is a node that either has no children, or is specified in
+    /// the `specified_leaf_nodes` HashSet.
+    ///
+    /// # Arguments
+    ///
+    /// * `node` - A reference to a node in the tree.
+    ///
+    /// # Returns
+    ///
+    /// A `Cow` enum that wraps a borrowed node.
     fn first_leaf<'tree, 'node: 'tree>(&self, node: &'node Node<'tree>) -> Cow<'node, Node<'tree>> {
         self.first_leaf_inner(Cow::Borrowed(node))
     }
 
+    /// Helper function to the `first_leaf` function.
+    /// Recursively calls itself on the first child of the given node
+    /// until it reaches a leaf node.
     fn first_leaf_inner<'tree, 'node: 'tree>(
         &self,
         node: Cow<'node, Node<'tree>>,
@@ -707,11 +828,27 @@ impl AtomCollection {
         }
     }
 
-    /// Given a node, returns the id of the last leaf in the subtree.
+    /// Returns the last leaf node of a given node's subtree.
+    ///
+    /// This function recursively traverses the tree from the given node
+    /// and returns the last leaf.
+    /// A leaf node is a node that either has no children, or is specified in
+    /// the `specified_leaf_nodes` HashSet.
+    ///
+    /// # Arguments
+    ///
+    /// * `node` - A reference to a node in the tree.
+    ///
+    /// # Returns
+    ///
+    /// A `Cow` enum that wraps a borrowed node.
     fn last_leaf<'tree, 'node: 'tree>(&self, node: &'node Node<'tree>) -> Cow<'node, Node<'tree>> {
         self.last_leaf_inner(Cow::Borrowed(node))
     }
 
+    /// Helper function to the `last_leaf` function.
+    /// Recursively calls itself on the last child of the given node
+    /// until it reaches a leaf node.
     fn last_leaf_inner<'tree, 'node: 'tree>(
         &self,
         node: Cow<'node, Node<'tree>>,
@@ -727,16 +864,34 @@ impl AtomCollection {
 }
 
 #[derive(Clone, Debug, Default)]
-// A struct to store query predicates that are relevant to Topiary
+/// A struct that represents a set of predicates for a query that are relevant for Topiary.
 pub struct QueryPredicates {
+    /// The predicate used to associate a user-defined delimiter to the
+    /// `@append_delimiter` and `@prepend_delimiter` directives.
     pub delimiter: Option<String>,
+    /// The predicate used to name a scope indicated by `@begin_scope` and `@end_scope`.
     pub scope_id: Option<String>,
+    /// The flag that indicates whether the query only matches single-line nodes.
     pub single_line_only: bool,
+    /// The flag that indicates whether the query only matches multi-line nodes.
     pub multi_line_only: bool,
+    /// The flag that indicates that the query only triggers if the associated
+    /// custom scope containing the matched nodes are is single-line.
     pub single_line_scope_only: Option<String>,
+    /// The flag that indicates that the query only triggers if the associated
+    /// custom scope containing the matched nodes are is multi-line.
     pub multi_line_scope_only: Option<String>,
 }
 
+/// Collapses spaces before antispace atoms in a vector of atoms.
+///
+/// This function modifies the given vector of atoms in place, replacing any
+/// space atoms that precede an antispace atom with empty atoms.
+///
+/// # Arguments
+///
+/// * `v` - A mutable reference to a vector of atoms.
+///
 fn collapse_spaces_before_antispace(v: &mut [Atom]) {
     let mut antispace_mode = false;
 
@@ -764,15 +919,28 @@ fn is_dominant(next: &Atom, prev: &Atom) -> bool {
     }
 }
 
+/// Flatten the tree, depth-first, into a vector of nodes.
+///
+/// This function takes a reference to a node and returns a vector of references
+/// to all the nodes in the tree rooted at that node, in depth-first order.
+///
+/// # Arguments
+///
+/// * `node` - A reference to a node in the tree.
+///
+/// # Returns
+///
+/// A vector of references to nodes in the provides node's subtree.
+///
+/// # Notes
+///
+/// This function uses an iterative approach instead of a recursive one for performance reasons.
+/// See https://github.com/tweag/topiary/pull/417#issuecomment-1499085230 for more details.
 fn dfs_flatten<'tree>(node: &Node<'tree>) -> Vec<Node<'tree>> {
     // Flatten the tree, depth-first, into a vector of nodes
     let mut walker = node.walk();
     let mut dfs_nodes = Vec::new();
 
-    // This can be written recursively (and in functional style,
-    // if needs be), but -- subjectively -- it is no clearer.
-    // Objectively, the loop is also faster :)
-    // See https://github.com/tweag/topiary/pull/417#issuecomment-1499085230
     'walk: loop {
         dfs_nodes.push(walker.node());
 
@@ -788,6 +956,20 @@ fn dfs_flatten<'tree>(node: &Node<'tree>) -> Vec<Node<'tree>> {
     dfs_nodes
 }
 
+/// Detects multi-line nodes in a vector of nodes and returns a set of their ids.
+///
+/// This function takes a slice of `Node`s that represent the nodes in a depth-first search
+/// order of a syntax tree and iterates over them. For each node, it compares the start and end
+/// line numbers and checks if they are different. If they are, it means the node spans multiple
+/// lines and its id is added to the returned set.
+///
+/// # Arguments
+///
+/// * `dfs_nodes` - A slice of nodes in depth-first search order.
+///
+/// # Returns
+///
+/// A `HashSet` containing the ids of the multi-line nodes.
 fn detect_multi_line_nodes(dfs_nodes: &[Node]) -> HashSet<usize> {
     dfs_nodes
         .iter()
@@ -805,6 +987,22 @@ fn detect_multi_line_nodes(dfs_nodes: &[Node]) -> HashSet<usize> {
         .collect()
 }
 
+/// Detects line breaks between nodes in a flattened vector of nodes.
+///
+/// This function takes a slice of nodes that have been flattened by a depth-first search (DFS)
+/// and returns a struct that contains two sets of node IDs: one for the nodes that have a line break
+/// before them, and one for the nodes that have a line break after them.
+///
+/// # Arguments
+///
+/// * `dfs_nodes` - A slice of nodes that have been flattened by a DFS.
+/// * `minimum_line_breaks` - The minimum number of line breaks that must exist between two adjacent nodes
+///   in order for them to be considered as having a line break before or after them.
+///
+/// # Returns
+///
+/// A `NodesWithLinebreaks` struct that contains two sets of node IDs: one for the nodes that have a line break
+/// before them, and one for the nodes that have a line break after them.
 fn detect_line_breaks(dfs_nodes: &[Node], minimum_line_breaks: u32) -> NodesWithLinebreaks {
     // Zip the flattened vector with its own tail => Iterator of pairs of adjacent nodes
     // Filter this by the threshold distance between pair components
