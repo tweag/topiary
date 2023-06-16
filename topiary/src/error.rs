@@ -1,3 +1,6 @@
+//! This module defines all errors that might be propagated out of the library,
+//! including all of the trait implementations one might expect for Errors.
+
 use std::{error::Error, fmt, io, ops::Deref, path::PathBuf, str, string};
 
 /// The various errors the formatter may return.
@@ -47,7 +50,12 @@ pub enum FormatterError {
 pub enum IoError {
     // NOTE Filesystem-based IO errors _ought_ to become a thing of the past, once the library and
     // binary code have been completely separated (see Issue #303).
+    /// A filesystem based IO error, with an additional owned string to provide
+    /// Topiary specific information
     Filesystem(String, io::Error),
+
+    /// Any other Error with an additional owned string to provide Topiary
+    /// specific information
     Generic(String, Option<Box<dyn Error>>),
 }
 
