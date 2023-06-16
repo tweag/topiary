@@ -1,10 +1,10 @@
-/// GraphViz visualisation for our SyntaxTree representation
-/// Named syntax nodes are elliptical; anonymous are rectangular
+//! GraphViz visualisation for our SyntaxTree representation.
+//! Named syntax nodes are elliptical; anonymous are rectangular.
 use std::{borrow::Cow, fmt, io};
 
 use crate::{tree_sitter::SyntaxNode, FormatterResult};
 
-/// We double-escape whitespace (\n and \t) so it is
+/// Doubly escapes whitespace (\n and \t) so it is
 /// rendered as the escaped value in the GraphViz output
 fn escape(input: &str) -> Cow<str> {
     // No allocation happens for an empty string
@@ -82,6 +82,7 @@ impl fmt::Display for SyntaxNode {
     }
 }
 
+/// Writes the Graphviz Graph in the dot format to the specified output buffer.
 pub fn write(output: &mut dyn io::Write, root: &SyntaxNode) -> FormatterResult<()> {
     writeln!(output, "graph {{")?;
     write!(output, "{root}")?;
