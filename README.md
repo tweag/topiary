@@ -230,9 +230,9 @@ locations where Topiary checks for such a file.
 At buildtime the [languages.toml](./languages.toml) in the root of
 this repository is included into Topiary. This file is parsed at
 runtime. The purpose of this `languages.toml` file is to provide sane
-defaults for users of Topiary (both the library and the binairy).
+defaults for users of Topiary (both the library and the binary).
 
-The other two are read by the Topiary binairy at runtime and allow the user to
+The other two are read by the Topiary binary at runtime and allow the user to
 configure Topiary to their needs. The first is intended to be user specific, and
 can thus be found in the configuration directory of the OS:
 ```
