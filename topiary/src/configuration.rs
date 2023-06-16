@@ -1,8 +1,15 @@
+/// Topiary can be configured using the `Configuration` struct.
+/// A basic configuration, written in toml, it included buildtime and parsed runtime.
+/// Additional configuration has to be provided by the user of the library.
 use std::{collections::HashSet, str::from_utf8};
 
 use crate::{language::Language, FormatterError, FormatterResult};
 use serde::{Deserialize, Serialize};
 
+/// The configuration of Topiary. Contains information on how to format every language.
+/// Can be provided by the user of the library, alternatively, Topiary ships with a default
+/// configuration that can be accessed using `default_configuration_toml` or
+/// `parse_default_configuration`.
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Configuration {
     pub language: Vec<Language>,
@@ -13,6 +20,8 @@ impl Configuration {
         Configuration { language: vec![] }
     }
 
+    /// Collects the known extensions of all languages into a single HashSet.
+    /// Usefull for testing if Topiary is able to configure the given file.
     #[must_use]
     pub fn known_extensions(&self) -> HashSet<&str> {
         let mut res: HashSet<&str> = HashSet::new();
@@ -24,6 +33,11 @@ impl Configuration {
         res
     }
 
+    /// Gets a language configuration from the entire configuration.
+    ///
+    /// # Errors
+    /// If the provided language name cannot be found in the Configuration, this
+    /// function returns a `FormatterError:UnsupportedLanguage`
     pub fn get_language<T: AsRef<str>>(&self, name: T) -> FormatterResult<&Language> {
         for lang in &self.language {
             if lang.name == name.as_ref() {
@@ -35,6 +49,9 @@ impl Configuration {
         ));
     }
 
+    /// Parse the default configuration directly into a `Configuration`,
+    /// This is usefull for users of Topiary that have no special requirements.
+    /// It is also incredibly usefull in tests.
     pub fn parse_default_configuration() -> FormatterResult<Self> {
         default_configuration_toml()
             .try_into()
@@ -48,7 +65,12 @@ impl Default for Configuration {
     }
 }
 
-/// Default built-in languages.toml.
+/// Default built-in languages.toml parsed to a toml file.
+/// We parse the configuration file in two phases, the first is to a `toml::Value`
+/// This function is exported to allow users of the library to merge their own
+/// configuration with the builtin one.
+/// Parsing straight to a `Configuration` doesn't work well, because that forces
+/// every configuration file to define every part of the configuration.
 pub fn default_configuration_toml() -> toml::Value {
     let default_config = include_bytes!("../../languages.toml");
     toml::from_str(from_utf8(default_config).unwrap())
