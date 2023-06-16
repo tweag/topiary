@@ -149,7 +149,7 @@ pub enum Operation {
 ///     .await
 ///     .expect("grammar");
 ///
-/// match formatter(&mut input, &mut output, &query, &language, &grammar, Operation::Format{ skip_idempotence: false }) {
+/// match formatter(&mut input, &mut output, &query, &language, &grammar, Operation::Format{ skip_idempotence: false, tolerate_parsing_errors: false }) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
