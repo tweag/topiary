@@ -24,7 +24,7 @@ pub async fn format(
     query: &str,
     language: &str,
     check_idempotence: bool,
-    tolerate_parse_errors: bool,
+    tolerate_parsing_errors: bool,
 ) -> Result<String, JsError> {
     let language_normalized = language.replace('-', "_");
     format_inner(
@@ -32,7 +32,7 @@ pub async fn format(
         query,
         language_normalized.as_str(),
         check_idempotence,
-        tolerate_parse_errors,
+        tolerate_parsing_errors,
     )
     .await
     .map_err(|e| format_error(&e))
@@ -44,7 +44,7 @@ async fn format_inner(
     query: &str,
     language_name: &str,
     check_idempotence: bool,
-    tolerate_parse_errors: bool,
+    tolerate_parsing_errors: bool,
 ) -> FormatterResult<String> {
     let mut output = Vec::new();
 
@@ -60,7 +60,7 @@ async fn format_inner(
         &grammar,
         Operation::Format {
             skip_idempotence: !check_idempotence,
-            tolerate_parse_errors,
+            tolerate_parsing_errors,
         },
     )?;
 

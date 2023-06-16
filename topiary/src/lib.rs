@@ -114,7 +114,7 @@ pub type FormatterResult<T> = std::result::Result<T, FormatterError>;
 pub enum Operation {
     Format {
         skip_idempotence: bool,
-        tolerate_parse_errors: bool,
+        tolerate_parsing_errors: bool,
     },
     Visualise {
         output_format: Visualisation,
@@ -180,12 +180,12 @@ pub fn formatter(
     match operation {
         Operation::Format {
             skip_idempotence,
-            tolerate_parse_errors,
+            tolerate_parsing_errors,
         } => {
             // All the work related to tree-sitter and the query is done here
             log::info!("Apply Tree-sitter query");
             let mut atoms =
-                tree_sitter::apply_query(&content, query, grammar, tolerate_parse_errors, false)?;
+                tree_sitter::apply_query(&content, query, grammar, tolerate_parsing_errors, false)?;
 
             // Various post-processing of whitespace
             atoms.post_process();
@@ -200,7 +200,7 @@ pub fn formatter(
             let trimmed = trim_whitespace(&rendered);
 
             if !skip_idempotence {
-                idempotence_check(&trimmed, query, language, grammar, tolerate_parse_errors)?;
+                idempotence_check(&trimmed, query, language, grammar, tolerate_parsing_errors)?;
             }
 
             write!(output, "{trimmed}")?;
@@ -238,7 +238,7 @@ fn idempotence_check(
     query: &str,
     language: &Language,
     grammar: &tree_sitter_facade::Language,
-    tolerate_parse_errors: bool,
+    tolerate_parsing_errors: bool,
 ) -> FormatterResult<()> {
     log::info!("Checking for idempotence ...");
 
@@ -253,7 +253,7 @@ fn idempotence_check(
         grammar,
         Operation::Format {
             skip_idempotence: true,
-            tolerate_parse_errors,
+            tolerate_parsing_errors,
         },
     )?;
     let reformatted = String::from_utf8(output.into_inner()?)?;
@@ -292,7 +292,7 @@ mod tests {
     };
 
     #[test(tokio::test)]
-    async fn parse_error_fails_formatting() {
+    async fn parsing_error_fails_formatting() {
         let mut input = r#"{"foo":{"bar"}}"#.as_bytes();
         let mut output = Vec::new();
         let query = "(#language! json)";
@@ -308,7 +308,7 @@ mod tests {
             &grammar,
             Operation::Format {
                 skip_idempotence: true,
-                tolerate_parse_errors: false,
+                tolerate_parsing_errors: false,
             },
         ) {
             Err(FormatterError::Parsing {
@@ -323,7 +323,7 @@ mod tests {
     }
 
     #[test(tokio::test)]
-    async fn tolerate_parse_errors() {
+    async fn tolerate_parsing_errors() {
         // Contains the invalid object {"bar"   "baz"}. It should be left untouched.
         let mut input = "{\"one\":{\"bar\"   \"baz\"},\"two\":\"bar\"}".as_bytes();
         let expected = "{ \"one\": {\"bar\"   \"baz\"}, \"two\": \"bar\" }\n";
@@ -342,7 +342,7 @@ mod tests {
             &grammar,
             Operation::Format {
                 skip_idempotence: true,
-                tolerate_parse_errors: true,
+                tolerate_parsing_errors: true,
             },
         )
         .unwrap();

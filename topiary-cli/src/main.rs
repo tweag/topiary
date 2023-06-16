@@ -72,9 +72,9 @@ struct Args {
     #[arg(long, display_order = 8)]
     output_configuration: bool,
 
-    /// Format as much as possible even if some of the input causes parse errors
+    /// Format as much as possible even if some of the input causes parsing errors
     #[arg(short, long, display_order = 9)]
-    tolerate_parse_errors: bool,
+    tolerate_parsing_errors: bool,
 }
 
 #[tokio::main]
@@ -153,7 +153,7 @@ async fn run() -> CLIResult<()> {
     } else {
         Operation::Format {
             skip_idempotence: args.skip_idempotence,
-            tolerate_parse_errors: args.tolerate_parse_errors,
+            tolerate_parsing_errors: args.tolerate_parsing_errors,
         }
     };
 

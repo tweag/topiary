@@ -84,10 +84,10 @@ pub fn apply_query(
     input_content: &str,
     query_content: &str,
     grammar: &tree_sitter_facade::Language,
-    tolerate_parse_errors: bool,
+    tolerate_parsing_errors: bool,
     should_check_input_exhaustivity: bool,
 ) -> FormatterResult<AtomCollection> {
-    let (tree, grammar) = parse(input_content, grammar, tolerate_parse_errors)?;
+    let (tree, grammar) = parse(input_content, grammar, tolerate_parsing_errors)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
     let query = Query::new(grammar, query_content)
@@ -177,7 +177,7 @@ pub fn apply_query(
 pub fn parse<'a>(
     content: &str,
     grammar: &'a tree_sitter_facade::Language,
-    tolerate_parse_errors: bool,
+    tolerate_parsing_errors: bool,
 ) -> FormatterResult<(Tree, &'a tree_sitter_facade::Language)> {
     let mut parser = Parser::new()?;
     parser.set_language(grammar).map_err(|_| {
@@ -189,7 +189,7 @@ pub fn parse<'a>(
         .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))?;
 
     // Fail parsing if we don't get a complete syntax tree.
-    if !tolerate_parse_errors {
+    if !tolerate_parsing_errors {
         check_for_error_nodes(&tree.root_node())?;
     }
 

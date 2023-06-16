@@ -51,7 +51,7 @@ async fn input_output_tester() {
                 &grammar,
                 Operation::Format {
                     skip_idempotence: false,
-                    tolerate_parse_errors: true,
+                    tolerate_parsing_errors: true,
                 },
             )
             .unwrap();
@@ -90,7 +90,7 @@ async fn formatted_query_tester() {
             &grammar,
             Operation::Format {
                 skip_idempotence: false,
-                tolerate_parse_errors: false,
+                tolerate_parsing_errors: false,
             },
         )
         .unwrap();
