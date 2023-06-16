@@ -255,9 +255,8 @@ options defined earlier are overwritten by those defined later.
 3. The project specific topiary configuration
 
 ### Configuration Options
-The configuration file contains a list of languages, each language
-configuration headed by the ``[[language]]`` toml header. For instance, the one
-for Nickel is defined as such:
+The configuration file contains a list of languages, each language configuration
+headed by ``[[language]]``. For instance, the one for Nickel is defined as such:
 ```toml
 [[language]]
 name = "nickel"
