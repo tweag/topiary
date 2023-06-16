@@ -222,6 +222,61 @@ It will output the following formatted code:
 Set the `RUST_LOG=debug` environment variable if you want to enable
 debug logging.
 
+## Configuration
+Topiary is configured using `languages.toml` files. There are three
+locations where Topiary checks for such a file.
+
+### Locations
+At buildtime the [languages.toml](./languages.toml) in the root of
+this repository is included into Topiary. This file is parsed at
+runtime. The purpose of this `languages.toml` file is to provide sane
+defaults for users of Topiary (both the library and the binary).
+
+The other two are read by the Topiary binary at runtime and allow the user to
+configure Topiary to their needs. The first is intended to be user specific, and
+can thus be found in the configuration directory of the OS:
+```
+Unix: /home/alice/.config/topiary/languages.toml
+Windows: C:\Users\Alice\AppData\Roaming\Topiary\config\languages.toml
+MacOS: /Users/Alice/Library/Application Support/Topiary/languages.toml
+```
+This file is not automatically created by Topiary.
+
+The last location is intended to be a project-specific settings file for
+Topiary. When running Topiary in some directory, it will look up in the file
+tree until it finds a .topiary directory. It will then read the `languages.toml`
+file present in that directory.
+
+The Topiary binary parses these file in the following order, any configuration
+options defined earlier are overwritten by those defined later.
+
+1. The builtin configuration file
+2. The user configuration file in the OS's configuration directory
+3. The project specific topiary configuration
+
+### Configuration Options
+The configuration file contains a list of languages, each language configuration
+headed by ``[[language]]``. For instance, the one for Nickel is defined as such:
+```toml
+[[language]]
+name = "nickel"
+extensions = ["ncl"]
+```
+
+The `name` field is used by Topiary to associate the language entry with the
+query file and tree-sitter grammar. This field should be written lowercase.
+The `name` field is mandatory for every ``[[language]]`` block in every
+configuration file.
+
+The list of extensions is mandatory for every language, but does not necessarily
+need to exist in every configuration file. It is sufficient if, for every
+language, there is a single configuration file that defines the list of
+extensions for that language.
+
+A final optional field called `indent` exists to define the indentation method
+for that language. Topiary defaults to two spaces `"  "` if it cannot find the
+indent field in any configuration file for a specific language.
+
 ## Design
 
 As long as there is a [Tree-sitter grammar][tree-sitter-parsers] defined
@@ -279,25 +334,6 @@ This, on the other hand, will not work:
 ```scheme
 @append_space (infix_operator)
 ```
-
-### Configuration
-
-At the top of a query file you can set some configuration options like
-this:
-
-```scheme
-; Configuration
-(#language! rust)
-(#indent! "    ")
-```
-
-The `#language!` pragma must be included in any query file and dictates
-which language to parse. The queries themselves will refer to node types
-that are specific to this language.
-
-The `#indent!` pragma is optional and controls what indentation to use to
-indent a block whenever `@append_indent_start` or `@prepend_indent_start` is
-processed. If it is omitted, it defaults to two spaces.
 
 ### `@allow_blank_line_before`
 
