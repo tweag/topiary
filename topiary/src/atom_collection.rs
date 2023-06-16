@@ -334,7 +334,14 @@ impl AtomCollection {
 
         if node.end_byte() == node.start_byte() {
             log::debug!("Skipping zero-byte node: {node:?}");
-        } else if node.child_count() == 0 || self.specified_leaf_nodes.contains(&node.id()) {
+        } else if node.child_count() == 0
+            || self.specified_leaf_nodes.contains(&node.id())
+            // We treat error nodes as leafs when `tolerate_parsing_errors` is set to true.
+            // This ensures Topiary does not try to further apply transformations on them.
+            // If `tolerate_parsing_errors` is set to false, this part of the code is only reached if the tree contains no ERROR nodes,
+            // and as such the check below would be redundant.
+            || node.kind() == "ERROR"
+        {
             self.atoms.push(Atom::Leaf {
                 content: String::from(node.utf8_text(source)?),
                 id,

@@ -20,6 +20,7 @@ function App() {
     const [currentLanguage, setCurrentLanguage] = useState(defaultLanguage);
     const [onTheFlyFormatting, setOnTheFlyFormatting] = useState(true);
     const [idempotence, setIdempotence] = useState(false);
+    const [tolerateParsingErrors, setTolerateParsingErrors] = useState(false);
     const [query, setQuery] = useState(defaultQuery);
     const [input, setInput] = useState(defaultInput);
     const [output, setOutput] = useState("");
@@ -34,7 +35,7 @@ function App() {
         const outputFormat = async () => {
             try {
                 const start = performance.now();
-                setOutput(await format(i, q, currentLanguage, idempotence));
+                setOutput(await format(i, q, currentLanguage, idempotence, tolerateParsingErrors));
                 setProcessingTime(performance.now() - start);
             } catch (e) {
                 setOutput(String(e));
@@ -48,7 +49,7 @@ function App() {
 
         setOutput("Formatting ...");
         outputFormat();
-    }, [currentLanguage, idempotence, isInitialised]);
+    }, [currentLanguage, idempotence, tolerateParsingErrors, isInitialised]);
 
     // Init page (runs only once, but twice in strict mode in dev)
     useEffect(() => {
@@ -116,6 +117,10 @@ function App() {
         setIdempotence(!idempotence);
     };
 
+    function handleTolerateParsingErrors() {
+        setTolerateParsingErrors(!tolerateParsingErrors);
+    };
+
     return (
         <div className="App">
             <div className="header">
@@ -132,8 +137,12 @@ function App() {
                         On-the-fly formatting
                     </label>
                     <label>
-                        <input type="checkbox" id="onTheFlyFormatting" checked={idempotence} onChange={handleIdempotence} />
+                        <input type="checkbox" id="idempotence" checked={idempotence} onChange={handleIdempotence} />
                         Check idempotence (formatting twice is the same as formatting once)
+                    </label>
+                    <label>
+                        <input type="checkbox" id="tolerateParsingErros" checked={tolerateParsingErrors} onChange={handleTolerateParsingErrors} />
+                        Tolerate parsing errors
                     </label>
                 </div>
                 <div className="headerColumn growRightColumn">
