@@ -324,21 +324,22 @@ mod tests {
 
     #[test(tokio::test)]
     async fn tolerate_parse_errors() {
+        // Contains the invalid object {"bar"   "baz"}. It should be left untouched.
         let mut input = "{\"one\":{\"bar\"   \"baz\"},\"two\":\"bar\"}".as_bytes();
         let expected = "{ \"one\": {\"bar\"   \"baz\"}, \"two\": \"bar\" }\n";
 
         let mut output = Vec::new();
         let query = fs::read_to_string("../languages/json.scm").unwrap();
-        let configuration = Configuration::parse_default_config();
+        let configuration = Configuration::parse_default_configuration().unwrap();
         let language = configuration.get_language("json").unwrap();
-        let grammars = language.grammars().await.unwrap();
+        let grammar = language.grammar().await.unwrap();
 
         formatter(
             &mut input,
             &mut output,
             &query,
             language,
-            &grammars,
+            &grammar,
             Operation::Format {
                 skip_idempotence: true,
                 tolerate_parse_errors: true,
