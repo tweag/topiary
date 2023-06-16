@@ -334,7 +334,10 @@ impl AtomCollection {
 
         if node.end_byte() == node.start_byte() {
             log::debug!("Skipping zero-byte node: {node:?}");
-        } else if node.child_count() == 0 || self.specified_leaf_nodes.contains(&node.id()) {
+        } else if node.child_count() == 0
+            || self.specified_leaf_nodes.contains(&node.id())
+            || node.kind() == "ERROR"
+        {
             self.atoms.push(Atom::Leaf {
                 content: String::from(node.utf8_text(source)?),
                 id,
