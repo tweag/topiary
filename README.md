@@ -172,6 +172,7 @@ Options:
   -v, --visualise[=<OUTPUT_FORMAT>]  Visualise the syntax tree, rather than format [possible values: json, dot]
   -s, --skip-idempotence             Do not check that formatting twice gives the same output
       --output-configuration         Output the full configuration to stderr before continuing
+  -t, --tolerate-parse-errors        Format as much as possible even if some of the input causes parse errors
   -h, --help                         Print help
   -V, --version                      Print version
 ```
