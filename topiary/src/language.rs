@@ -7,11 +7,20 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Configuration, FormatterError, FormatterResult, IoError};
 
-/// The languages that we support with query files.
+/// A Language contains all the information Topiary requires to format that
+/// specific languages.
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Language {
+    /// The name of the language, used as a key when looking up information in
+    /// the Configuration, and to convert from a language to the respective tree-sitter
+    /// grammar.
     pub name: String,
+    /// A Set of the filetype extentions associated with this particular language.
+    /// Enables Topiary to pick the right language given an input file
     pub extensions: HashSet<String>,
+    /// The indentation string used for that particular language. Defaults to "  "
+    /// if not provided. Any string can be provided, but in most instances will be
+    /// some whitespace: "  ", "    ", or "\t".
     pub indent: Option<String>,
 }
 
@@ -142,6 +151,12 @@ impl TryFrom<&Language> for PathBuf {
     }
 }
 
+/// Topiary can format more languages than are actually "supported".
+/// This enum is an enumeration of those we (the maintainers) are comfortable in
+/// calling "supported".
+/// Any other entries in crate::Language are experimental and won't be
+/// exposed in the CLI. They can be accessed using --query language/foo.scm
+/// instead.
 #[derive(Clone, Copy, Debug, ValueEnum)]
 pub enum SupportedLanguage {
     Json,
@@ -149,12 +164,10 @@ pub enum SupportedLanguage {
     Ocaml,
     OcamlInterface,
     Toml,
-    // Any other entries in crate::Language are experimental and won't be
-    // exposed in the CLI. They can be accessed using --query language/foo.scm
-    // instead.
 }
 
 impl SupportedLanguage {
+    /// Function to convert a `SupportedLanguage` into a `crate::Language` for further processing
     pub fn to_language<'config>(&self, configuration: &'config Configuration) -> &'config Language {
         let name = self.name();
 

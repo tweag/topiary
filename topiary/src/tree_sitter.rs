@@ -80,6 +80,16 @@ struct LocalQueryMatch<'a> {
     captures: Vec<QueryCapture<'a>>,
 }
 
+/// Applies a query to an input content and returns a collection of atoms.
+///
+/// # Errors
+///
+/// This function can return an error if:
+/// - The input content cannot be parsed by the grammar.
+/// - The query content cannot be parsed by the grammar.
+/// - The input exhaustivity check fails.
+/// - A found predicate could not be parsed or is malformed.
+/// - A unknown capture name was encountered in the query.
 pub fn apply_query(
     input_content: &str,
     query_content: &str,
@@ -217,6 +227,10 @@ fn check_for_error_nodes(node: &Node) -> FormatterResult<()> {
     Ok(())
 }
 
+/// Collects the IDs of all leaf nodes in a set of query matches.
+///
+/// This function takes a slice of `LocalQueryMatch` and a slice of capture names,
+/// and returns a `HashSet` of node IDs that are matched by the "leaf" capture name.
 fn collect_leaf_ids(matches: &[LocalQueryMatch], capture_names: &[String]) -> HashSet<usize> {
     let mut ids = HashSet::new();
 
@@ -230,6 +244,23 @@ fn collect_leaf_ids(matches: &[LocalQueryMatch], capture_names: &[String]) -> Ha
     ids
 }
 
+/// Handles a query predicate and returns a new set of query predicates with the corresponding field updated.
+///
+/// # Arguments
+///
+/// * `predicate` - A reference to a `QueryPredicate` object that represents a predicate in a query pattern.
+/// * `predicates` - A reference to a `QueryPredicates` object that holds the current state of the query predicates.
+///
+/// # Returns
+///
+/// A `FormatterResult` that contains either a new `QueryPredicates` object with the updated field, or a `FormatterError` if the predicate is invalid or missing an argument.
+///
+/// # Errors
+///
+/// This function will return an error if:
+///
+/// * The predicate operator is not one of the supported ones.
+/// * The predicate operator requires an argument but none is provided.
 fn handle_predicate(
     predicate: &QueryPredicate,
     predicates: &QueryPredicates,
@@ -286,6 +317,21 @@ fn handle_predicate(
     }
 }
 
+/// Checks the validity of the query predicates.
+///
+/// This function ensures that the query predicates do not contain more than one
+/// of the following: #single_line_only, #multi_line_only, #single_line_scope_only,
+/// or #multi_line_scope_only. These predicates are incompatible with each other
+/// and would result in an invalid query.
+///
+/// # Arguments
+///
+/// * `predicates` - A reference to a QueryPredicates struct that holds the query predicates.
+///
+/// # Errors
+///
+/// If the query predicates contain more than one incompatible predicate, this function
+/// returns a FormatterError::Query with a descriptive message.
 fn check_predicates(predicates: &QueryPredicates) -> FormatterResult<()> {
     let mut incompatible_predicates = 0;
     if predicates.single_line_only {

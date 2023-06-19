@@ -1,7 +1,19 @@
+//! After being split into Atoms, and the queries having been applied this
+//! module is reponsible for rendering the slice of Atoms back into a displayable
+//! format.
+
 use std::fmt::Write;
 
 use crate::{Atom, FormatterError, FormatterResult};
 
+/// Renders a slice of Atoms into an owned string.
+/// The indent &str is used when an `Atom::IdentStart` is encountered.
+/// Any string is accepted, but you will probably want to specify something
+/// along the lines of "  " "    " or "\t".
+///
+/// # Errors
+///
+/// If an unexpected Atom is encountered, a `FormatterError::Internal` is returned.
 pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
     let mut buffer = String::new();
     let mut indent_level: usize = 0;
