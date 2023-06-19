@@ -1,5 +1,5 @@
 /// Topiary can be configured using the `Configuration` struct.
-/// A basic configuration, written in toml, it included buildtime and parsed runtime.
+/// A basic configuration, written in toml, it is included buildtime and parsed runtime.
 /// Additional configuration has to be provided by the user of the library.
 use std::{collections::HashSet, str::from_utf8};
 
@@ -7,7 +7,7 @@ use crate::{language::Language, FormatterError, FormatterResult};
 use serde::{Deserialize, Serialize};
 
 /// The configuration of Topiary. Contains information on how to format every language.
-/// Can be provided by the user of the library, alternatively, Topiary ships with a default
+/// Can be provided by the user of the library, or alternatively, Topiary ships with a default
 /// configuration that can be accessed using `default_configuration_toml` or
 /// `parse_default_configuration`.
 #[derive(Deserialize, Serialize, Debug)]
@@ -21,7 +21,7 @@ impl Configuration {
     }
 
     /// Collects the known extensions of all languages into a single HashSet.
-    /// Usefull for testing if Topiary is able to configure the given file.
+    /// Useful for testing if Topiary is able to configure the given file.
     #[must_use]
     pub fn known_extensions(&self) -> HashSet<&str> {
         let mut res: HashSet<&str> = HashSet::new();
@@ -36,6 +36,7 @@ impl Configuration {
     /// Gets a language configuration from the entire configuration.
     ///
     /// # Errors
+    ///
     /// If the provided language name cannot be found in the Configuration, this
     /// function returns a `FormatterError:UnsupportedLanguage`
     pub fn get_language<T: AsRef<str>>(&self, name: T) -> FormatterResult<&Language> {
@@ -50,8 +51,8 @@ impl Configuration {
     }
 
     /// Parse the default configuration directly into a `Configuration`,
-    /// This is usefull for users of Topiary that have no special requirements.
-    /// It is also incredibly usefull in tests.
+    /// This is useful for users of Topiary that have no special requirements.
+    /// It is also incredibly useful in tests.
     pub fn parse_default_configuration() -> FormatterResult<Self> {
         default_configuration_toml()
             .try_into()

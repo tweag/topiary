@@ -104,9 +104,9 @@ pub enum Atom {
 /// the matched node spans a single line or multiple lines
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ScopeCondition {
-    /// The Atom is only applied the the matching node spans exactly one line
+    /// The Atom is only applied if the matching node spans exactly one line
     SingleLineOnly,
-    /// The Atom is only applied the the matching node spans two or more lines
+    /// The Atom is only applied if the matching node spans two or more lines
     MultiLineOnly,
 }
 

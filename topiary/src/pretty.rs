@@ -1,5 +1,5 @@
-//! After being split into Atoms, and the querries having been applied this
-//! modules is reponsible for rendering the slice of Atoms back into a displayable
+//! After being split into Atoms, and the queries having been applied this
+//! module is reponsible for rendering the slice of Atoms back into a displayable
 //! format.
 
 use std::fmt::Write;

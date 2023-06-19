@@ -41,7 +41,7 @@ pub struct AtomCollection {
     specified_leaf_nodes: HashSet<usize>,
     /// If a node is a leaf, or if it is explicitly marked as such by the
     /// formatting directives, it is added to this HashMap as the key. The value
-    /// of the Map contains all child nodes.
+    /// of the Map contains all parent nodes.
     parent_leaf_nodes: HashMap<usize, usize>,
     /// Topiary has some formatting directives that only apply if a node spans
     /// multiple lines. During initial collection all such nodes are added to this
@@ -51,10 +51,10 @@ pub struct AtomCollection {
     /// the node is added to this HashSet.
     blank_lines_before: HashSet<usize>,
     /// During initial Atom collection, any node that has a linebreak directly
-    /// before it the node is added to this HashSet.
+    /// before it is added to this HashSet.
     line_break_before: HashSet<usize>,
     /// During initial Atom collection, any node that has a linebreak directly
-    /// after it the node is added to this HashSet.
+    /// after it is added to this HashSet.
     line_break_after: HashSet<usize>,
     /// The semantics of the types of scope_begin and scope_end is
     /// HashMap<leaf_node_id, (line_number, Vec<scope_id>)>
@@ -127,7 +127,6 @@ impl AtomCollection {
     /// Resolves a capture name by modifying the AtomCollection based on the
     /// instructions provided by the capture name on the Node.
     ///
-    ///
     /// # Arguments
     ///
     /// * `name` - The name of the capture, starting with `@`.
@@ -138,7 +137,12 @@ impl AtomCollection {
     ///
     /// This function returns an error if the capture name requires a predicate that is not present.
     /// It also returns an error if the capture name is not recognized by Topiary.
-    // NOTE: This gets called a lot during query processing, and needs to be efficient.
+    // NOTE: During processing Topiary applies the function below on every match
+    // of every query. As such, this function may get called multiple times
+    // per node. This means that any performance loss in this function has a
+    // order of magnitute higher impact than any other of such losses. We must
+    // therefore ensure that the function below is as performant as we can make
+    // it (within reason).
     pub fn resolve_capture(
         &mut self,
         name: &str,
@@ -365,7 +369,7 @@ impl AtomCollection {
     /// This function collects the leaf nodes of a tree-sitter CST tree and stores them in the `atoms` field of the internal formatter state.
     /// It also marks the leaf parent of each node in the `leaf_parent` field of the formatter.
     /// A leaf node is either a node with no children or a node that is specified as a leaf node by the formatter.
-    /// A leaf parent is the closest ancestor of a node that is a leaf node.
+    /// A leaf parent is the closest ancestor of a leaf node.
     ///
     /// # Arguments
     ///
@@ -455,7 +459,7 @@ impl AtomCollection {
         self.append.entry(target_node.id()).or_default().push(atom);
     }
 
-    /// Begins a scope with the given `scope_id` before the first leaf node of the given `node`'s subtree.
+    /// Begins a scope with the given `scope_id` before the first leaf node of the given `Node`'s subtree.
     ///
     /// # Arguments
     ///
@@ -477,7 +481,7 @@ impl AtomCollection {
             });
     }
 
-    /// Ends a scope with the given `scope_id` after the last leaf node of the given `node`'s subtree.
+    /// Ends a scope with the given `scope_id` after the last leaf node of the given `Node`'s subtree.
     ///
     /// # Arguments
     ///
@@ -503,7 +507,10 @@ impl AtomCollection {
     /// if we are in a multiline context or not.
     ///
     /// If the node's parent is labelled as a multi-line node, it expands the
-    /// softline to a hardline, otherwise it is turned into a space.
+    /// softline to a hardline.
+    /// If the node's parent is not labelled as such, but the Atom is labelled
+    /// as `spaced`, the Atom is turned into a space. The Atom is discarded if it is not
+    /// labelled as `spaced`.
     /// If the node has no parent, the softline atom is discarded by returning an empty atom.
     ///
     /// The function ignores all atoms that are not softlines.
@@ -876,10 +883,10 @@ pub struct QueryPredicates {
     /// The flag that indicates whether the query only matches multi-line nodes.
     pub multi_line_only: bool,
     /// The flag that indicates that the query only triggers if the associated
-    /// custom scope containing the matched nodes are is single-line.
+    /// custom scope containing the matched nodes is single-line.
     pub single_line_scope_only: Option<String>,
     /// The flag that indicates that the query only triggers if the associated
-    /// custom scope containing the matched nodes are is multi-line.
+    /// custom scope containing the matched nodes is multi-line.
     pub multi_line_scope_only: Option<String>,
 }
 
@@ -958,7 +965,7 @@ fn dfs_flatten<'tree>(node: &Node<'tree>) -> Vec<Node<'tree>> {
 
 /// Detects multi-line nodes in a vector of nodes and returns a set of their ids.
 ///
-/// This function takes a slice of `Node`s that represent the nodes in a depth-first search
+/// This function takes a slice of `Node`s that represents the nodes in a depth-first search
 /// order of a syntax tree and iterates over them. For each node, it compares the start and end
 /// line numbers and checks if they are different. If they are, it means the node spans multiple
 /// lines and its id is added to the returned set.
