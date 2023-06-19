@@ -75,18 +75,28 @@ In order to build or update the Wasm playground, you can run this:
 If you need to add or update Tree-sitter grammar Wasm files, you can do it like
 this (using JSON as an example):
 
-1. Make sure you have Docker running.
+1. Make sure you have Docker running and that you are member of the `docker`
+   group so you can run it without being root.
 2. npm install tree-sitter-cli
 3. npm install tree-sitter-json
 4. An alternative to the above step is to clone a Git repo with the grammars and
    copy it into `node_modules`.
 5. Make sure you have a file at
-   `node_modules/tree-sitter-json/src/grammar.json`. In case of OCaml, you have
-   to copy some directories (you also have to move a `common` directory).
-6. npx tree-sitter build-wasm node_modules/tree-sitter-json
+   `node_modules/tree-sitter-json/src/grammar.json`.
+6. Run `npx tree-sitter build-wasm node_modules/tree-sitter-json`. If you get a
+   Docker permission error, you may want to try `sudo chmod 666
+/var/run/docker.sock`.
 7. mv tree-sitter-json.wasm web-playground/public/scripts/
 
-The playground frontend is a small React app. You can run a development server for that like this:
+For OCaml, the process is slightly different:
+
+1. npm install tree-sitter-cli
+2. npm install tree-sitter-ocaml
+3. Run `npx tree-sitter build-wasm node_modules/tree-sitter-ocaml/ocaml`.
+4. mv tree-sitter-ocaml.wasm web-playground/public/scripts/
+
+The playground frontend is a small React app. You can run a development server
+for that like this:
 
 ```bash
 cd web-playground
@@ -94,5 +104,5 @@ npm install
 npm start
 ```
 
-If you want to build the playground so it works with the full website running with Deno as above,
-you can now just do `npm run build`.
+If you want to build the playground so it works with the full website running
+with Deno as above, you can now just do `npm run build`.
