@@ -1,0 +1,2 @@
+# Hide our tests from language detection so GitHub correctly detects Topiary as a Rust project
+topiary/tests/samples/** linguist-vendored
