@@ -25,6 +25,35 @@ struct Position {
     column: u32,
 }
 
+/// Topiary often needs both the tree-sitter `Query` and the original content
+/// beloging to the file from which the query was parsed. This struct is a simple
+/// convenience wrapper that combines the `Query` with its original string.
+pub struct TopiaryQuery {
+    pub query: Query,
+    pub query_content: String,
+}
+
+impl TopiaryQuery {
+    /// Creates a new `TopiaryQuery` from a tree-sitter language/grammar and the
+    /// contents of the query file.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if tree-sitter failed to parse the query file.
+    pub fn new(
+        grammar: &tree_sitter_facade::Language,
+        query_content: &str,
+    ) -> FormatterResult<TopiaryQuery> {
+        let query = Query::new(grammar, query_content)
+            .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
+
+        Ok(TopiaryQuery {
+            query,
+            query_content: query_content.to_owned(),
+        })
+    }
+}
+
 impl From<Point> for Position {
     fn from(point: Point) -> Self {
         Self {
@@ -92,7 +121,7 @@ struct LocalQueryMatch<'a> {
 /// - A unknown capture name was encountered in the query.
 pub fn apply_query(
     input_content: &str,
-    query_content: &str,
+    query: &TopiaryQuery,
     grammar: &tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
     should_check_input_exhaustivity: bool,
@@ -100,15 +129,13 @@ pub fn apply_query(
     let (tree, grammar) = parse(input_content, grammar, tolerate_parsing_errors)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
-    let query = Query::new(grammar, query_content)
-        .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
 
     // Match queries
     let mut cursor = QueryCursor::new();
     let mut matches: Vec<LocalQueryMatch> = Vec::new();
-    let capture_names = query.capture_names();
+    let capture_names = query.query.capture_names();
 
-    for query_match in query.matches(&root, source, &mut cursor) {
+    for query_match in query.query.matches(&root, source, &mut cursor) {
         let local_captures: Vec<QueryCapture> = query_match.captures().collect();
 
         matches.push(LocalQueryMatch {
@@ -119,14 +146,7 @@ pub fn apply_query(
 
     if should_check_input_exhaustivity {
         let ref_match_count = matches.len();
-        check_input_exhaustivity(
-            ref_match_count,
-            &query,
-            query_content,
-            grammar,
-            &root,
-            source,
-        )?;
+        check_input_exhaustivity(ref_match_count, query, grammar, &root, source)?;
     }
 
     // Find the ids of all tree-sitter nodes that were identified as a leaf
@@ -152,7 +172,7 @@ pub fn apply_query(
 
         let mut predicates = QueryPredicates::default();
 
-        for p in query.general_predicates(m.pattern_index) {
+        for p in query.query.general_predicates(m.pattern_index) {
             predicates = handle_predicate(&p, &predicates)?;
         }
         check_predicates(&predicates)?;
@@ -362,13 +382,13 @@ fn check_predicates(predicates: &QueryPredicates) -> FormatterResult<()> {
 /// then that pattern originally matched nothing in the input.
 fn check_input_exhaustivity(
     ref_match_count: usize,
-    original_query: &Query,
-    query_content: &str,
+    original_query: &TopiaryQuery,
     grammar: &tree_sitter_facade::Language,
     root: &Node,
     source: &[u8],
 ) -> FormatterResult<()> {
-    let pattern_count = original_query.pattern_count();
+    let pattern_count = original_query.query.pattern_count();
+    let query_content = &original_query.query_content;
     // This particular test avoids a SIGSEGV error that occurs when trying
     // to count the matches of an empty query (see #481)
     if pattern_count == 1 {
@@ -379,6 +399,9 @@ fn check_input_exhaustivity(
         }
     }
     for i in 0..pattern_count {
+        // We don't need to use TopiaryQuery in this test since we have no need
+        // for duplicate versions of the query_content string, instead we create the query
+        // manually.
         let mut query = Query::new(grammar, query_content)
             .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
         query.disable_pattern(i);
@@ -401,8 +424,7 @@ fn check_input_exhaustivity(
 #[cfg(target_arch = "wasm32")]
 fn check_input_exhaustivity(
     _ref_match_count: usize,
-    _original_query: &Query,
-    _query_content: &str,
+    _original_query: &TopiaryQuery,
     _grammar: &tree_sitter_facade::Language,
     _root: &Node,
     _source: &[u8],
