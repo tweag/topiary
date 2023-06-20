@@ -7,7 +7,7 @@ use test_log::test;
 
 use topiary::{
     apply_query, formatter, test_utils::pretty_assert_eq, Configuration, FormatterError, Language,
-    Operation,
+    Operation, TopiaryQuery,
 };
 
 #[test(tokio::test)]
@@ -31,9 +31,11 @@ async fn input_output_tester() {
 
             let mut input = BufReader::new(fs::File::open(file.path()).unwrap());
             let mut output = Vec::new();
-            let query = fs::read_to_string(language.query_file().unwrap()).unwrap();
+            let query_content = fs::read_to_string(language.query_file().unwrap()).unwrap();
 
             let grammar = language.grammar().await.unwrap();
+
+            let query = TopiaryQuery::new(&grammar, &query_content).unwrap();
 
             info!(
                 "Formatting file {} as {}.",
@@ -78,9 +80,11 @@ async fn formatted_query_tester() {
 
         let mut input = BufReader::new(fs::File::open(file.path()).unwrap());
         let mut output = Vec::new();
-        let query = fs::read_to_string(language.query_file().unwrap()).unwrap();
+        let query_content = fs::read_to_string(language.query_file().unwrap()).unwrap();
 
         let grammar = language.grammar().await.unwrap();
+
+        let query = TopiaryQuery::new(&grammar, &query_content).unwrap();
 
         formatter(
             &mut input,
@@ -122,7 +126,9 @@ async fn exhaustive_query_tester() {
 
         let grammar = language.grammar().await.unwrap();
 
-        apply_query(&input_content, &query_content, &grammar, false, true).unwrap_or_else(|e| {
+        let query = TopiaryQuery::new(&grammar, &query_content).unwrap();
+
+        apply_query(&input_content, &query, &grammar, false, true).unwrap_or_else(|e| {
             if let FormatterError::PatternDoesNotMatch(_) = e {
                 panic!("Found untested query in file {query_file:?}:\n{e}");
             } else {

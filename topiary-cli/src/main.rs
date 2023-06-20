@@ -20,7 +20,7 @@ use crate::{
     output::OutputFile,
     visualise::Visualisation,
 };
-use topiary::{formatter, Language, Operation, SupportedLanguage};
+use topiary::{formatter, Language, Operation, SupportedLanguage, TopiaryQuery};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -130,7 +130,7 @@ async fn run() -> CLIResult<()> {
         language.query_file()?
     };
 
-    let query = (|| {
+    let query_content = (|| {
         let mut reader = BufReader::new(File::open(&query_path)?);
         let mut contents = String::new();
         reader.read_to_string(&mut contents)?;
@@ -145,6 +145,7 @@ async fn run() -> CLIResult<()> {
     })?;
 
     let grammar = language.grammar().await?;
+    let query = TopiaryQuery::new(&grammar, &query_content)?;
 
     let operation = if let Some(visualisation) = args.visualise {
         Operation::Visualise {

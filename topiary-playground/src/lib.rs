@@ -1,5 +1,5 @@
 #[cfg(target_arch = "wasm32")]
-use topiary::{formatter, Configuration, FormatterResult, Operation};
+use topiary::{formatter, Configuration, FormatterResult, Operation, TopiaryQuery};
 #[cfg(target_arch = "wasm32")]
 use tree_sitter_facade::TreeSitter;
 #[cfg(target_arch = "wasm32")]
@@ -41,7 +41,7 @@ pub async fn format(
 #[cfg(target_arch = "wasm32")]
 async fn format_inner(
     input: &str,
-    query: &str,
+    query_content: &str,
     language_name: &str,
     check_idempotence: bool,
     tolerate_parsing_errors: bool,
@@ -51,11 +51,12 @@ async fn format_inner(
     let configuration = Configuration::parse_default_configuration()?;
     let language = configuration.get_language(language_name)?;
     let grammar = language.grammar_wasm().await?;
+    let query = TopiaryQuery::new(&grammar, query_content)?;
 
     formatter(
         &mut input.as_bytes(),
         &mut output,
-        query,
+        &query,
         language,
         &grammar,
         Operation::Format {

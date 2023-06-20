@@ -19,7 +19,7 @@ pub use crate::{
     configuration::{default_configuration_toml, Configuration},
     error::{FormatterError, IoError},
     language::{Language, SupportedLanguage},
-    tree_sitter::{apply_query, SyntaxNode, Visualisation},
+    tree_sitter::{apply_query, SyntaxNode, TopiaryQuery, Visualisation},
 };
 
 mod atom_collection;
@@ -145,14 +145,14 @@ pub enum Operation {
 /// # tokio_test::block_on(async {
 /// use std::fs::File;
 /// use std::io::{BufReader, Read};
-/// use topiary::{formatter, Configuration, FormatterError, Operation};
+/// use topiary::{formatter, Configuration, FormatterError, TopiaryQuery, Operation};
 ///
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
 /// let mut output = Vec::new();
 /// let mut query_file = BufReader::new(File::open("../languages/json.scm").expect("query file"));
-/// let mut query = String::new();
-/// query_file.read_to_string(&mut query).expect("read query file");
+/// let mut query_content = String::new();
+/// query_file.read_to_string(&mut query_content).expect("read query file");
 ///
 /// let config = Configuration::parse_default_configuration().unwrap();
 /// let language = config.get_language("json").unwrap();
@@ -160,6 +160,7 @@ pub enum Operation {
 ///     .grammar()
 ///     .await
 ///     .expect("grammar");
+/// let query = TopiaryQuery::new(&grammar, &query_content).unwrap();
 ///
 /// match formatter(&mut input, &mut output, &query, &language, &grammar, Operation::Format{ skip_idempotence: false, tolerate_parsing_errors: false }) {
 ///   Ok(()) => {
@@ -177,7 +178,7 @@ pub enum Operation {
 pub fn formatter(
     input: &mut impl io::Read,
     output: &mut impl io::Write,
-    query: &str,
+    query: &TopiaryQuery,
     language: &Language,
     grammar: &tree_sitter_facade::Language,
     operation: Operation,
@@ -196,6 +197,7 @@ pub fn formatter(
         } => {
             // All the work related to tree-sitter and the query is done here
             log::info!("Apply Tree-sitter query");
+
             let mut atoms =
                 tree_sitter::apply_query(&content, query, grammar, tolerate_parsing_errors, false)?;
 
@@ -257,7 +259,7 @@ fn trim_whitespace(s: &str) -> String {
 /// `Err(FormatterError::Formatting(...))` if the formatting failed
 fn idempotence_check(
     content: &str,
-    query: &str,
+    query: &TopiaryQuery,
     language: &Language,
     grammar: &tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
@@ -310,7 +312,7 @@ mod tests {
 
     use crate::{
         configuration::Configuration, error::FormatterError, formatter,
-        test_utils::pretty_assert_eq, Operation,
+        test_utils::pretty_assert_eq, Operation, TopiaryQuery,
     };
 
     /// Attempt to parse invalid json, expecting a failure
@@ -318,15 +320,16 @@ mod tests {
     async fn parsing_error_fails_formatting() {
         let mut input = r#"{"foo":{"bar"}}"#.as_bytes();
         let mut output = Vec::new();
-        let query = "(#language! json)";
+        let query_content = "(#language! json)";
         let configuration = Configuration::parse_default_configuration().unwrap();
         let language = configuration.get_language("json").unwrap();
         let grammar = language.grammar().await.unwrap();
+        let query = TopiaryQuery::new(&grammar, query_content).unwrap();
 
         match formatter(
             &mut input,
             &mut output,
-            query,
+            &query,
             language,
             &grammar,
             Operation::Format {
@@ -352,10 +355,11 @@ mod tests {
         let expected = "{ \"one\": {\"bar\"   \"baz\"}, \"two\": \"bar\" }\n";
 
         let mut output = Vec::new();
-        let query = fs::read_to_string("../languages/json.scm").unwrap();
+        let query_content = fs::read_to_string("../languages/json.scm").unwrap();
         let configuration = Configuration::parse_default_configuration().unwrap();
         let language = configuration.get_language("json").unwrap();
         let grammar = language.grammar().await.unwrap();
+        let query = TopiaryQuery::new(&grammar, &query_content).unwrap();
 
         formatter(
             &mut input,
