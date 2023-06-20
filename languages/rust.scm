@@ -90,6 +90,8 @@
 
 (line_comment) @append_hardline
 
+(block_comment) @multi_line_indent_all
+
 ; Append softlines, unless followed by comments.
 (
   [

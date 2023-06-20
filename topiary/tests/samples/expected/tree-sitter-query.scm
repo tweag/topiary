@@ -27,6 +27,8 @@
 ; tool of this.
 (
   [
+    ; Multi-
+    ; line comment
     (character)
     (quoted_string)
     (signed_number)

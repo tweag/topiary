@@ -12,6 +12,8 @@ a=123 # comment
 # that spans multiple lines
 if some_command
 then
+# indented multi-
+# line comment
 do_something
 another_thing --foo    --bar
 else
