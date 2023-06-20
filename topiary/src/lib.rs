@@ -133,6 +133,23 @@ pub enum Operation {
     },
 }
 
+impl Operation {
+    /// Default parameters for [`Operation::Format`]
+    pub fn format() -> Self {
+        Self::Format {
+            skip_idempotence: false,
+            tolerate_parsing_errors: false,
+        }
+    }
+
+    /// Default parameters for [`Operation::Visualise`]
+    pub fn visualise() -> Self {
+        Self::Visualise {
+            output_format: Visualisation::Json,
+        }
+    }
+}
+
 /// The function that takes an input and formats, or visualises an output.
 ///
 /// # Errors
@@ -161,7 +178,7 @@ pub enum Operation {
 ///     .await
 ///     .expect("grammar");
 ///
-/// match formatter(&mut input, &mut output, &query, &language, &grammar, Operation::Format{ skip_idempotence: false, tolerate_parsing_errors: false }) {
+/// match formatter(&mut input, &mut output, &query, &language, &grammar, Operation::format()) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
