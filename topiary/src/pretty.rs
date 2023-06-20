@@ -2,7 +2,10 @@
 //! module is reponsible for rendering the slice of Atoms back into a displayable
 //! format.
 
-use std::fmt::Write;
+use std::{borrow::Cow, fmt::Write};
+
+use log::warn;
+use regex::Regex;
 
 use crate::{Atom, FormatterError, FormatterResult};
 
@@ -42,6 +45,7 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
             Atom::Leaf {
                 content,
                 single_line_no_indent,
+                multi_line_indent_all,
                 ..
             } => {
                 if *single_line_no_indent {
@@ -49,7 +53,35 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                     // as a `Hardline` in the atom stream.
                     writeln!(buffer)?;
                 }
-                write!(buffer, "{}", content.trim_end_matches('\n'))?;
+
+                let content = content.trim_end_matches('\n');
+
+                let content = if *multi_line_indent_all {
+                    warn!("before replacement: {:?}", content);
+                    // Look for beginning of lines which may or may not be followed by the right
+                    // amount of indenting. We'll replace that with a newline plus indenting.
+                    let leaf_indent_regex =
+                        Regex::new(&format!("\n({})?", indent.repeat(indent_level))).unwrap();
+
+                    let replaced = leaf_indent_regex
+                        .replace_all(
+                            content, //.trim_end_matches('\n')
+                            //.replace('\n', &("\n".to_string() + &(indent.repeat(indent_level))))
+                            //.replace('\n', &("\nX".to_string()))
+                            "\n".to_string() + &indent.repeat(indent_level),
+                        )
+                        .clone();
+                    let replaced2: Cow<'_, str> =
+                        Cow::Owned(replaced.trim_end_matches('\n').clone().into());
+
+                    warn!("replaced: {:?}", replaced2);
+
+                    replaced2.clone()
+                } else {
+                    content.into()
+                };
+
+                write!(buffer, "{}", content)?;
             }
 
             Atom::Literal(s) => write!(buffer, "{s}")?,

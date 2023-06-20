@@ -60,6 +60,8 @@ pub enum Atom {
         id: usize,
         // marks the leaf to be printed on a single line, with no indentation
         single_line_no_indent: bool,
+        // if the leaf is multi-line, each line will be indented, not just the first
+        multi_line_indent_all: bool,
     },
     /// Represents a literal string, such as a semicolon.
     Literal(String),

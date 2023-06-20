@@ -316,6 +316,21 @@ impl AtomCollection {
 
                 self.append(Atom::Hardline, node, predicates);
             }
+            // Mark a leaf to have all its lines be indented
+            "multi_line_indent_all" => {
+                for a in &mut self.atoms {
+                    if let Atom::Leaf {
+                        id,
+                        multi_line_indent_all,
+                        ..
+                    } = a
+                    {
+                        if *id == node.id() {
+                            *multi_line_indent_all = true;
+                        }
+                    }
+                }
+            }
             // Return a query parsing error on unknown capture names
             unknown => {
                 return Err(FormatterError::Query(
@@ -412,6 +427,7 @@ impl AtomCollection {
                 content: String::from(node.utf8_text(source)?),
                 id,
                 single_line_no_indent: false,
+                multi_line_indent_all: false,
             });
             // Mark all sub-nodes as having this node as a "leaf parent"
             self.mark_leaf_parent(node, node.id());
