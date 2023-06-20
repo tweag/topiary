@@ -38,7 +38,37 @@ This name should be decided amongst the team before the release.
 ----------------------------------------------------------------------->
 
 ## [Unreleased]
-[unreleased]: https://github.com/tweag/topiary/compare/v0.2.2...HEAD
+[unreleased]: https://github.com/tweag/topiary/compare/v0.2.3...HEAD
+
+## [0.2.3] - 2023-06-20
+[0.2.2]: https://github.com/tweag/topiary/compare/v0.2.2...v0.2.3
+
+### Added
+* [#513](https://github.com/tweag/topiary/pull/513) Added the `-t, --tolerate-
+ parsing-errors` flags to Topiary, `tolerate_parsing_errors` to the `Format`
+ operation of the library, and a "Tolerate parsing errors" checkmark to the
+ playground. These options make Topiary ignore errors in the parsed file, and
+ attempt to format it.
+* [#506](https://github.com/tweag/topiary/pull/506) Allows the users to
+ configure Topiary through a user-defined configuration file. More information
+ can be found in the `README.md`.
+
+### Changed
+* [#523](https://github.com/tweag/topiary/pull/523) Skips rebuilding the tree-
+  sitter `Query` when performing the idempotence check. This improves performance
+  when not skipping the idempotence check by about `35%` for OCaml formatting.
+
+### Removed
+* [#508](https://github.com/tweag/topiary/pull/508) Simplified language
+  detection by treating `ocaml` and `ocaml_interface` as two distinct languages.
+  This ensures we only have one grammar per language. This
+  removed the `-l ocaml_implementation` flag from Topiary and the
+  `SupportedLanguage::OcamlImplementation` from the library.
+
+### Fixed
+* [#522](https://github.com/tweag/topiary/pull/522) Reverted the bump to the
+ OCaml grammar and queries. This bump (for as of yet unknown reasons) had a
+ catastrophic impact on Topiary's performance.
 
 ## [0.2.2] - 2023-06-12
 [0.2.1]: https://github.com/tweag/topiary/compare/v0.2.1...v0.2.2
