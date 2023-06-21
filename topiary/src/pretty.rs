@@ -4,8 +4,6 @@
 
 use std::fmt::Write;
 
-use log::warn;
-
 use crate::{Atom, FormatterError, FormatterResult};
 
 /// Renders a slice of Atoms into an owned string.
@@ -56,31 +54,19 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
 
                 let content = content.trim_end_matches('\n');
 
-                let content: String = if *multi_line_indent_all {
+                let content = if *multi_line_indent_all {
                     let cursor = current_column(&buffer) as i32;
 
                     // original_position is 1-based
                     let original_column = original_position.column as i32 - 1;
 
-                    // The following assumes spaces are used for indenting
-
                     let indenting = cursor - original_column;
 
-                    if indenting == 0 {
-                        warn!("no replacement: {:?}", content);
-                        content.into()
-                    } else if indenting > 0 {
-                        // add indenting to remaining lines
-                        warn!("before replacement: {:?}", content);
-                        let content = add_spaces_after_newlines(content, indenting);
-                        warn!("replaced: {:?}", content);
-                        content
-                    } else {
-                        // remove indenting from remaining lines, if possible
-                        warn!("before replacement: {:?}", content);
-                        let content = try_removing_spaces_after_newlines(content, -indenting);
-                        warn!("replaced: {:?}", content);
-                        content
+                    // The following assumes spaces are used for indenting
+                    match indenting {
+                        0 => content.into(),
+                        n if n > 0 => add_spaces_after_newlines(content, indenting),
+                        _ => try_removing_spaces_after_newlines(content, -indenting),
                     }
                 } else {
                     content.into()
@@ -113,9 +99,9 @@ fn current_column(s: &str) -> usize {
 fn add_spaces_after_newlines(s: &str, n: i32) -> String {
     let mut result = String::new();
 
-    let mut chars = s.chars().peekable();
+    let chars = s.chars().peekable();
 
-    while let Some(c) = chars.next() {
+    for c in chars {
         result.push(c);
 
         if c == '\n' {
