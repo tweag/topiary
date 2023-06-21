@@ -18,7 +18,9 @@ pub enum Visualisation {
     Json,
 }
 
-// 1-based text position, derived from tree_sitter::Point, for the sake of serialisation.
+/// Refers to a position within the code. Used for error reporting, and for
+/// comparing input with formatted output. The numbers are 1-based, because that
+/// is how editors usually refer to a position. Derived from tree_sitter::Point.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Position {
     pub row: u32,
