@@ -27,10 +27,10 @@ enum NoFinalComma {
 
 enum ExpandTwoLevels {
     Leaf {
-    /*
-     * Multi-line
-     * comment
-     */
+        /*
+         * Multi-line
+         * comment
+         */
         content: String,
         //   Comment after field declaration in enum variant.
         id: usize,

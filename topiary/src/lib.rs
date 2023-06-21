@@ -14,6 +14,7 @@ use std::io;
 
 use itertools::Itertools;
 use pretty_assertions::StrComparison;
+use tree_sitter::Position;
 
 pub use crate::{
     configuration::{default_configuration_toml, Configuration},
@@ -58,6 +59,7 @@ pub enum Atom {
     Leaf {
         content: String,
         id: usize,
+        original_position: Position,
         // marks the leaf to be printed on a single line, with no indentation
         single_line_no_indent: bool,
         // if the leaf is multi-line, each line will be indented, not just the first

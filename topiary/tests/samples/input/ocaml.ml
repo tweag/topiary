@@ -15,7 +15,10 @@
 
 (* Extensible buffers *)
 
-type t =
+type t =      (* Multi-
+               * line comment with
+               * too much padding.
+               *)
  {mutable buffer : bytes;
   mutable position : int;  (* End-of-line comment *)
   mutable length : int;

@@ -2,10 +2,9 @@
 //! module is reponsible for rendering the slice of Atoms back into a displayable
 //! format.
 
-use std::{borrow::Cow, fmt::Write};
+use std::fmt::Write;
 
 use log::warn;
-use regex::Regex;
 
 use crate::{Atom, FormatterError, FormatterResult};
 
@@ -44,6 +43,7 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
 
             Atom::Leaf {
                 content,
+                original_position,
                 single_line_no_indent,
                 multi_line_indent_all,
                 ..
@@ -56,27 +56,32 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
 
                 let content = content.trim_end_matches('\n');
 
-                let content = if *multi_line_indent_all {
-                    warn!("before replacement: {:?}", content);
-                    // Look for beginning of lines which may or may not be followed by the right
-                    // amount of indenting. We'll replace that with a newline plus indenting.
-                    let leaf_indent_regex =
-                        Regex::new(&format!("\n({})?", indent.repeat(indent_level))).unwrap();
+                let content: String = if *multi_line_indent_all {
+                    let cursor = current_column(&buffer) as i32;
 
-                    let replaced = leaf_indent_regex
-                        .replace_all(
-                            content, //.trim_end_matches('\n')
-                            //.replace('\n', &("\n".to_string() + &(indent.repeat(indent_level))))
-                            //.replace('\n', &("\nX".to_string()))
-                            "\n".to_string() + &indent.repeat(indent_level),
-                        )
-                        .clone();
-                    let replaced2: Cow<'_, str> =
-                        Cow::Owned(replaced.trim_end_matches('\n').clone().into());
+                    // original_position is 1-based
+                    let original_column = original_position.column as i32 - 1;
 
-                    warn!("replaced: {:?}", replaced2);
+                    // The following assumes spaces are used for indenting
 
-                    replaced2.clone()
+                    let indenting = cursor - original_column;
+
+                    if indenting == 0 {
+                        warn!("no replacement: {:?}", content);
+                        content.into()
+                    } else if indenting > 0 {
+                        // add indenting to remaining lines
+                        warn!("before replacement: {:?}", content);
+                        let content = add_spaces_after_newlines(content, indenting);
+                        warn!("replaced: {:?}", content);
+                        content
+                    } else {
+                        // remove indenting from remaining lines, if possible
+                        warn!("before replacement: {:?}", content);
+                        let content = try_removing_spaces_after_newlines(content, -indenting);
+                        warn!("replaced: {:?}", content);
+                        content
+                    }
                 } else {
                     content.into()
                 };
@@ -99,4 +104,48 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
     }
 
     Ok(buffer)
+}
+
+fn current_column(s: &str) -> usize {
+    s.chars().rev().take_while(|c| *c != '\n').count()
+}
+
+fn add_spaces_after_newlines(s: &str, n: i32) -> String {
+    let mut result = String::new();
+
+    let mut chars = s.chars().peekable();
+
+    while let Some(c) = chars.next() {
+        result.push(c);
+
+        if c == '\n' {
+            for _ in 0..n {
+                result.push(' ');
+            }
+        }
+    }
+
+    result
+}
+
+fn try_removing_spaces_after_newlines(s: &str, n: i32) -> String {
+    let mut result = String::new();
+
+    let mut chars = s.chars().peekable();
+
+    while let Some(c) = chars.next() {
+        result.push(c);
+
+        if c == '\n' {
+            for _ in 0..n {
+                if let Some(' ') = chars.peek() {
+                    chars.next();
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    result
 }
