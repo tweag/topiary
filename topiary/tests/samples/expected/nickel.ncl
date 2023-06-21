@@ -1,6 +1,7 @@
 {
   regression_tests = [
-    # Interpolated record operation chains
+    # Interpolated record operation chains (in
+    # a multi-line comment)
     {
       # This is fine
       good = "%{interpolated}",

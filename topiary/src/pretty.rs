@@ -41,7 +41,9 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
 
             Atom::Leaf {
                 content,
+                original_position,
                 single_line_no_indent,
+                multi_line_indent_all,
                 ..
             } => {
                 if *single_line_no_indent {
@@ -49,7 +51,28 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                     // as a `Hardline` in the atom stream.
                     writeln!(buffer)?;
                 }
-                write!(buffer, "{}", content.trim_end_matches('\n'))?;
+
+                let content = content.trim_end_matches('\n');
+
+                let content = if *multi_line_indent_all {
+                    let cursor = current_column(&buffer) as i32;
+
+                    // original_position is 1-based
+                    let original_column = original_position.column as i32 - 1;
+
+                    let indenting = cursor - original_column;
+
+                    // The following assumes spaces are used for indenting
+                    match indenting {
+                        0 => content.into(),
+                        n if n > 0 => add_spaces_after_newlines(content, indenting),
+                        _ => try_removing_spaces_after_newlines(content, -indenting),
+                    }
+                } else {
+                    content.into()
+                };
+
+                write!(buffer, "{}", content)?;
             }
 
             Atom::Literal(s) => write!(buffer, "{s}")?,
@@ -67,4 +90,48 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
     }
 
     Ok(buffer)
+}
+
+fn current_column(s: &str) -> usize {
+    s.chars().rev().take_while(|c| *c != '\n').count()
+}
+
+fn add_spaces_after_newlines(s: &str, n: i32) -> String {
+    let mut result = String::new();
+
+    let chars = s.chars().peekable();
+
+    for c in chars {
+        result.push(c);
+
+        if c == '\n' {
+            for _ in 0..n {
+                result.push(' ');
+            }
+        }
+    }
+
+    result
+}
+
+fn try_removing_spaces_after_newlines(s: &str, n: i32) -> String {
+    let mut result = String::new();
+
+    let mut chars = s.chars().peekable();
+
+    while let Some(c) = chars.next() {
+        result.push(c);
+
+        if c == '\n' {
+            for _ in 0..n {
+                if let Some(' ') = chars.peek() {
+                    chars.next();
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    result
 }

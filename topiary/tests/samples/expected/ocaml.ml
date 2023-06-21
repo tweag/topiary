@@ -15,7 +15,11 @@
 
 (* Extensible buffers *)
 
-type t = {
+type t = (* Multi-
+          * line comment with
+          * too much padding.
+          *)
+{
   mutable buffer: bytes;
   mutable position: int; (* End-of-line comment *)
   mutable length: int;
@@ -94,39 +98,39 @@ let resize b more =
   assert (old_pos + more <= b.length);
   ()
 (* Note: there are various situations (preemptive threads, signals and
-     gc finalizers) where OCaml code may be run asynchronously; in
-     particular, there may be a race with another user of [b], changing
-     its mutable fields in the middle of the [resize] call. The Buffer
-     module does not provide any correctness guarantee if that happens,
-     but we must still ensure that the datastructure invariants hold for
-     memory-safety -- as we plan to use [unsafe_{get,set}].
+   gc finalizers) where OCaml code may be run asynchronously; in
+   particular, there may be a race with another user of [b], changing
+   its mutable fields in the middle of the [resize] call. The Buffer
+   module does not provide any correctness guarantee if that happens,
+   but we must still ensure that the datastructure invariants hold for
+   memory-safety -- as we plan to use [unsafe_{get,set}].
 
-     There are two potential allocation points in this function,
-     [ref] and [Bytes.create], but all reads and writes to the fields
-     of [b] happen before both of them or after both of them.
+   There are two potential allocation points in this function,
+   [ref] and [Bytes.create], but all reads and writes to the fields
+   of [b] happen before both of them or after both of them.
 
-     We therefore assume that [b.position] may change at these allocations,
-     and check that the [b.position + more <= b.length] postcondition
-     holds for both values of [b.position], before or after the function
-     is called. More precisely, the following invariants must hold if the
-     function returns correctly, in addition to the usual buffer invariants:
-     - [old(b.position) + more <= new(b.length)]
-     - [new(b.position) + more <= new(b.length)]
-     - [old(b.length) <= new(b.length)]
+   We therefore assume that [b.position] may change at these allocations,
+   and check that the [b.position + more <= b.length] postcondition
+   holds for both values of [b.position], before or after the function
+   is called. More precisely, the following invariants must hold if the
+   function returns correctly, in addition to the usual buffer invariants:
+   - [old(b.position) + more <= new(b.length)]
+   - [new(b.position) + more <= new(b.length)]
+   - [old(b.length) <= new(b.length)]
 
-     Note: [b.position + more <= old(b.length)] does *not*
-     hold in general, as it is precisely the case where you need
-     to call [resize] to increase [b.length].
+   Note: [b.position + more <= old(b.length)] does *not*
+   hold in general, as it is precisely the case where you need
+   to call [resize] to increase [b.length].
 
-     Note: [assert] above does not mean that we know the conditions
-     always hold, but that the function may return correctly
-     only if they hold.
+   Note: [assert] above does not mean that we know the conditions
+   always hold, but that the function may return correctly
+   only if they hold.
 
-     Note: the other functions in this module does not need
-     to be checked with this level of scrutiny, given that they
-     read/write the buffer immediately after checking that
-     [b.position + more <= b.length] hold or calling [resize].
-  *)
+   Note: the other functions in this module does not need
+   to be checked with this level of scrutiny, given that they
+   read/write the buffer immediately after checking that
+   [b.position + more <= b.length] hold or calling [resize].
+*)
 
 let add_char b c =
   let pos = b.position in
@@ -212,6 +216,9 @@ let unsafe_add_channel_up_to b ic len =
   n
 
 let add_channel b ic len =
+  (* Test multi-line
+     comment indenting
+  *)
   if len < 0 || len > Sys.max_string_length then (* PR#5004 *)
     invalid_arg "Buffer.add_channel";
   let n = unsafe_add_channel_up_to b ic len in
@@ -472,7 +479,7 @@ end
 
 module type Printer = sig
   (** [print_list sep printer] returns a printer for ['a list] using [printer] as
-    element printer and [sep] as separator between elements. *)
+      element printer and [sep] as separator between elements. *)
   val print_list : string -> 'a printer -> 'a list printer
   val print_name : name printer
 

@@ -31,6 +31,8 @@
   ]
 ) @leaf
 
+(comment) @multi_line_indent_all
+
 ; line number directives must be alone on their line, and can't be indented
 (line_number_directive) @single_line_no_indent
 
