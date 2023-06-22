@@ -54,6 +54,78 @@ impl TopiaryQuery {
             query_content: query_content.to_owned(),
         })
     }
+
+    /// Creates a new `TopiaryQuery` using the built-in Bash query file.
+    pub fn bash() -> TopiaryQuery {
+        Self::new(
+            &tree_sitter_bash::language().into(),
+            include_str!("../../languages/bash.scm"),
+        )
+        .expect("parsing built-in query")
+    }
+
+    /// Creates a new `TopiaryQuery` using the built-in Json query file.
+    pub fn json() -> TopiaryQuery {
+        Self::new(
+            &tree_sitter_json::language().into(),
+            include_str!("../../languages/json.scm"),
+        )
+        .expect("parsing built-in query")
+    }
+
+    /// Creates a new `TopiaryQuery` using the built-in Nickel query file.
+    pub fn nickel() -> TopiaryQuery {
+        Self::new(
+            &tree_sitter_nickel::language().into(),
+            include_str!("../../languages/nickel.scm"),
+        )
+        .expect("parsing built-in query")
+    }
+
+    /// Creates a new `TopiaryQuery` for Ocaml using the built-in Ocaml query file.
+    pub fn ocaml() -> TopiaryQuery {
+        Self::new(
+            &tree_sitter_ocaml::language_ocaml().into(),
+            include_str!("../../languages/ocaml.scm"),
+        )
+        .expect("parsing built-in query")
+    }
+
+    /// Creates a new `TopiaryQuery` for Ocaml interface using the built-in Ocaml query file.
+    pub fn ocaml_interface() -> TopiaryQuery {
+        Self::new(
+            &tree_sitter_ocaml::language_ocaml_interface().into(),
+            include_str!("../../languages/ocaml.scm"),
+        )
+        .expect("parsing built-in query")
+    }
+
+    /// Creates a new `TopiaryQuery` using the built-in Rust query file.
+    pub fn rust() -> TopiaryQuery {
+        Self::new(
+            &tree_sitter_rust::language().into(),
+            include_str!("../../languages/rust.scm"),
+        )
+        .expect("parsing built-in query")
+    }
+
+    /// Creates a new `TopiaryQuery` using the built-in Toml query file.
+    pub fn toml() -> TopiaryQuery {
+        Self::new(
+            &tree_sitter_toml::language().into(),
+            include_str!("../../languages/toml.scm"),
+        )
+        .expect("parsing built-in query")
+    }
+
+    /// Creates a new `TopiaryQuery` using the built-in query file for the Tree-sitter query language.
+    pub fn tree_sitter_query() -> TopiaryQuery {
+        Self::new(
+            &tree_sitter_query::language().into(),
+            include_str!("../../languages/tree-sitter-query.scm"),
+        )
+        .expect("parsing built-in query")
+    }
 }
 
 impl From<Point> for Position {
