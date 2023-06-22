@@ -18,10 +18,10 @@ pub enum OutputFile {
 }
 
 impl OutputFile {
-    pub fn new(path: Option<&str>) -> CLIResult<Self> {
+    pub fn new(path: &str) -> CLIResult<Self> {
         match path {
-            Some("-") | None => Ok(Self::Stdout),
-            Some(file) => {
+            "-" => Ok(Self::Stdout),
+            file => {
                 let path = Path::new(file).canonicalize()?;
                 let parent = path.parent().unwrap();
                 Ok(Self::Disk {

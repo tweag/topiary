@@ -1433,12 +1433,14 @@ dependencies = [
  "clap 4.3.3",
  "directories",
  "env_logger",
+ "futures",
  "log",
  "serde-toml-merge",
  "tempfile",
  "tokio",
  "toml",
  "topiary",
+ "tree-sitter-facade",
 ]
 
 [[package]]
