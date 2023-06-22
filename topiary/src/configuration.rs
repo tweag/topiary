@@ -1,7 +1,7 @@
 /// Topiary can be configured using the `Configuration` struct.
 /// A basic configuration, written in toml, it is included buildtime and parsed runtime.
 /// Additional configuration has to be provided by the user of the library.
-use std::{collections::HashSet, str::from_utf8};
+use std::collections::HashSet;
 
 use crate::{language::Language, FormatterError, FormatterResult};
 use serde::{Deserialize, Serialize};
@@ -73,7 +73,6 @@ impl Default for Configuration {
 /// Parsing straight to a `Configuration` doesn't work well, because that forces
 /// every configuration file to define every part of the configuration.
 pub fn default_configuration_toml() -> toml::Value {
-    let default_config = include_bytes!("../languages.toml");
-    toml::from_str(from_utf8(default_config).unwrap())
-        .expect("Could not parse built-in languages.toml to valid toml")
+    let default_config = include_str!("../languages.toml");
+    toml::from_str(default_config).expect("Could not parse built-in languages.toml to valid toml")
 }
