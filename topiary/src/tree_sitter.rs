@@ -59,7 +59,7 @@ impl TopiaryQuery {
     pub fn bash() -> TopiaryQuery {
         Self::new(
             &tree_sitter_bash::language().into(),
-            include_str!("../../languages/bash.scm"),
+            include_str!("../languages/bash.scm"),
         )
         .expect("parsing built-in query")
     }
@@ -68,7 +68,7 @@ impl TopiaryQuery {
     pub fn json() -> TopiaryQuery {
         Self::new(
             &tree_sitter_json::language().into(),
-            include_str!("../../languages/json.scm"),
+            include_str!("../languages/json.scm"),
         )
         .expect("parsing built-in query")
     }
@@ -77,7 +77,7 @@ impl TopiaryQuery {
     pub fn nickel() -> TopiaryQuery {
         Self::new(
             &tree_sitter_nickel::language().into(),
-            include_str!("../../languages/nickel.scm"),
+            include_str!("../languages/nickel.scm"),
         )
         .expect("parsing built-in query")
     }
@@ -86,7 +86,7 @@ impl TopiaryQuery {
     pub fn ocaml() -> TopiaryQuery {
         Self::new(
             &tree_sitter_ocaml::language_ocaml().into(),
-            include_str!("../../languages/ocaml.scm"),
+            include_str!("../languages/ocaml.scm"),
         )
         .expect("parsing built-in query")
     }
@@ -95,7 +95,7 @@ impl TopiaryQuery {
     pub fn ocaml_interface() -> TopiaryQuery {
         Self::new(
             &tree_sitter_ocaml::language_ocaml_interface().into(),
-            include_str!("../../languages/ocaml.scm"),
+            include_str!("../languages/ocaml.scm"),
         )
         .expect("parsing built-in query")
     }
@@ -104,7 +104,7 @@ impl TopiaryQuery {
     pub fn rust() -> TopiaryQuery {
         Self::new(
             &tree_sitter_rust::language().into(),
-            include_str!("../../languages/rust.scm"),
+            include_str!("../languages/rust.scm"),
         )
         .expect("parsing built-in query")
     }
@@ -113,7 +113,7 @@ impl TopiaryQuery {
     pub fn toml() -> TopiaryQuery {
         Self::new(
             &tree_sitter_toml::language().into(),
-            include_str!("../../languages/toml.scm"),
+            include_str!("../languages/toml.scm"),
         )
         .expect("parsing built-in query")
     }
@@ -122,7 +122,7 @@ impl TopiaryQuery {
     pub fn tree_sitter_query() -> TopiaryQuery {
         Self::new(
             &tree_sitter_query::language().into(),
-            include_str!("../../languages/tree-sitter-query.scm"),
+            include_str!("../languages/tree-sitter-query.scm"),
         )
         .expect("parsing built-in query")
     }
