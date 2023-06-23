@@ -41,7 +41,8 @@ impl TopiaryQuery {
     ///
     /// # Errors
     ///
-    /// This function will return an error if tree-sitter failed to parse the query file.
+    /// This function will return an error if tree-sitter failed to parse the
+    /// query file.
     pub fn new(
         grammar: &tree_sitter_facade::Language,
         query_content: &str,
@@ -56,6 +57,7 @@ impl TopiaryQuery {
     }
 
     /// Creates a new `TopiaryQuery` using the built-in Bash query file.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn bash() -> TopiaryQuery {
         Self::new(
             &tree_sitter_bash::language().into(),
@@ -65,6 +67,7 @@ impl TopiaryQuery {
     }
 
     /// Creates a new `TopiaryQuery` using the built-in Json query file.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn json() -> TopiaryQuery {
         Self::new(
             &tree_sitter_json::language().into(),
@@ -74,6 +77,7 @@ impl TopiaryQuery {
     }
 
     /// Creates a new `TopiaryQuery` using the built-in Nickel query file.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn nickel() -> TopiaryQuery {
         Self::new(
             &tree_sitter_nickel::language().into(),
@@ -82,7 +86,9 @@ impl TopiaryQuery {
         .expect("parsing built-in query")
     }
 
-    /// Creates a new `TopiaryQuery` for Ocaml using the built-in Ocaml query file.
+    /// Creates a new `TopiaryQuery` for Ocaml using the built-in Ocaml query
+    /// file.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn ocaml() -> TopiaryQuery {
         Self::new(
             &tree_sitter_ocaml::language_ocaml().into(),
@@ -91,7 +97,9 @@ impl TopiaryQuery {
         .expect("parsing built-in query")
     }
 
-    /// Creates a new `TopiaryQuery` for Ocaml interface using the built-in Ocaml query file.
+    /// Creates a new `TopiaryQuery` for Ocaml interface using the built-in
+    /// Ocaml query file.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn ocaml_interface() -> TopiaryQuery {
         Self::new(
             &tree_sitter_ocaml::language_ocaml_interface().into(),
@@ -101,6 +109,7 @@ impl TopiaryQuery {
     }
 
     /// Creates a new `TopiaryQuery` using the built-in Rust query file.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn rust() -> TopiaryQuery {
         Self::new(
             &tree_sitter_rust::language().into(),
@@ -110,6 +119,7 @@ impl TopiaryQuery {
     }
 
     /// Creates a new `TopiaryQuery` using the built-in Toml query file.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn toml() -> TopiaryQuery {
         Self::new(
             &tree_sitter_toml::language().into(),
@@ -118,7 +128,9 @@ impl TopiaryQuery {
         .expect("parsing built-in query")
     }
 
-    /// Creates a new `TopiaryQuery` using the built-in query file for the Tree-sitter query language.
+    /// Creates a new `TopiaryQuery` using the built-in query file for the
+    /// Tree-sitter query language.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn tree_sitter_query() -> TopiaryQuery {
         Self::new(
             &tree_sitter_query::language().into(),
