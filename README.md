@@ -161,20 +161,20 @@ pre-commit-check = nix-pre-commit-hooks.run {
 ```
 CLI app for Topiary, the universal code formatter.
 
-Usage: topiary [OPTIONS] <--language <LANGUAGE>|--input-file <INPUT_FILE>>
+Usage: topiary [OPTIONS] <--language <LANGUAGE>|--input-files [<INPUT_FILES>...]>
 
 Options:
-  -l, --language <LANGUAGE>          Which language to parse and format [possible values: json, nickel, ocaml, ocaml-interface, toml]
-  -f, --input-file <INPUT_FILE>      Path to an input file. If omitted, or equal to "-", read from standard input
-  -q, --query <QUERY>                Which query file to use
-  -o, --output-file <OUTPUT_FILE>    Path to an output file. If omitted, or equal to "-", write to standard output
-  -i, --in-place                     Format the input file in place
-  -v, --visualise[=<OUTPUT_FORMAT>]  Visualise the syntax tree, rather than format [possible values: json, dot]
-  -s, --skip-idempotence             Do not check that formatting twice gives the same output
-      --output-configuration         Output the full configuration to stderr before continuing
-  -t, --tolerate-parsing-errors      Format as much as possible even if some of the input causes parsing errors
-  -h, --help                         Print help
-  -V, --version                      Print version
+  -l, --language <LANGUAGE>             Which language to parse and format [possible values: json, nickel, ocaml, ocaml-interface, toml]
+  -f, --input-files [<INPUT_FILES>...]  Path to an input file or multiple input files. If omitted, or equal to "-", read from standard input. If multiple files are provided, `in_place` is assumed [default: -]
+  -q, --query <QUERY>                   Which query file to use
+  -o, --output-file <OUTPUT_FILE>       Path to an output file. If omitted, or equal to "-", write to standard output
+  -i, --in-place                        Format the input files in place
+  -v, --visualise[=<OUTPUT_FORMAT>]     Visualise the syntax tree, rather than format [possible values: json, dot]
+  -s, --skip-idempotence                Do not check that formatting twice gives the same output
+      --output-configuration            Output the full configuration to stderr before continuing
+  -t, --tolerate-parsing-errors         Format as much as possible even if some of the input causes parsing errors
+  -h, --help                            Print help
+  -V, --version                         Print version
 ```
 
 Language selection is based on precedence, in the following order:

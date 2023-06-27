@@ -42,7 +42,7 @@ format() {
 
   local -a topiary_args=(
     --query "${query}"
-    --input-file "${input}"
+    --input-files "${input}"
   )
 
   if (( skip_idempotence )); then

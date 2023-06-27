@@ -24,7 +24,7 @@ use topiary::{formatter, Language, Operation, SupportedLanguage, TopiaryQuery};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
-// Require at least one of --language or --input-file (n.b., language > input)
+// Require at least one of --language or --input-files (n.b., language > input)
 #[command(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "input_files"]),))]
 struct Args {
     /// Which language to parse and format
@@ -157,33 +157,28 @@ async fn run() -> CLIResult<()> {
 
     // Converts the simple types into arguments we can pass to the `formatter` function
     // _ holds the tree_sitter_facade::Language
-    let fmt_args: Vec<(
-        String,
-        String,
-        Language,
-        tree_sitter_facade::Language,
-        TopiaryQuery,
-    )> = futures::future::try_join_all(io_files.into_iter().map(
-        |(i, o, language, query_path)| async move {
-            let query_content = ({
-                let mut reader = BufReader::new(File::open(&query_path)?);
-                let mut contents = String::new();
-                reader.read_to_string(&mut contents)?;
+    let fmt_args: Vec<(String, String, Language, _, TopiaryQuery)> =
+        futures::future::try_join_all(io_files.into_iter().map(
+            |(i, o, language, query_path)| async move {
+                let query_content = ({
+                    let mut reader = BufReader::new(File::open(&query_path)?);
+                    let mut contents = String::new();
+                    reader.read_to_string(&mut contents)?;
 
-                Ok(contents)
-            })
-            .map_err(|e| {
-                TopiaryError::Bin(
-                    "Could not open query file".into(),
-                    Some(CLIError::IOError(e)),
-                )
-            })?;
-            let grammar = language.grammar().await?;
-            let query = TopiaryQuery::new(&grammar, &query_content)?;
-            Ok::<_, TopiaryError>((i, o, language, grammar, query))
-        },
-    ))
-    .await?;
+                    Ok(contents)
+                })
+                .map_err(|e| {
+                    TopiaryError::Bin(
+                        "Could not open query file".into(),
+                        Some(CLIError::IOError(e)),
+                    )
+                })?;
+                let grammar = language.grammar().await?;
+                let query = TopiaryQuery::new(&grammar, &query_content)?;
+                Ok::<_, TopiaryError>((i, o, language, grammar, query))
+            },
+        ))
+        .await?;
 
     // The operation needs not be part of the Vector of Structs because it is the same for every formatting instance
     let operation = if let Some(visualisation) = args.visualise {

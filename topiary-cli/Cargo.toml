@@ -29,7 +29,6 @@ path = "src/main.rs"
 clap = { workspace = true, features = ["derive"] }
 env_logger = { workspace = true }
 futures = { workspace = true }
-tree-sitter-facade = { workspace = true }
 directories = { workspace = true }
 log = { workspace = true }
 serde-toml-merge = { workspace = true }
