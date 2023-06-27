@@ -295,12 +295,10 @@ fn idempotence_check(
                 Err(FormatterError::Idempotence)
             }
         }
-        Err(error) => match error {
-            FormatterError::Parsing { .. } => {
-                Err(FormatterError::IdempotenceParsing(Box::new(error)))
-            }
-            _ => Err(error),
-        },
+        Err(error @ FormatterError::Parsing { .. }) => {
+            Err(FormatterError::IdempotenceParsing(Box::new(error)))
+        }
+        Err(error) => Err(error),
     }
 }
 
