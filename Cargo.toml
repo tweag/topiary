@@ -10,6 +10,7 @@ license = "MIT"
 
 [workspace]
 members = ["topiary", "topiary-cli", "topiary-playground"]
+exclude = ["samples"]
 
 [profile.release]
 lto = true

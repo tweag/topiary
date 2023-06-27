@@ -51,7 +51,7 @@ impl Language {
         self.try_into()
     }
 
-    /// Convert a Language into a vector of supported Tree-sitter grammars, ordered by priority.
+    /// Convert a Language into a supported Tree-sitter grammar.
     ///
     /// Note that, currently, all grammars are statically linked. This will change once dynamic linking
     /// is implemented (see Issue #4).
