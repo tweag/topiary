@@ -789,6 +789,14 @@
   ) @begin_scope @end_scope
   (#scope_id! "function_definition")
 )
+(
+  (_) @begin_scope
+  .
+  (function_expression
+    "function" @append_spaced_scoped_softline
+  ) @end_scope
+  (#scope_id! "function_definition")
+)
 (function_expression
   (match_case)? @do_nothing
   .
