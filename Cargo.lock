@@ -1396,7 +1396,7 @@ dependencies = [
 
 [[package]]
 name = "topiary"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "clap 4.3.3",
  "criterion",
@@ -1427,7 +1427,7 @@ dependencies = [
 
 [[package]]
 name = "topiary-cli"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "assert_cmd",
  "clap 4.3.3",
@@ -1443,7 +1443,7 @@ dependencies = [
 
 [[package]]
 name = "topiary-playground"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "cfg-if",
  "itertools",
