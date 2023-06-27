@@ -11,6 +11,9 @@
   * Retitle the "Unreleased" section to this release and create a fresh
     "Unreleased" section (see comments in the [CHANGELOG] for details).
 
+    Do not wrap bullet points in multiple lines. GitHub will use those line
+    breaks in the Release Notes display.
+
     :bulb: Point releases (i.e., not patch releases) should also be
     given a name, taking the form `ADJECTIVE TREE`, incrementing
     alphabetically. This name should be decided amongst the team before
@@ -21,15 +24,20 @@
   * Commit and merge (squash, if necessary) on green CI and peer
     approval.
 
-  * Tag the merged commit with the release version, prefixed with a `v`
-    (e.g., `v1.0.0`).
+  * Tag the merged commit with the release version, prefixed with a `v` (e.g.,
+    `v0.1.0`). The version number must match the one in `Cargo.toml`, otherwise
+    `cargo dist` will fail during CI.
 
-* [Draft a new release][draft-release] in GitHub.
-  * Set the tag to that created in the previous step, now on `main`.
-  * Set the release title to `Topiary v<RELEASE>`, or `Topiary
+    ```bash
+    git tag "v0.1.0"
+    git push
+    git push --tags
+    ```
+
+* Let `cargo dist` create a new [draft release][releases].
+  * Update the release title to `Topiary v<RELEASE>`, or `Topiary
     v<RELEASE>: <NAME>` for point releases.
-  * Copy-and-paste the [CHANGELOG] contents for this release
-    into the description.
+  * Verify the [CHANGELOG] contents.
   * Publish.
 
 * Publicise.
@@ -70,4 +78,4 @@ this to "unlimited"; adjust as necessary.
 <!-- Links -->
 [changelog]: /changelog.md
 [changelog-refresh]: #generating-the-pr-list-for-the-changelog
-[draft-release]: https://github.com/tweag/topiary/releases/new
+[releases]: https://github.com/tweag/topiary/releases
