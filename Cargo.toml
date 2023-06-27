@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.2.4"
+version = "0.2.3"
 edition = "2021"
 authors = ["Tweag"]
 homepage = "https://topiary.tweag.io"

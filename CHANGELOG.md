@@ -47,19 +47,6 @@ This name should be decided amongst the team before the release.
 * [#533](https://github.com/tweag/topiary/pull/533) Update tree-sitter-ocaml to 0.20.3
 * [#535](https://github.com/tweag/topiary/pull/535) Improved error message when idempotency fails due to invalid output in the first pass.
 
-## v0.2.4 - Cyclic Cypress
-[0.2.3]: https://github.com/tweag/topiary/compare/v0.2.3...v0.2.4
-
-### Added
-* [#526](https://github.com/tweag/topiary/pull/526) Multi-line comments can be indented properly using the new predicate @multi_line_indent_all.
-* [#528](https://github.com/tweag/topiary/pull/528) Added a sample app and convenience functions for using the built-in queries.
-
-### Changed
-* [#533](https://github.com/tweag/topiary/pull/533) Update tree-sitter-ocaml to 0.20.3
-
-### Fixed
-* [#535](https://github.com/tweag/topiary/pull/535) Improved error message when idempotency fails due to invalid output in the first pass.
-
 ## v0.2.3 - Cyclic Cypress
 [0.2.2]: https://github.com/tweag/topiary/compare/v0.2.2...v0.2.3
 
