@@ -124,18 +124,3 @@ jobs:
           cat uploads.txt
           gh release upload ${{ github.ref_name }} $(cat uploads.txt)
           echo "uploaded!"
-
-  # Mark the Github Release™ as a non-draft now that everything has succeeded!
-  publish-release:
-    # Only run after all the other tasks, but it's ok if upload-artifacts was skipped
-    needs: [create-release, upload-artifacts]
-    if: ${{ always() && needs.create-release.result == 'success' && (needs.upload-artifacts.result == 'skipped' || needs.upload-artifacts.result == 'success') }}
-    runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: mark release as non-draft
-        # TODO: Change to --draft=false
-        run: |
-          gh release edit ${{ github.ref_name }} --draft=true
