@@ -154,6 +154,8 @@
     "external"
     (floating_attribute)
     "for"
+    "fun"
+    "function"
     "if"
     "in"
     "include"
