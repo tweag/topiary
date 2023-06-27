@@ -41,48 +41,30 @@ This name should be decided amongst the team before the release.
 [0.2.3]: https://github.com/tweag/topiary/compare/v0.2.3...v0.2.4
 
 ### Added
-* [#526](https://github.com/tweag/topiary/pull/526) Multi-line comments can be
-  indented properly using the new predicate @multi_line_indent_all.
-* [#528](https://github.com/tweag/topiary/pull/528) Added a sample app and
-  convenience functions for using the built-in queries.
+* [#526](https://github.com/tweag/topiary/pull/526) Multi-line comments can be indented properly using the new predicate @multi_line_indent_all.
+* [#528](https://github.com/tweag/topiary/pull/528) Added a sample app and convenience functions for using the built-in queries.
 
 ### Changed
-* [#533](https://github.com/tweag/topiary/pull/533) Update tree-sitter-ocaml to
-  0.20.3
+* [#533](https://github.com/tweag/topiary/pull/533) Update tree-sitter-ocaml to 0.20.3
 
 ### Fixed
-* [#535](https://github.com/tweag/topiary/pull/535) Improved error message when
-  idempotency fails due to invalid output in the first pass.
+* [#535](https://github.com/tweag/topiary/pull/535) Improved error message when idempotency fails due to invalid output in the first pass.
 
 ## [0.2.3] - 2023-06-20
 [0.2.2]: https://github.com/tweag/topiary/compare/v0.2.2...v0.2.3
 
 ### Added
-* [#513](https://github.com/tweag/topiary/pull/513) Added the `-t, --tolerate-
- parsing-errors` flags to Topiary, `tolerate_parsing_errors` to the `Format`
- operation of the library, and a "Tolerate parsing errors" checkmark to the
- playground. These options make Topiary ignore errors in the parsed file, and
- attempt to format it.
-* [#506](https://github.com/tweag/topiary/pull/506) Allows the users to
- configure Topiary through a user-defined configuration file. More information
- can be found in the `README.md`.
+* [#513](https://github.com/tweag/topiary/pull/513) Added the `-t, --tolerate-parsing-errors` flags to Topiary, `tolerate_parsing_errors` to the `Format` operation of the library, and a "Tolerate parsing errors" checkmark to the playground. These options make Topiary ignore errors in the parsed file, and attempt to format it.
+* [#506](https://github.com/tweag/topiary/pull/506) Allows the users to configure Topiary through a user-defined configuration file. More information can be found in the `README.md`.
 
 ### Changed
-* [#523](https://github.com/tweag/topiary/pull/523) Skips rebuilding the tree-
-  sitter `Query` when performing the idempotence check. This improves performance
-  when not skipping the idempotence check by about `35%` for OCaml formatting.
+* [#523](https://github.com/tweag/topiary/pull/523) Skips rebuilding the tree-sitter `Query` when performing the idempotence check. This improves performance when not skipping the idempotence check by about `35%` for OCaml formatting.
 
 ### Removed
-* [#508](https://github.com/tweag/topiary/pull/508) Simplified language
-  detection by treating `ocaml` and `ocaml_interface` as two distinct languages.
-  This ensures we only have one grammar per language. This
-  removed the `-l ocaml_implementation` flag from Topiary and the
-  `SupportedLanguage::OcamlImplementation` from the library.
+* [#508](https://github.com/tweag/topiary/pull/508) Simplified language detection by treating `ocaml` and `ocaml_interface` as two distinct languages. This ensures we only have one grammar per language. This removed the `-l ocaml_implementation` flag from Topiary and the `SupportedLanguage::OcamlImplementation` from the library.
 
 ### Fixed
-* [#522](https://github.com/tweag/topiary/pull/522) Reverted the bump to the
- OCaml grammar and queries. This bump (for as of yet unknown reasons) had a
- catastrophic impact on Topiary's performance.
+* [#522](https://github.com/tweag/topiary/pull/522) Reverted the bump to the OCaml grammar and queries. This bump (for as of yet unknown reasons) had a catastrophic impact on Topiary's performance.
 
 ## [0.2.2] - 2023-06-12
 [0.2.1]: https://github.com/tweag/topiary/compare/v0.2.1...v0.2.2
@@ -99,10 +81,8 @@ This name should be decided amongst the team before the release.
  * [#494](https://github.com/tweag/topiary/pull/494) Bumped the OCaml grammar, and fixed for the renamed `infix_operator` named node.
 
 ### Fixed
- * [#493](https://github.com/tweag/topiary/pull/493) Fixed
-   [#492](https://github.com/tweag/topiary/issues/492) by only trimming newlines in prettyprinting.
- * [#491](https://github.com/tweag/topiary/pull/493) Fixed
-   [#481](https://github.com/tweag/topiary/issues/492), a SIGSEGV in exhaustivity testing.
+ * [#493](https://github.com/tweag/topiary/pull/493) Fixed [#492](https://github.com/tweag/topiary/issues/492) by only trimming newlines in prettyprinting.
+ * [#491](https://github.com/tweag/topiary/pull/493) Fixed [#481](https://github.com/tweag/topiary/issues/492), a SIGSEGV in exhaustivity testing.
 
 ## [0.2.1] - 2023-05-23
 [0.2.1]: https://github.com/tweag/topiary/compare/v0.2.0...v0.2.1
@@ -114,8 +94,7 @@ This name should be decided amongst the team before the release.
 [0.2.0]: https://github.com/tweag/topiary/compare/v0.1.0...v0.2.0
 
 ### Added
-* Topiary [website](https://topiary.tweag.io), web-based
-  [playground](https://topiary.tweag.io/playground) and logos.
+* Topiary [website](https://topiary.tweag.io), web-based [playground](https://topiary.tweag.io/playground) and logos.
 * Full Nickel formatting support.
 * Improved OCaml formatting support.
 * `@append_antispace` and `@prepend_antispace` formatting capture names.
@@ -125,10 +104,8 @@ This name should be decided amongst the team before the release.
 * Maintain a CHANGELOG and a documented release process.
 
 ### Changed
-* Move to a build configuration file, rather than a mixture of
-  hardcoding and parsing query predicates at runtime.
-* Conditional predicates, in the query language, to reduce the number of
-  formatting capture names.
+* Move to a build configuration file, rather than a mixture of hardcoding and parsing query predicates at runtime.
+* Conditional predicates, in the query language, to reduce the number of formatting capture names.
 * Higher fidelity exit codes.
 * Idempotency check in terminal-based playground.
 * Reduced verbosity of failed integration test output.
@@ -182,6 +159,4 @@ required to do so.
 ## [0.0.1-prototype]: Archetypal Aspen - 2022-06-14
 [0.0.1-prototype]: https://github.com/tweag/topiary/releases/tag/v0.0.1-prototype
 
-This prototype release was created exclusively to show the validity of
-the idea of using Tree-sitter to build a formatter. It includes only a
-prototype JSON formatter.
+This prototype release was created exclusively to show the validity of the idea of using Tree-sitter to build a formatter. It includes only a prototype JSON formatter.
