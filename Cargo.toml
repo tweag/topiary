@@ -16,6 +16,11 @@ exclude = ["samples"]
 lto = true
 opt-level = 's'
 
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
 [workspace.dependencies]
 assert_cmd = "2.0"
 cfg-if = "1.0.0"
@@ -49,3 +54,16 @@ unescape = "0.1"
 wasm-bindgen = "0.2.84"
 wasm-bindgen-futures = "0.4.34"
 web-tree-sitter = { git = "https://github.com/tweag/web-tree-sitter-sys", default-features = false, package = "web-tree-sitter-sys" }
+
+# Config for 'cargo dist'
+[workspace.metadata.dist]
+# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.0.7"
+# The preferred Rust toolchain to use in CI (rustup toolchain syntax)
+rust-toolchain-version = "1.67.1"
+# CI backends to support (see 'cargo dist generate-ci')
+ci = ["github"]
+# The installers to generate for each app
+installers = ["shell", "powershell"]
+# Target platforms to build apps for (Rust target-triple syntax)
+targets = ["x86_64-unknown-linux-gnu", "x86_64-apple-darwin", "x86_64-pc-windows-msvc", "aarch64-apple-darwin"]
