@@ -43,8 +43,8 @@ impl error::Error for TopiaryError {
 impl From<TopiaryError> for ExitCode {
     fn from(e: TopiaryError) -> Self {
         let exit_code = match e {
-            // Formatting errors: Exit 8
-            TopiaryError::Lib(FormatterError::Formatting(_)) => 8,
+            // Idempotency parsing errors: Exit 8
+            TopiaryError::Lib(FormatterError::IdempotenceParsing(_)) => 8,
 
             // Idempotency errors: Exit 7
             TopiaryError::Lib(FormatterError::Idempotence) => 7,

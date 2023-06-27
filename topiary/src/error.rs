@@ -6,15 +6,15 @@ use std::{error::Error, fmt, io, ops::Deref, path::PathBuf, str, string};
 /// The various errors the formatter may return.
 #[derive(Debug)]
 pub enum FormatterError {
-    /// The input produced output that cannot be formatted, i.e. trying to format the
-    /// output again produced an error. If this happened using our provided
-    /// query files, it is a bug. Please log an issue.
-    Formatting(Box<FormatterError>),
-
     /// The input produced output that isn't idempotent, i.e. formatting the
     /// output again made further changes. If this happened using our provided
     /// query files, it is a bug. Please log an issue.
     Idempotence,
+
+    /// The input produced invalid output, i.e. formatting the output again led
+    /// to a parsing error. If this happened using our provided query files, it
+    /// is a bug. Please log an issue.
+    IdempotenceParsing(Box<FormatterError>),
 
     /// An internal error occurred. This is a bug. Please log an issue.
     Internal(String, Option<Box<dyn Error>>),
@@ -35,7 +35,8 @@ pub enum FormatterError {
     /// provided query files, it is a bug. Please log an issue.
     Query(String, Option<tree_sitter_facade::QueryError>),
 
-    /// Could not detect the input language from the (filename, Option<extension>)
+    /// Could not detect the input language from the (filename,
+    /// Option<extension>)
     LanguageDetection(PathBuf, Option<String>),
 
     /// I/O-related errors
@@ -48,8 +49,9 @@ pub enum FormatterError {
 /// A subtype of `FormatterError::Io`
 #[derive(Debug)]
 pub enum IoError {
-    // NOTE Filesystem-based IO errors _ought_ to become a thing of the past, once the library and
-    // binary code have been completely separated (see Issue #303).
+    // NOTE: Filesystem-based IO errors _ought_ to become a thing of the past,
+    // once the library and binary code have been completely separated (see
+    // Issue #303).
     /// A filesystem based IO error, with an additional owned string to provide
     /// Topiary specific information
     Filesystem(String, io::Error),
@@ -61,12 +63,19 @@ pub enum IoError {
 
 impl fmt::Display for FormatterError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let please_log_message = "It would be helpful if you logged this error at https://github.com/tweag/topiary/issues/new?assignees=&labels=type%3A+bug&template=bug_report.md";
+        let please_log_message = "If this happened with the built-in query files, it is a bug. It would be\nhelpful if you logged this error at\nhttps://github.com/tweag/topiary/issues/new?assignees=&labels=type%3A+bug&template=bug_report.md";
         match self {
             Self::Idempotence => {
                 write!(
                     f,
-                    "The formatter did not produce the same result when invoked twice (idempotence check).\n{please_log_message}"
+                    "The formatter did not produce the same\nresult when invoked twice (idempotence check).\n\n{please_log_message}"
+                )
+            }
+
+            Self::IdempotenceParsing(_) => {
+                write!(
+                    f,
+                    "The formatter produced invalid output and\nfailed when trying to format twice (idempotence check).\n\n{please_log_message}\n\nThe following is the error received when running the second time, but note\nthat any line and column numbers refer to the formatted code, not the\noriginal input. Run Topiary with the --skip-idempotence flag to see this\ninvalid formatted code."
                 )
             }
 
@@ -93,13 +102,6 @@ impl fmt::Display for FormatterError {
                         "Cannot detect language {file}. Try specifying language explicitly."
                     ),
                 }
-            }
-
-            Self::Formatting(_err) => {
-                write!(
-                    f,
-                    "The formatter failed when trying to format the code twice (idempotence check).\nThis probably means that the formatter produced invalid code.\n{please_log_message}"
-                )
             }
 
             Self::PatternDoesNotMatch(pattern_content) => {
@@ -135,13 +137,13 @@ impl Error for FormatterError {
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::Io(IoError::Filesystem(_, source)) => Some(source),
             Self::Io(IoError::Generic(_, Some(source))) => Some(source.as_ref()),
-            Self::Formatting(err) => Some(err),
+            Self::IdempotenceParsing(source) => Some(source),
         }
     }
 }
 
-// NOTE Filesystem-based IO errors _ought_ to become a thing of the past, once the library and
-// binary code have been completely separated (see Issue #303).
+// NOTE: Filesystem-based IO errors _ought_ to become a thing of the past, once
+// the library and binary code have been completely separated (see Issue #303).
 impl From<io::Error> for FormatterError {
     fn from(e: io::Error) -> Self {
         match e.kind() {
@@ -182,7 +184,8 @@ impl From<fmt::Error> for FormatterError {
     }
 }
 
-// We only have to deal with io::BufWriter<Vec<u8>>, but the genericised code is clearer
+// We only have to deal with io::BufWriter<Vec<u8>>, but the genericised code is
+// clearer
 impl<W> From<io::IntoInnerError<W>> for FormatterError
 where
     W: io::Write + fmt::Debug + Send + 'static,
