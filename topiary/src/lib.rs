@@ -273,7 +273,7 @@ fn idempotence_check(
     let mut input = content.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
 
-    formatter(
+    match formatter(
         &mut input,
         &mut output,
         query,
@@ -283,28 +283,22 @@ fn idempotence_check(
             skip_idempotence: true,
             tolerate_parsing_errors,
         },
-    )?;
-    let reformatted = String::from_utf8(output.into_inner()?)?;
-    let res = if content == reformatted {
-        Ok(())
-    } else {
-        log::error!("Failed idempotence check");
-        log::error!("{}", StrComparison::new(content, &reformatted));
-        Err(FormatterError::Idempotence)
-    };
+    ) {
+        Ok(()) => {
+            let reformatted = String::from_utf8(output.into_inner()?)?;
 
-    if let Err(err) = res {
-        match err {
-            // If topiary ran smoothly on its own output,
-            // but produced a different output, it is a Idempotence error.
-            FormatterError::Idempotence => Err(FormatterError::Idempotence),
-            // On the other hand, if it failed to run on its output,
-            // it means that when formatting the code, topiary somehow broke it.
-            // Hence it is a formatting error.
-            _ => Err(FormatterError::Formatting(Box::new(err))),
+            if content == reformatted {
+                Ok(())
+            } else {
+                log::error!("Failed idempotence check");
+                log::error!("{}", StrComparison::new(content, &reformatted));
+                Err(FormatterError::Idempotence)
+            }
         }
-    } else {
-        res
+        Err(error @ FormatterError::Parsing { .. }) => {
+            Err(FormatterError::IdempotenceParsing(Box::new(error)))
+        }
+        Err(error) => Err(error),
     }
 }
 
