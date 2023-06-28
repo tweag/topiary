@@ -76,6 +76,6 @@ fetch, overriding the low default. As of writing, there's no way to set
 this to "unlimited"; adjust as necessary.
 
 <!-- Links -->
-[changelog]: /changelog.md
+[changelog]: /CHANGELOG.md
 [changelog-refresh]: #generating-the-pr-list-for-the-changelog
 [releases]: https://github.com/tweag/topiary/releases
