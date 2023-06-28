@@ -15,7 +15,7 @@ name = "ocaml"
 extensions = ["ml"]
 
 [[language]]
-name = "ocaml_interface"
+name = "ocaml-interface"
 extensions = ["mli"]
 
 [[language]]
@@ -28,6 +28,6 @@ name = "toml"
 extensions = ["toml"]
 
 [[language]]
-name = "tree_sitter_query"
+name = "tree-sitter-query"
 extensions = ["scm"]
 
