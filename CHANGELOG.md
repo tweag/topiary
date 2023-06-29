@@ -44,10 +44,14 @@ This name should be decided amongst the team before the release.
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.2.3...HEAD)
 
-* [#526](https://github.com/tweag/topiary/pull/526) Multi-line comments can be indented properly using the new predicate @multi_line_indent_all.
+### Added
+* [#538](https://github.com/tweag/topiary/pull/538) Using `cargo-dist` to release Topiary binaries.
 * [#528](https://github.com/tweag/topiary/pull/528) Added a sample app and convenience functions for using the built-in queries.
-* [#533](https://github.com/tweag/topiary/pull/533) Update tree-sitter-ocaml to 0.20.3
+* [#526](https://github.com/tweag/topiary/pull/526) Multi-line comments can be indented properly using the new predicate @multi_line_indent_all.
+
+### Changed
 * [#535](https://github.com/tweag/topiary/pull/535) Improved error message when idempotency fails due to invalid output in the first pass.
+* [#533](https://github.com/tweag/topiary/pull/533) Update tree-sitter-ocaml to 0.20.3
 
 ## v0.2.3 - Cyclic Cypress - 2023-06-20
 
@@ -78,8 +82,8 @@ This name should be decided amongst the team before the release.
  * [#480](https://github.com/tweag/topiary/pull/480) Shows which languages are marked as experimental in the playground.
 
 ### Changed
- * [#490](https://github.com/tweag/topiary/pull/490) Bumped the Nickel grammar.
  * [#494](https://github.com/tweag/topiary/pull/494) Bumped the OCaml grammar, and fixed for the renamed `infix_operator` named node.
+ * [#490](https://github.com/tweag/topiary/pull/490) Bumped the Nickel grammar.
 
 ### Fixed
  * [#493](https://github.com/tweag/topiary/pull/493) Fixed [#492](https://github.com/tweag/topiary/issues/492) by only trimming newlines in prettyprinting.
