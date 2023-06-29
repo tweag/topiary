@@ -35,10 +35,10 @@
     ```
 
 * Let `cargo dist` create a new [draft release][releases].
-  * Update the release title to `Topiary v<RELEASE>`, or `Topiary
-    v<RELEASE>: <NAME>` for point releases.
-  * Verify the [CHANGELOG] contents.
-  * Publish.
+  * Verify the release.
+  * Publish the draft release.
+  * If all went well, consider if we should let [CI publish the draft
+    automatically][auto-publish].
 
 * Publicise.
 
@@ -79,3 +79,4 @@ this to "unlimited"; adjust as necessary.
 [changelog]: /CHANGELOG.md
 [changelog-refresh]: #generating-the-pr-list-for-the-changelog
 [releases]: https://github.com/tweag/topiary/releases
+[auto-publish]: https://github.com/tweag/topiary/pull/538/commits/230d7bc662a042188c79d586472c4e8632ffd6a9
