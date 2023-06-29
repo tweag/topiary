@@ -166,6 +166,6 @@ required to do so.
 
 ## v0.0.1-prototype - Archetypal Aspen - 2022-06-14
 
-[Full list of changes](https://github.com/tweag/topiary/releases/tag/v0.0.1-prototype)
+[Full list of changes](https://github.com/tweag/topiary/compare/03e1fc8...v0.0.1-prototype)
 
 This prototype release was created exclusively to show the validity of the idea of using Tree-sitter to build a formatter. It includes only a prototype JSON formatter.
