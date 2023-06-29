@@ -40,15 +40,18 @@ This name should be decided amongst the team before the release.
 
 ----------------------------------------------------------------------->
 
-## [Unreleased]
-[unreleased]: https://github.com/tweag/topiary/compare/v0.2.3...HEAD
+## Unreleased
+
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.2.3...HEAD)
+
 * [#526](https://github.com/tweag/topiary/pull/526) Multi-line comments can be indented properly using the new predicate @multi_line_indent_all.
 * [#528](https://github.com/tweag/topiary/pull/528) Added a sample app and convenience functions for using the built-in queries.
 * [#533](https://github.com/tweag/topiary/pull/533) Update tree-sitter-ocaml to 0.20.3
 * [#535](https://github.com/tweag/topiary/pull/535) Improved error message when idempotency fails due to invalid output in the first pass.
 
 ## v0.2.3 - Cyclic Cypress - 2023-06-20
-[0.2.2]: https://github.com/tweag/topiary/compare/v0.2.2...v0.2.3
+
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.2.2...v0.2.3)
 
 ### Added
 * [#513](https://github.com/tweag/topiary/pull/513) Added the `-t, --tolerate-parsing-errors` flags to Topiary, `tolerate_parsing_errors` to the `Format` operation of the library, and a "Tolerate parsing errors" checkmark to the playground. These options make Topiary ignore errors in the parsed file, and attempt to format it.
@@ -64,7 +67,8 @@ This name should be decided amongst the team before the release.
 * [#522](https://github.com/tweag/topiary/pull/522) Reverted the bump to the OCaml grammar and queries. This bump (for as of yet unknown reasons) had a catastrophic impact on Topiary's performance.
 
 ## v0.2.2 - Cyclic Cypress - 2023-06-12
-[0.2.1]: https://github.com/tweag/topiary/compare/v0.2.1...v0.2.2
+
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.2.1...v0.2.2)
 
 ### Added
  * [#498](https://github.com/tweag/topiary/pull/498) Updated the playground to include a nicer editor.
@@ -82,13 +86,15 @@ This name should be decided amongst the team before the release.
  * [#491](https://github.com/tweag/topiary/pull/493) Fixed [#481](https://github.com/tweag/topiary/issues/492), a SIGSEGV in exhaustivity testing.
 
 ## v0.2.1 - Cyclic Cypress - 2023-05-23
-[0.2.1]: https://github.com/tweag/topiary/compare/v0.2.0...v0.2.1
+
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.2.0...v0.2.1)
 
 ### Fixed
 * Correctly bumped version number in `Cargo.toml`.
 
 ## v0.2.0 - Cyclic Cypress - 2023-05-22
-[0.2.0]: https://github.com/tweag/topiary/compare/v0.1.0...v0.2.0
+
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.1.0...v0.2.0)
 
 ### Added
 * Topiary [website](https://topiary.tweag.io), web-based [playground](https://topiary.tweag.io/playground) and logos.
@@ -117,7 +123,8 @@ This name should be decided amongst the team before the release.
 * Skip over zero-byte matched nodes.
 
 ## v0.1.0 - Benevolent Beech - 2023-03-09
-[0.1.0]: https://github.com/tweag/topiary/compare/v0.0.1-prototype...v0.1.0
+
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.0.1-prototype...v0.1.0)
 
 This first public release focuses on the Topiary engine and providing
 decent OCaml formatting support, with the formatting capture names
@@ -154,6 +161,7 @@ required to do so.
 * `pre-commit-hooks.nix` support
 
 ## v0.0.1-prototype - Archetypal Aspen - 2022-06-14
-[0.0.1-prototype]: https://github.com/tweag/topiary/releases/tag/v0.0.1-prototype
+
+[Full list of changes](https://github.com/tweag/topiary/releases/tag/v0.0.1-prototype)
 
 This prototype release was created exclusively to show the validity of the idea of using Tree-sitter to build a formatter. It includes only a prototype JSON formatter.
