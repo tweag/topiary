@@ -1,5 +1,12 @@
 {
   regression_tests = [
+    {
+      a = [
+        b
+        && (c & d | e)
+      ]
+    },
+
 # Interpolated record operation chains (in
 # a multi-line comment)
     {
