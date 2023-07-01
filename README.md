@@ -886,13 +886,20 @@ This Tree-sitter query:
 
 ...while the single-lined `(1, 2, 3)` is kept as is.
 
+If we used `@append_spaced_softline` rather than
+`@append_spaced_scoped_softline`, the `1,` would be followed by a space rather
+than a newline, because it's inside a single-line `product_expression`.
+
 ### Testing context with predicates
 
-Sometimes, similarly to what happens with softlines, we want a query to match only if the context is single-line, or multi-line. Topiary has several predicates that achieve this result.
+Sometimes, similarly to what happens with softlines, we want a query to match
+only if the context is single-line, or multi-line. Topiary has several
+predicates that achieve this result.
 
 ### `#single_line_only!` / `#multi_line_only!`
 
-These predicates allow the query to trigger only if the matched nodes are in a single-line (resp. multi-line) context.
+These predicates allow the query to trigger only if the matched nodes are in a
+single-line (resp. multi-line) context.
 
 #### Example
 
@@ -921,7 +928,8 @@ These predicates allow the query to trigger only if the matched nodes are in a s
 
 ### `#single_line_scope_only!` / `#multi_line_scope_only!`
 
-These predicates allow the query to trigger only if the associated custom scope containing the matched nodes are is single-line (resp. multi-line).
+These predicates allow the query to trigger only if the associated custom scope
+containing the matched nodes are is single-line (resp. multi-line).
 
 #### Example
 
