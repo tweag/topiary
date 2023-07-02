@@ -67,6 +67,26 @@ pub struct AtomCollection {
 }
 
 impl AtomCollection {
+    /// Returns a basic AtomCollection with the supplied atoms. Only used for
+    /// testing. Normally you should use `AtomCollection::collect_leafs`
+    /// instead.
+    pub fn new(atoms: Vec<Atom>) -> Self {
+        Self {
+            atoms,
+            prepend: HashMap::new(),
+            append: HashMap::new(),
+            specified_leaf_nodes: HashSet::new(),
+            parent_leaf_nodes: HashMap::new(),
+            multi_line_nodes: HashSet::new(),
+            blank_lines_before: HashSet::new(),
+            line_break_before: HashSet::new(),
+            line_break_after: HashSet::new(),
+            scope_begin: HashMap::new(),
+            scope_end: HashMap::new(),
+            counter: 0,
+        }
+    }
+
     /// Use this to create an initial `AtomCollection`
     pub fn collect_leafs(
         root: &Node,
@@ -740,6 +760,20 @@ impl AtomCollection {
     pub fn post_process(&mut self) {
         self.post_process_scopes();
         self.post_process_deletes();
+        self.post_process_inner();
+
+        // We have taken care of spaces following an antispace. Now fix the
+        // preceding spaces.
+        collapse_spaces_before_antispace(&mut self.atoms);
+
+        // We have to do one more post-processing pass, as the collapsing of
+        // antispaces may have produced more empty atoms.
+        self.post_process_inner();
+
+        log::debug!("List of atoms after post-processing: {:?}", self.atoms);
+    }
+
+    fn post_process_inner(&mut self) {
         let mut prev: Option<&mut Atom> = None;
         for next in &mut self.atoms {
             if let Some(prev) = prev.as_mut() {
@@ -804,12 +838,6 @@ impl AtomCollection {
                 prev = Some(next);
             }
         }
-
-        // We have taken care of spaces following an antispace. Now fix the
-        // preceding spaces.
-        collapse_spaces_before_antispace(&mut self.atoms);
-
-        log::debug!("List of atoms after post-processing: {:?}", self.atoms);
     }
 
     fn next_id(&mut self) -> usize {
@@ -1072,5 +1100,57 @@ where
 
     fn index(&self, index: Idx) -> &Self::Output {
         &self.atoms[index]
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{atom_collection::AtomCollection, Atom};
+    use test_log::test;
+
+    #[test]
+    fn post_process_indent_before_hardline() {
+        let mut atom_collection = AtomCollection::new(vec![
+            Atom::Literal("foo".into()),
+            Atom::Hardline,
+            Atom::IndentEnd,
+            Atom::Literal("foo".into()),
+        ]);
+
+        atom_collection.post_process();
+
+        assert_eq!(
+            atom_collection.atoms,
+            vec![
+                Atom::Literal("foo".into()),
+                Atom::IndentEnd,
+                Atom::Hardline,
+                Atom::Literal("foo".into()),
+            ]
+        );
+    }
+
+    #[test]
+    fn issue_549_post_process_indent_before_hardline_with_antispace_in_between() {
+        let mut atom_collection = AtomCollection::new(vec![
+            Atom::Literal("foo".into()),
+            Atom::Hardline,
+            Atom::Antispace,
+            Atom::IndentEnd,
+            Atom::Literal("foo".into()),
+        ]);
+
+        atom_collection.post_process();
+
+        assert_eq!(
+            atom_collection.atoms,
+            vec![
+                Atom::Literal("foo".into()),
+                Atom::IndentEnd,
+                Atom::Empty,
+                Atom::Hardline,
+                Atom::Literal("foo".into()),
+            ]
+        );
     }
 }
