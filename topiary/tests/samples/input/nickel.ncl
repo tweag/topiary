@@ -1214,6 +1214,8 @@
   },
 
   enum = {
+    quotedEnum =  '"QuotedEnum" ,
+
     Tag
       | doc m%"
           Contract to enforce the value is an enum tag.
