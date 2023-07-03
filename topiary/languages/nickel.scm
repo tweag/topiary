@@ -118,7 +118,10 @@
 ; operators, which fall under nodes (infix_b_op_7) and (infix_b_op_8).
 (uni_term
   (#scope_id! "infix_chain")
-  (infix_expr) @begin_scope
+  [
+    (infix_expr)
+    (annotated_infix_expr)
+  ] @begin_scope
 ) @end_scope
 
 (infix_expr

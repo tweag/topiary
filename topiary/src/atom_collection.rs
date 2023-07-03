@@ -378,11 +378,16 @@ impl AtomCollection {
                 // in its place.
                 let swapped_atom = mem::take(atom);
 
-                log::debug!("Applying prepend of {prepends:?} to {atom:?}.");
+                if !prepends.is_empty() {
+                    log::debug!("Applying prepend of {prepends:?} to {:?}.", &swapped_atom);
+                }
+                if !appends.is_empty() {
+                    log::debug!("Applying append of {appends:?} to {:?}.", &swapped_atom);
+                }
+
                 expanded.append(prepends);
                 expanded.push(swapped_atom);
 
-                log::debug!("Applying append of {appends:?} to {atom:?}.");
                 expanded.append(appends);
             } else {
                 log::debug!("Not a leaf: {atom:?}");
