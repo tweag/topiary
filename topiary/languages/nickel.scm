@@ -6,6 +6,7 @@
   (str_chunks_single)
   (str_chunks_multi)
   (builtin)
+  (quoted_enum_tag)
 ] @leaf
 
 ; Allow a blank line before the following nodes
