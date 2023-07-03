@@ -70,6 +70,7 @@ impl AtomCollection {
     /// Returns a basic AtomCollection with the supplied atoms. Only used for
     /// testing. Normally you should use `AtomCollection::collect_leafs`
     /// instead.
+    #[cfg(test)]
     pub fn new(atoms: Vec<Atom>) -> Self {
         Self {
             atoms,
