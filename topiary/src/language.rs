@@ -66,10 +66,10 @@ impl Language {
             "json" => tree_sitter_json::language(),
             "nickel" => tree_sitter_nickel::language(),
             "ocaml" => tree_sitter_ocaml::language_ocaml(),
-            "ocaml_interface" => tree_sitter_ocaml::language_ocaml_interface(),
+            "ocaml-interface" => tree_sitter_ocaml::language_ocaml_interface(),
             "rust" => tree_sitter_rust::language(),
             "toml" => tree_sitter_toml::language(),
-            "tree_sitter_query" => tree_sitter_query::language(),
+            "tree-sitter-query" => tree_sitter_query::language(),
             name => return Err(FormatterError::UnsupportedLanguage(name.to_string())),
         }
         .into())
@@ -77,20 +77,9 @@ impl Language {
 
     #[cfg(target_arch = "wasm32")]
     pub async fn grammar_wasm(&self) -> FormatterResult<tree_sitter_facade::Language> {
-        let language_name = match self.name.as_str() {
-            "bash" => "bash",
-            "json" => "json",
-            "nickel" => "nickel",
-            "ocaml" => "ocaml",
-            "ocaml_interface" => "ocaml_interface",
-            "rust" => "rust",
-            "toml" => "toml",
-            "tree_sitter_query" => "query",
-            name => return Err(FormatterError::UnsupportedLanguage(name.to_string())),
-        };
-
         Ok(web_tree_sitter::Language::load_path(&format!(
-            "/playground/scripts/tree-sitter-{language_name}.wasm"
+            "/playground/scripts/tree-sitter-{}.wasm",
+            self.name
         ))
         .await
         .map_err(|e| {
@@ -118,14 +107,8 @@ impl TryFrom<&Language> for PathBuf {
 
     fn try_from(language: &Language) -> FormatterResult<Self> {
         let basename = Self::from(match language.name.as_str() {
-            "bash" => "bash",
-            "json" => "json",
-            "nickel" => "nickel",
-            "ocaml" | "ocaml_interface" => "ocaml",
-            "rust" => "rust",
-            "toml" => "toml",
-            "tree_sitter_query" => "tree-sitter-query",
-            name => return Err(FormatterError::UnsupportedLanguage(name.to_string())),
+            "ocaml" | "ocaml-interface" => "ocaml",
+            name => name,
         })
         .with_extension("scm");
 
@@ -187,7 +170,7 @@ impl SupportedLanguage {
             SupportedLanguage::Json => "json",
             SupportedLanguage::Nickel => "nickel",
             SupportedLanguage::Ocaml => "ocaml",
-            SupportedLanguage::OcamlInterface => "ocaml_interface",
+            SupportedLanguage::OcamlInterface => "ocaml-interface",
             SupportedLanguage::Toml => "toml",
         }
     }
