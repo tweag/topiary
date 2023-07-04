@@ -2425,5 +2425,8 @@
       ```
       "%
       = fun s => %enum_from_str% s,
-  }
+  },
+
+  id |
+    a -> a,
 }

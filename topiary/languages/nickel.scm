@@ -264,10 +264,26 @@
   (annot) @prepend_indent_start
 ) @append_indent_end
 
+; Start a scope from the node previous to the annotations.
+; This properly checks if the annotations were intended to be
+; on newlines in such cases as:
+; id
+;   | a -> a
+; which, without the annotations scope, would consider the annotations to be a
+; single line node and format it as such:
+; id | a -> a
+(
+  (#scope_id! "annotations")
+  (_) @begin_scope
+  .
+  (annot) @end_scope
+)
+
 ; Put each annotation -- and the equals sign, if it follows annotations
 ; -- on a new line, in a multi-line context.
 (annot
-  (annot_atom) @prepend_spaced_softline
+  (#scope_id! "annotations")
+  (annot_atom) @prepend_spaced_scoped_softline
 )
 
 (
