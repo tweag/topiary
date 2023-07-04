@@ -20,6 +20,19 @@ pub enum CLIError {
     Generic(Box<dyn error::Error>),
 }
 
+/// # Safety
+///
+/// Something can safely be Send unless it shares mutable state with something
+/// else without enforcing exclusive access to it. TopiaryError does not have a
+/// mutable state.
+unsafe impl Send for TopiaryError {}
+
+/// # Safety
+///
+/// Something can safely be Sync if and only if no other &TopiaryError can write
+/// to it. Since our TopiaryError contains no mutable data, TopiaryError is Sync.
+unsafe impl Sync for TopiaryError {}
+
 impl fmt::Display for TopiaryError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -131,6 +144,15 @@ impl From<serde_toml_merge::Error> for TopiaryError {
         TopiaryError::Bin(
             format!("Could not merge the default configuration and user configurations. Error occured while merging: {}", e.path),
             None,
+        )
+    }
+}
+
+impl From<tokio::task::JoinError> for TopiaryError {
+    fn from(e: tokio::task::JoinError) -> Self {
+        TopiaryError::Bin(
+            format!("Could not join parallel formatting tasks: {}", e),
+            Some(CLIError::Generic(Box::new(e))),
         )
     }
 }

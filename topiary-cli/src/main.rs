@@ -194,32 +194,33 @@ async fn run() -> CLIResult<()> {
 
     let tasks: Vec<_> = fmt_args
         .into_iter()
-        .map(|(input, output, language, grammar, query)| {
+        .map(|(input, output, language, grammar, query)| -> tokio::task::JoinHandle<Result<(), TopiaryError>> {
             tokio::spawn(async move {
-                let mut input: Box<dyn Read> = match input.as_str() {
-                    "-" => Box::new(stdin()),
-                    file => Box::new(BufReader::new(File::open(file).unwrap())),
-                };
-                let mut output: BufWriter<OutputFile> =
-                    BufWriter::new(OutputFile::new(&output).unwrap());
+                    let input = &input;
+                    let mut input: Box<dyn Read> = match input.as_str() {
+                        "-" => Box::new(stdin()),
+                        file => Box::new(BufReader::new(File::open(file)?)),
+                    };
+                    let mut output: BufWriter<OutputFile> = BufWriter::new(OutputFile::new(&output)?);
 
-                formatter(
-                    &mut input,
-                    &mut output,
-                    &query,
-                    &language,
-                    &grammar,
-                    operation,
-                )
-                .unwrap();
+                    formatter(
+                        &mut input,
+                        &mut output,
+                        &query,
+                        &language,
+                        &grammar,
+                        operation,
+                    )?;
 
-                output.into_inner().unwrap().persist().unwrap();
+                    output.into_inner()?.persist()?;
+
+                    Ok(())
             })
         })
         .collect();
 
     for task in tasks {
-        task.await.unwrap();
+        task.await??;
     }
 
     Ok(())
