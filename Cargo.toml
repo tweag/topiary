@@ -45,7 +45,7 @@ futures = "0.3.28"
 itertools = "0.10"
 log = "0.4"
 pretty_assertions = "1.3"
-prettydiff = "0.6.4"
+prettydiff = { version = "0.6.4", default-features = false }
 regex = "1.8.2"
 serde = "1.0.163"
 serde-toml-merge = "0.3"
