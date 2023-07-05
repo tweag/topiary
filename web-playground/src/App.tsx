@@ -4,6 +4,7 @@ import useDebounce from "./hooks/useDebounce";
 import languages from './samples/languages_export';
 import init, {
     topiaryInit,
+    queryInit,
     format,
 } from "./wasm-app/topiary_playground.js";
 import "./App.css";
@@ -21,9 +22,10 @@ function App() {
     const [onTheFlyFormatting, setOnTheFlyFormatting] = useState(true);
     const [idempotence, setIdempotence] = useState(false);
     const [tolerateParsingErrors, setTolerateParsingErrors] = useState(false);
-    const [query, setQuery] = useState(defaultQuery);
     const [input, setInput] = useState(defaultInput);
     const [output, setOutput] = useState("");
+    const [query, setQuery] = useState(defaultQuery);
+    const [queryChanged, setQueryChanged] = useState(true);
     const [processingTime, setProcessingTime] = useState(0);
 
     // We want to debounce the input and query changes so that we can run
@@ -35,7 +37,13 @@ function App() {
         const outputFormat = async () => {
             try {
                 const start = performance.now();
-                setOutput(await format(i, q, currentLanguage, idempotence, tolerateParsingErrors));
+
+                if (queryChanged) {
+                    queryInit(q, currentLanguage);
+                    setQueryChanged(false);
+                }
+
+                setOutput(await format(i, idempotence, tolerateParsingErrors));
                 setProcessingTime(performance.now() - start);
             } catch (e) {
                 setOutput(String(e));
@@ -58,8 +66,8 @@ function App() {
             if (initCalled.current) return;
             initCalled.current = true;
 
-            await init();
-            await topiaryInit();
+            await init(); // Does the WebAssembly.instantiate()
+            await topiaryInit(); // Does the TreeSitter::init()
             setIsInitialised(true);
         }
 
@@ -95,6 +103,7 @@ function App() {
             if (!hasModification || window.confirm(confirmationMessage)) {
                 setInput(languages[l].input);
                 setQuery(languages[l].query);
+                setQueryChanged(true);
                 setOutput("");
                 setCurrentLanguage(l);
             }
@@ -152,7 +161,7 @@ function App() {
             <div className="columns">
                 <div className="column">
                     <h1>Query</h1>
-                    <Editor id="query" value={query} onChange={s => setQuery(s)} placeholder="Enter your query here ..." />
+                    <Editor id="query" value={query} onChange={s => { setQuery(s); setQueryChanged(true); }} placeholder="Enter your query here ..." />
                 </div>
                 <div className="column">
                     <h1>Input</h1>
