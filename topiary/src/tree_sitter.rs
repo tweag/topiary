@@ -8,7 +8,7 @@ use tree_sitter_facade::{
 use crate::{
     atom_collection::{AtomCollection, QueryPredicates},
     error::FormatterError,
-    FormatterResult,
+    FormatterResult, SupportedLanguage,
 };
 
 /// Supported visualisation formats
@@ -137,6 +137,17 @@ impl TopiaryQuery {
             include_str!("../languages/tree-sitter-query.scm"),
         )
         .expect("parsing built-in query")
+    }
+}
+
+impl From<SupportedLanguage> for TopiaryQuery {
+    fn from(language: SupportedLanguage) -> Self {
+        match language {
+            SupportedLanguage::Json => TopiaryQuery::json(),
+            SupportedLanguage::Nickel => TopiaryQuery::nickel(),
+            SupportedLanguage::Ocaml | SupportedLanguage::OcamlInterface => TopiaryQuery::ocaml(),
+            SupportedLanguage::Toml => TopiaryQuery::toml(),
+        }
     }
 }
 
