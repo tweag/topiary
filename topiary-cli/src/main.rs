@@ -196,7 +196,6 @@ async fn run() -> CLIResult<()> {
         .into_iter()
         .map(|(input, output, language, grammar, query)| -> tokio::task::JoinHandle<Result<(), TopiaryError>> {
             tokio::spawn(async move {
-                    let input = &input;
                     let mut input: Box<dyn Read> = match input.as_str() {
                         "-" => Box::new(stdin()),
                         file => Box::new(BufReader::new(File::open(file)?)),
