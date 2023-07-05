@@ -219,6 +219,8 @@ async fn run() -> CLIResult<()> {
         .collect();
 
     for task in tasks {
+        // The await results in a `Result<Result<(), TopiaryError>, JoinError>`.
+        // The first ? concerns the `JoinError`, the second one the `TopiaryError`.
         task.await??;
     }
 
