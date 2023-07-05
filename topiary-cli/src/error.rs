@@ -151,7 +151,7 @@ impl From<serde_toml_merge::Error> for TopiaryError {
 impl From<tokio::task::JoinError> for TopiaryError {
     fn from(e: tokio::task::JoinError) -> Self {
         TopiaryError::Bin(
-            format!("Could not join parallel formatting tasks: {}", e),
+            "Could not join parallel formatting tasks".to_owned(),
             Some(CLIError::Generic(Box::new(e))),
         )
     }
