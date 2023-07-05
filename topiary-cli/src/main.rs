@@ -24,17 +24,18 @@ use topiary::{formatter, Language, Operation, SupportedLanguage, TopiaryQuery};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
-// Require at least one of --language or --input-file (n.b., language > input)
-#[command(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "input_file"]),))]
+// Require at least one of --language or --input-files (n.b., language > input)
+#[command(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "input_files"]),))]
 struct Args {
     /// Which language to parse and format
     #[arg(short, long, value_enum, display_order = 1)]
     language: Option<SupportedLanguage>,
 
-    /// Path to an input file. If omitted, or equal to "-", read from standard
-    /// input.
-    #[arg(short = 'f', long, display_order = 2)]
-    input_file: Option<String>,
+    /// Path to an input file or multiple input files. If omitted, or equal
+    /// to "-", read from standard input. If multiple files are provided,
+    /// `in_place` is assumed.
+    #[arg(short = 'f', long, num_args = 0.., display_order = 2, default_values_t = ["-".to_string()])]
+    input_files: Vec<String>,
 
     /// Which query file to use
     #[arg(short, long, display_order = 3)]
@@ -45,8 +46,8 @@ struct Args {
     #[arg(short, long, display_order = 4)]
     output_file: Option<String>,
 
-    /// Format the input file in place.
-    #[arg(short, long, requires = "input_file", display_order = 5)]
+    /// Format the input files in place.
+    #[arg(short, long, requires = "input_files", display_order = 5)]
     in_place: bool,
 
     /// Visualise the syntax tree, rather than format.
@@ -77,6 +78,18 @@ struct Args {
     tolerate_parsing_errors: bool,
 }
 
+// /// Collects all the values needed for the eventual formatting. This helper
+// /// struct just makes it easy to collect them all in a Vec.
+// /// If `--in-place` was specified or if `--input-files` was
+// /// given more than one file, the input and output will be the same file and
+// /// the entire FormatStruct will be placed in a Vector. In all other cases the vector
+// /// will still be created, but it will be a singleton vector.
+// struct FormatStruct<'a> {
+//     input: &'a dyn Read,
+//     output: BufWriter<OutputFile>,
+//     language: &'a Language,
+// }
+
 #[tokio::main]
 async fn main() -> ExitCode {
     if let Err(e) = run().await {
@@ -89,7 +102,17 @@ async fn main() -> ExitCode {
 
 async fn run() -> CLIResult<()> {
     env_logger::init();
-    let args = Args::parse();
+
+    // Restructure Args to match our expected behaviour
+    let args = {
+        let mut args = Args::parse();
+
+        // Remove duplicates from the input_files, (among other things, avoids being able to pass "-" twice)
+        args.input_files.sort_unstable();
+        args.input_files.dedup();
+
+        args
+    };
 
     let configuration = parse_configuration()?;
 
@@ -97,56 +120,67 @@ async fn run() -> CLIResult<()> {
         eprintln!("{:#?}", configuration);
     }
 
-    // The as_deref() gives us an Option<&str>, which we can match against
-    // string literals
-    let mut input: Box<(dyn Read)> = match args.input_file.as_deref() {
-        Some("-") | None => Box::new(stdin()),
-        Some(file) => Box::new(BufReader::new(File::open(file)?)),
+    let io_files: Vec<(String, String)> = if args.in_place || args.input_files.len() > 1 {
+        args.input_files
+            .iter()
+            .map(|f| (f.clone(), f.clone()))
+            .collect()
+    } else {
+        // Clap guarantees our input_files is non-empty
+        vec![(
+            args.input_files.first().unwrap().clone(),
+            match args.output_file.as_deref() {
+                Some("-") | None => String::from("-"),
+                Some(f) => String::from(f),
+            },
+        )]
     };
 
-    // NOTE If --in-place is specified, it overrides --output-file
-    let mut output = BufWriter::new(if args.in_place {
-        // NOTE Clap handles the case when no input file is specified. If the input file is
-        // explicitly set to stdin (i.e., -), then --in-place will set the output to stdout; which
-        // is not completely weird.
-        OutputFile::new(args.input_file.as_deref())?
-    } else {
-        OutputFile::new(args.output_file.as_deref())?
-    });
+    // Add the language and query Path to the io_files
+    let io_files: Vec<(String, String, Language, PathBuf)> = io_files
+        .into_iter()
+        // Add the appropriate language to all of the tuples
+        .map(|(i, o)| {
+            let language = if let Some(language) = args.language {
+                language.to_language(&configuration).clone()
+            } else {
+                Language::detect(&i, &configuration)?.clone()
+            };
+            let query_path = if let Some(query) = &args.query {
+                query.clone()
+            } else {
+                language.query_file()?
+            };
+            Ok((i, o, language, query_path))
+        })
+        .collect::<CLIResult<Vec<_>>>()?;
 
-    let language = if let Some(language) = args.language {
-        language.to_language(&configuration)
-    } else if let Some(filename) = args.input_file.as_deref() {
-        Language::detect(filename, &configuration)?
-    } else {
-        // Clap ensures we won't get here
-        unreachable!();
-    };
+    // Converts the simple types into arguments we can pass to the `formatter` function
+    // _ holds the tree_sitter_facade::Language
+    let fmt_args: Vec<(String, String, Language, _, TopiaryQuery)> =
+        futures::future::try_join_all(io_files.into_iter().map(
+            |(i, o, language, query_path)| async move {
+                let query_content = ({
+                    let mut reader = BufReader::new(File::open(&query_path)?);
+                    let mut contents = String::new();
+                    reader.read_to_string(&mut contents)?;
 
-    let query_path = if let Some(query) = args.query {
-        query
-    } else {
-        // Deduce the query file from the language, if the argument is missing
-        language.query_file()?
-    };
+                    Ok(contents)
+                })
+                .map_err(|e| {
+                    TopiaryError::Bin(
+                        "Could not open query file".into(),
+                        Some(CLIError::IOError(e)),
+                    )
+                })?;
+                let grammar = language.grammar().await?;
+                let query = TopiaryQuery::new(&grammar, &query_content)?;
+                Ok::<_, TopiaryError>((i, o, language, grammar, query))
+            },
+        ))
+        .await?;
 
-    let query_content = (|| {
-        let mut reader = BufReader::new(File::open(&query_path)?);
-        let mut contents = String::new();
-        reader.read_to_string(&mut contents)?;
-
-        Ok(contents)
-    })()
-    .map_err(|e| {
-        TopiaryError::Bin(
-            "Could not open query file".into(),
-            Some(CLIError::IOError(e)),
-        )
-    })?;
-
-    let grammar = language.grammar().await?;
-    let query = TopiaryQuery::new(&grammar, &query_content)?;
-
+    // The operation needs not be part of the Vector of Structs because it is the same for every formatting instance
     let operation = if let Some(visualisation) = args.visualise {
         Operation::Visualise {
             output_format: visualisation.into(),
@@ -158,16 +192,37 @@ async fn run() -> CLIResult<()> {
         }
     };
 
-    formatter(
-        &mut input,
-        &mut output,
-        &query,
-        language,
-        &grammar,
-        operation,
-    )?;
+    let tasks: Vec<_> = fmt_args
+        .into_iter()
+        .map(|(input, output, language, grammar, query)| -> tokio::task::JoinHandle<Result<(), TopiaryError>> {
+            tokio::spawn(async move {
+                    let mut input: Box<dyn Read> = match input.as_str() {
+                        "-" => Box::new(stdin()),
+                        file => Box::new(BufReader::new(File::open(file)?)),
+                    };
+                    let mut output: BufWriter<OutputFile> = BufWriter::new(OutputFile::new(&output)?);
 
-    output.into_inner()?.persist()?;
+                    formatter(
+                        &mut input,
+                        &mut output,
+                        &query,
+                        &language,
+                        &grammar,
+                        operation,
+                    )?;
+
+                    output.into_inner()?.persist()?;
+
+                    Ok(())
+            })
+        })
+        .collect();
+
+    for task in tasks {
+        // The await results in a `Result<Result<(), TopiaryError>, JoinError>`.
+        // The first ? concerns the `JoinError`, the second one the `TopiaryError`.
+        task.await??;
+    }
 
     Ok(())
 }

@@ -1361,6 +1361,7 @@ dependencies = [
  "clap 4.3.10",
  "directories",
  "env_logger",
+ "futures",
  "log",
  "serde-toml-merge",
  "tempfile",

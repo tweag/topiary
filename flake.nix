@@ -61,19 +61,7 @@
               topiary-inplace = pkgs.writeShellApplication {
                 name = "topiary-inplace";
                 text = ''
-                  for FILE; do
-                    if ${code.topiary-cli}/bin/topiary --in-place --input-file "$FILE"; then
-                      continue
-                    else
-                      EXIT=$?
-                      if (( EXIT == 6 )); then
-                        # Skip over language detection errors
-                        continue
-                      else
-                        exit $EXIT
-                      fi
-                    fi
-                  done
+                  ${code.topiary-cli}/bin/topiary --in-place --input-files "$@";
                 '';
               };
             in
