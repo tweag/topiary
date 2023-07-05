@@ -8,7 +8,7 @@ use tree_sitter_facade::{
 use crate::{
     atom_collection::{AtomCollection, QueryPredicates},
     error::FormatterError,
-    FormatterResult, SupportedLanguage,
+    FormatterResult,
 };
 
 /// Supported visualisation formats
@@ -140,13 +140,16 @@ impl TopiaryQuery {
     }
 }
 
-impl From<SupportedLanguage> for TopiaryQuery {
-    fn from(language: SupportedLanguage) -> Self {
+#[cfg(not(target_arch = "wasm32"))]
+impl From<crate::SupportedLanguage> for TopiaryQuery {
+    fn from(language: crate::SupportedLanguage) -> Self {
         match language {
-            SupportedLanguage::Json => TopiaryQuery::json(),
-            SupportedLanguage::Nickel => TopiaryQuery::nickel(),
-            SupportedLanguage::Ocaml | SupportedLanguage::OcamlInterface => TopiaryQuery::ocaml(),
-            SupportedLanguage::Toml => TopiaryQuery::toml(),
+            crate::SupportedLanguage::Json => TopiaryQuery::json(),
+            crate::SupportedLanguage::Nickel => TopiaryQuery::nickel(),
+            crate::SupportedLanguage::Ocaml | crate::SupportedLanguage::OcamlInterface => {
+                TopiaryQuery::ocaml()
+            }
+            crate::SupportedLanguage::Toml => TopiaryQuery::toml(),
         }
     }
 }
