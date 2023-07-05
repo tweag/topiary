@@ -6,6 +6,10 @@
         && (c & d | e)
       ]
     },
+    {
+      id |
+        a -> a
+    },
 
 # Interpolated record operation chains (in
 # a multi-line comment)
@@ -2432,8 +2436,5 @@
       ```
       "%
       = fun s => %enum_from_str% s,
-  },
-
-  id |
-    a -> a,
+  }
 }
