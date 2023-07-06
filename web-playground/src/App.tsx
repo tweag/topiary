@@ -33,16 +33,18 @@ function App() {
     const debouncedInput = useDebounce(input, debounceDelay);
     const debouncedQuery = useDebounce(query, debounceDelay);
 
-    const runFormat = useCallback((i: string, q: string) => {
+    const runFormat = useCallback((i: string, q: string, qChanged: boolean) => {
         const outputFormat = async () => {
             try {
                 const start = performance.now();
 
-                if (queryChanged) {
-                    queryInit(q, currentLanguage);
+                if (qChanged) {
+                    console.log(`Initialising ${currentLanguage} with ${q} because ${qChanged}`);
                     setQueryChanged(false);
+                    await queryInit(q, currentLanguage);
                 }
 
+                console.log(`Formatting`);
                 setOutput(await format(i, idempotence, tolerateParsingErrors));
                 setProcessingTime(performance.now() - start);
             } catch (e) {
@@ -89,7 +91,7 @@ function App() {
     // Run on every (debounced) input change, as well as when isInitialised is set.
     useEffect(() => {
         if (!onTheFlyFormatting) return;
-        runFormat(debouncedInput, debouncedQuery);
+        runFormat(debouncedInput, debouncedQuery, queryChanged);
     }, [isInitialised, debouncedInput, debouncedQuery, onTheFlyFormatting, runFormat])
 
     function changeLanguage(l: string) {
@@ -111,7 +113,7 @@ function App() {
     }
 
     function handleFormat() {
-        runFormat(input, query);
+        runFormat(input, query, queryChanged);
     };
 
     function handleOnTheFlyFormatting() {
