@@ -140,6 +140,25 @@ impl TopiaryQuery {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+impl TryFrom<&crate::Language> for TopiaryQuery {
+    type Error = FormatterError;
+
+    fn try_from(language: &crate::Language) -> FormatterResult<Self> {
+        match language.name.as_str() {
+            "bash" => Ok(TopiaryQuery::bash()),
+            "json" => Ok(TopiaryQuery::json()),
+            "nickel" => Ok(TopiaryQuery::nickel()),
+            "ocaml" => Ok(TopiaryQuery::ocaml()),
+            "ocaml_interface" => Ok(TopiaryQuery::ocaml_interface()),
+            "rust" => Ok(TopiaryQuery::rust()),
+            "toml" => Ok(TopiaryQuery::toml()),
+            "tree_sitter_query" => Ok(TopiaryQuery::tree_sitter_query()),
+            name => Err(FormatterError::UnsupportedLanguage(name.to_string())),
+        }
+    }
+}
+
 impl From<Point> for Position {
     fn from(point: Point) -> Self {
         Self {
