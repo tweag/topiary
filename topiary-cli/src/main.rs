@@ -136,8 +136,16 @@ async fn run() -> CLIResult<()> {
         )]
     };
 
+    type IoFile = (
+        String,
+        String,
+        Language,
+        Option<PathBuf>,
+        CLIResult<PathBuf>,
+    );
+
     // Add the language and query Path to the io_files
-    let io_files: Vec<(String, String, Language, PathBuf)> = io_files
+    let io_files: Vec<IoFile> = io_files
         .into_iter()
         // Add the appropriate language to all of the tuples
         .map(|(i, o)| {
@@ -146,12 +154,15 @@ async fn run() -> CLIResult<()> {
             } else {
                 Language::detect(&i, &configuration)?.clone()
             };
+
             let query_path = if let Some(query) = &args.query {
-                query.clone()
+                Ok(query.clone())
             } else {
-                language.query_file()?
-            };
-            Ok((i, o, language, query_path))
+                language.query_file()
+            }
+            .map_err(TopiaryError::Lib);
+
+            Ok((i, o, language, args.query.clone(), query_path))
         })
         .collect::<CLIResult<Vec<_>>>()?;
 
@@ -159,22 +170,41 @@ async fn run() -> CLIResult<()> {
     // _ holds the tree_sitter_facade::Language
     let fmt_args: Vec<(String, String, Language, _, TopiaryQuery)> =
         futures::future::try_join_all(io_files.into_iter().map(
-            |(i, o, language, query_path)| async move {
-                let query_content = ({
-                    let mut reader = BufReader::new(File::open(&query_path)?);
-                    let mut contents = String::new();
-                    reader.read_to_string(&mut contents)?;
-
-                    Ok(contents)
-                })
-                .map_err(|e| {
-                    TopiaryError::Bin(
-                        "Could not open query file".into(),
-                        Some(CLIError::IOError(e)),
-                    )
-                })?;
+            |(i, o, language, query_arg, query_path)| async move {
                 let grammar = language.grammar().await?;
-                let query = TopiaryQuery::new(&grammar, &query_content)?;
+
+                let query = query_path
+                    .and_then(|query_path| {
+                        {
+                            let mut reader = BufReader::new(File::open(query_path)?);
+                            let mut contents = String::new();
+                            reader.read_to_string(&mut contents)?;
+                            Ok(contents)
+                        }
+                        .map_err(|e| {
+                            TopiaryError::Bin(
+                                "Could not open query file".into(),
+                                Some(CLIError::IOError(e)),
+                            )
+                        })
+                    })
+                    .and_then(|query_content: String| {
+                        Ok(TopiaryQuery::new(&grammar, &query_content)?)
+                    })
+                    .or_else(|e| {
+                        // If we weren't able to read the query file, and the user didn't
+                        // request a specific query file, we should fall back to the built-in
+                        // queries.
+                        if query_arg.is_none() {
+                            log::info!(
+                                "No language file found for {language:?}. Will use built-in query."
+                            );
+                            Ok((&language).try_into()?)
+                        } else {
+                            Err(e)
+                        }
+                    })?;
+
                 Ok::<_, TopiaryError>((i, o, language, grammar, query))
             },
         ))

@@ -141,15 +141,20 @@ impl TopiaryQuery {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-impl From<crate::SupportedLanguage> for TopiaryQuery {
-    fn from(language: crate::SupportedLanguage) -> Self {
-        match language {
-            crate::SupportedLanguage::Json => TopiaryQuery::json(),
-            crate::SupportedLanguage::Nickel => TopiaryQuery::nickel(),
-            crate::SupportedLanguage::Ocaml | crate::SupportedLanguage::OcamlInterface => {
-                TopiaryQuery::ocaml()
-            }
-            crate::SupportedLanguage::Toml => TopiaryQuery::toml(),
+impl TryFrom<&crate::Language> for TopiaryQuery {
+    type Error = FormatterError;
+
+    fn try_from(language: &crate::Language) -> FormatterResult<Self> {
+        match language.name.as_str() {
+            "bash" => Ok(TopiaryQuery::bash()),
+            "json" => Ok(TopiaryQuery::json()),
+            "nickel" => Ok(TopiaryQuery::nickel()),
+            "ocaml" => Ok(TopiaryQuery::ocaml()),
+            "ocaml_interface" => Ok(TopiaryQuery::ocaml_interface()),
+            "rust" => Ok(TopiaryQuery::rust()),
+            "toml" => Ok(TopiaryQuery::toml()),
+            "tree_sitter_query" => Ok(TopiaryQuery::tree_sitter_query()),
+            name => Err(FormatterError::UnsupportedLanguage(name.to_string())),
         }
     }
 }
