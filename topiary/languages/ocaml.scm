@@ -154,6 +154,8 @@
     "external"
     (floating_attribute)
     "for"
+    "fun"
+    "function"
     "if"
     "in"
     "include"
@@ -783,18 +785,13 @@
   ) @end_scope
   (#scope_id! "function_definition")
 )
-(parenthesized_expression
-  (function_expression
-    "function" @append_spaced_scoped_softline
-  ) @begin_scope @end_scope
-  (#scope_id! "function_definition")
-)
+; The following is the general case, which should happen anywhere except in let bindings
 (
-  (_) @begin_scope
+  "="? @do_nothing
   .
   (function_expression
     "function" @append_spaced_scoped_softline
-  ) @end_scope
+  ) @begin_scope @end_scope
   (#scope_id! "function_definition")
 )
 (function_expression
