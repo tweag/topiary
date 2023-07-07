@@ -13,6 +13,13 @@
 (*                                                                        *)
 (**************************************************************************)
 
+(* Issue 541 *)
+
+let r541 =
+  foo
+  |> bar
+  |> baz
+
 (* Issue 529 *)
 
 let id1 = if true then Fun.id else function x -> x
