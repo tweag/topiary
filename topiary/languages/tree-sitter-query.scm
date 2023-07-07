@@ -52,7 +52,7 @@
 ; zero-byte nodes, so we just need to set the spacing correctly.
 (predicate
   (parameters
-  _ @prepend_space
+    _ @prepend_space
   )
 )
 
