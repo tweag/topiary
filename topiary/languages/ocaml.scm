@@ -1393,6 +1393,18 @@
 ; top-level one: it is the one that is not preceded by an infix operator.
 ; We only consider logic operators, as not to mess with arithmetic expressions
 (
+  (_)? @do_nothing
+  (#match? @do_nothing "^\\|>$")
+  .
+  (infix_expression) @begin_scope @end_scope
+  (#scope_id! "infix_expression")
+)
+(infix_expression
+  (_) @prepend_spaced_scoped_softline
+  (#match? @prepend_spaced_scoped_softline "^\\|>$")
+  (#scope_id! "infix_expression")
+)
+(
   [
     (and_operator)
     (or_operator)
@@ -1416,9 +1428,15 @@
     (mult_operator)
     (add_operator)
     (concat_operator)
-    (rel_operator)
     (assign_operator)
   ] @append_spaced_softline @append_indent_start
+  .
+  (_) @append_indent_end
+)
+(infix_expression
+  (rel_operator) @append_spaced_softline @append_indent_start
+  (#match? @prepend_spaced_softline "^(\\|>)\@!$")
+  (#match? @append_indent_start "^(\\|>)\@!$")
   .
   (_) @append_indent_end
 )
