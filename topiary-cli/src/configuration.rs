@@ -4,14 +4,20 @@ use topiary::{default_configuration_toml, Configuration};
 
 use crate::error::{CLIResult, TopiaryError};
 
-pub fn parse_configuration() -> CLIResult<Configuration> {
-    user_configuration_toml()?
+pub fn parse_configuration(c_override: Option<PathBuf>) -> CLIResult<Configuration> {
+    user_configuration_toml(c_override)?
         .try_into()
         .map_err(TopiaryError::from)
 }
 
 /// User configured languages.toml file, merged with the default config.
-fn user_configuration_toml() -> CLIResult<toml::Value> {
+/// If a configuration_override was provided, all other configuration files are ignored.
+fn user_configuration_toml(c_override: Option<PathBuf>) -> CLIResult<toml::Value> {
+    if let Some(path) = c_override {
+        let content = std::fs::read_to_string(path)?;
+        let toml = toml::from_str(&content)?;
+        return Ok(toml);
+    }
     let config = [find_configuration_dir(), find_workspace().join(".topiary")]
         .into_iter()
         .map(|path| path.join("languages.toml"))

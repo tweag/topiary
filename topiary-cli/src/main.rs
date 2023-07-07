@@ -76,6 +76,10 @@ struct Args {
     /// Format as much as possible even if some of the input causes parsing errors
     #[arg(short, long, display_order = 9)]
     tolerate_parsing_errors: bool,
+
+    /// Override all configuration with the provided file
+    #[arg(long, env = "TOPIARY_CONFIGURATION_OVERRIDE", display_order = 10)]
+    configuration_override: Option<PathBuf>,
 }
 
 // /// Collects all the values needed for the eventual formatting. This helper
@@ -114,7 +118,7 @@ async fn run() -> CLIResult<()> {
         args
     };
 
-    let configuration = parse_configuration()?;
+    let configuration = parse_configuration(args.configuration_override)?;
 
     if args.output_configuration {
         eprintln!("{:#?}", configuration);
