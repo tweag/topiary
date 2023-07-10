@@ -184,6 +184,8 @@ Options:
           Format as much as possible even if some of the input causes parsing errors
       --configuration-override <CONFIGURATION_OVERRIDE>
           Override all configuration with the provided file [env: TOPIARY_CONFIGURATION_OVERRIDE=]
+  -c, --configuration-file <CONFIGURATION_FILE>
+          Add the specified configuration file with the highest prority [env: TOPIARY_CONFIGURATION_FILE=]
   -h, --help
           Print help
   -V, --version

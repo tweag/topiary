@@ -80,6 +80,10 @@ struct Args {
     /// Override all configuration with the provided file
     #[arg(long, env = "TOPIARY_CONFIGURATION_OVERRIDE", display_order = 10)]
     configuration_override: Option<PathBuf>,
+
+    /// Add the specified configuration file with the highest prority
+    #[arg(short, long, env = "TOPIARY_CONFIGURATION_FILE", display_order = 11)]
+    configuration_file: Option<PathBuf>,
 }
 
 // /// Collects all the values needed for the eventual formatting. This helper
@@ -118,7 +122,7 @@ async fn run() -> CLIResult<()> {
         args
     };
 
-    let configuration = parse_configuration(args.configuration_override)?;
+    let configuration = parse_configuration(args.configuration_override, args.configuration_file)?;
 
     if args.output_configuration {
         eprintln!("{:#?}", configuration);
