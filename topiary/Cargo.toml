@@ -36,6 +36,7 @@ tree-sitter-bash = { workspace = true }
 tree-sitter-nickel = { workspace = true }
 tree-sitter-query = { workspace = true }
 tree-sitter-ocaml = { workspace = true }
+tree-sitter-ocamllex = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 futures = { workspace = true }

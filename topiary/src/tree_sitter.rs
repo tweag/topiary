@@ -108,6 +108,17 @@ impl TopiaryQuery {
         .expect("parsing built-in query")
     }
 
+    /// Creates a new `TopiaryQuery` for Ocamllex using the built-in Ocamllex query
+    /// file.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn ocamllex() -> TopiaryQuery {
+        Self::new(
+            &tree_sitter_ocamllex::language().into(),
+            include_str!("../languages/ocamllex.scm"),
+        )
+        .expect("parsing built-in query")
+    }
+
     /// Creates a new `TopiaryQuery` using the built-in Rust query file.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn rust() -> TopiaryQuery {
@@ -151,6 +162,7 @@ impl TryFrom<&crate::Language> for TopiaryQuery {
             "nickel" => Ok(TopiaryQuery::nickel()),
             "ocaml" => Ok(TopiaryQuery::ocaml()),
             "ocaml_interface" => Ok(TopiaryQuery::ocaml_interface()),
+            "ocamllex" => Ok(TopiaryQuery::ocamllex()),
             "rust" => Ok(TopiaryQuery::rust()),
             "toml" => Ok(TopiaryQuery::toml()),
             "tree_sitter_query" => Ok(TopiaryQuery::tree_sitter_query()),

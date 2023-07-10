@@ -67,6 +67,7 @@ impl Language {
             "nickel" => tree_sitter_nickel::language(),
             "ocaml" => tree_sitter_ocaml::language_ocaml(),
             "ocaml_interface" => tree_sitter_ocaml::language_ocaml_interface(),
+            "ocamllex" => tree_sitter_ocamllex::language(),
             "rust" => tree_sitter_rust::language(),
             "toml" => tree_sitter_toml::language(),
             "tree_sitter_query" => tree_sitter_query::language(),
@@ -83,6 +84,7 @@ impl Language {
             "nickel" => "nickel",
             "ocaml" => "ocaml",
             "ocaml_interface" => "ocaml_interface",
+            "ocamllex" => "ocamllex",
             "rust" => "rust",
             "toml" => "toml",
             "tree_sitter_query" => "query",
@@ -122,6 +124,7 @@ impl TryFrom<&Language> for PathBuf {
             "json" => "json",
             "nickel" => "nickel",
             "ocaml" | "ocaml_interface" => "ocaml",
+            "ocamllex" => "ocamllex",
             "rust" => "rust",
             "toml" => "toml",
             "tree_sitter_query" => "tree-sitter-query",
@@ -163,6 +166,7 @@ pub enum SupportedLanguage {
     Nickel,
     Ocaml,
     OcamlInterface,
+    OcamlLex,
     Toml,
 }
 
@@ -188,6 +192,7 @@ impl SupportedLanguage {
             SupportedLanguage::Nickel => "nickel",
             SupportedLanguage::Ocaml => "ocaml",
             SupportedLanguage::OcamlInterface => "ocaml_interface",
+            SupportedLanguage::OcamlLex => "ocamllex",
             SupportedLanguage::Toml => "toml",
         }
     }
