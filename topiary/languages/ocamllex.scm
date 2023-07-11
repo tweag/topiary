@@ -2,13 +2,11 @@
 ; account for places it can be instead of formatting it directly.
 
 [
-  (ocaml)
   (character)
   (string)
 ] @leaf
 
-(comment) @multi_line_indent_all
-(comment) @prepend_input_softline @append_input_softline
+(comment) @multi_line_indent_all @allow_blank_line_before @prepend_input_softline @append_input_softline
 
 (
   (#scope_id! "action")
@@ -16,10 +14,11 @@
 )
 
 ; If the action spanned multiple lines, add newlines
+; TODO: Currently there is an idempotency issue, added whitespace is added to the (ocaml) node
 (action
   (#scope_id! "action")
   "{" @append_spaced_scoped_softline @append_indent_start
-  "}" @prepend_spaced_scoped_softline @prepend_indent_end
+  "}" @prepend_empty_scoped_softline @prepend_indent_end
 )
 
 ; Regular expression related rules
@@ -45,9 +44,9 @@
   (#scope_id! "parenthesized_regexp")
   "(" @append_empty_scoped_softline @append_indent_start
   ")" @prepend_empty_scoped_softline @prepend_indent_end
-) @begin_scope @end_scope
+) @begin_scope @end_scope @prepend_spaced_softline @append_spaced_softline
 
-(parenthesized_regexp
+(
   (#scope_id! "regexp_alternative")
   (regexp_alternative) @begin_scope @end_scope
 )
@@ -57,6 +56,9 @@
   "|" @prepend_spaced_scoped_softline @append_space
 )
 
+(string) @prepend_spaced_softline @append_spaced_softline
+
+; Lexer related rules
 (lexer_definition
   [ "rule" "and" ] @allow_blank_line_before @append_space
 )
@@ -70,9 +72,8 @@
 
 (lexer_entry
   (#scope_id! "lexer_entry")
-  ; @append_space is for NOTE[regexp]
   ; TODO: Is this allowed to be a space? Use hardline if not
-  "|" @prepend_spaced_scoped_softline @append_space @allow_blank_line_before
+  "|" @prepend_hardline @allow_blank_line_before
   ; @prepend_space is for NOTE[regexp]
 )
 
@@ -83,5 +84,7 @@
 )
 
 (lexer_case
+  ; The anonymouse child of the lexer_case is the regexp
+  (_) @prepend_space @append_space
   (action) @prepend_space @prepend_indent_start @append_indent_end
 )

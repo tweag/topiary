@@ -1,5 +1,7 @@
 (**************************************************************************)
-(*  Taken from https://github.com/colis-anr/morbig/                       *)
+(*  Taken from https://github.com/paris-branch/dancelor/                  *)
+(*  Licened under GPL-3.0-or-later                                        *)
+(*  Copyright belongs to the original authors                             *)
 (**************************************************************************)
 {
   open TextFormulaParser
@@ -34,10 +36,6 @@ rule token = parse
       | _ -> NULLARY_PREDICATE id
     }
 
-  | '!'  { NOT }
-  | "&&" { AND }
-  | "||" { OR }
-
   | (identifier as id) ":" {
       PREDICATE id
     }
@@ -47,11 +45,12 @@ rule token = parse
       LITERAL (string buf lexbuf)
     }
 
-  | (identifier as lit) {
+  (* The following pattern must exclude all the special characters matched above. *)
+  | [^ ' ' '(' ')' ':' '"']+ as lit {
       LITERAL lit
     }
 
-    | _ as c { raise (UnexpectedCharacter c) }
+  | _ as c { raise (UnexpectedCharacter c) }
 
   | eof { EOF }
 
