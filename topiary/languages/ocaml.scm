@@ -1396,6 +1396,7 @@
   [
     (and_operator)
     (or_operator)
+    (rel_operator)
   ]? @do_nothing
   .
   (infix_expression) @prepend_begin_scope @append_end_scope
@@ -1405,23 +1406,45 @@
   [
     (and_operator)
     (or_operator)
+    (rel_operator)
   ] @prepend_spaced_scoped_softline
   (#scope_id! "infix_expression")
 )
 
 ; Put softline and indented blocks after all other infix operators
 (infix_expression
-  [
+  operator: [
     (pow_operator)
     (mult_operator)
     (add_operator)
-    (concat_operator)
-    (rel_operator)
     (assign_operator)
   ] @append_spaced_softline @append_indent_start
-  .
-  (_) @append_indent_end
+  right: (_) @append_indent_end
 )
+
+; After every concat_operator, we want to place a spaced_softline
+(infix_expression
+  operator: (concat_operator) @append_spaced_softline
+)
+
+; Then, we want to indent the expression after a concat_operator (with the exception of concat_operator chains)
+; Ideally like so:
+;
+; let two =
+;   foo @
+;   bar @@
+;   baz ^^
+;   quux
+;
+; let three =
+;   raise @@
+;     Exception
+(infix_expression
+  operator: (concat_operator) @append_indent_start
+  right: (infix_expression
+    operator: (concat_operator)
+  )? @do_nothing
+) @append_indent_end
 
 ; Allow softlines in sequences and ppx sequences, such as
 ; let b =
