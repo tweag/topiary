@@ -5,10 +5,10 @@ use topiary::{default_configuration_toml, Configuration};
 use crate::error::{CLIResult, TopiaryError};
 
 pub fn parse_configuration(
-    c_override: Option<PathBuf>,
-    c_file: Option<PathBuf>,
+    config_override: Option<PathBuf>,
+    config_file: Option<PathBuf>,
 ) -> CLIResult<Configuration> {
-    user_configuration_toml(c_override, c_file)?
+    user_configuration_toml(config_override, config_file)?
         .try_into()
         .map_err(TopiaryError::from)
 }
@@ -16,11 +16,11 @@ pub fn parse_configuration(
 /// User configured languages.toml file, merged with the default config.
 /// If a configuration_override was provided, all other configuration files are ignored.
 fn user_configuration_toml(
-    c_override: Option<PathBuf>,
-    c_file: Option<PathBuf>,
+    config_override: Option<PathBuf>,
+    config_file: Option<PathBuf>,
 ) -> CLIResult<toml::Value> {
     // If an override was requested, disregard all other configuration
-    if let Some(path) = c_override {
+    if let Some(path) = config_override {
         let content = std::fs::read_to_string(path)?;
         let toml = toml::from_str(&content)?;
         return Ok(toml);
@@ -30,11 +30,11 @@ fn user_configuration_toml(
     //   - The built-in configuration `default_configuration_toml`
     //   - `~/.config/topiary/languages.toml` (or equivalent)
     //   - `.topiary/languages.toml`
-    //   - `c_file` as passed by `--configuration_file/-c/TOPIARY_CONFIGURATION_FILE`
-    let config = [
+    //   - `config_file` as passed by `--configuration_file/-c/TOPIARY_CONFIGURATION_FILE`
+    [
         Some(find_configuration_dir()),
         find_workspace_configuration_dir(),
-        c_file,
+        config_file,
     ]
     .into_iter()
     .filter_map(|path| {
@@ -45,18 +45,15 @@ fn user_configuration_toml(
             false => p.join("languages.toml"),
         })
     })
-    .filter_map(|file| {
+    .filter_map(|file| -> Option<Result<toml::Value, toml::de::Error>> {
         std::fs::read_to_string(file)
             .map(|config| toml::from_str(&config))
             .ok()
     })
-    .collect::<Result<Vec<_>, _>>()?
-    .into_iter()
-    .fold(default_configuration_toml(), |a, b| {
-        merge_toml_values(a, b, 3)
-    });
-
-    Ok(config)
+    .try_fold(default_configuration_toml(), |a, b| {
+        let b = b?;
+        Ok(merge_toml_values(a, b, 3))
+    })
 }
 
 /// Merge two TOML documents, merging values from `right` onto `left`
