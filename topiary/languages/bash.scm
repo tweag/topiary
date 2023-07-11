@@ -14,6 +14,11 @@
   (word)
 ] @leaf
 
+(
+  (_) @leaf_trim
+  (#match! @leaf_trim "\n$")
+)
+
 ;; Spacing
 
 ; Allow blank line before

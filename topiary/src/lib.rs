@@ -34,6 +34,13 @@ mod tree_sitter;
 #[doc(hidden)]
 pub mod test_utils;
 
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub enum LeafKind {
+    #[default]
+    NoTrim,
+    Trim,
+}
+
 /// An atom represents a small piece of the output. We turn Tree-sitter nodes
 /// into atoms, and we add white-space atoms where appropriate. The final list
 /// of atoms is rendered to the output.
@@ -64,6 +71,8 @@ pub enum Atom {
         single_line_no_indent: bool,
         // if the leaf is multi-line, each line will be indented, not just the first
         multi_line_indent_all: bool,
+        // marks if the leaf should be trimmed of leading and trailing newlines
+        kind: LeafKind,
     },
     /// Represents a literal string, such as a semicolon.
     Literal(String),

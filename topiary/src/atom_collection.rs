@@ -7,7 +7,7 @@ use std::{
 
 use tree_sitter_facade::Node;
 
-use crate::{Atom, FormatterError, FormatterResult, ScopeCondition};
+use crate::{Atom, FormatterError, FormatterResult, LeafKind, ScopeCondition};
 
 /// A struct that holds sets of node IDs that have line breaks before or after them.
 ///
@@ -38,7 +38,7 @@ pub struct AtomCollection {
     /// A query file can define custom leaf nodes (nodes that Topiary should not
     /// touch during formatting). When such a node is encountered, its id is stored in
     /// this HashSet.
-    specified_leaf_nodes: HashSet<usize>,
+    specified_leaf_nodes: HashMap<usize, LeafKind>,
     /// If a node is a leaf, or if it is explicitly marked as such by the
     /// formatting directives, it is added to this HashMap as the key. The value
     /// of the Map contains all parent nodes.
@@ -76,7 +76,7 @@ impl AtomCollection {
             atoms,
             prepend: HashMap::new(),
             append: HashMap::new(),
-            specified_leaf_nodes: HashSet::new(),
+            specified_leaf_nodes: HashMap::new(),
             parent_leaf_nodes: HashMap::new(),
             multi_line_nodes: HashSet::new(),
             blank_lines_before: HashSet::new(),
@@ -92,7 +92,7 @@ impl AtomCollection {
     pub fn collect_leafs(
         root: &Node,
         source: &[u8],
-        specified_leaf_nodes: HashSet<usize>,
+        specified_leaf_nodes: HashMap<usize, LeafKind>,
     ) -> FormatterResult<Self> {
         // Flatten the tree, from the root node, in a depth-first traversal
         let dfs_nodes = dfs_flatten(root);
@@ -262,7 +262,7 @@ impl AtomCollection {
                 self.prepend(Atom::Softline { spaced: true }, node, predicates);
             }
             // Skip over leafs
-            "leaf" => {}
+            "leaf" | "leaf_trim" => {}
             // Deletion
             "delete" => {
                 self.prepend(Atom::DeleteBegin, node, predicates);
@@ -439,10 +439,12 @@ impl AtomCollection {
             node.is_named()
         );
 
+        let specified_leaf_node = self.specified_leaf_nodes.get(&node.id());
+
         if node.end_byte() == node.start_byte() {
             log::debug!("Skipping zero-byte node: {node:?}");
-        } else if node.child_count() == 0
-            || self.specified_leaf_nodes.contains(&node.id())
+        } else if node.child_count() == 0 ||
+            specified_leaf_node.is_some()
             // We treat error nodes as leafs when `tolerate_parsing_errors` is set to true.
             // This ensures Topiary does not try to further apply transformations on them.
             // If `tolerate_parsing_errors` is set to false, this part of the code is only reached if the tree contains no ERROR nodes,
@@ -455,6 +457,7 @@ impl AtomCollection {
                 original_position: node.start_position().into(),
                 single_line_no_indent: false,
                 multi_line_indent_all: false,
+                kind: { specified_leaf_node.unwrap_or(&LeafKind::default()).clone() },
             });
             // Mark all sub-nodes as having this node as a "leaf parent"
             self.mark_leaf_parent(node, node.id());
@@ -878,7 +881,7 @@ impl AtomCollection {
         &self,
         node: Cow<'node, Node<'tree>>,
     ) -> Cow<'node, Node<'tree>> {
-        if node.child_count() == 0 || self.specified_leaf_nodes.contains(&node.id()) {
+        if node.child_count() == 0 || self.specified_leaf_nodes.get(&node.id()).is_some() {
             node
         } else {
             let node = Cow::Owned(node.child(0).unwrap());
@@ -912,7 +915,7 @@ impl AtomCollection {
         node: Cow<'node, Node<'tree>>,
     ) -> Cow<'node, Node<'tree>> {
         let nr_children = node.child_count();
-        if nr_children == 0 || self.specified_leaf_nodes.contains(&node.id()) {
+        if nr_children == 0 || self.specified_leaf_nodes.get(&node.id()).is_some() {
             node
         } else {
             let node = Cow::Owned(node.child(nr_children - 1).unwrap());

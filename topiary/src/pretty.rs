@@ -4,7 +4,7 @@
 
 use std::fmt::Write;
 
-use crate::{Atom, FormatterError, FormatterResult};
+use crate::{Atom, FormatterError, FormatterResult, LeafKind};
 
 /// Renders a slice of Atoms into an owned string.
 /// The indent &str is used when an `Atom::IdentStart` is encountered.
@@ -44,6 +44,7 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                 original_position,
                 single_line_no_indent,
                 multi_line_indent_all,
+                kind,
                 ..
             } => {
                 if *single_line_no_indent {
@@ -52,7 +53,11 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                     writeln!(buffer)?;
                 }
 
-                let content = content.trim_end_matches('\n');
+                let content = if let LeafKind::Trim = kind {
+                    content.trim_end_matches('\n')
+                } else {
+                    content
+                };
 
                 let content = if *multi_line_indent_all {
                     let cursor = current_column(&buffer) as i32;

@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 use serde::Serialize;
 use tree_sitter_facade::{
@@ -8,7 +8,7 @@ use tree_sitter_facade::{
 use crate::{
     atom_collection::{AtomCollection, QueryPredicates},
     error::FormatterError,
-    FormatterResult,
+    FormatterResult, LeafKind,
 };
 
 /// Supported visualisation formats
@@ -256,7 +256,7 @@ pub fn apply_query(
 
     // Find the ids of all tree-sitter nodes that were identified as a leaf
     // We want to avoid recursing into them in the collect_leafs function.
-    let specified_leaf_nodes: HashSet<usize> = collect_leaf_ids(&matches, &capture_names);
+    let specified_leaf_nodes: HashMap<usize, LeafKind> = collect_leaf_ids(&matches, &capture_names);
 
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
     let mut atoms = AtomCollection::collect_leafs(&root, source, specified_leaf_nodes)?;
@@ -356,13 +356,19 @@ fn check_for_error_nodes(node: &Node) -> FormatterResult<()> {
 ///
 /// This function takes a slice of `LocalQueryMatch` and a slice of capture names,
 /// and returns a `HashSet` of node IDs that are matched by the "leaf" capture name.
-fn collect_leaf_ids(matches: &[LocalQueryMatch], capture_names: &[String]) -> HashSet<usize> {
-    let mut ids = HashSet::new();
+fn collect_leaf_ids(
+    matches: &[LocalQueryMatch],
+    capture_names: &[String],
+) -> HashMap<usize, LeafKind> {
+    let mut ids = HashMap::new();
 
     for m in matches {
         for c in &m.captures {
-            if c.name(capture_names) == "leaf" {
-                ids.insert(c.node().id());
+            let capture_name = c.name(capture_names);
+            if capture_name == "leaf" {
+                ids.insert(c.node().id(), LeafKind::NoTrim);
+            } else if capture_name == "leaf_trim" {
+                ids.insert(c.node().id(), LeafKind::Trim);
             }
         }
     }
