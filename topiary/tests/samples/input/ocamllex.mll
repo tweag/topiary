@@ -23,7 +23,7 @@ let digit = ['0'-'9']
 
 let identifier = (alpha | symbol | digit)+
 
-rule token = parse
+rule token   arg1   arg2 = parse
 
   | ' ' { token lexbuf }
 

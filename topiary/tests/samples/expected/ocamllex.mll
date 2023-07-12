@@ -23,7 +23,7 @@ let digit = ['0'-'9']
 
 let identifier = (alpha | symbol | digit)+
 
-rule token = parse
+rule token arg1 arg2 = parse
 
   | ' ' { token lexbuf }
 
@@ -56,7 +56,7 @@ rule token = parse
 
   | ('=' '.' '=') as qute_smily { some_ocaml_code }
 
-and stringbuf = parse
+and string buf = parse
   | '"' { Buffer.contents buf }
   | _ as c { Buffer.add_char buf c; string buf lexbuf }
   | eof { raise UnterminatedQuote }

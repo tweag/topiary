@@ -79,10 +79,13 @@
 
 (lexer_entry
   (#scope_id! "lexer_entry")
-  ; TODO: Arguments
   "=" @prepend_space @append_space
   ["parse" "shortest"] @append_spaced_scoped_softline @append_indent_start
 ) @begin_scope @end_scope
+
+(lexer_entry
+  (lexer_argument) @prepend_space @append_space
+)
 
 (lexer_entry
   (#scope_id! "lexer_entry")
