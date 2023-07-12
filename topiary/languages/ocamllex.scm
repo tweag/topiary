@@ -1,11 +1,6 @@
 ; NOTE[regexp] regexp is a unnamed node without a field name, so we typically
 ; account for places it can be instead of formatting it directly.
 
-[
-  (character)
-  (string)
-] @leaf
-
 (comment) @multi_line_indent_all @allow_blank_line_before @prepend_input_softline @append_input_softline
 
 (
@@ -14,12 +9,14 @@
 )
 
 ; If the action spanned multiple lines, add newlines
-; TODO: Currently there is an idempotency issue, added whitespace is added to the (ocaml) node
 (action
   (#scope_id! "action")
   "{" @append_spaced_scoped_softline @append_indent_start
-  "}" @prepend_empty_scoped_softline @prepend_indent_end
-)
+  "}" @prepend_spaced_scoped_softline @prepend_indent_end
+; This last capture name is a bit unfortunate, but it resolves an issue where
+; the @append_input_softline of the comment is not resolved because the \n is
+; after it.
+) @prepend_input_softline
 
 ; Regular expression related rules
 (named_regexp
@@ -30,6 +27,13 @@
 ) @allow_blank_line_before @append_hardline
 
 ; Actual regex rules
+[
+  (character)
+  (string)
+] @leaf
+
+(string) @prepend_spaced_softline @append_spaced_softline
+
 (character_set
   (#scope_id! "character_set")
   "[" @append_empty_scoped_softline @append_indent_start
@@ -39,6 +43,10 @@
   .
   "]" @prepend_indent_end @prepend_antispace
 ) @begin_scope @end_scope
+
+(aliased_regexp
+  "as" @prepend_space @append_space
+)
 
 (parenthesized_regexp
   (#scope_id! "parenthesized_regexp")
@@ -55,8 +63,6 @@
   (#scope_id! "regexp_alternative")
   "|" @prepend_spaced_scoped_softline @append_space
 )
-
-(string) @prepend_spaced_softline @append_spaced_softline
 
 ; Lexer related rules
 (lexer_definition

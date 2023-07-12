@@ -60,7 +60,7 @@ tree-sitter-facade = { git = "https://github.com/tweag/tree-sitter-facade" }
 tree-sitter-json = "0.19"
 tree-sitter-nickel = { git = "https://github.com/nickel-lang/tree-sitter-nickel", rev = "b1a4718601ebd29a62bf3a7fd1069a99ccf48093" }
 tree-sitter-ocaml = "0.20.3"
-tree-sitter-ocamllex = "0.20.0"
+tree-sitter-ocamllex = "0.20.2"
 tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-query" }
 tree-sitter-rust = "0.20.3"
 tree-sitter-toml = "0.20.0"

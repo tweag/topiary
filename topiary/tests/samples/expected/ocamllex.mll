@@ -23,45 +23,42 @@ let identifier = (alpha | symbol | digit)+
 
 rule token = parse
 
-  | ' ' { token lexbuf  }
+  | ' ' { token lexbuf }
 
-  | '(' { LPAR  }
-  | ')' { RPAR  }
+  | '(' { LPAR }
+  | ')' { RPAR }
 
-  | ":"(identifierasid) {
+  | ":" (identifierasid) {
       match List.assoc_opt id keywords with
       | Some kw -> kw
       | _ -> NULLARY_PREDICATE id
-
     }
 
-  | '!' { NOT  }
-  | "&&" { AND  }
-  | "||" { OR  }
+  | '!' { NOT }
+  | "&&" { AND }
+  | "||" { OR }
 
-  | (identifierasid)":" {
+  | (identifierasid) ":" {
       PREDICATE id
-
     }
 
   | '"' {
       let buf = Buffer.create 8 in
       LITERAL (string buf lexbuf)
-
     }
 
-  | (identifieraslit) {
+  |
+  (identifieraslit) {
       LITERAL lit
-
     }
 
-  | _asc { raise (UnexpectedCharacter c)  }
+  | _asc { raise (UnexpectedCharacter c) }
 
-  | eof { EOF  }
+  | eof { EOF }
 
 and stringbuf = parse
-  | '"' { Buffer.contents buf  }
-  | _asc { Buffer.add_char buf c; string buf lexbuf  }
-  | eof { raise UnterminatedQuote  }
+  | '"' { Buffer.contents buf }
+  | _asc { Buffer.add_char buf c; string buf lexbuf }
+  | eof { raise UnterminatedQuote }
 
-and erin = parse "erin" { Erin  }
+and erin = parse "erin" { Erin }

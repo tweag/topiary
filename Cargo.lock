@@ -1445,9 +1445,9 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter-ocamllex"
-version = "0.20.0"
+version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52511f82bfce7ca1ab040e1905c0c1f31a8510c039d875f1a53101ba8a751444"
+checksum = "9e774222086fd065999b6605fb231fbfc386bf782aa7dbad52503ff00b429a62"
 dependencies = [
  "cc",
  "tree-sitter",
