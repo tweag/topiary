@@ -20,6 +20,9 @@ function App() {
     const initCalled = useRef(false);
     const isQueryCompiling = useRef(false);
     const queryChanged = useRef(true);
+    const previousDebouncedInput = useRef("");
+    const previousDebouncedQuery = useRef("");
+    const previousIsInitialised = useRef(false);
 
     const [isInitialised, setIsInitialised] = useState(false);
     const [languageOptions, setLanguageOptions] = useState([] as ReactElement[]);
@@ -65,7 +68,7 @@ function App() {
             .catch(console.error);
     }, []);
 
-    const runFormat = useCallback((i: string, q: string) => {
+    const runFormat = useCallback(() => {
         console.log(`runFormat`);
 
         if (!isInitialised) {
@@ -86,8 +89,8 @@ function App() {
                     isQueryCompiling.current = true;
                     console.log(`Compiling query`);
                     setOutput("Compiling query ...");
-                    console.log(`Initialising ${currentLanguage} with ${q} because ${queryChanged.current}`);
-                    let fut = queryInit(q, currentLanguage);
+                    console.log(`Initialising ${currentLanguage} with ${query} because ${queryChanged.current}`);
+                    let fut = queryInit(query, currentLanguage);
                     console.log(`future: ${fut}`);
                     let res = await fut;
                     console.log(`queryInit result: ${res}`);
@@ -98,7 +101,7 @@ function App() {
                 try {
                     console.log(`Formatting`);
                     setOutput("Formatting ...");
-                    setOutput(await format(i, idempotence, tolerateParsingErrors));
+                    setOutput(await format(input, idempotence, tolerateParsingErrors));
                     setProcessingTime(performance.now() - start);
                 } catch (e) {
                     setOutput(String(e));
@@ -113,34 +116,41 @@ function App() {
 
         const start = performance.now();
         outputFormat();
-    }, [currentLanguage, idempotence, isInitialised, tolerateParsingErrors, query]);
+    }, [currentLanguage, idempotence, isInitialised, tolerateParsingErrors, input, query]);
 
     // Run on every (debounced) input change, as well as when isInitialised is set, and when the dirty flag changes.
     useEffect(() => {
         if (!onTheFlyFormatting) return;
 
-        console.log(`On the fly formatting kicking in.`);
-
-        if (!isInitialised) {
-            console.log("Cannot format yet, as the formatter engine is being initialised.");
-            setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
-            return;
-        }
-
-        if (isQueryCompiling.current) {
-            console.log("Query is being compiled.");
-            setOutput("Query is being compiled. Try again soon.");
-            return;
-        }
-
         // This is how to run async within useEffect.
         // https://devtrium.com/posts/async-functions-useeffect
         const run = async () => {
-            await runFormat(input, query);
+            await runFormat();
         }
 
-        run()
-            .catch(console.error);
+        // We don't want to run whenever a dependency changes, but only when either of these do:
+        if (previousDebouncedInput.current !== debouncedInput || previousDebouncedQuery.current !== debouncedQuery || previousIsInitialised.current !== isInitialised) {
+            console.log(`On the fly formatting kicking in.`);
+
+            if (!isInitialised) {
+                console.log("Cannot format yet, as the formatter engine is being initialised.");
+                setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
+                return;
+            }
+
+            if (isQueryCompiling.current) {
+                console.log("Query is being compiled.");
+                setOutput("Query is being compiled. Try again soon.");
+                return;
+            }
+
+            run()
+                .catch(console.error);
+        }
+
+        previousDebouncedInput.current = debouncedInput;
+        previousDebouncedQuery.current = debouncedQuery;
+        previousIsInitialised.current = isInitialised;
     }, [isInitialised, debouncedInput, debouncedQuery, onTheFlyFormatting, runFormat])
 
     function changeLanguage(l: string) {
@@ -162,7 +172,7 @@ function App() {
     }
 
     function handleFormat() {
-        runFormat(input, query);
+        runFormat();
     };
 
     function handleOnTheFlyFormatting() {
