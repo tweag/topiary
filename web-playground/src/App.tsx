@@ -89,13 +89,9 @@ function App() {
                     isQueryCompiling.current = false;
                 }
 
-                try {
-                    setOutput("Formatting ...");
-                    setOutput(await format(input, idempotence, tolerateParsingErrors));
-                    setProcessingTime(performance.now() - start);
-                } catch (e) {
-                    setOutput(String(e));
-                }
+                setOutput("Formatting ...");
+                setOutput(await format(input, idempotence, tolerateParsingErrors));
+                setProcessingTime(performance.now() - start);
             } catch (e) {
                 queryChanged.current = false;
                 isQueryCompiling.current = false;
