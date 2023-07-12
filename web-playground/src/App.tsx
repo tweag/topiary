@@ -12,11 +12,16 @@ import "./App.css";
 const debounceDelay = 500;
 
 function App() {
-    const [isInitialised, setIsInitialised] = useState(false);
-    const initCalled = useRef(false);
     const defaultLanguage = "json";
     const defaultQuery = languages[defaultLanguage].query;
     const defaultInput = languages[defaultLanguage].input;
+
+    // These don't have to be useState, as they don't need to trigger UI changes.
+    const initCalled = useRef(false);
+    const isQueryCompiling = useRef(false);
+    const queryChanged = useRef(true);
+
+    const [isInitialised, setIsInitialised] = useState(false);
     const [languageOptions, setLanguageOptions] = useState([] as ReactElement[]);
     const [currentLanguage, setCurrentLanguage] = useState(defaultLanguage);
     const [onTheFlyFormatting, setOnTheFlyFormatting] = useState(true);
@@ -25,7 +30,6 @@ function App() {
     const [input, setInput] = useState(defaultInput);
     const [output, setOutput] = useState("");
     const [query, setQuery] = useState(defaultQuery);
-    const [queryChanged, setQueryChanged] = useState(true);
     const [processingTime, setProcessingTime] = useState(0);
 
     // We want to debounce the input and query changes so that we can run
@@ -43,6 +47,7 @@ function App() {
             await init(); // Does the WebAssembly.instantiate()
             await topiaryInit(); // Does the TreeSitter::init()
             setIsInitialised(true);
+            console.log("Initialised");
         }
 
         // Populate the language list
@@ -60,45 +65,78 @@ function App() {
             .catch(console.error);
     }, []);
 
-    // Run on every (debounced) input change, as well as when isInitialised is set.
+    // Run on every (debounced) input change, as well as when isInitialised is set, and when the dirty flag changes.
     useEffect(() => {
         if (!onTheFlyFormatting) return;
 
         console.log(`On the fly formatting kicking in.`);
-        runFormat(debouncedInput, debouncedQuery, queryChanged);
-    }, [isInitialised, debouncedInput, debouncedQuery, queryChanged, onTheFlyFormatting])
-
-    function runFormat(i: string, q: string, qChanged: boolean) {
-        console.log(`runFormat`);
-
-        const outputFormat = async () => {
-            try {
-                const start = performance.now();
-
-                if (qChanged) {
-                    console.log(`Initialising ${currentLanguage} with ${q} because ${qChanged}`);
-                    let fut = queryInit(q, currentLanguage);
-                    console.log(`future: ${fut}`);
-                    let res = await fut;
-                    console.log(`queryInit result: ${res}`);
-                    setQueryChanged(false);
-                }
-
-                console.log(`Formatting`);
-                setOutput(await format(i, idempotence, tolerateParsingErrors));
-                setProcessingTime(performance.now() - start);
-            } catch (e) {
-                setOutput(String(e));
-            }
-        }
 
         if (!isInitialised) {
+            console.log("Cannot format yet, as the formatter engine is being initialised.");
             setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
             return;
         }
 
-        setOutput("Formatting ...");
-        outputFormat();
+        if (isQueryCompiling.current) {
+            console.log("Query is being compiled.");
+            setOutput("Query is being compiled. Try again soon.");
+            return;
+        }
+
+        // This is how to run async within useEffect.
+        // https://devtrium.com/posts/async-functions-useeffect
+        const run = async () => {
+            await runFormat();
+        }
+
+        run()
+            .catch(console.error);
+    }, [isInitialised, debouncedInput, debouncedQuery, onTheFlyFormatting])
+
+    async function runFormat() {
+        console.log(`runFormat`);
+
+        if (!isInitialised) {
+            console.log("Cannot format yet, as the formatter engine is being initialised.");
+            setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
+            return;
+        }
+
+        if (isQueryCompiling.current) {
+            console.log("Query is being compiled.");
+            setOutput("Query is being compiled. Try again soon.");
+            return;
+        }
+
+        const start = performance.now();
+
+        try {
+            if (queryChanged.current) {
+                isQueryCompiling.current = true;
+                setOutput("Compiling query ...");
+                console.log(`Initialising ${currentLanguage} with ${query} because ${queryChanged.current}`);
+                let fut = queryInit(query, currentLanguage);
+                console.log(`future: ${fut}`);
+                let res = await fut;
+                console.log(`queryInit result: ${res}`);
+                queryChanged.current = false;
+                isQueryCompiling.current = false;
+            }
+
+            try {
+                console.log(`Formatting`);
+                setOutput("Formatting ...");
+                setOutput(await format(input, idempotence, tolerateParsingErrors));
+                setProcessingTime(performance.now() - start);
+            } catch (e) {
+                setOutput(String(e));
+            }
+        } catch (e) {
+            console.error(`error when compiling query: ${e}`);
+            queryChanged.current = false;
+            isQueryCompiling.current = false;
+            setOutput(String(e));
+        }
     }
 
     function changeLanguage(l: string) {
@@ -112,7 +150,7 @@ function App() {
             if (!hasModification || window.confirm(confirmationMessage)) {
                 setInput(languages[l].input);
                 setQuery(languages[l].query);
-                setQueryChanged(true);
+                queryChanged.current = true;
                 setOutput("");
                 setCurrentLanguage(l);
             }
@@ -120,7 +158,7 @@ function App() {
     }
 
     function handleFormat() {
-        runFormat(input, query, queryChanged);
+        runFormat();
     };
 
     function handleOnTheFlyFormatting() {
@@ -170,7 +208,7 @@ function App() {
             <div className="columns">
                 <div className="column">
                     <h1>Query</h1>
-                    <Editor id="query" value={query} onChange={s => { setQuery(s); setQueryChanged(true); }} placeholder="Enter your query here ..." />
+                    <Editor id="query" value={query} onChange={s => { setQuery(s); queryChanged.current = true; }} placeholder="Enter your query here ..." />
                 </div>
                 <div className="column">
                     <h1>Input</h1>
