@@ -144,7 +144,7 @@ async function readOutput() {
 
     // Wait for useful output.
     await page.waitForFunction(
-        el => el?.textContent !== "" && el?.textContent !== "Formatting ...",
+        el => el?.textContent !== "" && el?.textContent !== "Formatting ..." && el?.textContent !== "Compiling query ...",
         { polling: "mutation", timeout: 30000 },
         el
     );
