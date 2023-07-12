@@ -10,15 +10,6 @@ use tree_sitter_facade::TreeSitter;
 use wasm_bindgen::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_futures::future_to_promise;
-#[cfg(target_arch = "wasm32")]
-use web_sys::console;
-
-// #[cfg(target_arch = "wasm32")]
-// thread_local! {
-//     static LANGUAGE: RefCell<Option<Language>> = RefCell::new(None);
-//     static GRAMMAR: RefCell<Option<tree_sitter_facade::Language>> = RefCell::new(None);
-//     static QUERY: RefCell<Option<TopiaryQuery>> = RefCell::new(None);
-// }
 
 #[cfg(target_arch = "wasm32")]
 struct QueryState {
@@ -60,23 +51,11 @@ async fn query_init_wasm(query_content: String, language_name: String) -> Result
 
 #[cfg(target_arch = "wasm32")]
 async fn query_init_inner(query_content: String, language_name: String) -> Result<(), JsError> {
-    use topiary::FormatterError;
-
-    console::log_3(
-        &"query_init:".into(),
-        &query_content.clone().into(),
-        &language_name.clone().into(),
-    );
-
     let language_normalized = language_name.replace('-', "_");
     let configuration = Configuration::parse_default_configuration()?;
-    console::log_1(&"config set.".into());
     let language = configuration.get_language(language_normalized)?.clone();
-    console::log_1(&"lang set.".into());
     let grammar = language.grammar_wasm().await?;
-    console::log_1(&"grammar set.".into());
     let query = TopiaryQuery::new(&grammar, &query_content)?;
-    console::log_1(&"query set.".into());
 
     let mut guard = QUERY_STATE.lock().unwrap();
 
@@ -85,8 +64,6 @@ async fn query_init_inner(query_content: String, language_name: String) -> Resul
         grammar,
         query,
     });
-
-    console::log_1(&"Query state updated".into());
 
     Ok(())
 }

@@ -66,5 +66,4 @@ tree-sitter-toml = "0.20.0"
 unescape = "0.1"
 wasm-bindgen = "0.2.84"
 wasm-bindgen-futures = "0.4.34"
-web-sys = "0.3.61"
 web-tree-sitter = { git = "https://github.com/tweag/web-tree-sitter-sys", default-features = false, package = "web-tree-sitter-sys" }
