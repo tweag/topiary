@@ -67,6 +67,10 @@ function App() {
             .catch(console.error);
     }, []);
 
+    // EsLint react-hooks/exhaustive-deps:
+    // A 'runFormat' function would make the dependencies of the useEffect Hook
+    // below change on every render. To fix this, we wrap the definition of
+    // 'runFormat' in its own useCallback() Hook.
     const runFormat = useCallback(() => {
         if (!isInitialised) {
             setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
@@ -78,13 +82,14 @@ function App() {
             return;
         }
 
+        // This is how to run async within useEffect and useCallback.
+        // https://devtrium.com/posts/async-functions-useeffect
         const outputFormat = async () => {
             try {
                 if (queryChanged.current) {
                     isQueryCompiling.current = true;
                     setOutput("Compiling query ...");
-                    let fut = queryInit(query, currentLanguage);
-                    let res = await fut;
+                    await queryInit(query, currentLanguage);
                     queryChanged.current = false;
                     isQueryCompiling.current = false;
                 }
@@ -103,11 +108,11 @@ function App() {
         outputFormat();
     }, [currentLanguage, idempotence, isInitialised, tolerateParsingErrors, input, query]);
 
-    // Run on every (debounced) input change, as well as when isInitialised is set, and when the dirty flag changes.
+    // Run on every (debounced) input change, as well as when isInitialised is set.
     useEffect(() => {
         if (!onTheFlyFormatting) return;
 
-        // This is how to run async within useEffect.
+        // This is how to run async within useEffect and useCallback.
         // https://devtrium.com/posts/async-functions-useeffect
         const run = async () => {
             await runFormat();
