@@ -89,6 +89,7 @@ stated design goals. They are exposed, in Topiary, through a command
 line flag.
 
 * [OCaml] (both implementations and interfaces)
+* [OCamllex]
 * [Nickel]
 * [JSON]
 * [TOML]
@@ -164,7 +165,7 @@ CLI app for Topiary, the universal code formatter.
 Usage: topiary [OPTIONS] <--language <LANGUAGE>|--input-files [<INPUT_FILES>...]>
 
 Options:
-  -l, --language <LANGUAGE>             Which language to parse and format [possible values: json, nickel, ocaml, ocaml-interface, toml]
+  -l, --language <LANGUAGE>             Which language to parse and format [possible values: json, nickel, ocaml, ocaml-interface, ocamllex, toml]
   -f, --input-files [<INPUT_FILES>...]  Path to an input file or multiple input files. If omitted, or equal to "-", read from standard input. If multiple files are provided, `in_place` is assumed [default: -]
   -q, --query <QUERY>                   Which query file to use
   -o, --output-file <OUTPUT_FILE>       Path to an output file. If omitted, or equal to "-", write to standard output
@@ -1110,6 +1111,7 @@ of choice open in another.
 [nvim-treesitter]: https://github.com/nvim-treesitter/playground
 [ocaml]: https://ocaml.org
 [ocamlformat]: https://github.com/ocaml-ppx/ocamlformat
+[ocamllex]: https://v2.ocaml.org/manual/lexyacc.html
 [ocp-indent]: https://www.typerex.org/ocp-indent.html
 [ormolu]: https://github.com/tweag/ormolu
 [prettier]: https://prettier.io/
