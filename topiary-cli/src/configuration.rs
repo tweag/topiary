@@ -4,29 +4,56 @@ use topiary::{default_configuration_toml, Configuration};
 
 use crate::error::{CLIResult, TopiaryError};
 
-pub fn parse_configuration() -> CLIResult<Configuration> {
-    user_configuration_toml()?
+pub fn parse_configuration(
+    config_override: Option<PathBuf>,
+    config_file: Option<PathBuf>,
+) -> CLIResult<Configuration> {
+    user_configuration_toml(config_override, config_file)?
         .try_into()
         .map_err(TopiaryError::from)
 }
 
 /// User configured languages.toml file, merged with the default config.
-fn user_configuration_toml() -> CLIResult<toml::Value> {
-    let config = [find_configuration_dir(), find_workspace().join(".topiary")]
-        .into_iter()
-        .map(|path| path.join("languages.toml"))
-        .filter_map(|file| {
-            std::fs::read_to_string(file)
-                .map(|config| toml::from_str(&config))
-                .ok()
-        })
-        .collect::<Result<Vec<_>, _>>()?
-        .into_iter()
-        .fold(default_configuration_toml(), |a, b| {
-            merge_toml_values(a, b, 3)
-        });
+/// If a configuration_override was provided, all other configuration files are ignored.
+fn user_configuration_toml(
+    config_override: Option<PathBuf>,
+    config_file: Option<PathBuf>,
+) -> CLIResult<toml::Value> {
+    // If an override was requested, disregard all other configuration
+    if let Some(path) = config_override {
+        let content = std::fs::read_to_string(path)?;
+        let toml = toml::from_str(&content)?;
+        return Ok(toml);
+    }
 
-    Ok(config)
+    // Otherwise consider the configuration files in order. Lowest priority first:
+    //   - The built-in configuration `default_configuration_toml`
+    //   - `~/.config/topiary/languages.toml` (or equivalent)
+    //   - `.topiary/languages.toml`
+    //   - `config_file` as passed by `--configuration_file/-c/TOPIARY_CONFIGURATION_FILE`
+    [
+        Some(find_configuration_dir()),
+        find_workspace_configuration_dir(),
+        config_file,
+    ]
+    .into_iter()
+    .filter_map(|path| {
+        path.map(|p| match p.is_file() {
+            // The path already points to a file, assume the file is the configuration file
+            true => p,
+            // The path points to a directory, assume it is a topiary configuration directory and append "languages.toml"
+            false => p.join("languages.toml"),
+        })
+    })
+    .filter_map(|file| -> Option<Result<toml::Value, toml::de::Error>> {
+        std::fs::read_to_string(file)
+            .map(|config| toml::from_str(&config))
+            .ok()
+    })
+    .try_fold(default_configuration_toml(), |a, b| {
+        let b = b?;
+        Ok(merge_toml_values(a, b, 3))
+    })
 }
 
 /// Merge two TOML documents, merging values from `right` onto `left`
@@ -109,15 +136,13 @@ fn find_configuration_dir() -> PathBuf {
         .to_owned()
 }
 
-pub fn find_workspace() -> PathBuf {
+pub fn find_workspace_configuration_dir() -> Option<PathBuf> {
     let current_dir = current_dir().expect("Could not get current working directory");
     for ancestor in current_dir.ancestors() {
         if ancestor.join(".topiary").exists() {
-            return ancestor.to_owned();
+            return Some(ancestor.to_owned().join(".topiary"));
         }
     }
 
-    // Default to the current dir if we could not find an ancestor with the .topiary directory
-    // If current_dir does not contain a .topiary, it will be filtered our in the `user_lang_toml` function.
-    current_dir
+    None
 }
