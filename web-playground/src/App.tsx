@@ -33,34 +33,6 @@ function App() {
     const debouncedInput = useDebounce(input, debounceDelay);
     const debouncedQuery = useDebounce(query, debounceDelay);
 
-    const runFormat = useCallback((i: string, q: string, qChanged: boolean) => {
-        const outputFormat = async () => {
-            try {
-                const start = performance.now();
-
-                if (qChanged) {
-                    console.log(`Initialising ${currentLanguage} with ${q} because ${qChanged}`);
-                    setQueryChanged(false);
-                    await queryInit(q, currentLanguage);
-                }
-
-                console.log(`Formatting`);
-                setOutput(await format(i, idempotence, tolerateParsingErrors));
-                setProcessingTime(performance.now() - start);
-            } catch (e) {
-                setOutput(String(e));
-            }
-        }
-
-        if (!isInitialised) {
-            setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
-            return;
-        }
-
-        setOutput("Formatting ...");
-        outputFormat();
-    }, [currentLanguage, idempotence, tolerateParsingErrors, isInitialised]);
-
     // Init page (runs only once, but twice in strict mode in dev)
     useEffect(() => {
         const initWasm = async () => {
@@ -91,8 +63,43 @@ function App() {
     // Run on every (debounced) input change, as well as when isInitialised is set.
     useEffect(() => {
         if (!onTheFlyFormatting) return;
+
+        console.log(`On the fly formatting kicking in.`);
         runFormat(debouncedInput, debouncedQuery, queryChanged);
-    }, [isInitialised, debouncedInput, debouncedQuery, onTheFlyFormatting, runFormat])
+    }, [isInitialised, debouncedInput, debouncedQuery, queryChanged, onTheFlyFormatting])
+
+    function runFormat(i: string, q: string, qChanged: boolean) {
+        console.log(`runFormat`);
+
+        const outputFormat = async () => {
+            try {
+                const start = performance.now();
+
+                if (qChanged) {
+                    console.log(`Initialising ${currentLanguage} with ${q} because ${qChanged}`);
+                    let fut = queryInit(q, currentLanguage);
+                    console.log(`future: ${fut}`);
+                    let res = await fut;
+                    console.log(`queryInit result: ${res}`);
+                    setQueryChanged(false);
+                }
+
+                console.log(`Formatting`);
+                setOutput(await format(i, idempotence, tolerateParsingErrors));
+                setProcessingTime(performance.now() - start);
+            } catch (e) {
+                setOutput(String(e));
+            }
+        }
+
+        if (!isInitialised) {
+            setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
+            return;
+        }
+
+        setOutput("Formatting ...");
+        outputFormat();
+    }
 
     function changeLanguage(l: string) {
         if (languages[l]) {

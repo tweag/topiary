@@ -1,4 +1,6 @@
 #[cfg(target_arch = "wasm32")]
+use js_sys::Promise;
+#[cfg(target_arch = "wasm32")]
 use std::sync::Mutex;
 #[cfg(target_arch = "wasm32")]
 use topiary::{formatter, Configuration, FormatterResult, Language, Operation, TopiaryQuery};
@@ -6,6 +8,10 @@ use topiary::{formatter, Configuration, FormatterResult, Language, Operation, To
 use tree_sitter_facade::TreeSitter;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen_futures::future_to_promise;
+#[cfg(target_arch = "wasm32")]
+use web_sys::console;
 
 // #[cfg(target_arch = "wasm32")]
 // thread_local! {
@@ -38,12 +44,39 @@ pub async fn topiary_init() -> Result<(), JsError> {
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen(js_name = queryInit)]
-pub async fn query_init(query_content: &str, language_name: &str) -> Result<(), JsError> {
+pub async fn query_init(query_content: String, language_name: String) -> Promise {
+    let fut = async { query_init_wasm(query_content, language_name) };
+
+    future_to_promise(fut.await)
+}
+
+#[cfg(target_arch = "wasm32")]
+async fn query_init_wasm(query_content: String, language_name: String) -> Result<JsValue, JsValue> {
+    query_init_inner(query_content, language_name)
+        .await
+        .map(|_| JsValue::UNDEFINED)
+        .map_err(|e| e.into())
+}
+
+#[cfg(target_arch = "wasm32")]
+async fn query_init_inner(query_content: String, language_name: String) -> Result<(), JsError> {
+    use topiary::FormatterError;
+
+    console::log_3(
+        &"query_init:".into(),
+        &query_content.clone().into(),
+        &language_name.clone().into(),
+    );
+
     let language_normalized = language_name.replace('-', "_");
     let configuration = Configuration::parse_default_configuration()?;
+    console::log_1(&"config set.".into());
     let language = configuration.get_language(language_normalized)?.clone();
+    console::log_1(&"lang set.".into());
     let grammar = language.grammar_wasm().await?;
-    let query = TopiaryQuery::new(&grammar, query_content)?;
+    console::log_1(&"grammar set.".into());
+    let query = TopiaryQuery::new(&grammar, &query_content)?;
+    console::log_1(&"query set.".into());
 
     let mut guard = QUERY_STATE.lock().unwrap();
 
@@ -53,17 +86,7 @@ pub async fn query_init(query_content: &str, language_name: &str) -> Result<(), 
         query,
     });
 
-    // LANGUAGE.with(|l| {
-    //     *l.borrow_mut() = Some(language);
-    // });
-
-    // GRAMMAR.with(|g| {
-    //     *g.borrow_mut() = Some(grammar);
-    // });
-
-    // QUERY.with(|q| {
-    //     *q.borrow_mut() = Some(query);
-    // });
+    console::log_1(&"Query state updated".into());
 
     Ok(())
 }
