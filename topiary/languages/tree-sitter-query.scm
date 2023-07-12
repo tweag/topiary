@@ -51,7 +51,9 @@
 ; (predicate), even when there are none. Topiary will deal with the
 ; zero-byte nodes, so we just need to set the spacing correctly.
 (predicate
-  (parameters) @prepend_space
+  (parameters
+    _ @prepend_space
+  )
 )
 
 ; Line breaks and indentation in multi-line lists and nodes
