@@ -24,7 +24,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 cfg-if = { workspace = true }
-js-sys = "0.3.61"
 topiary = { path = "../topiary" }
 tree-sitter-facade = { workspace = true }
 wasm-bindgen = { workspace = true }

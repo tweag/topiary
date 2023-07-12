@@ -1294,7 +1294,6 @@ version = "0.2.3"
 dependencies = [
  "cfg-if",
  "itertools 0.11.0",
- "js-sys",
  "topiary",
  "tree-sitter-facade",
  "wasm-bindgen",
