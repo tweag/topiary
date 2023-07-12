@@ -50,7 +50,6 @@ function App() {
             await init(); // Does the WebAssembly.instantiate()
             await topiaryInit(); // Does the TreeSitter::init()
             setIsInitialised(true);
-            console.log("Initialised");
         }
 
         // Populate the language list
@@ -69,16 +68,12 @@ function App() {
     }, []);
 
     const runFormat = useCallback(() => {
-        console.log(`runFormat`);
-
         if (!isInitialised) {
-            console.log("Cannot format yet, as the formatter engine is being initialised.");
             setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
             return;
         }
 
         if (isQueryCompiling.current) {
-            console.log("Query is being compiled.");
             setOutput("Query is being compiled. Try again soon.");
             return;
         }
@@ -87,19 +82,14 @@ function App() {
             try {
                 if (queryChanged.current) {
                     isQueryCompiling.current = true;
-                    console.log(`Compiling query`);
                     setOutput("Compiling query ...");
-                    console.log(`Initialising ${currentLanguage} with ${query} because ${queryChanged.current}`);
                     let fut = queryInit(query, currentLanguage);
-                    console.log(`future: ${fut}`);
                     let res = await fut;
-                    console.log(`queryInit result: ${res}`);
                     queryChanged.current = false;
                     isQueryCompiling.current = false;
                 }
 
                 try {
-                    console.log(`Formatting`);
                     setOutput("Formatting ...");
                     setOutput(await format(input, idempotence, tolerateParsingErrors));
                     setProcessingTime(performance.now() - start);
@@ -107,7 +97,6 @@ function App() {
                     setOutput(String(e));
                 }
             } catch (e) {
-                console.error(`error when compiling query: ${e}`);
                 queryChanged.current = false;
                 isQueryCompiling.current = false;
                 setOutput(String(e));
@@ -130,16 +119,12 @@ function App() {
 
         // We don't want to run whenever a dependency changes, but only when either of these do:
         if (previousDebouncedInput.current !== debouncedInput || previousDebouncedQuery.current !== debouncedQuery || previousIsInitialised.current !== isInitialised) {
-            console.log(`On the fly formatting kicking in.`);
-
             if (!isInitialised) {
-                console.log("Cannot format yet, as the formatter engine is being initialised.");
                 setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
                 return;
             }
 
             if (isQueryCompiling.current) {
-                console.log("Query is being compiled.");
                 setOutput("Query is being compiled. Try again soon.");
                 return;
             }
