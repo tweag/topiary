@@ -54,6 +54,8 @@ rule token = parse
 
   | eof { EOF }
 
+  | ('=' '.' '=') as qute_smily { some_ocaml_code }
+
 and string buf = parse
   | '"'    { Buffer.contents buf }
   | _ as c { Buffer.add_char buf c; string buf lexbuf }

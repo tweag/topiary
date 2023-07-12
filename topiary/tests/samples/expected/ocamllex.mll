@@ -1,5 +1,7 @@
 (**************************************************************************)
-(*  Taken from https://github.com/colis-anr/morbig/                       *)
+(*  Taken from https://github.com/paris-branch/dancelor/                  *)
+(*  Licened under GPL-3.0-or-later                                        *)
+(*  Copyright belongs to the original authors                             *)
 (**************************************************************************)
 {
   open TextFormulaParser
@@ -28,17 +30,13 @@ rule token = parse
   | '(' { LPAR }
   | ')' { RPAR }
 
-  | ":" (identifierasid) {
+  | ":" (identifier as id) {
       match List.assoc_opt id keywords with
       | Some kw -> kw
       | _ -> NULLARY_PREDICATE id
     }
 
-  | '!' { NOT }
-  | "&&" { AND }
-  | "||" { OR }
-
-  | (identifierasid) ":" {
+  | (identifier as id) ":" {
       PREDICATE id
     }
 
@@ -47,18 +45,20 @@ rule token = parse
       LITERAL (string buf lexbuf)
     }
 
-  |
-  (identifieraslit) {
+  (* The following pattern must exclude all the special characters matched above. *)
+  | [^' ' '(' ')' ':' '"']+ as lit {
       LITERAL lit
     }
 
-  | _asc { raise (UnexpectedCharacter c) }
+  | _ as c { raise (UnexpectedCharacter c) }
 
   | eof { EOF }
 
+  | ('=' '.' '=') as qute_smily { some_ocaml_code }
+
 and stringbuf = parse
   | '"' { Buffer.contents buf }
-  | _asc { Buffer.add_char buf c; string buf lexbuf }
+  | _ as c { Buffer.add_char buf c; string buf lexbuf }
   | eof { raise UnterminatedQuote }
 
 and erin = parse "erin" { Erin }
