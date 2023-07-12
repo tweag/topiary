@@ -15,6 +15,8 @@ struct QueryState {
 }
 
 #[cfg(target_arch = "wasm32")]
+/// The query state is stored in a static variable, so the playground can reuse
+/// it across multiple runs as long as it doesn't change.
 static QUERY_STATE: Mutex<Option<QueryState>> = Mutex::new(None);
 
 #[cfg(target_arch = "wasm32")]
@@ -67,8 +69,6 @@ async fn format_inner(
     check_idempotence: bool,
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<String> {
-    use topiary::FormatterError;
-
     let mut output = Vec::new();
 
     let mut guard = QUERY_STATE.lock().unwrap();
@@ -89,7 +89,7 @@ async fn format_inner(
 
             Ok(String::from_utf8(output)?)
         }
-        None => Err(FormatterError::Internal(
+        None => Err(topiary::FormatterError::Internal(
             "The query has not been initialized.".into(),
             None,
         )),

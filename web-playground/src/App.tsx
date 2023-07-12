@@ -30,9 +30,9 @@ function App() {
     const [onTheFlyFormatting, setOnTheFlyFormatting] = useState(true);
     const [idempotence, setIdempotence] = useState(false);
     const [tolerateParsingErrors, setTolerateParsingErrors] = useState(false);
+    const [query, setQuery] = useState(defaultQuery);
     const [input, setInput] = useState(defaultInput);
     const [output, setOutput] = useState("");
-    const [query, setQuery] = useState(defaultQuery);
     const [processingTime, setProcessingTime] = useState(0);
 
     // We want to debounce the input and query changes so that we can run
@@ -119,7 +119,9 @@ function App() {
         }
 
         // We don't want to run whenever a dependency changes, but only when either of these do:
-        if (previousDebouncedInput.current !== debouncedInput || previousDebouncedQuery.current !== debouncedQuery || previousIsInitialised.current !== isInitialised) {
+        if (previousDebouncedInput.current !== debouncedInput ||
+            previousDebouncedQuery.current !== debouncedQuery ||
+            previousIsInitialised.current !== isInitialised) {
             if (!isInitialised) {
                 setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
                 return;
