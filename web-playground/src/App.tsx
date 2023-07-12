@@ -65,6 +65,56 @@ function App() {
             .catch(console.error);
     }, []);
 
+    const runFormat = useCallback((i: string, q: string) => {
+        console.log(`runFormat`);
+
+        if (!isInitialised) {
+            console.log("Cannot format yet, as the formatter engine is being initialised.");
+            setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
+            return;
+        }
+
+        if (isQueryCompiling.current) {
+            console.log("Query is being compiled.");
+            setOutput("Query is being compiled. Try again soon.");
+            return;
+        }
+
+        const outputFormat = async () => {
+            try {
+                if (queryChanged.current) {
+                    isQueryCompiling.current = true;
+                    console.log(`Compiling query`);
+                    setOutput("Compiling query ...");
+                    console.log(`Initialising ${currentLanguage} with ${q} because ${queryChanged.current}`);
+                    let fut = queryInit(q, currentLanguage);
+                    console.log(`future: ${fut}`);
+                    let res = await fut;
+                    console.log(`queryInit result: ${res}`);
+                    queryChanged.current = false;
+                    isQueryCompiling.current = false;
+                }
+
+                try {
+                    console.log(`Formatting`);
+                    setOutput("Formatting ...");
+                    setOutput(await format(i, idempotence, tolerateParsingErrors));
+                    setProcessingTime(performance.now() - start);
+                } catch (e) {
+                    setOutput(String(e));
+                }
+            } catch (e) {
+                console.error(`error when compiling query: ${e}`);
+                queryChanged.current = false;
+                isQueryCompiling.current = false;
+                setOutput(String(e));
+            }
+        }
+
+        const start = performance.now();
+        outputFormat();
+    }, [currentLanguage, idempotence, isInitialised, tolerateParsingErrors, query]);
+
     // Run on every (debounced) input change, as well as when isInitialised is set, and when the dirty flag changes.
     useEffect(() => {
         if (!onTheFlyFormatting) return;
@@ -86,58 +136,12 @@ function App() {
         // This is how to run async within useEffect.
         // https://devtrium.com/posts/async-functions-useeffect
         const run = async () => {
-            await runFormat();
+            await runFormat(input, query);
         }
 
         run()
             .catch(console.error);
-    }, [isInitialised, debouncedInput, debouncedQuery, onTheFlyFormatting])
-
-    async function runFormat() {
-        console.log(`runFormat`);
-
-        if (!isInitialised) {
-            console.log("Cannot format yet, as the formatter engine is being initialised.");
-            setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
-            return;
-        }
-
-        if (isQueryCompiling.current) {
-            console.log("Query is being compiled.");
-            setOutput("Query is being compiled. Try again soon.");
-            return;
-        }
-
-        const start = performance.now();
-
-        try {
-            if (queryChanged.current) {
-                isQueryCompiling.current = true;
-                setOutput("Compiling query ...");
-                console.log(`Initialising ${currentLanguage} with ${query} because ${queryChanged.current}`);
-                let fut = queryInit(query, currentLanguage);
-                console.log(`future: ${fut}`);
-                let res = await fut;
-                console.log(`queryInit result: ${res}`);
-                queryChanged.current = false;
-                isQueryCompiling.current = false;
-            }
-
-            try {
-                console.log(`Formatting`);
-                setOutput("Formatting ...");
-                setOutput(await format(input, idempotence, tolerateParsingErrors));
-                setProcessingTime(performance.now() - start);
-            } catch (e) {
-                setOutput(String(e));
-            }
-        } catch (e) {
-            console.error(`error when compiling query: ${e}`);
-            queryChanged.current = false;
-            isQueryCompiling.current = false;
-            setOutput(String(e));
-        }
-    }
+    }, [isInitialised, debouncedInput, debouncedQuery, onTheFlyFormatting, runFormat])
 
     function changeLanguage(l: string) {
         if (languages[l]) {
@@ -158,7 +162,7 @@ function App() {
     }
 
     function handleFormat() {
-        runFormat();
+        runFormat(input, query);
     };
 
     function handleOnTheFlyFormatting() {
