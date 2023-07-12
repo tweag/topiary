@@ -61,5 +61,5 @@ and string buf = parse
   | _ as c { Buffer.add_char buf c; string buf lexbuf }
   | eof    { raise UnterminatedQuote }
 
-and erin = parse "erin" { Erin }
+and ocaml = parse "ocaml" { OCaml }
 

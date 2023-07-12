@@ -166,7 +166,7 @@ pub enum SupportedLanguage {
     Nickel,
     Ocaml,
     OcamlInterface,
-    OcamlLex,
+    Ocamllex,
     Toml,
 }
 
@@ -192,7 +192,7 @@ impl SupportedLanguage {
             SupportedLanguage::Nickel => "nickel",
             SupportedLanguage::Ocaml => "ocaml",
             SupportedLanguage::OcamlInterface => "ocaml_interface",
-            SupportedLanguage::OcamlLex => "ocamllex",
+            SupportedLanguage::Ocamllex => "ocamllex",
             SupportedLanguage::Toml => "toml",
         }
     }
