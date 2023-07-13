@@ -10,6 +10,16 @@
       id |
         a -> a
     },
+    #571
+    {
+      b = {
+        kind = 'ReplicationController,
+      } | KubernetesConfig,
+      c = {
+        kind = 'ReplicationController,
+      }
+      | KubernetesConfig
+    },
 
 # Interpolated record operation chains (in
 # a multi-line comment)
