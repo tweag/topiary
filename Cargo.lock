@@ -1264,6 +1264,7 @@ dependencies = [
  "tree-sitter-json",
  "tree-sitter-nickel",
  "tree-sitter-ocaml",
+ "tree-sitter-ocamllex",
  "tree-sitter-query",
  "tree-sitter-rust",
  "tree-sitter-toml",
@@ -1355,6 +1356,16 @@ name = "tree-sitter-ocaml"
 version = "0.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f0615dd8d80e7f5fe49875aeae795726ca5dc37267f80f82a60dfa375657906b"
+dependencies = [
+ "cc",
+ "tree-sitter",
+]
+
+[[package]]
+name = "tree-sitter-ocamllex"
+version = "0.20.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e774222086fd065999b6605fb231fbfc386bf782aa7dbad52503ff00b429a62"
 dependencies = [
  "cc",
  "tree-sitter",
