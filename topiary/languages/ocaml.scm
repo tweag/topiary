@@ -1439,12 +1439,16 @@
 ; let three =
 ;   raise @@
 ;     Exception
-(infix_expression
-  operator: (concat_operator) @append_indent_start
-  right: (infix_expression
-    operator: (concat_operator)
-  )? @do_nothing
-) @append_indent_end
+(_
+  ; If our parent expression was also a concat_operator, do not indent (see above).
+  (concat_operator)? @do_nothing
+  (infix_expression
+    operator: (concat_operator) @append_indent_start
+    right: (infix_expression
+      operator: (concat_operator)
+    )? @do_nothing
+  ) @append_indent_end
+)
 
 ; Allow softlines in sequences and ppx sequences, such as
 ; let b =
