@@ -13,6 +13,24 @@
 (*                                                                        *)
 (**************************************************************************)
 
+(* Issue #541 *)
+
+let one =
+  foo
+  |> bar
+  >> baz
+  <|> quux
+
+let two =
+  foo @
+  bar @@
+  baz ^^
+  quux
+
+let three =
+  raise @@
+    Exception
+
 (* Issue 529 *)
 
 let id1 = if true then Fun.id else function x -> x
