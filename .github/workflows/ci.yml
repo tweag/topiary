@@ -59,9 +59,9 @@ jobs:
       - name: Start web playground frontend
         if: success() && matrix.os == 'ubuntu-latest'
         run: |
-          npm start --prefix web-playground &
+          npm run dev --prefix web-playground &
           # Loop until there's a response
-          while [[ "$(curl --silent --output /dev/null --write-out "%{http_code}" http://localhost:3000)" != "200" ]]; do
+          while [[ "$(curl --silent --output /dev/null --write-out "%{http_code}" http://localhost:5173/playground)" != "200" ]]; do
             sleep 2
           done
 
