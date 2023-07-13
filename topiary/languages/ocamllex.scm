@@ -5,7 +5,7 @@
 
 (
   (#scope_id! "action")
-  (action) @begin_scope @end_scope
+  (action) @prepend_begin_scope @append_end_scope
 )
 
 ; If the action spanned multiple lines, add newlines
@@ -43,7 +43,7 @@
   (_) @append_empty_scoped_softline
   .
   "]" @prepend_indent_end @prepend_antispace
-) @begin_scope @end_scope
+) @prepend_begin_scope @append_end_scope
 
 (aliased_regexp
   "as" @prepend_space @append_space
@@ -53,11 +53,11 @@
   (#scope_id! "parenthesized_regexp")
   "(" @append_empty_scoped_softline @append_indent_start
   ")" @prepend_empty_scoped_softline @prepend_indent_end
-) @begin_scope @end_scope @prepend_spaced_softline @append_spaced_softline
+) @prepend_begin_scope @append_end_scope @prepend_spaced_softline @append_spaced_softline
 
 (
   (#scope_id! "regexp_alternative")
-  (regexp_alternative) @begin_scope @end_scope
+  (regexp_alternative) @prepend_begin_scope @append_end_scope
 )
 
 (regexp_alternative
@@ -81,7 +81,7 @@
   (#scope_id! "lexer_entry")
   "=" @prepend_space @append_space
   ["parse" "shortest"] @append_spaced_scoped_softline @append_indent_start
-) @begin_scope @end_scope
+) @prepend_begin_scope @append_end_scope
 
 (lexer_entry
   (lexer_argument) @prepend_space @append_space

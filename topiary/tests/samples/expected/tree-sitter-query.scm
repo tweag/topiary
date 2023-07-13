@@ -741,11 +741,11 @@
 ; in
 ; bar
 (let_binding
-  "=" @begin_scope
+  "=" @prepend_begin_scope
   .
   (fun_expression
     "->" @append_spaced_scoped_softline
-  ) @end_scope
+  ) @append_end_scope
   (#scope_id! "fun_definition")
 )
 
@@ -765,15 +765,15 @@
 ; in
 ; bar
 (let_binding
-  "=" @begin_scope
+  "=" @prepend_begin_scope
   .
   (function_expression
     "function" @append_spaced_scoped_softline
-  ) @end_scope
+  ) @append_end_scope
   (#scope_id! "function_definition")
 )
 (parenthesized_expression
-  (function_expression) @begin_scope @end_scope
+  (function_expression) @prepend_begin_scope @append_end_scope
   (#scope_id! "function_definition")
 )
 (function_expression
@@ -908,9 +908,9 @@
     (field_declaration)
     (attribute)
     (comment)
-  ]? @end_scope
+  ]? @append_end_scope
   .
-  (field_declaration) @begin_scope
+  (field_declaration) @prepend_begin_scope
 )
 (record_declaration
   (#scope_id! "field_declaration")
@@ -918,7 +918,7 @@
     (field_declaration)
     (attribute)
     (comment)
-  ] @end_scope
+  ] @append_end_scope
   .
   "}"
 )
@@ -950,9 +950,9 @@
     (field_expression)
     (attribute)
     (comment)
-  ]? @end_scope
+  ]? @append_end_scope
   .
-  (field_expression) @begin_scope
+  (field_expression) @prepend_begin_scope
 )
 (record_expression
   (#scope_id! "field_expression")
@@ -960,7 +960,7 @@
     (field_expression)
     (attribute)
     (comment)
-  ] @end_scope
+  ] @append_end_scope
   .
   "}"
 )
@@ -1215,8 +1215,8 @@
 )
 (let_binding
   .
-  (_) @begin_scope
-  "=" @end_scope
+  (_) @prepend_begin_scope
+  "=" @append_end_scope
   (#scope_id! "let_binding_before_equal")
 )
 (let_binding
@@ -1245,8 +1245,8 @@
 )
 (fun_expression
   .
-  "fun" @begin_scope
-  "->" @end_scope
+  "fun" @prepend_begin_scope
+  "->" @append_end_scope
   (#scope_id! "fun_expr_before_arrow")
 )
 (fun_expression
@@ -1287,7 +1287,7 @@
 ; We only want to define a scope around the outermost `product_expression`,
 ; which is the one that *isn't* followed by a comma.
 (
-  (product_expression) @begin_scope @end_scope
+  (product_expression) @prepend_begin_scope @append_end_scope
   .
   ","? @do_nothing
   (#scope_id! "tuple")
@@ -1321,7 +1321,7 @@
 (
   "->"? @do_nothing
   .
-  (function_type) @begin_scope @end_scope
+  (function_type) @prepend_begin_scope @append_end_scope
   (#scope_id! "function_type")
 )
 (function_type
@@ -1346,7 +1346,7 @@
     ]
   )? @do_nothing
   .
-  (infix_expression) @begin_scope @end_scope
+  (infix_expression) @prepend_begin_scope @append_end_scope
   (#scope_id! "infix_expression")
 )
 (infix_expression
@@ -1376,7 +1376,7 @@
     ";"
     .
     "%"? @do_nothing
-  ) @begin_scope @end_scope
+  ) @prepend_begin_scope @append_end_scope
   (#scope_id! "sequence_expression")
 )
 (sequence_expression
@@ -1398,7 +1398,7 @@
     ";"
     .
     "%"
-  ) @begin_scope @end_scope
+  ) @prepend_begin_scope @append_end_scope
   (#scope_id! "ppx_sequence_expression")
 )
 (sequence_expression
@@ -1455,17 +1455,17 @@
 ;   let foo = x
 ; end
 (module_binding
-  (module_name) @append_indent_start @begin_scope
-  "=" @prepend_empty_scoped_softline @prepend_indent_end @end_scope
+  (module_name) @append_indent_start @prepend_begin_scope
+  "=" @prepend_empty_scoped_softline @prepend_indent_end @append_end_scope
   (#scope_id! "module_binding_before_equal")
 )
 ; if a module binding has no equal sign and isn't just a signature, everything enters the scope
 (module_binding
   (#scope_id! "module_binding_before_equal")
-  (module_name) @append_indent_start @begin_scope
+  (module_name) @append_indent_start @prepend_begin_scope
   "="? @do_nothing
   (signature)? @do_nothing
-) @append_indent_end @end_scope
+) @append_indent_end @append_end_scope
 (module_binding
   (module_name) @append_empty_scoped_softline
   (module_parameter) @prepend_spaced_scoped_softline
