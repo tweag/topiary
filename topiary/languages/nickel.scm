@@ -274,7 +274,7 @@
 ; id | a -> a
 (
   (#scope_id! "annotations")
-  (_) @prepend_begin_scope
+  (_) @append_begin_scope
   .
   (annot) @append_end_scope
 )
