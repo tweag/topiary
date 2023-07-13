@@ -1,4 +1,3 @@
-import { FrameWaitForFunctionOptions, Page } from "puppeteer";
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -41,7 +40,7 @@ describe('test all grammars with puppeteer', () => {
         // Forward the console log from the browser
         page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
-        await page.goto('http://localhost:3000/playground');
+        await page.goto('http://localhost:5173/playground');
 
         // Test without on-the-fly formatting, because the debounce makes things
         // less explicit and predictable.
