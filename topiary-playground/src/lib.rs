@@ -1,9 +1,23 @@
 #[cfg(target_arch = "wasm32")]
-use topiary::{formatter, Configuration, FormatterResult, Operation, TopiaryQuery};
+use std::sync::Mutex;
+#[cfg(target_arch = "wasm32")]
+use topiary::{formatter, Configuration, FormatterResult, Language, Operation, TopiaryQuery};
 #[cfg(target_arch = "wasm32")]
 use tree_sitter_facade::TreeSitter;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
+
+#[cfg(target_arch = "wasm32")]
+struct QueryState {
+    language: Language,
+    grammar: tree_sitter_facade::Language,
+    query: TopiaryQuery,
+}
+
+#[cfg(target_arch = "wasm32")]
+/// The query state is stored in a static variable, so the playground can reuse
+/// it across multiple runs as long as it doesn't change.
+static QUERY_STATE: Mutex<Option<QueryState>> = Mutex::new(None);
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen(js_name = topiaryInit)]
@@ -18,54 +32,68 @@ pub async fn topiary_init() -> Result<(), JsError> {
 }
 
 #[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = queryInit)]
+pub async fn query_init(query_content: String, language_name: String) -> Result<(), JsError> {
+    let language_normalized = language_name.replace('-', "_");
+    let configuration = Configuration::parse_default_configuration()?;
+    let language = configuration.get_language(language_normalized)?.clone();
+    let grammar = language.grammar_wasm().await?;
+    let query = TopiaryQuery::new(&grammar, &query_content)?;
+
+    let mut guard = QUERY_STATE.lock().unwrap();
+
+    *guard = Some(QueryState {
+        language,
+        grammar,
+        query,
+    });
+
+    Ok(())
+}
+
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub async fn format(
     input: &str,
-    query: &str,
-    language: &str,
     check_idempotence: bool,
     tolerate_parsing_errors: bool,
 ) -> Result<String, JsError> {
-    let language_normalized = language.replace('-', "_");
-    format_inner(
-        input,
-        query,
-        language_normalized.as_str(),
-        check_idempotence,
-        tolerate_parsing_errors,
-    )
-    .await
-    .map_err(|e| format_error(&e))
+    format_inner(input, check_idempotence, tolerate_parsing_errors)
+        .await
+        .map_err(|e| format_error(&e))
 }
 
 #[cfg(target_arch = "wasm32")]
 async fn format_inner(
     input: &str,
-    query_content: &str,
-    language_name: &str,
     check_idempotence: bool,
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<String> {
     let mut output = Vec::new();
 
-    let configuration = Configuration::parse_default_configuration()?;
-    let language = configuration.get_language(language_name)?;
-    let grammar = language.grammar_wasm().await?;
-    let query = TopiaryQuery::new(&grammar, query_content)?;
+    let mut guard = QUERY_STATE.lock().unwrap();
 
-    formatter(
-        &mut input.as_bytes(),
-        &mut output,
-        &query,
-        language,
-        &grammar,
-        Operation::Format {
-            skip_idempotence: !check_idempotence,
-            tolerate_parsing_errors,
-        },
-    )?;
+    match &mut *guard {
+        Some(query_state) => {
+            formatter(
+                &mut input.as_bytes(),
+                &mut output,
+                &query_state.query,
+                &query_state.language,
+                &query_state.grammar,
+                Operation::Format {
+                    skip_idempotence: !check_idempotence,
+                    tolerate_parsing_errors,
+                },
+            )?;
 
-    Ok(String::from_utf8(output)?)
+            Ok(String::from_utf8(output)?)
+        }
+        None => Err(topiary::FormatterError::Internal(
+            "The query has not been initialized.".into(),
+            None,
+        )),
+    }
 }
 
 #[cfg(target_arch = "wasm32")]

@@ -4,6 +4,7 @@ import useDebounce from "./hooks/useDebounce";
 import languages from './samples/languages_export';
 import init, {
     topiaryInit,
+    queryInit,
     format,
 } from "./wasm-app/topiary_playground.js";
 import "./App.css";
@@ -11,11 +12,19 @@ import "./App.css";
 const debounceDelay = 500;
 
 function App() {
-    const [isInitialised, setIsInitialised] = useState(false);
-    const initCalled = useRef(false);
     const defaultLanguage = "json";
     const defaultQuery = languages[defaultLanguage].query;
     const defaultInput = languages[defaultLanguage].input;
+
+    // These don't have to be useState, as they don't need to trigger UI changes.
+    const initCalled = useRef(false);
+    const isQueryCompiling = useRef(false);
+    const queryChanged = useRef(true);
+    const previousDebouncedInput = useRef("");
+    const previousDebouncedQuery = useRef("");
+    const previousIsInitialised = useRef(false);
+
+    const [isInitialised, setIsInitialised] = useState(false);
     const [languageOptions, setLanguageOptions] = useState([] as ReactElement[]);
     const [currentLanguage, setCurrentLanguage] = useState(defaultLanguage);
     const [onTheFlyFormatting, setOnTheFlyFormatting] = useState(true);
@@ -31,26 +40,6 @@ function App() {
     const debouncedInput = useDebounce(input, debounceDelay);
     const debouncedQuery = useDebounce(query, debounceDelay);
 
-    const runFormat = useCallback((i: string, q: string) => {
-        const outputFormat = async () => {
-            try {
-                const start = performance.now();
-                setOutput(await format(i, q, currentLanguage, idempotence, tolerateParsingErrors));
-                setProcessingTime(performance.now() - start);
-            } catch (e) {
-                setOutput(String(e));
-            }
-        }
-
-        if (!isInitialised) {
-            setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
-            return;
-        }
-
-        setOutput("Formatting ...");
-        outputFormat();
-    }, [currentLanguage, idempotence, tolerateParsingErrors, isInitialised]);
-
     // Init page (runs only once, but twice in strict mode in dev)
     useEffect(() => {
         const initWasm = async () => {
@@ -58,8 +47,8 @@ function App() {
             if (initCalled.current) return;
             initCalled.current = true;
 
-            await init();
-            await topiaryInit();
+            await init(); // Does the WebAssembly.instantiate()
+            await topiaryInit(); // Does the TreeSitter::init()
             setIsInitialised(true);
         }
 
@@ -78,10 +67,78 @@ function App() {
             .catch(console.error);
     }, []);
 
+    // EsLint react-hooks/exhaustive-deps:
+    // A 'runFormat' function would make the dependencies of the useEffect Hook
+    // below change on every render. To fix this, we wrap the definition of
+    // 'runFormat' in its own useCallback() Hook.
+    const runFormat = useCallback(() => {
+        if (!isInitialised) {
+            setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
+            return;
+        }
+
+        if (isQueryCompiling.current) {
+            setOutput("Query is being compiled. Try again soon.");
+            return;
+        }
+
+        // This is how to run async within useEffect and useCallback.
+        // https://devtrium.com/posts/async-functions-useeffect
+        const outputFormat = async () => {
+            try {
+                if (queryChanged.current) {
+                    isQueryCompiling.current = true;
+                    setOutput("Compiling query ...");
+                    await queryInit(query, currentLanguage);
+                    queryChanged.current = false;
+                    isQueryCompiling.current = false;
+                }
+
+                setOutput("Formatting ...");
+                setOutput(await format(input, idempotence, tolerateParsingErrors));
+                setProcessingTime(performance.now() - start);
+            } catch (e) {
+                queryChanged.current = false;
+                isQueryCompiling.current = false;
+                setOutput(String(e));
+            }
+        }
+
+        const start = performance.now();
+        outputFormat();
+    }, [currentLanguage, idempotence, isInitialised, tolerateParsingErrors, input, query]);
+
     // Run on every (debounced) input change, as well as when isInitialised is set.
     useEffect(() => {
         if (!onTheFlyFormatting) return;
-        runFormat(debouncedInput, debouncedQuery);
+
+        // This is how to run async within useEffect and useCallback.
+        // https://devtrium.com/posts/async-functions-useeffect
+        const run = async () => {
+            await runFormat();
+        }
+
+        // We don't want to run whenever a dependency changes, but only when either of these do:
+        if (previousDebouncedInput.current !== debouncedInput ||
+            previousDebouncedQuery.current !== debouncedQuery ||
+            previousIsInitialised.current !== isInitialised) {
+            if (!isInitialised) {
+                setOutput("Cannot format yet, as the formatter engine is being initialised. Try again soon.");
+                return;
+            }
+
+            if (isQueryCompiling.current) {
+                setOutput("Query is being compiled. Try again soon.");
+                return;
+            }
+
+            run()
+                .catch(console.error);
+        }
+
+        previousDebouncedInput.current = debouncedInput;
+        previousDebouncedQuery.current = debouncedQuery;
+        previousIsInitialised.current = isInitialised;
     }, [isInitialised, debouncedInput, debouncedQuery, onTheFlyFormatting, runFormat])
 
     function changeLanguage(l: string) {
@@ -95,6 +152,7 @@ function App() {
             if (!hasModification || window.confirm(confirmationMessage)) {
                 setInput(languages[l].input);
                 setQuery(languages[l].query);
+                queryChanged.current = true;
                 setOutput("");
                 setCurrentLanguage(l);
             }
@@ -102,7 +160,7 @@ function App() {
     }
 
     function handleFormat() {
-        runFormat(input, query);
+        runFormat();
     };
 
     function handleOnTheFlyFormatting() {
@@ -152,7 +210,7 @@ function App() {
             <div className="columns">
                 <div className="column">
                     <h1>Query</h1>
-                    <Editor id="query" value={query} onChange={s => setQuery(s)} placeholder="Enter your query here ..." />
+                    <Editor id="query" value={query} onChange={s => { setQuery(s); queryChanged.current = true; }} placeholder="Enter your query here ..." />
                 </div>
                 <div className="column">
                     <h1>Input</h1>
