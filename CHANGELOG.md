@@ -52,6 +52,7 @@ This name should be decided amongst the team before the release.
 ### Changed
 * [#535](https://github.com/tweag/topiary/pull/535) Improved error message when idempotency fails due to invalid output in the first pass.
 * [#533](https://github.com/tweag/topiary/pull/533) Update tree-sitter-ocaml to 0.20.3
+* [#576](https://github.com/tweag/topiary/pull/576) Allows prepending/appending `@begin_scope` and `@end_scope`
 
 ## v0.2.3 - Cyclic Cypress - 2023-06-20
 

@@ -34,6 +34,12 @@ mod tree_sitter;
 #[doc(hidden)]
 pub mod test_utils;
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ScopeInformation {
+    line_number: u32,
+    scope_id: String,
+}
+
 /// An atom represents a small piece of the output. We turn Tree-sitter nodes
 /// into atoms, and we add white-space atoms where appropriate. The final list
 /// of atoms is rendered to the output.
@@ -82,13 +88,19 @@ pub enum Atom {
     // it might happen that it contains several leaves.
     DeleteBegin,
     DeleteEnd,
+    /// Indicates the beginning of a scope, use in combination with the
+    /// ScopedSoftlines and ScopedConditionals below.
+    ScopeBegin(ScopeInformation),
+    /// Indicates the end of a scope, use in combination with the
+    /// ScopedSoftlines and ScopedConditionals below.
+    ScopeEnd(ScopeInformation),
     /// Scoped commands
-    // ScopedSoftline works together with the @begin_scope and @end_scope query tags.
-    // To decide if a scoped softline must be expanded into a hardline, we look at
-    // the innermost scope having the corresponding `scope_id`, that encompasses it.
-    // We expand the softline if that scope is multi-line.
-    // The `id` value is here for technical reasons, it allows tracking of the atom
-    // during post-processing.
+    // ScopedSoftline works together with the @{prepend,append}_begin_scope and
+    // @{prepend,append}_end_scope query tags. To decide if a scoped softline
+    // must be expanded into a hardline, we look at the innermost scope having
+    // the corresponding `scope_id`, that encompasses it. We expand the softline
+    // if that scope is multi-line. The `id` value is here for technical
+    // reasons, it allows tracking of the atom during post-processing.
     ScopedSoftline {
         id: usize,
         scope_id: String,

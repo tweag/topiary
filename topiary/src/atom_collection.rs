@@ -7,7 +7,7 @@ use std::{
 
 use tree_sitter_facade::Node;
 
-use crate::{Atom, FormatterError, FormatterResult, ScopeCondition};
+use crate::{Atom, FormatterError, FormatterResult, ScopeCondition, ScopeInformation};
 
 /// A struct that holds sets of node IDs that have line breaks before or after them.
 ///
@@ -56,12 +56,6 @@ pub struct AtomCollection {
     /// During initial Atom collection, any node that has a linebreak directly
     /// after it is added to this HashSet.
     line_break_after: HashSet<usize>,
-    /// The semantics of the types of scope_begin and scope_end is
-    /// HashMap<leaf_node_id, (line_number, Vec<scope_id>)>
-    /// The line number is passed here because otherwise the information
-    /// is lost at post-processing time.
-    scope_begin: HashMap<usize, (u32, Vec<String>)>,
-    scope_end: HashMap<usize, (u32, Vec<String>)>,
     /// Used to generate unique IDs
     counter: usize,
 }
@@ -82,8 +76,6 @@ impl AtomCollection {
             blank_lines_before: HashSet::new(),
             line_break_before: HashSet::new(),
             line_break_after: HashSet::new(),
-            scope_begin: HashMap::new(),
-            scope_end: HashMap::new(),
             counter: 0,
         }
     }
@@ -112,8 +104,6 @@ impl AtomCollection {
             blank_lines_before: blank_line_nodes.before,
             line_break_before: line_break_nodes.before,
             line_break_after: line_break_nodes.after,
-            scope_begin: HashMap::new(),
-            scope_end: HashMap::new(),
             counter: 0,
         };
 
@@ -180,6 +170,21 @@ impl AtomCollection {
         let requires_scope_id = || {
             predicates.scope_id.as_deref().ok_or_else(|| {
                 FormatterError::Query(format!("@{name} requires a #scope_id! predicate"), None)
+            })
+        };
+
+        // For the {prepend/append}_scope_{begin/end} captures we need this information,
+        // instead of creating it for both branches, create them once here.
+        let scope_information_prepend = || -> FormatterResult<ScopeInformation> {
+            Ok(ScopeInformation {
+                line_number: node.start_position().row(),
+                scope_id: requires_scope_id()?.to_owned(),
+            })
+        };
+        let scope_information_append = || -> FormatterResult<ScopeInformation> {
+            Ok(ScopeInformation {
+                line_number: node.end_position().row(),
+                scope_id: requires_scope_id()?.to_owned(),
             })
         };
 
@@ -269,8 +274,34 @@ impl AtomCollection {
                 self.append(Atom::DeleteEnd, node, predicates);
             }
             // Scope manipulation
-            "begin_scope" => self.begin_scope_before(node, requires_scope_id()?),
-            "end_scope" => self.end_scope_after(node, requires_scope_id()?),
+            "prepend_begin_scope" => {
+                self.prepend(
+                    Atom::ScopeBegin(scope_information_prepend()?),
+                    node,
+                    predicates,
+                );
+            }
+            "append_begin_scope" => {
+                self.append(
+                    Atom::ScopeBegin(scope_information_append()?),
+                    node,
+                    predicates,
+                );
+            }
+            "prepend_end_scope" => {
+                self.prepend(
+                    Atom::ScopeEnd(scope_information_prepend()?),
+                    node,
+                    predicates,
+                );
+            }
+            "append_end_scope" => {
+                self.append(
+                    Atom::ScopeEnd(scope_information_append()?),
+                    node,
+                    predicates,
+                );
+            }
             // Scoped softlines
             "append_empty_scoped_softline" => {
                 let id = self.next_id();
@@ -502,50 +533,6 @@ impl AtomCollection {
         self.append.entry(target_node.id()).or_default().push(atom);
     }
 
-    /// Begins a scope with the given `scope_id` before the first leaf node of the given `Node`'s subtree.
-    ///
-    /// # Arguments
-    ///
-    /// * `node` - A reference to a `Node` object that represents a subtree in the syntax tree.
-    /// * `scope_id` - A reference to a string that identifies the scope to begin.
-    fn begin_scope_before(&mut self, node: &Node, scope_id: &str) {
-        let target_node = self.first_leaf(node);
-
-        log::debug!("Begin scope {scope_id:?} before node {:?}", target_node,);
-
-        self.scope_begin
-            .entry(target_node.id())
-            .and_modify(|(_, scope_ids)| scope_ids.push(String::from(scope_id)))
-            .or_insert_with(|| {
-                (
-                    target_node.start_position().row(),
-                    vec![String::from(scope_id)],
-                )
-            });
-    }
-
-    /// Ends a scope with the given `scope_id` after the last leaf node of the given `Node`'s subtree.
-    ///
-    /// # Arguments
-    ///
-    /// * `node` - A reference to a `Node` object that represents a subtree in the syntax tree.
-    /// * `scope_id` - A reference to a string that identifies the scope to end.
-    fn end_scope_after(&mut self, node: &Node, scope_id: &str) {
-        let target_node = self.last_leaf(node);
-
-        log::debug!("End scope {scope_id:?} after node {:?}", target_node,);
-
-        self.scope_end
-            .entry(target_node.id())
-            .and_modify(|(_, scope_ids)| scope_ids.push(String::from(scope_id)))
-            .or_insert_with(|| {
-                (
-                    target_node.end_position().row(),
-                    vec![String::from(scope_id)],
-                )
-            });
-    }
-
     /// Expands a softline atom to a hardline, space or empty atom depending on
     /// if we are in a multiline context or not.
     ///
@@ -625,56 +612,53 @@ impl AtomCollection {
         let mut force_apply_modifications = false;
 
         for atom in &self.atoms {
-            if let Atom::Leaf { id, .. } = atom {
-                // Begin a new scope
-                if let Some((line_start, scope_ids)) = self.scope_begin.get(id) {
-                    for scope_id in scope_ids {
-                        opened_scopes
-                            .entry(scope_id)
-                            .or_insert_with(Vec::new)
-                            .push((*line_start, Vec::new()));
-                    }
-                }
-                // End a scope, and register the ScopedSoftline transformations
-                // in `modifications`
-                if let Some((line_end, scope_ids)) = self.scope_end.get(id) {
-                    for scope_id in scope_ids {
-                        if let Some((line_start, atoms)) =
-                            opened_scopes.get_mut(scope_id).and_then(Vec::pop)
+            if let Atom::ScopeBegin(ScopeInformation {
+                line_number: line_start,
+                scope_id,
+            }) = atom
+            {
+                opened_scopes
+                    .entry(scope_id)
+                    .or_insert_with(Vec::new)
+                    .push((*line_start, Vec::new()));
+            } else if let Atom::ScopeEnd(ScopeInformation {
+                line_number: line_end,
+                scope_id,
+            }) = atom
+            {
+                if let Some((line_start, atoms)) =
+                    opened_scopes.get_mut(scope_id).and_then(Vec::pop)
+                {
+                    let multiline = line_start != *line_end;
+                    for atom in atoms {
+                        if let Atom::ScopedSoftline { id, spaced, .. } = atom {
+                            let new_atom = if multiline {
+                                Atom::Hardline
+                            } else if *spaced {
+                                Atom::Space
+                            } else {
+                                Atom::Empty
+                            };
+                            modifications.insert(*id, new_atom);
+                        } else if let Atom::ScopedConditional {
+                            id,
+                            atom,
+                            condition,
+                            ..
+                        } = atom
                         {
-                            let multiline = line_start != *line_end;
-                            for atom in atoms {
-                                if let Atom::ScopedSoftline { id, spaced, .. } = atom {
-                                    let new_atom = if multiline {
-                                        Atom::Hardline
-                                    } else if *spaced {
-                                        Atom::Space
-                                    } else {
-                                        Atom::Empty
-                                    };
-                                    modifications.insert(*id, new_atom);
-                                } else if let Atom::ScopedConditional {
-                                    id,
-                                    atom,
-                                    condition,
-                                    ..
-                                } = atom
-                                {
-                                    let multiline_only =
-                                        *condition == ScopeCondition::MultiLineOnly;
-                                    let new_atom = if multiline == multiline_only {
-                                        atom.deref().clone()
-                                    } else {
-                                        Atom::Empty
-                                    };
-                                    modifications.insert(*id, new_atom);
-                                }
-                            }
-                        } else {
-                            log::warn!("Closing unopened scope {scope_id:?}");
-                            force_apply_modifications = true;
+                            let multiline_only = *condition == ScopeCondition::MultiLineOnly;
+                            let new_atom = if multiline == multiline_only {
+                                atom.deref().clone()
+                            } else {
+                                Atom::Empty
+                            };
+                            modifications.insert(*id, new_atom);
                         }
                     }
+                } else {
+                    log::warn!("Closing unopened scope {scope_id:?}");
+                    force_apply_modifications = true;
                 }
             // Register the ScopedSoftline in the correct scope
             } else if let Atom::ScopedSoftline { scope_id, .. } = atom {
@@ -703,6 +687,16 @@ impl AtomCollection {
         if !still_opened.is_empty() {
             log::warn!("Some scopes have been left opened: {:?}", still_opened);
             force_apply_modifications = true;
+        }
+
+        // Remove scopes from the atom list
+        for atom in &mut self.atoms {
+            match atom {
+                Atom::ScopeBegin(_) | Atom::ScopeEnd(_) => {
+                    *atom = Atom::Empty;
+                }
+                _ => {}
+            }
         }
 
         // Apply modifications.

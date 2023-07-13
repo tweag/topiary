@@ -833,18 +833,17 @@ top-level node `product_expression (0, 1) - (1, 1)` is multi-line.
 
 To solve this issue, we introduce user-defined scopes and softlines.
 
-#### `@begin_scope` / `@end_scope`
+#### `@prepend_begin_scope` / `@append_begin_scope` / `@prepend_end_scope` / `@append_end_scope`
 
-`@begin_scope` and `@end_scope` tags are used to define custom scopes.
-In conjunction with the `#scope_id!` predicate, they define scopes that
-can span multiple CST nodes, or only part of one. For instance, this
-scope matches anything between parenthesis in a
+These tags are used to define custom scopes. In conjunction with the `#scope_id!
+` predicate, they define scopes that can span multiple CST nodes, or only part
+of one. For instance, this scope matches anything between parenthesis in a
 `parenthesized_expression`:
 
 ```scheme
 (parenthesized_expression
-  "(" @begin_scope
-  ")" @end_scope
+  "(" @append_begin_scope
+  ")" @prepend_end_scope
   (#scope_id! "tuple")
 )
 ```

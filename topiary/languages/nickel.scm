@@ -122,8 +122,8 @@
   [
     (infix_expr)
     (annotated_infix_expr)
-  ] @begin_scope
-) @end_scope
+  ] @prepend_begin_scope
+) @append_end_scope
 
 (infix_expr
   (#scope_id! "infix_chain")
@@ -169,9 +169,9 @@
 
 (_
   (#scope_id! "bound_rhs")
-  "=" @begin_scope
+  "=" @prepend_begin_scope
   .
-  (term) @end_scope
+  (term) @append_end_scope
 )
 
 (_
@@ -237,9 +237,9 @@
 (let_expr
   (#scope_id! "let_result")
   (let_in_block
-    "in" @begin_scope @prepend_spaced_softline
+    "in" @prepend_begin_scope @prepend_spaced_softline
   )
-  (term) @end_scope
+  (term) @append_end_scope
 )
 
 (let_expr
@@ -253,9 +253,9 @@
 ; coexist, so create a scope that covers them both.
 (
   (#scope_id! "annotated_assignment")
-  (annot) @begin_scope
+  (annot) @prepend_begin_scope
   .
-  "=" @end_scope
+  "=" @append_end_scope
 )
 
 ; Start an indentation block from the start of the annotations to the
@@ -274,9 +274,9 @@
 ; id | a -> a
 (
   (#scope_id! "annotations")
-  (_) @begin_scope
+  (_) @prepend_begin_scope
   .
-  (annot) @end_scope
+  (annot) @append_end_scope
 )
 
 ; Put each annotation -- and the equals sign, if it follows annotations
@@ -303,8 +303,8 @@
 ; This also defines an indentation block.
 (fun_expr
   (#scope_id! "function_definition")
-  "=>" @begin_scope @append_indent_start
-) @append_indent_end @end_scope
+  "=>" @prepend_begin_scope @append_indent_start
+) @append_indent_end @append_end_scope
 
 (fun_expr
   (#scope_id! "function_definition")
@@ -319,8 +319,8 @@
 ; like the operands to start on their own line, each indented.
 (infix_expr
   (#scope_id! "applicative_chain")
-  (applicative) @begin_scope
-) @end_scope
+  (applicative) @prepend_begin_scope
+) @append_end_scope
 
 (
   (#scope_id! "applicative_chain")
@@ -387,9 +387,9 @@
 (_
   (#scope_id! "container")
   .
-  "{" @append_spaced_softline @append_indent_start @begin_scope
+  "{" @append_spaced_softline @append_indent_start @prepend_begin_scope
   (_)
-  "}" @prepend_indent_end @prepend_spaced_softline @end_scope
+  "}" @prepend_indent_end @prepend_spaced_softline @append_end_scope
   .
 )
 
@@ -399,9 +399,9 @@
 (_
   (#scope_id! "container")
   .
-  "[" @append_empty_softline @append_indent_start @begin_scope
+  "[" @append_empty_softline @append_indent_start @prepend_begin_scope
   (_)
-  "]" @prepend_indent_end @prepend_empty_softline @end_scope
+  "]" @prepend_indent_end @prepend_empty_softline @append_end_scope
   .
 )
 
@@ -410,8 +410,8 @@
 (_
   (#scope_id! "container")
   .
-  "[|" @append_spaced_softline @append_indent_start @begin_scope
-  "|]" @prepend_indent_end @prepend_spaced_softline @end_scope
+  "[|" @append_spaced_softline @append_indent_start @prepend_begin_scope
+  "|]" @prepend_indent_end @prepend_spaced_softline @append_end_scope
   .
 )
 
