@@ -70,8 +70,7 @@ impl Language {
             "tree_sitter_query" => "tree-sitter-query",
 
             name => return Err(TopiaryConfigError::UnknownLanguage(name.to_string())),
-        })
-        .with_extension("scm");
+        });
 
         #[rustfmt::skip]
         let potentials: [Option<PathBuf>; 4] = [
@@ -84,7 +83,7 @@ impl Language {
         potentials
             .into_iter()
             .flatten()
-            .map(|path| path.join(&basename))
+            .map(|path| path.join(format!("{basename}/formatting.scm")))
             .find(|path| path.exists())
             .ok_or_else(|| TopiaryConfigError::QueryFileNotFound(basename))
     }
