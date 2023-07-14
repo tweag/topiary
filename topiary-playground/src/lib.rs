@@ -79,10 +79,10 @@ mod wasm_mod {
                     &mut input.as_bytes(),
                     &mut output,
                     &query_state.language,
-                    Operation::Format {
+                    Operation::Format(FormatConfiguration {
                         skip_idempotence: !check_idempotence,
                         tolerate_parsing_errors,
-                    },
+                    }),
                 )?;
 
                 Ok(String::from_utf8(output)?)

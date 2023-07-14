@@ -2,7 +2,7 @@ use criterion::async_executor::FuturesExecutor;
 use criterion::{criterion_group, criterion_main, Criterion};
 use std::fs;
 use std::io;
-use topiary_core::{formatter, Language, Operation, TopiaryQuery};
+use topiary_core::{formatter, FormatConfiguration, Language, Operation, TopiaryQuery};
 
 async fn format() {
     let input = fs::read_to_string("../topiary-cli/tests/samples/input/ocaml.ml").unwrap();
@@ -24,10 +24,10 @@ async fn format() {
         &mut input,
         &mut output,
         &language,
-        Operation::Format {
+        Operation::Format(FormatConfiguration {
             skip_idempotence: true,
             tolerate_parsing_errors: false,
-        },
+        }),
     )
     .unwrap();
 }

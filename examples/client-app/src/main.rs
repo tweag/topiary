@@ -35,10 +35,10 @@ async fn main() {
         &mut input,
         &mut output,
         &language,
-        Operation::Format {
+        Operation::Format(FormatConfiguration {
             skip_idempotence: false,
             tolerate_parsing_errors: false,
-        },
+        }),
     )
     .unwrap();
 

@@ -10,7 +10,7 @@ use std::{
     process::ExitCode,
 };
 
-use topiary_core::{formatter, Operation};
+use topiary_core::{formatter, FormatConfiguration, Operation};
 
 use crate::{
     cli::Commands,
@@ -67,10 +67,10 @@ async fn run() -> CLIResult<()> {
                                     &mut buf_input,
                                     &mut buf_output,
                                     &language,
-                                    Operation::Format {
+                                    Operation::Format(FormatConfiguration {
                                         skip_idempotence,
                                         tolerate_parsing_errors,
-                                    },
+                                    }),
                                 )?;
 
                                 buf_output.into_inner()?.persist()?;
