@@ -8,7 +8,7 @@ use std::{
 
 use tempfile::NamedTempFile;
 use topiary_config::Configuration;
-use topiary_core::{Language, TopiaryQuery};
+use topiary_core::{Language, TopiaryQueries};
 
 use crate::{
     cli::{AtLeastOneInput, ExactlyOneInput, FromStdin},
@@ -123,7 +123,7 @@ impl<'cfg> InputFile<'cfg> {
             QuerySource::Path(query) => tokio::fs::read_to_string(query).await?,
             QuerySource::BuiltIn(contents) => contents.to_owned(),
         };
-        let query = TopiaryQuery::new(&grammar, &contents)?;
+        let query = TopiaryQueries::new(&grammar, &contents, None)?;
 
         Ok(Language {
             name: self.language.name.clone(),

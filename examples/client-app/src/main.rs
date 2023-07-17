@@ -1,6 +1,6 @@
 // Import necessary modules
 use topiary_config::Configuration;
-use topiary_core::{formatter, Language, Operation, TopiaryQuery};
+use topiary_core::{formatter, FormatConfiguration, Language, Operation, TopiaryQueries};
 
 #[tokio::main]
 async fn main() {
@@ -25,7 +25,7 @@ async fn main() {
     // Create Language struct
     let language: Language = Language {
         name: "json".to_owned(),
-        query: TopiaryQuery::new(&grammar, query).unwrap(),
+        query: TopiaryQueries::new(&grammar, query, None).unwrap(),
         grammar,
         indent: None,
     };

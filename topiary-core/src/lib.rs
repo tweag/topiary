@@ -19,7 +19,7 @@ use tree_sitter::Position;
 pub use crate::{
     error::{FormatterError, IoError},
     language::Language,
-    tree_sitter::{apply_query, SyntaxNode, TopiaryQuery, Visualisation},
+    tree_sitter::{apply_query, SyntaxNode, TopiaryQueries, Visualisation},
 };
 
 mod atom_collection;
@@ -176,7 +176,7 @@ pub enum Operation {
 /// # tokio_test::block_on(async {
 /// use std::fs::File;
 /// use std::io::{BufReader, Read};
-/// use topiary_core::{formatter, Language, FormatterError, TopiaryQuery, Operation, FormatConfiguration};
+/// use topiary_core::{formatter, Language, FormatterError, TopiaryQueries, Operation, FormatConfiguration};
 ///
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
@@ -189,7 +189,7 @@ pub enum Operation {
 ///
 /// let language: Language = Language {
 ///     name: "json".to_owned(),
-///     query: TopiaryQuery::new(&json.into(), &query_content).unwrap(),
+///     query: TopiaryQueries::new(&json.into(), &query_content, None).unwrap(),
 ///     grammar: json.into(),
 ///     indent: None,
 /// };
@@ -349,7 +349,7 @@ mod tests {
 
     use crate::{
         error::FormatterError, formatter, test_utils::pretty_assert_eq, FormatConfiguration,
-        Language, Operation, TopiaryQuery,
+        Language, Operation, TopiaryQueries,
     };
 
     /// Attempt to parse invalid json, expecting a failure
@@ -361,7 +361,7 @@ mod tests {
         let grammar = tree_sitter_json::language().into();
         let language = Language {
             name: "json".to_owned(),
-            query: TopiaryQuery::new(&grammar, query_content).unwrap(),
+            query: TopiaryQueries::new(&grammar, query_content, None).unwrap(),
             grammar,
             indent: None,
         };
@@ -398,7 +398,7 @@ mod tests {
         let grammar = tree_sitter_json::language().into();
         let language = Language {
             name: "json".to_owned(),
-            query: TopiaryQuery::new(&grammar, &query_content).unwrap(),
+            query: TopiaryQueries::new(&grammar, &query_content, None).unwrap(),
             grammar,
             indent: None,
         };
