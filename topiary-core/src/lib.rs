@@ -221,38 +221,10 @@ pub fn formatter(
     })?;
 
     match operation {
-        Operation::Format(FormatConfiguration {
-            skip_idempotence,
-            tolerate_parsing_errors,
-        }) => {
-            // All the work related to tree-sitter and the query is done here
-            log::info!("Apply Tree-sitter query");
+        Operation::Format(format_configuration) => {
+            let formatted = format(&content, language, format_configuration)?;
 
-            let mut atoms = tree_sitter::apply_query(
-                &content,
-                &language.query,
-                &language.grammar,
-                tolerate_parsing_errors,
-                false,
-            )?;
-
-            // Various post-processing of whitespace
-            atoms.post_process();
-
-            // Pretty-print atoms
-            log::info!("Pretty-print output");
-            let rendered = pretty::render(
-                &atoms[..],
-                // Default to "  " is the language has no indentation specified
-                language.indent.as_ref().map_or("  ", |v| v.as_str()),
-            )?;
-            let trimmed = trim_whitespace(&rendered);
-
-            if !skip_idempotence {
-                idempotence_check(&trimmed, language, tolerate_parsing_errors)?;
-            }
-
-            write!(output, "{trimmed}")?;
+            write!(output, "{formatted}")?;
         }
 
         Operation::Visualise { output_format } => {
@@ -267,6 +239,46 @@ pub fn formatter(
     };
 
     Ok(())
+}
+
+pub fn format(
+    input: &str,
+    language: &Language,
+    format_configuration: FormatConfiguration,
+) -> FormatterResult<String> {
+    let FormatConfiguration {
+        skip_idempotence,
+        tolerate_parsing_errors,
+    } = format_configuration;
+
+    // All the work related to tree-sitter and the query is done here
+    log::info!("Apply Tree-sitter query");
+
+    let mut atoms = tree_sitter::apply_query(
+        input,
+        &language.query,
+        &language.grammar,
+        tolerate_parsing_errors,
+        false,
+    )?;
+
+    // Various post-processing of whitespace
+    atoms.post_process();
+
+    // Pretty-print atoms
+    log::info!("Pretty-print output");
+    let rendered = pretty::render(
+        &atoms[..],
+        // Default to "  " is the language has no indentation specified
+        language.indent.as_ref().map_or("  ", |v| v.as_str()),
+    )?;
+    let trimmed = trim_whitespace(&rendered);
+
+    if !skip_idempotence {
+        idempotence_check(&trimmed, language, tolerate_parsing_errors)?;
+    }
+
+    Ok(trimmed)
 }
 
 /// Simple helper function to read the full content of an io Read stream

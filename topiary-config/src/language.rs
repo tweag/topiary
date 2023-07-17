@@ -83,7 +83,7 @@ impl Language {
         potentials
             .into_iter()
             .flatten()
-            .map(|path| path.join(format!("{basename}/formatting.scm")))
+            .map(|path| path.join(&basename).join("formatting.scm"))
             .find(|path| path.exists())
             .ok_or_else(|| TopiaryConfigError::QueryFileNotFound(basename))
     }
