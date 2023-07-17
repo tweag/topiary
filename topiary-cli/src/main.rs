@@ -1,3 +1,4 @@
+mod cli;
 mod configuration;
 mod error;
 mod output;
