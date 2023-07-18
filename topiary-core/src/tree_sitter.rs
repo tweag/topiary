@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt::Display};
+use std::{collections::HashSet, fmt::Display, ops::Range};
 
 use serde::Serialize;
 use topiary_tree_sitter_facade::{
@@ -322,6 +322,49 @@ pub fn apply_query(
     atoms.apply_prepends_and_appends();
 
     Ok(atoms)
+}
+
+/// Applies the injection query from the TopiaryQueries and returns a collection
+/// of tree-sitter nodes and the name of the language identified to format it.
+pub fn apply_injection_query(
+    input_content: &str,
+    query: &TopiaryQueries,
+    tree: &Tree,
+    _should_check_input_exhaustivity: bool,
+) -> FormatterResult<Vec<(Range<u32>, String)>> {
+    let injection_query = match &query.injections {
+        Some(q) => {
+            println!("ERIN: FOUND INJECTION QUERY");
+            q
+        }
+        // If we did not get any injection query, just return that we had no
+        // matches. This avoids any kind of formatting.
+        None => return Ok(vec![]),
+    };
+
+    let mut res = Vec::new();
+
+    let root = tree.root_node();
+    let source = input_content.as_bytes();
+
+    // Match queries
+    let mut cursor = QueryCursor::new();
+
+    for query_match in injection_query.query.matches(&root, source, &mut cursor) {
+        for query_capture in query_match.captures() {
+            for prop in injection_query
+                .query
+                .property_settings(query_match.pattern_index())
+            {
+                if let Some(lang) = prop.value() {
+                    let lang = lang.to_string();
+                    res.push((query_capture.node().byte_range(), lang));
+                }
+            }
+        }
+    }
+
+    Ok(res)
 }
 
 // A single "language" can correspond to multiple grammars.

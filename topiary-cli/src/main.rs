@@ -56,7 +56,7 @@ async fn run() -> CLIResult<()> {
                                     "Formatting {}, as {} using {}, to {}",
                                     input.source(),
                                     input.language().name,
-                                    input.query(),
+                                    input.formatting_query(),
                                     output
                                 );
 
@@ -71,6 +71,7 @@ async fn run() -> CLIResult<()> {
                                         skip_idempotence,
                                         tolerate_parsing_errors,
                                     }),
+                                    Vec::new(),
                                 )?;
 
                                 buf_output.into_inner()?.persist()?;
@@ -135,6 +136,7 @@ async fn run() -> CLIResult<()> {
                 Operation::Visualise {
                     output_format: format.into(),
                 },
+                Vec::new(),
             )?;
         }
 

@@ -2,7 +2,7 @@
 mod native {
     use crate::{
         error::QueryError, language::Language, node::Node, query_cursor::QueryCursor,
-        query_match::QueryMatch, query_predicate::QueryPredicate,
+        query_match::QueryMatch, query_predicate::QueryPredicate, query_property::QueryProperty,
     };
 
     pub struct Query {
@@ -33,6 +33,16 @@ mod native {
         pub fn capture_names(&self) -> Vec<String> {
             let names: Vec<_> = self.inner.capture_names().to_vec();
             names
+        }
+
+        #[inline]
+        pub fn property_settings(&self, index: u32) -> Vec<QueryProperty> {
+            let index = index as usize;
+            self.inner
+                .property_settings(index)
+                .iter()
+                .map(Into::into)
+                .collect()
         }
 
         #[inline]

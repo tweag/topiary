@@ -39,6 +39,7 @@ async fn main() {
             skip_idempotence: false,
             tolerate_parsing_errors: false,
         }),
+        Vec::new(),
     )
     .unwrap();
 

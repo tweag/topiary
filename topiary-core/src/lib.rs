@@ -10,7 +10,7 @@
 //! More details can be found on
 //! [GitHub](https://github.com/tweag/topiary).
 
-use std::io;
+use std::{io, println};
 
 use itertools::Itertools;
 use pretty_assertions::StrComparison;
@@ -212,6 +212,8 @@ pub fn formatter(
     output: &mut impl io::Write,
     language: &Language,
     operation: Operation,
+    // Languages present as injections in the current language.
+    injection_languages: Vec<Language>,
 ) -> FormatterResult<()> {
     let content = read_input(input).map_err(|e| {
         FormatterError::Io(IoError::Filesystem(
@@ -222,7 +224,12 @@ pub fn formatter(
 
     match operation {
         Operation::Format(format_configuration) => {
-            let formatted = format(&content, language, format_configuration)?;
+            let formatted = format(
+                &content,
+                language,
+                format_configuration,
+                injection_languages,
+            )?;
 
             write!(output, "{formatted}")?;
         }
@@ -245,6 +252,7 @@ pub fn format(
     input: &str,
     language: &Language,
     format_configuration: FormatConfiguration,
+    injection_languages: Vec<Language>,
 ) -> FormatterResult<String> {
     let FormatConfiguration {
         skip_idempotence,
@@ -271,7 +279,12 @@ pub fn format(
     let trimmed = trim_whitespace(&rendered);
 
     if !skip_idempotence {
-        idempotence_check(&trimmed, language, tolerate_parsing_errors)?;
+        idempotence_check(
+            &trimmed,
+            language,
+            tolerate_parsing_errors,
+            injection_languages,
+        )?;
     }
 
     Ok(trimmed)
@@ -304,6 +317,7 @@ fn idempotence_check(
     content: &str,
     language: &Language,
     tolerate_parsing_errors: bool,
+    injection_languages: Vec<Language>,
 ) -> FormatterResult<()> {
     log::info!("Checking for idempotence ...");
 
@@ -318,6 +332,7 @@ fn idempotence_check(
             skip_idempotence: true,
             tolerate_parsing_errors,
         }),
+        injection_languages,
     ) {
         Ok(()) => {
             let reformatted = String::from_utf8(output.into_inner()?)?;
@@ -370,6 +385,7 @@ mod tests {
                 skip_idempotence: true,
                 tolerate_parsing_errors: false,
             }),
+            Vec::new(),
         ) {
             Err(FormatterError::Parsing {
                 start_line: 1,
@@ -407,6 +423,7 @@ mod tests {
                 skip_idempotence: true,
                 tolerate_parsing_errors: true,
             }),
+            Vec::new(),
         )
         .unwrap();
 

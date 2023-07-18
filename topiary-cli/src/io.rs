@@ -112,14 +112,15 @@ impl fmt::Display for InputSource {
 pub struct InputFile<'cfg> {
     source: InputSource,
     language: &'cfg topiary_config::language::Language,
-    query: QuerySource,
+    formatting_query: QuerySource,
+    injection_query: Option<QuerySource>,
 }
 
 impl<'cfg> InputFile<'cfg> {
     /// Convert our `InputFile` into language definition values that Topiary can consume
     pub async fn to_language(&self) -> CLIResult<Language> {
         let grammar = self.language().grammar()?;
-        let contents = match &self.query {
+        let contents = match &self.formatting_query {
             QuerySource::Path(query) => tokio::fs::read_to_string(query).await?,
             QuerySource::BuiltIn(contents) => contents.to_owned(),
         };
@@ -144,8 +145,8 @@ impl<'cfg> InputFile<'cfg> {
     }
 
     /// Expose query path for input
-    pub fn query(&self) -> &QuerySource {
-        &self.query
+    pub fn formatting_query(&self) -> &QuerySource {
+        &self.formatting_query
     }
 }
 
@@ -198,7 +199,8 @@ impl<'cfg, 'i> Inputs<'cfg> {
                     Ok(InputFile {
                         source: InputSource::Stdin,
                         language,
-                        query: query_source,
+                        formatting_query: query_source,
+                        injection_query: None,
                     })
                 })()]
             }
@@ -212,7 +214,8 @@ impl<'cfg, 'i> Inputs<'cfg> {
                     Ok(InputFile {
                         source: InputSource::Disk(path, None),
                         language,
-                        query,
+                        formatting_query: query,
+                        injection_query: None,
                     })
                 })
                 .collect(),
