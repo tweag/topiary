@@ -7,6 +7,8 @@ use topiary::SupportedLanguage;
 use crate::{configuration, visualisation};
 
 #[derive(Debug, Parser)]
+// NOTE infer_subcommands would be useful, but our heavy use of aliases is problematic (see
+// clap-rs/clap#5021)
 #[command(about, author, long_about = None, version)]
 pub struct Cli {
     // Global options
