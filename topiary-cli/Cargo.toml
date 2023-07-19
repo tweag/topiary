@@ -26,7 +26,8 @@ path = "src/main.rs"
 [dependencies]
 # For now we just load the tree-sitter language parsers statically.
 # Eventually we will want to dynamically load them, like Helix does.
-clap = { workspace = true, features = ["derive", "env"] }
+# NOTE clap/wrap_help isn't perfect (see clap-rs/clap#5022)
+clap = { workspace = true, features = ["derive", "env", "wrap_help"] }
 env_logger = { workspace = true }
 futures = { workspace = true }
 directories = { workspace = true }
