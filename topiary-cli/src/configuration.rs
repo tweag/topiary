@@ -1,8 +1,22 @@
+use clap::ValueEnum;
 use directories::ProjectDirs;
 use std::{env::current_dir, path::PathBuf};
 use topiary::{default_configuration_toml, Configuration};
 
 use crate::error::{CLIResult, TopiaryError};
+
+/// Collation mode for configuration values
+#[derive(Clone, Debug, ValueEnum)]
+pub enum CollationMode {
+    /// When multiple sources of configuration are available, values are coalesced. That is, new
+    /// values are added to the final configuration, whereas existing values are overridden when
+    /// higher priority versions are specified.
+    Coalesce,
+
+    /// When multiple sources of configuration are available, the highest priority source is taken.
+    /// Values from lower priority sources are discarded.
+    Override,
+}
 
 pub fn parse_configuration(
     config_override: Option<PathBuf>,

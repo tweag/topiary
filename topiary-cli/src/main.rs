@@ -2,7 +2,7 @@ mod cli;
 mod configuration;
 mod error;
 mod output;
-mod visualise;
+mod visualisation;
 
 use std::{
     eprintln,
@@ -19,7 +19,6 @@ use configuration::parse_configuration;
 use crate::{
     error::{CLIError, CLIResult, TopiaryError},
     output::OutputFile,
-    visualise::Visualisation,
 };
 use topiary::{formatter, Language, Operation, SupportedLanguage, TopiaryQuery};
 
@@ -64,7 +63,7 @@ struct Args {
         default_missing_value = "json",
         display_order = 6
     )]
-    visualise: Option<Visualisation>,
+    visualise: Option<visualisation::Format>,
 
     /// Do not check that formatting twice gives the same output
     #[arg(short, long, display_order = 7)]
