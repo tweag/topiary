@@ -4,7 +4,11 @@ use clap::{ArgGroup, Args, Parser, Subcommand};
 use std::path::PathBuf;
 use topiary::SupportedLanguage;
 
-use crate::{configuration, visualisation};
+use crate::{
+    configuration,
+    error::{CLIResult, TopiaryError},
+    visualisation,
+};
 
 #[derive(Debug, Parser)]
 // NOTE infer_subcommands would be useful, but our heavy use of aliases is problematic (see
@@ -136,8 +140,39 @@ enum Commands {
     Cfg,
 }
 
-/// Parse CLI arguments
-// NOTE We wrap this because the derived Parser::parse doesn't seem to be exported :shrug:
-pub fn parse() -> Cli {
-    Cli::parse()
+/// Parse CLI arguments and normalise them for the caller
+pub fn get_args() -> CLIResult<Cli> {
+    let mut args = Cli::parse();
+
+    match &mut args.command {
+        Commands::Fmt { files, .. } => {
+            // If we're given a list of FILES... then we assume them to all be on disk, even if "-"
+            // is passed as an argument (i.e., interpret this as a valid filename, rather than as
+            // stdin). We deduplicate this list to avoid formatting the same file multiple times.
+            files.sort_unstable();
+            files.dedup();
+
+            // TODO Check files exist and walk any directories
+        }
+
+        Commands::Vis {
+            file: Some(file), ..
+        } => {
+            // If we're given a specific FILE then we assume the same rules as for Fmt (see above),
+            // with the addition that FILE *must* be a file/symlink.
+            if !file.is_file() {
+                return Err(TopiaryError::Bin(
+                    format!(
+                        "\"{}\" does not exist or is not a file",
+                        file.to_string_lossy()
+                    ),
+                    None,
+                ));
+            }
+        }
+
+        _ => {}
+    }
+
+    Ok(args)
 }
