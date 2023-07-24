@@ -140,6 +140,24 @@ enum Commands {
     Cfg,
 }
 
+/// Given a vector of paths, recursively expand those that identify as directories, in place
+fn traverse_fs(files: &mut Vec<PathBuf>) -> CLIResult<()> {
+    let mut expanded = vec![];
+
+    for file in &mut *files {
+        if file.is_dir() {
+            let mut subfiles = file.read_dir()?.flatten().map(|f| f.path()).collect();
+            traverse_fs(&mut subfiles)?;
+            expanded.append(&mut subfiles);
+        } else {
+            expanded.push(file.to_path_buf());
+        }
+    }
+
+    *files = expanded;
+    Ok(())
+}
+
 /// Parse CLI arguments and normalise them for the caller
 pub fn get_args() -> CLIResult<Cli> {
     let mut args = Cli::parse();
@@ -153,11 +171,24 @@ pub fn get_args() -> CLIResult<Cli> {
         Commands::Fmt { files, .. } => {
             // If we're given a list of FILES... then we assume them to all be on disk, even if "-"
             // is passed as an argument (i.e., interpret this as a valid filename, rather than as
-            // stdin). We deduplicate this list to avoid formatting the same file multiple times.
+            // stdin). We deduplicate this list to avoid formatting the same file multiple times
+            // and recursively expand directories until we're left with a list of unique
+            // (potential) files as input sources.
             files.sort_unstable();
             files.dedup();
+            traverse_fs(files)?;
+        }
 
-            // TODO Recursively expand any directories
+        Commands::Vis {
+            file: Some(file), ..
+        } => {
+            // Make sure our FILE is not a directory
+            if file.is_dir() {
+                return Err(TopiaryError::Bin(
+                    format!("Cannot visualise directory \"{}\"; please provide a single file from disk or stdin.", file.to_string_lossy()),
+                    None,
+                ));
+            }
         }
 
         _ => {}
