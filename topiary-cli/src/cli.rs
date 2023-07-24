@@ -144,6 +144,11 @@ enum Commands {
 pub fn get_args() -> CLIResult<Cli> {
     let mut args = Cli::parse();
 
+    // NOTE We do not check that input files are actual files (with Path::is_file), because that
+    // would break in the case of, for example, named pipes; thus also adding a platform dimension
+    // to the check, which is simply not worth the complexity. We _could_ check by opening each
+    // file, but that's going to be done sooner-or-later by Topiary, so there's no need.
+
     match &mut args.command {
         Commands::Fmt { files, .. } => {
             // If we're given a list of FILES... then we assume them to all be on disk, even if "-"
@@ -152,23 +157,7 @@ pub fn get_args() -> CLIResult<Cli> {
             files.sort_unstable();
             files.dedup();
 
-            // TODO Check files exist and walk any directories
-        }
-
-        Commands::Vis {
-            file: Some(file), ..
-        } => {
-            // If we're given a specific FILE then we assume the same rules as for Fmt (see above),
-            // with the addition that FILE *must* be a file/symlink.
-            if !file.is_file() {
-                return Err(TopiaryError::Bin(
-                    format!(
-                        "\"{}\" does not exist or is not a file",
-                        file.to_string_lossy()
-                    ),
-                    None,
-                ));
-            }
+            // TODO Recursively expand any directories
         }
 
         _ => {}
