@@ -159,44 +159,199 @@ pre-commit-check = nix-pre-commit-hooks.run {
 
 ### Usage
 
+The Topiary CLI uses a number of subcommands to delineate functionality.
+These can be listed with `topiary --help`; each subcommand then has its
+own, dedicated help text.
+
+<!-- DO NOT REMOVE THE "usage" COMMENTS -->
+<!-- usage:start: -->
 ```
 CLI app for Topiary, the universal code formatter.
 
-Usage: topiary [OPTIONS] <--language <LANGUAGE>|--input-files [<INPUT_FILES>...]>
+Usage: topiary [OPTIONS] <COMMAND>
+
+Commands:
+  fmt   Format inputs
+  vis   Visualise the input's Tree-sitter parse tree
+  cfg   Print the current configuration
+  help  Print this message or the help of the given subcommand(s)
 
 Options:
-  -l, --language <LANGUAGE>
-          Which language to parse and format [possible values: json, nickel, ocaml, ocaml-interface, ocamllex, toml]
-  -f, --input-files [<INPUT_FILES>...]
-          Path to an input file or multiple input files. If omitted, or equal to "-", read from standard input. If multiple files are provided, `in_place` is assumed [default: -]
-  -q, --query <QUERY>
-          Which query file to use
-  -o, --output-file <OUTPUT_FILE>
-          Path to an output file. If omitted, or equal to "-", write to standard output
-  -i, --in-place
-          Format the input files in place
-  -v, --visualise[=<OUTPUT_FORMAT>]
-          Visualise the syntax tree, rather than format [possible values: json, dot]
-  -s, --skip-idempotence
-          Do not check that formatting twice gives the same output
-      --output-configuration
-          Output the full configuration to stderr before continuing
-  -t, --tolerate-parsing-errors
-          Format as much as possible even if some of the input causes parsing errors
-      --configuration-override <CONFIGURATION_OVERRIDE>
-          Override all configuration with the provided file [env: TOPIARY_CONFIGURATION_OVERRIDE=]
-  -c, --configuration-file <CONFIGURATION_FILE>
-          Add the specified configuration file with the highest prority [env: TOPIARY_CONFIGURATION_FILE=]
+  -C, --configuration <CONFIGURATION>
+          Configuration file
+
+          [env: TOPIARY_CONFIG_FILE]
+
+      --configuration-collation <CONFIGURATION_COLLATION>
+          Configuration collation mode
+
+          [env: TOPIARY_CONFIG_COLLATION]
+          [default: coalesce]
+
+          Possible values:
+          - coalesce: When multiple sources of configuration are available, values are coalesced. That is, new
+            values are added to the final configuration, whereas existing values are overridden when
+            higher priority versions are specified
+          - override: When multiple sources of configuration are available, the highest priority source is
+            taken. Values from lower priority sources are discarded
+
   -h, --help
-          Print help
+          Print help (see a summary with '-h')
+
   -V, --version
           Print version
 ```
+<!-- usage:end: -->
 
-Language selection is based on precedence, in the following order:
-* A specified language
-* Detected from the input file's extension
-* A specified query file
+#### Format
+
+<!-- DO NOT REMOVE THE "usage" COMMENTS -->
+<!-- usage:start:fmt -->
+```
+Format inputs
+
+Usage: topiary fmt [OPTIONS] <--language <LANGUAGE>|--query <QUERY>|FILES>
+
+Arguments:
+  [FILES]...
+          Input files and directories (omit to read from stdin)
+
+Options:
+  -t, --tolerate-parsing-errors
+          Consume as much as possible in the presence of parsing errors
+
+  -s, --skip-idempotence
+          Do not check that formatting twice gives the same output
+
+  -l, --language <LANGUAGE>
+          Topiary supported language (for formatting stdin)
+
+          [possible values: json, nickel, ocaml, ocaml-interface, ocamllex, toml]
+
+  -q, --query <QUERY>
+          Topiary query file (for formatting stdin)
+
+  -C, --configuration <CONFIGURATION>
+          Configuration file
+
+          [env: TOPIARY_CONFIG_FILE]
+
+      --configuration-collation <CONFIGURATION_COLLATION>
+          Configuration collation mode
+
+          [env: TOPIARY_CONFIG_COLLATION]
+          [default: coalesce]
+
+          Possible values:
+          - coalesce: When multiple sources of configuration are available, values are coalesced. That is, new
+            values are added to the final configuration, whereas existing values are overridden when
+            higher priority versions are specified
+          - override: When multiple sources of configuration are available, the highest priority source is
+            taken. Values from lower priority sources are discarded
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+<!-- usage:end:fmt -->
+
+When formatting inputs from disk, language selection is detected from
+the input files' extensions. To format standard input, you must specify
+either `--language` or `--query` arguments, omitting any input files.
+
+#### Visualise
+
+<!-- DO NOT REMOVE THE "usage" COMMENTS -->
+<!-- usage:start:vis -->
+```
+Visualise the input's Tree-sitter parse tree
+
+Usage: topiary vis [OPTIONS] <--language <LANGUAGE>|--query <QUERY>|FILE>
+
+Arguments:
+  [FILE]
+          Input file (omit to read from stdin)
+
+Options:
+  -t, --tolerate-parsing-errors
+          Consume as much as possible in the presence of parsing errors
+
+  -f, --format <FORMAT>
+          Visualisation format
+
+          [default: dot]
+
+          Possible values:
+          - dot:  GraphViz DOT serialisation
+          - json: JSON serialisation
+
+  -l, --language <LANGUAGE>
+          Topiary supported language (for formatting stdin)
+
+          [possible values: json, nickel, ocaml, ocaml-interface, ocamllex, toml]
+
+  -q, --query <QUERY>
+          Topiary query file (for formatting stdin)
+
+  -C, --configuration <CONFIGURATION>
+          Configuration file
+
+          [env: TOPIARY_CONFIG_FILE]
+
+      --configuration-collation <CONFIGURATION_COLLATION>
+          Configuration collation mode
+
+          [env: TOPIARY_CONFIG_COLLATION]
+          [default: coalesce]
+
+          Possible values:
+          - coalesce: When multiple sources of configuration are available, values are coalesced. That is, new
+            values are added to the final configuration, whereas existing values are overridden when
+            higher priority versions are specified
+          - override: When multiple sources of configuration are available, the highest priority source is
+            taken. Values from lower priority sources are discarded
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+<!-- usage:end:vis -->
+
+When visualising inputs from disk, language selection is detected from
+the input file's extension. To visualise standard input, you must
+specify either `--language` or `--query` arguments, omitting the input
+file. The visualisation output is written to standard out.
+
+#### Configuration
+
+<!-- DO NOT REMOVE THE "usage" COMMENTS -->
+<!-- usage:start:cfg -->
+```
+Print the current configuration
+
+Usage: topiary cfg [OPTIONS]
+
+Options:
+  -C, --configuration <CONFIGURATION>
+          Configuration file
+
+          [env: TOPIARY_CONFIG_FILE]
+
+      --configuration-collation <CONFIGURATION_COLLATION>
+          Configuration collation mode
+
+          [env: TOPIARY_CONFIG_COLLATION]
+          [default: coalesce]
+
+          Possible values:
+          - coalesce: When multiple sources of configuration are available, values are coalesced. That is, new
+            values are added to the final configuration, whereas existing values are overridden when
+            higher priority versions are specified
+          - override: When multiple sources of configuration are available, the highest priority source is
+            taken. Values from lower priority sources are discarded
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+<!-- usage:end:cfg -->
 
 #### Exit Codes
 
@@ -219,15 +374,15 @@ formatting. Otherwise, the following exit codes are defined:
 Once built, the program can be run like this:
 
 ```bash
-echo '{"foo":"bar"}' | topiary --language json
+echo '{"foo":"bar"}' | topiary fmt --language json
 ```
 
 `topiary` can also be built and run from source via either Cargo or Nix,
 if you have those installed:
 
 ```bash
-echo '{"foo":"bar"}' | cargo run -- --language json
-echo '{"foo":"bar"}' | nix run . -- --language json
+echo '{"foo":"bar"}' | cargo run -- fmt --language json
+echo '{"foo":"bar"}' | nix run . -- fmt --language json
 ```
 
 It will output the following formatted code:
