@@ -164,7 +164,7 @@ These can be listed with `topiary --help`; each subcommand then has its
 own, dedicated help text.
 
 <!-- DO NOT REMOVE THE "usage" COMMENTS -->
-<!-- usage:start: -->
+<!-- usage:start:ROOT -->
 ```
 CLI app for Topiary, the universal code formatter.
 
@@ -201,7 +201,7 @@ Options:
   -V, --version
           Print version
 ```
-<!-- usage:end: -->
+<!-- usage:end:ROOT -->
 
 #### Format
 

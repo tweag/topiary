@@ -1,17 +1,40 @@
 #!/usr/bin/env bash
-usage="$(nix run . -- --help)"
 
-echo "$usage" |
-{
-    while IFS= read -r line
-    do
-        if ! grep -Fxq "$line" README.md
-        then
-            echo "Usage is not correctly documented in README.md. Update the file with the following:"
-            echo "$usage"
-            exit 1
-        fi
-    done
+set -euo pipefail
 
-    echo "Usage is correctly documented in README.md."
+get-cli-usage() {
+  # Get the help text from the CLI and strip trailing whitespace
+  local subcommand="${1-ROOT}"
+
+  case "${subcommand}" in
+    "ROOT") nix run . -- --help;;
+    *)      nix run . -- "${subcommand}" --help;;
+  esac \
+  | sed 's/\s*$//'
 }
+
+get-readme-usage() {
+  # Get the help text from the README and strip trailing whitespace
+  local subcommand="${1-ROOT}"
+
+  sed --quiet "/usage:start:${subcommand}/,/usage:end:${subcommand}/ { //!p; }" README.md \
+  | sed --quiet '/```/ !p; s/\s*$//;'
+}
+
+main() {
+  local -a subcommands=(ROOT fmt vis cfg)
+
+  local _diff
+  local _subcommand
+  for _subcommand in "${subcommands[@]}"; do
+    if ! _diff=$(diff <(get-readme-usage "${_subcommand}") <(get-cli-usage "${_subcommand}")); then
+      >&2 echo "Usage is not correctly documented in README.md for the ${_subcommand} subcommand!"
+      echo "${_diff}"
+      exit 1
+    fi
+  done
+
+  >&2 echo "Usage is correctly documented in README.md"
+}
+
+main
