@@ -36,6 +36,7 @@
     (anonymous_node)
     (capture)
     (grouping)
+    (list)
     (named_node)
     "."
     "("
