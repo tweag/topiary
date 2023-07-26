@@ -1383,32 +1383,51 @@
   (#scope_id! "function_type")
 )
 
-; Allow softlines in infix expressions, such as
+; Allow softlines in boolean infix expressions, such as
 ; let b =
 ;   foo
 ;   || bar
 ;   || baz
 
 ; As above, infix expressions are nested grammar elements, so we must identify the
-; top-level one: it is the one that is not preceded by an infix operator.
-; We only consider logic operators, as not to mess with arithmetic expressions
+; top-level one: it is the one that is not preceded by a corresponding infix operator.
 (
-  [
-    (and_operator)
-    (or_operator)
-    (rel_operator)
-  ]? @do_nothing
+  (and_operator)? @do_nothing
   .
-  (infix_expression) @prepend_begin_scope @append_end_scope
-  (#scope_id! "infix_expression")
+  (infix_expression
+    (and_operator)
+  ) @prepend_begin_scope @append_end_scope
+  (#scope_id! "and_infix_expression")
 )
 (infix_expression
-  [
-    (and_operator)
+  (and_operator) @prepend_spaced_scoped_softline
+  (#scope_id! "and_infix_expression")
+)
+
+(
+  (or_operator)? @do_nothing
+  .
+  (infix_expression
     (or_operator)
+  ) @prepend_begin_scope @append_end_scope
+  (#scope_id! "or_infix_expression")
+)
+(infix_expression
+  (or_operator) @prepend_spaced_scoped_softline
+  (#scope_id! "or_infix_expression")
+)
+
+(
+  (rel_operator)? @do_nothing
+  .
+  (infix_expression
     (rel_operator)
-  ] @prepend_spaced_scoped_softline
-  (#scope_id! "infix_expression")
+  ) @prepend_begin_scope @append_end_scope
+  (#scope_id! "rel_infix_expression")
+)
+(infix_expression
+  (rel_operator) @prepend_spaced_scoped_softline
+  (#scope_id! "rel_infix_expression")
 )
 
 ; Put softline and indented blocks after all other infix operators
