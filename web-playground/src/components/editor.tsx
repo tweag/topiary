@@ -13,6 +13,11 @@ import "ace-builds/src-noconflict/mode-toml";
 
 import "ace-builds/src-noconflict/snippets/sh";
 
+// Without the following lines, we get this error in the Puppeteer tests:
+// DOMException: Failed to execute 'importScripts' on 'WorkerGlobalScope': The script at 'http://localhost:5173/worker-json.js' failed to load.
+import ace from 'ace-builds/src-noconflict/ace';
+ace.config.set("basePath", "https://cdn.jsdelivr.net/npm/ace-builds@1.4.3/src-noconflict/");
+
 export default function Editor(props: {
     id: string,
     value: string,
