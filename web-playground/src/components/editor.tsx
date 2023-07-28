@@ -48,6 +48,7 @@ function toMode(language: string) {
             return "json";
         case "ocaml":
         case "ocaml-interface":
+        case "ocamllex":
             return "ocaml";
         case "nickel":
             // Missing highlighting for Nickel, but we know.
