@@ -4,3 +4,4 @@ target
 /.envrc
 /.direnv
 *.profraw
+.pre-commit-config.yaml
