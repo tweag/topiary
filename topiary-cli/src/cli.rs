@@ -17,17 +17,17 @@ use crate::{
 pub struct Cli {
     // Global options
     #[command(flatten)]
-    global: GlobalArgs,
+    pub global: GlobalArgs,
 
     // Subcommands
     #[command(subcommand)]
-    command: Commands,
+    pub command: Commands,
 }
 
 // These are "true" global arguments that are relevant to all subcommands
 // NOTE Global arguments must be optional, even when defaults are specified
 #[derive(Args, Debug)]
-struct GlobalArgs {
+pub struct GlobalArgs {
     /// Configuration file
     #[arg(
         short = 'C',
@@ -37,7 +37,7 @@ struct GlobalArgs {
         global = true,
         hide_env_values = true
     )]
-    configuration: Option<PathBuf>,
+    pub configuration: Option<PathBuf>,
 
     /// Configuration collation mode
     #[arg(
@@ -55,20 +55,20 @@ struct GlobalArgs {
         // is exactly our use case, here. (See clap-rs/clap#5020)
         requires = "configuration"
     )]
-    configuration_collation: Option<configuration::CollationMode>,
+    pub configuration_collation: Option<configuration::CollationMode>,
 }
 
 // These are "parser" global arguments; i.e., those that are relevant to all subcommands that will
 // parse input. They will need to be added to all such subcommands, with #[command(flatten)].
 #[derive(Args, Debug)]
-struct ParseArgs {
+pub struct ParseArgs {
     /// Consume as much as possible in the presence of parsing errors
     #[arg(short, long)]
     tolerate_parsing_errors: bool,
 }
 
 #[derive(Debug, Subcommand)]
-enum Commands {
+pub enum Commands {
     /// Format inputs
     // NOTE FILES...             => Read input(s) from disk, format in place
     //      --language | --query => Read input from stdin, output to stdout
