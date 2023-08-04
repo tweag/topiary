@@ -13,9 +13,8 @@ use std::{
     process::ExitCode,
 };
 
-use configuration::parse_configuration;
-
 use crate::{
+    cli::Commands,
     error::{CLIError, CLIResult, TopiaryError},
     output::OutputFile,
 };
@@ -34,23 +33,44 @@ async fn main() -> ExitCode {
 async fn run() -> CLIResult<()> {
     env_logger::init();
 
-    // Restructure Args to match our expected behaviour
-    let args = {
-        let mut args = cli::parse();
+    let args = cli::get_args()?;
+    let config = configuration::parse(
+        args.global.configuration,
+        // The collation value is always set, so we can safely unwrap
+        args.global.configuration_collation.unwrap(),
+    )?;
 
-        // Remove duplicates from the input_files, (among other things, avoids being able to pass "-" twice)
-        args.input_files.sort_unstable();
-        args.input_files.dedup();
+    // Delegate by subcommand
+    match args.command {
+        Commands::Fmt {
+            parse,
+            skip_idempotence,
+            language,
+            query,
+            files,
+        } => {
+            todo!();
+        }
 
-        args
-    };
+        Commands::Vis {
+            parse,
+            format,
+            language,
+            query,
+            file,
+        } => {
+            todo!();
+        }
 
-    let configuration = parse_configuration(args.configuration_override, args.configuration_file)?;
-
-    if args.output_configuration {
-        eprintln!("{:#?}", configuration);
+        Commands::Cfg => {
+            println!("{}", config);
+        }
     }
 
+    Ok(())
+}
+
+/*
     let io_files: Vec<(String, String)> = if args.in_place || args.input_files.len() > 1 {
         args.input_files
             .iter()
@@ -187,6 +207,7 @@ async fn run() -> CLIResult<()> {
 
     Ok(())
 }
+*/
 
 fn print_error(e: &dyn Error) {
     log::error!("{e}");
