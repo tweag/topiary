@@ -357,13 +357,16 @@ Options:
 ```
 <!-- usage:end:cfg -->
 
+Please refer to the [Configuration](#configuration-1) section below to
+understand the different sources of configuration and collation modes.
+
 #### Exit Codes
 
 The Topiary process will exit with a zero exit code upon successful
 formatting. Otherwise, the following exit codes are defined:
 
 | Reason                       | Code |
-| :--------------------------- | ---- |
+| :--------------------------- | ---: |
 | Unspecified error            |    1 |
 | CLI argument parsing error   |    2 |
 | I/O error                    |    3 |
@@ -399,40 +402,53 @@ Set the `RUST_LOG=debug` environment variable if you want to enable
 debug logging.
 
 ## Configuration
-Topiary is configured using `languages.toml` files. There are three
-locations where Topiary checks for such a file.
 
-### Locations
+Topiary is configured using `languages.toml` files. There are up to four
+sources where Topiary checks for such a file.
+
+### Configuration Sources
+
 At buildtime the [languages.toml](./languages.toml) in the root of
-this repository is included into Topiary. This file is parsed at
+this repository is embedded into Topiary. This file is parsed at
 runtime. The purpose of this `languages.toml` file is to provide sane
 defaults for users of Topiary (both the library and the binary).
 
-The other two are read by the Topiary binary at runtime and allow the user to
+The next two are read by the Topiary binary at runtime and allow the user to
 configure Topiary to their needs. The first is intended to be user specific, and
 can thus be found in the configuration directory of the OS:
-```
-Unix: /home/alice/.config/topiary/languages.toml
-Windows: C:\Users\Alice\AppData\Roaming\Topiary\config\languages.toml
-MacOS: /Users/Alice/Library/Application Support/Topiary/languages.toml
-```
+
+| OS      | Typical Configuration Path                                        |
+| :------ | :---------------------------------------------------------------- |
+| Unix    | `/home/alice/.config/topiary/languages.toml`                      |
+| Windows | `C:\Users\Alice\AppData\Roaming\Topiary\config\languages.toml`    |
+| macOS   | `/Users/Alice/Library/Application Support/Topiary/languages.toml` |
+
 This file is not automatically created by Topiary.
 
-The last location is intended to be a project-specific settings file for
-Topiary. When running Topiary in some directory, it will look up in the file
-tree until it finds a .topiary directory. It will then read the `languages.toml`
+The next source is intended to be a project-specific settings file for
+Topiary. When running Topiary in some directory, it will ascend the file
+tree until it finds a `.topiary` directory. It will then read any `languages.toml`
 file present in that directory.
 
-The Topiary binary parses these file in the following order, any configuration
-options defined earlier are overwritten by those defined later.
+Finally, an explicit configuration file may be specified using the
+`-C`/`--configuration` command line argument (or the
+`TOPIARY_CONFIG_FILE` environment variable). This is intended for
+driving Topiary under very specific use-cases.
 
-1. The builtin configuration file
-2. The user configuration file in the OS's configuration directory
-3. The project specific topiary configuration
+The Topiary binary parses these sources in the following order. The
+action taken to coalesce matching items is dependent on the [collation
+mode](#configuration-collation).
+
+1. The builtin configuration file.
+2. The user configuration file in the OS's configuration directory.
+3. The project specific Topiary configuration.
+4. The explicit configuration file specified as a CLI argument.
 
 ### Configuration Options
+
 The configuration file contains a list of languages, each language configuration
 headed by ``[[language]]``. For instance, the one for Nickel is defined as such:
+
 ```toml
 [[language]]
 name = "nickel"
@@ -440,7 +456,7 @@ extensions = ["ncl"]
 ```
 
 The `name` field is used by Topiary to associate the language entry with the
-query file and tree-sitter grammar. This field should be written lowercase.
+query file and Tree-sitter grammar. This value should be written in lowercase.
 The `name` field is mandatory for every ``[[language]]`` block in every
 configuration file.
 
@@ -449,9 +465,94 @@ need to exist in every configuration file. It is sufficient if, for every
 language, there is a single configuration file that defines the list of
 extensions for that language.
 
-A final optional field called `indent` exists to define the indentation method
+A final optional field, called `indent`, exists to define the indentation method
 for that language. Topiary defaults to two spaces `"  "` if it cannot find the
 indent field in any configuration file for a specific language.
+
+### Configuration Collation
+
+When parsing configuration from multiple sources, Topiary can collate
+matching configuration items (matched on language name) in various ways.
+The collation mode is set by the `--configuration-collation` command
+line argument (or the `TOPIARY_CONFIG_COLLATION` environment variable).
+
+The different modes are best explained by example. Consider the
+following two configurations, in priority order from lowest to highest
+(comments have been added for illustrative purposes):
+
+```toml
+# Lowest priority configuration
+
+[[language]]
+name = "example"
+extensions = ["eg"]
+
+[[language]]
+name = "demo"
+extensions = ["demo"]
+```
+
+```toml
+# Highest priority configuration
+
+[[language]]
+name = "example"
+extensions = ["example"]
+indent = "    "
+```
+
+#### Merge Mode (Default)
+
+Matching items are updated from the higher priority source, with
+collections merged as the union of sets.
+
+```toml
+# For the "example" language:
+# * The collated extensions is the union of the source extensions
+# * The indentation is taken from the highest priority source
+[[language]]
+name = "example"
+extensions = ["eg", "example"]
+indent = "    "
+
+# The "demo" language is unchanged
+[[language]]
+name = "demo"
+extensions = ["demo"]
+```
+
+#### Revise Mode
+
+Matching items (including collections) are superseded from the higher
+priority source.
+
+```toml
+# The "example" language's values are taken from the highest priority source
+[[language]]
+name = "example"
+extensions = ["example"]
+indent = "    "
+
+# The "demo" language is unchanged
+[[language]]
+name = "demo"
+extensions = ["demo"]
+```
+
+#### Override Mode
+
+The highest priority source is taken. All values from lower priority
+sources are discarded.
+
+```toml
+# The "example" language's values are taken from the highest priority source
+[[language]]
+name = "example"
+extensions = ["example"]
+indent = "    "
+
+# The "demo" language does not exist in the highest priority source, so is omitted
+```
 
 ## Design
 
