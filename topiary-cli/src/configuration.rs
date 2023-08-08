@@ -48,7 +48,7 @@ fn user_configuration_toml(
     //   - `.topiary/languages.toml`
     //   - `config_file` as passed by `--configuration_file/-c/TOPIARY_CONFIGURATION_FILE`
     [
-        Some(find_configuration_dir()),
+        Some(find_os_configuration_dir()),
         find_workspace_configuration_dir(),
         config_file,
     ]
@@ -145,20 +145,20 @@ pub fn merge_toml_values(left: toml::Value, right: toml::Value, merge_depth: usi
     }
 }
 
-fn find_configuration_dir() -> PathBuf {
+/// Find the OS-specific configuration directory
+fn find_os_configuration_dir() -> PathBuf {
     ProjectDirs::from("", "", "topiary")
         .expect("Could not access the OS's Home directory")
         .config_dir()
-        .to_owned()
+        .to_path_buf()
 }
 
-pub fn find_workspace_configuration_dir() -> Option<PathBuf> {
-    let current_dir = current_dir().expect("Could not get current working directory");
-    for ancestor in current_dir.ancestors() {
-        if ancestor.join(".topiary").exists() {
-            return Some(ancestor.to_owned().join(".topiary"));
-        }
-    }
-
-    None
+/// Ascend the directory hierarchy, starting from the current working directory, in search of the
+/// nearest `.topiary` configuration directory
+fn find_workspace_configuration_dir() -> Option<PathBuf> {
+    current_dir()
+        .expect("Could not get current working directory")
+        .ancestors()
+        .map(|path| path.join(".topiary"))
+        .find(|path| path.exists())
 }
