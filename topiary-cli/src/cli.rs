@@ -42,7 +42,7 @@ pub struct GlobalArgs {
     /// Configuration collation mode
     #[arg(
         long,
-        default_value = "coalesce",
+        default_value = "merge",
         display_order = 101,
         env = "TOPIARY_CONFIG_COLLATION",
         global = true,

@@ -6,23 +6,25 @@ use topiary::{default_configuration_toml, Configuration};
 use crate::error::{CLIResult, TopiaryError};
 
 /// Collation mode for configuration values
+// NOTE The enum variants are in "natural" order, rather than
+// sorted lexicographically, for the sake of the help text
 #[derive(Clone, Debug, ValueEnum)]
 pub enum CollationMode {
-    /// When multiple sources of configuration are available, values are coalesced. That is, new
-    /// values are added to the final configuration, whereas existing values are overridden when
-    /// higher priority versions are specified.
-    Coalesce,
+    /// When multiple sources of configuration are available, matching items are updated from the
+    /// higher priority source, with collections merged as the union of sets.
+    Merge,
+
+    /// When multiple sources of configuration are available, matching items (including
+    /// collections) are superseded from the higher priority source.
+    Revise,
 
     /// When multiple sources of configuration are available, the highest priority source is taken.
-    /// Values from lower priority sources are discarded.
+    /// All values from lower priority sources are discarded.
     Override,
 }
 
-pub fn parse_configuration(
-    config_override: Option<PathBuf>,
-    config_file: Option<PathBuf>,
-) -> CLIResult<Configuration> {
-    user_configuration_toml(config_override, config_file)?
+pub fn parse(file: Option<PathBuf>, collation: CollationMode) -> CLIResult<Configuration> {
+    user_configuration_toml(None, file)?
         .try_into()
         .map_err(TopiaryError::from)
 }
