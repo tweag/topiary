@@ -186,14 +186,15 @@ Options:
           Configuration collation mode
 
           [env: TOPIARY_CONFIG_COLLATION]
-          [default: coalesce]
+          [default: merge]
 
           Possible values:
-          - coalesce: When multiple sources of configuration are available, values are coalesced. That is, new
-            values are added to the final configuration, whereas existing values are overridden when
-            higher priority versions are specified
+          - merge:    When multiple sources of configuration are available, matching items are updated from
+            the higher priority source, with collections merged as the union of sets
+          - revise:   When multiple sources of configuration are available, matching items (including
+            collections) are superseded from the higher priority source
           - override: When multiple sources of configuration are available, the highest priority source is
-            taken. Values from lower priority sources are discarded
+            taken. All values from lower priority sources are discarded
 
   -h, --help
           Print help (see a summary with '-h')
@@ -240,14 +241,15 @@ Options:
           Configuration collation mode
 
           [env: TOPIARY_CONFIG_COLLATION]
-          [default: coalesce]
+          [default: merge]
 
           Possible values:
-          - coalesce: When multiple sources of configuration are available, values are coalesced. That is, new
-            values are added to the final configuration, whereas existing values are overridden when
-            higher priority versions are specified
+          - merge:    When multiple sources of configuration are available, matching items are updated from
+            the higher priority source, with collections merged as the union of sets
+          - revise:   When multiple sources of configuration are available, matching items (including
+            collections) are superseded from the higher priority source
           - override: When multiple sources of configuration are available, the highest priority source is
-            taken. Values from lower priority sources are discarded
+            taken. All values from lower priority sources are discarded
 
   -h, --help
           Print help (see a summary with '-h')
@@ -301,14 +303,15 @@ Options:
           Configuration collation mode
 
           [env: TOPIARY_CONFIG_COLLATION]
-          [default: coalesce]
+          [default: merge]
 
           Possible values:
-          - coalesce: When multiple sources of configuration are available, values are coalesced. That is, new
-            values are added to the final configuration, whereas existing values are overridden when
-            higher priority versions are specified
+          - merge:    When multiple sources of configuration are available, matching items are updated from
+            the higher priority source, with collections merged as the union of sets
+          - revise:   When multiple sources of configuration are available, matching items (including
+            collections) are superseded from the higher priority source
           - override: When multiple sources of configuration are available, the highest priority source is
-            taken. Values from lower priority sources are discarded
+            taken. All values from lower priority sources are discarded
 
   -h, --help
           Print help (see a summary with '-h')
@@ -339,14 +342,15 @@ Options:
           Configuration collation mode
 
           [env: TOPIARY_CONFIG_COLLATION]
-          [default: coalesce]
+          [default: merge]
 
           Possible values:
-          - coalesce: When multiple sources of configuration are available, values are coalesced. That is, new
-            values are added to the final configuration, whereas existing values are overridden when
-            higher priority versions are specified
+          - merge:    When multiple sources of configuration are available, matching items are updated from
+            the higher priority source, with collections merged as the union of sets
+          - revise:   When multiple sources of configuration are available, matching items (including
+            collections) are superseded from the higher priority source
           - override: When multiple sources of configuration are available, the highest priority source is
-            taken. Values from lower priority sources are discarded
+            taken. All values from lower priority sources are discarded
 
   -h, --help
           Print help (see a summary with '-h')
