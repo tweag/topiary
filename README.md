@@ -127,7 +127,7 @@ set it to `<local path of the topiary repository>/languages`, for example:
 
 ```console
 export TOPIARY_LANGUAGE_DIR=/home/me/tools/topiary/languages
-topiary -i -f ./projects/helloworld/hello.ml
+topiary fmt ./projects/helloworld/hello.ml
 ```
 
 `TOPIARY_LANGUAGE_DIR` can alternatively be set at build time. Topiary will pick
