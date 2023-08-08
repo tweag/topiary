@@ -34,7 +34,7 @@ async fn run() -> CLIResult<()> {
     env_logger::init();
 
     let args = cli::get_args()?;
-    let config = configuration::parse(
+    let config = configuration::fetch(
         args.global.configuration,
         // The collation value is always set, so we can safely unwrap
         args.global.configuration_collation.unwrap(),

@@ -23,30 +23,100 @@ pub enum CollationMode {
     Override,
 }
 
-pub fn parse(file: Option<PathBuf>, collation: CollationMode) -> CLIResult<Configuration> {
-    user_configuration_toml(None, file)?
+/// Consume the configuration from the usual sources, collated as specified
+pub fn fetch(file: Option<PathBuf>, collation: CollationMode) -> CLIResult<Configuration> {
+    configuration_toml(file, collation)?
         .try_into()
         .map_err(TopiaryError::from)
 }
 
-/// User configured languages.toml file, merged with the default config.
-/// If a configuration_override was provided, all other configuration files are ignored.
-fn user_configuration_toml(
-    config_override: Option<PathBuf>,
-    config_file: Option<PathBuf>,
-) -> CLIResult<toml::Value> {
-    // If an override was requested, disregard all other configuration
-    if let Some(path) = config_override {
-        let content = std::fs::read_to_string(path)?;
-        let toml = toml::from_str(&content)?;
-        return Ok(toml);
+/// Sources of TOML configuration
+enum ConfigSource {
+    Builtin,
+    File(PathBuf),
+
+    Missing, // This is a sentinel element for files that don't exist
+}
+
+impl ConfigSource {
+    fn is_valid(&self) -> bool {
+        !matches!(self, Self::Missing)
+    }
+}
+
+impl From<Option<PathBuf>> for ConfigSource {
+    fn from(path: Option<PathBuf>) -> Self {
+        match path {
+            None => ConfigSource::Missing,
+
+            Some(path) => {
+                let candidate = if path.is_dir() {
+                    path.join("languages.toml")
+                } else {
+                    path
+                };
+
+                if candidate.exists() {
+                    ConfigSource::File(candidate)
+                } else {
+                    ConfigSource::Missing
+                }
+            }
+        }
+    }
+}
+
+impl TryFrom<&ConfigSource> for toml::Value {
+    type Error = TopiaryError;
+
+    fn try_from(source: &ConfigSource) -> Result<Self, Self::Error> {
+        match source {
+            ConfigSource::Builtin => Ok(default_configuration_toml()),
+
+            ConfigSource::File(file) => {
+                let config = std::fs::read_to_string(file)?;
+                toml::from_str(&config).map_err(TopiaryError::from)
+            }
+
+            ConfigSource::Missing => Err(TopiaryError::Bin(
+                "Could not parse missing configuration".into(),
+                None,
+            )),
+        }
+    }
+}
+
+/// Consume configuration and collate as specified. Sources of configuration, in priority order
+/// (lowest to highest) are:
+///
+/// 1. Built-in configuration (`topiary::default_configuration_toml`)
+/// 2. `~/.config/topiary/languages.toml` (or equivalent)
+/// 3. `.topiary/languages.toml` (or equivalent)
+/// 4. `file`, passed as a CLI argument/environment variable
+fn configuration_toml(file: Option<PathBuf>, collation: CollationMode) -> CLIResult<toml::Value> {
+    let sources: Vec<ConfigSource> = [
+        ConfigSource::Builtin,
+        Some(find_os_configuration_dir()).into(),
+        find_workspace_configuration_dir().into(),
+        file.into(),
+    ]
+    .into_iter()
+    .filter(ConfigSource::is_valid)
+    .collect();
+
+    match collation {
+        // TODO
+        CollationMode::Merge => todo!(),
+        CollationMode::Revise => todo!(),
+
+        CollationMode::Override => {
+            let highest = sources.last().expect("No sources of configuration found");
+            Ok(highest.try_into()?)
+        }
     }
 
-    // Otherwise consider the configuration files in order. Lowest priority first:
-    //   - The built-in configuration `default_configuration_toml`
-    //   - `~/.config/topiary/languages.toml` (or equivalent)
-    //   - `.topiary/languages.toml`
-    //   - `config_file` as passed by `--configuration_file/-c/TOPIARY_CONFIGURATION_FILE`
+    // Original code
+    /*
     [
         Some(find_os_configuration_dir()),
         find_workspace_configuration_dir(),
@@ -70,6 +140,25 @@ fn user_configuration_toml(
         let b = b?;
         Ok(merge_toml_values(a, b, 3))
     })
+    */
+}
+
+/// Find the OS-specific configuration directory
+fn find_os_configuration_dir() -> PathBuf {
+    ProjectDirs::from("", "", "topiary")
+        .expect("Could not access the OS's Home directory")
+        .config_dir()
+        .to_path_buf()
+}
+
+/// Ascend the directory hierarchy, starting from the current working directory, in search of the
+/// nearest `.topiary` configuration directory
+fn find_workspace_configuration_dir() -> Option<PathBuf> {
+    current_dir()
+        .expect("Could not get current working directory")
+        .ancestors()
+        .map(|path| path.join(".topiary"))
+        .find(|path| path.exists())
 }
 
 /// Merge two TOML documents, merging values from `right` onto `left`
@@ -143,22 +232,4 @@ pub fn merge_toml_values(left: toml::Value, right: toml::Value, merge_depth: usi
         // Catch everything else we didn't handle, and use the right value
         (_, value) => value,
     }
-}
-
-/// Find the OS-specific configuration directory
-fn find_os_configuration_dir() -> PathBuf {
-    ProjectDirs::from("", "", "topiary")
-        .expect("Could not access the OS's Home directory")
-        .config_dir()
-        .to_path_buf()
-}
-
-/// Ascend the directory hierarchy, starting from the current working directory, in search of the
-/// nearest `.topiary` configuration directory
-fn find_workspace_configuration_dir() -> Option<PathBuf> {
-    current_dir()
-        .expect("Could not get current working directory")
-        .ancestors()
-        .map(|path| path.join(".topiary"))
-        .find(|path| path.exists())
 }
