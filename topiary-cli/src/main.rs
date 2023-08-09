@@ -64,7 +64,7 @@ async fn run() -> CLIResult<()> {
 
         Commands::Cfg => {
             // Output collated configuration as TOML, with annotations about how we got there
-            println!("{annotations}\n{config}");
+            print!("{annotations}\n{config}");
         }
     }
 
