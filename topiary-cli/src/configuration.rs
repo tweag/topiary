@@ -65,7 +65,7 @@ fn annotate(sources: &[ConfigSource], collation: &CollationMode) -> String {
         # Collation mode: {collation:?}
         ",
         sources
-            .into_iter()
+            .iter()
             .enumerate()
             .map(|(i, source)| format!("# {}. {source}", i + 1))
             .join("\n")
@@ -177,7 +177,14 @@ fn configuration_toml(
     match collation {
         CollationMode::Merge => todo!(),
 
-        CollationMode::Revise => todo!(),
+        CollationMode::Revise => {
+            // It's safe to unwrap here, as `sources` is guaranteed to contain at least one element
+            sources
+                .iter()
+                .map(|source| source.try_into())
+                .reduce(|config, toml| Ok(merge_toml_values(config?, toml?, 3)))
+                .unwrap()
+        }
 
         CollationMode::Override => {
             // It's safe to unwrap here, as `sources` is guaranteed to contain at least one element
@@ -185,33 +192,6 @@ fn configuration_toml(
             Ok(highest.try_into()?)
         }
     }
-
-    // Original code
-    /*
-    [
-        Some(find_os_configuration_dir()),
-        find_workspace_configuration_dir(),
-        config_file,
-    ]
-    .into_iter()
-    .filter_map(|path| {
-        path.map(|p| match p.is_file() {
-            // The path already points to a file, assume the file is the configuration file
-            true => p,
-            // The path points to a directory, assume it is a topiary configuration directory and append "languages.toml"
-            false => p.join("languages.toml"),
-        })
-    })
-    .filter_map(|file| -> Option<Result<toml::Value, toml::de::Error>> {
-        std::fs::read_to_string(file)
-            .map(|config| toml::from_str(&config))
-            .ok()
-    })
-    .try_fold(default_configuration_toml(), |a, b| {
-        let b = b?;
-        Ok(merge_toml_values(a, b, 3))
-    })
-    */
 }
 
 /// Find the OS-specific configuration directory
