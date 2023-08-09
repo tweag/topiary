@@ -188,8 +188,11 @@ fn configuration_toml(
 
         CollationMode::Override => {
             // It's safe to unwrap here, as `sources` is guaranteed to contain at least one element
-            let highest = sources.last().unwrap();
-            Ok(highest.try_into()?)
+            sources
+                .last()
+                .unwrap()
+                .try_into()
+                .map_err(TopiaryError::from)
         }
     }
 }
