@@ -34,10 +34,10 @@ async fn run() -> CLIResult<()> {
     env_logger::init();
 
     let args = cli::get_args()?;
-    let config = configuration::fetch(
-        args.global.configuration,
+    let (annotations, config) = configuration::fetch(
+        &args.global.configuration,
         // The collation value is always set, so we can safely unwrap
-        args.global.configuration_collation.unwrap(),
+        args.global.configuration_collation.as_ref().unwrap(),
     )?;
 
     // Delegate by subcommand
@@ -63,7 +63,8 @@ async fn run() -> CLIResult<()> {
         }
 
         Commands::Cfg => {
-            println!("{}", config);
+            // Output collated configuration as TOML, with annotations about how we got there
+            println!("{annotations}\n{config}");
         }
     }
 

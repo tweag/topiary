@@ -1,9 +1,13 @@
 use clap::ValueEnum;
 use directories::ProjectDirs;
-use std::{env::current_dir, path::PathBuf};
+use indoc::formatdoc;
+use itertools::Itertools;
+use std::{env::current_dir, fmt, path::PathBuf};
 use topiary::{default_configuration_toml, Configuration};
 
 use crate::error::{CLIResult, TopiaryError};
+
+type Annotations = String;
 
 /// Collation mode for configuration values
 // NOTE The enum variants are in "natural" order, rather than
@@ -24,23 +28,79 @@ pub enum CollationMode {
 }
 
 /// Consume the configuration from the usual sources, collated as specified
-pub fn fetch(file: Option<PathBuf>, collation: CollationMode) -> CLIResult<Configuration> {
-    configuration_toml(file, collation)?
-        .try_into()
-        .map_err(TopiaryError::from)
+pub fn fetch(
+    file: &Option<PathBuf>,
+    collation: &CollationMode,
+) -> CLIResult<(Annotations, Configuration)> {
+    // If we have an explicit file, fail if it doesn't exist
+    if let Some(path) = file {
+        if !path.exists() {
+            return Err(TopiaryError::Bin(
+                format!("Configuration file not found: {}", path.to_string_lossy()),
+                None,
+            ));
+        }
+    }
+
+    let sources = configuration_sources(file);
+
+    Ok((
+        annotate(&sources, collation),
+        configuration_toml(&sources, collation)?
+            .try_into()
+            .map_err(TopiaryError::from)?,
+    ))
+}
+
+/// Return annotations for the configuration in the form of TOML comments
+/// (useful for human-readable output)
+fn annotate(sources: &[ConfigSource], collation: &CollationMode) -> String {
+    formatdoc!(
+        "
+        # Configuration collated from the following sources,
+        # in priority order (lowest to highest):
+        #
+        {}
+        #
+        # Collation mode: {collation:?}
+        ",
+        sources
+            .into_iter()
+            .enumerate()
+            .map(|(i, source)| format!("# {}. {source}", i + 1))
+            .join("\n")
+    )
 }
 
 /// Sources of TOML configuration
+#[derive(Debug)]
 enum ConfigSource {
     Builtin,
     File(PathBuf),
 
-    Missing, // This is a sentinel element for files that don't exist
+    // This is a sentinel element for files that don't exist
+    Missing,
 }
 
 impl ConfigSource {
     fn is_valid(&self) -> bool {
         !matches!(self, Self::Missing)
+    }
+}
+
+impl fmt::Display for ConfigSource {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        match self {
+            Self::Builtin => write!(f, "Built-in configuration"),
+
+            Self::File(path) => {
+                // We only stringify the path when we know it exists, so the call to `canonicalize`
+                // is safe to unwrap. (All bets are off, if called from elsewhere.)
+                write!(f, "{}", path.canonicalize().unwrap().to_string_lossy())
+            }
+
+            Self::Missing => write!(f, "Missing configuration"),
+        }
     }
 }
 
@@ -59,6 +119,11 @@ impl From<Option<PathBuf>> for ConfigSource {
                 if candidate.exists() {
                     ConfigSource::File(candidate)
                 } else {
+                    log::warn!(
+                        "Could not find configuration file: {}",
+                        candidate.to_string_lossy()
+                    );
+
                     ConfigSource::Missing
                 }
             }
@@ -86,31 +151,37 @@ impl TryFrom<&ConfigSource> for toml::Value {
     }
 }
 
-/// Consume configuration and collate as specified. Sources of configuration, in priority order
-/// (lowest to highest) are:
+/// Return the valid sources of configuration, in priority order (lowest to highest):
 ///
 /// 1. Built-in configuration (`topiary::default_configuration_toml`)
 /// 2. `~/.config/topiary/languages.toml` (or equivalent)
 /// 3. `.topiary/languages.toml` (or equivalent)
 /// 4. `file`, passed as a CLI argument/environment variable
-fn configuration_toml(file: Option<PathBuf>, collation: CollationMode) -> CLIResult<toml::Value> {
-    let sources: Vec<ConfigSource> = [
+fn configuration_sources(file: &Option<PathBuf>) -> Vec<ConfigSource> {
+    [
         ConfigSource::Builtin,
         Some(find_os_configuration_dir()).into(),
         find_workspace_configuration_dir().into(),
-        file.into(),
+        file.clone().into(),
     ]
     .into_iter()
     .filter(ConfigSource::is_valid)
-    .collect();
+    .collect()
+}
 
+/// Consume configuration and collate as specified
+fn configuration_toml(
+    sources: &[ConfigSource],
+    collation: &CollationMode,
+) -> CLIResult<toml::Value> {
     match collation {
-        // TODO
         CollationMode::Merge => todo!(),
+
         CollationMode::Revise => todo!(),
 
         CollationMode::Override => {
-            let highest = sources.last().expect("No sources of configuration found");
+            // It's safe to unwrap here, as `sources` is guaranteed to contain at least one element
+            let highest = sources.last().unwrap();
             Ok(highest.try_into()?)
         }
     }
