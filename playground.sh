@@ -40,16 +40,10 @@ format() {
   local input="$2"
   local skip_idempotence="${3-1}"
 
-  local -a topiary_args=(
-    --query "${query}"
-    --input-files "${input}"
-  )
+  local -a topiary_args=(--query "${query}")
+  (( skip_idempotence )) && topiary_args+=(--skip-idempotence)
 
-  if (( skip_idempotence )); then
-    topiary_args+=(--skip-idempotence)
-  fi
-
-  cargo run --quiet -- "${topiary_args[@]}"
+  cargo run --quiet -- fmt "${topiary_args[@]}" < "${input}"
 }
 
 idempotency() {
