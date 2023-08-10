@@ -175,17 +175,6 @@ fn configuration_toml(
     collation: &CollationMode,
 ) -> CLIResult<toml::Value> {
     match collation {
-        CollationMode::Merge => todo!(),
-
-        CollationMode::Revise => {
-            // It's safe to unwrap here, as `sources` is guaranteed to contain at least one element
-            sources
-                .iter()
-                .map(|source| source.try_into())
-                .reduce(|config, toml| Ok(merge_toml_values(config?, toml?, 3)))
-                .unwrap()
-        }
-
         CollationMode::Override => {
             // It's safe to unwrap here, as `sources` is guaranteed to contain at least one element
             sources
@@ -193,6 +182,16 @@ fn configuration_toml(
                 .unwrap()
                 .try_into()
                 .map_err(TopiaryError::from)
+        }
+
+        // CollationMode::Merge and CollationMode::Revise
+        _ => {
+            // It's safe to unwrap here, as `sources` is guaranteed to contain at least one element
+            sources
+                .iter()
+                .map(|source| source.try_into())
+                .reduce(|config, toml| Ok(collate_toml(config?, toml?, collation, 3)))
+                .unwrap()
         }
     }
 }
@@ -215,82 +214,89 @@ fn find_workspace_configuration_dir() -> Option<PathBuf> {
         .find(|path| path.exists())
 }
 
-/// Merge two TOML documents, merging values from `right` onto `left`
+/// Collate two TOML documents, merging values from `graft` onto `base`.
 ///
-/// When an array exists in both `left` and `right`, `right`'s array is
-/// used. When a table exists in both `left` and `right`, the merged table
-/// consists of all keys in `left`'s table unioned with all keys in `right`
-/// with the values of `right` being merged recursively onto values of
-/// `left`.
+/// When a (sub-level) array exists in both `base` and `graft`, the collation mode determines the
+/// action to take:
 ///
-/// `merge_toplevel_arrays` controls whether a top-level array in the TOML
-/// document is merged instead of overridden. This is useful for TOML
-/// documents that use a top-level array of values like the `languages.toml`,
-/// where one usually wants to override or add to the array instead of
-/// replacing it altogether.
+/// * Merge:  `[1, 2, 3] (+) [2, 3, 4] == [1, 2, 3, 4]`
+/// * Revise: `[1, 2, 3] (+) [2, 3, 4] == [2, 3, 4]`
 ///
-/// NOTE: This merge function is taken from Helix:
-/// https://github.com/helix-editor/helix licensed under MPL-2.0. There
-/// it is defined under: helix-loader/src/lib.rs. Taken from commit df09490
-pub fn merge_toml_values(left: toml::Value, right: toml::Value, merge_depth: usize) -> toml::Value {
+/// When a table exists in both `base` and `graft`, the merged table consists of all keys in
+/// `base`'s table unioned with all keys in `graft` with the values of `graft` being merged
+/// recursively onto values of `base`.
+///
+/// NOTE: This collation function is forked from Helix, licensed under MPL-2.0
+/// * Repo: https://github.com/helix-editor/helix
+/// * Rev:  df09490
+/// * Path: helix-loader/src/lib.rs
+fn collate_toml(
+    base: toml::Value,
+    graft: toml::Value,
+    collation: &CollationMode,
+    merge_depth: usize,
+) -> toml::Value {
     use toml::Value;
 
     fn get_name(v: &Value) -> Option<&str> {
         v.get("name").and_then(Value::as_str)
     }
 
-    match (left, right) {
-        (Value::Array(mut left_items), Value::Array(right_items)) => {
+    match (base, graft) {
+        (Value::Array(mut base_items), Value::Array(graft_items)) => {
             // The top-level arrays should be merged but nested arrays should
             // act as overrides. For the `languages.toml` config, this means
             // that you can specify a sub-set of languages in an overriding
             // `languages.toml` but that nested arrays like file extensions
             // arguments are replaced instead of merged.
             if merge_depth > 0 {
-                left_items.reserve(right_items.len());
-                for rvalue in right_items {
+                base_items.reserve(graft_items.len());
+                for rvalue in graft_items {
                     let lvalue = get_name(&rvalue)
                         .and_then(|rname| {
-                            left_items.iter().position(|v| get_name(v) == Some(rname))
+                            base_items.iter().position(|v| get_name(v) == Some(rname))
                         })
-                        .map(|lpos| left_items.remove(lpos));
+                        .map(|lpos| base_items.remove(lpos));
                     let mvalue = match lvalue {
-                        Some(lvalue) => merge_toml_values(lvalue, rvalue, merge_depth - 1),
+                        Some(lvalue) => collate_toml(lvalue, rvalue, collation, merge_depth - 1),
                         None => rvalue,
                     };
-                    left_items.push(mvalue);
+                    base_items.push(mvalue);
                 }
-                Value::Array(left_items)
+                Value::Array(base_items)
             } else {
-                Value::Array(right_items)
+                Value::Array(graft_items)
             }
         }
-        (Value::Table(mut left_map), Value::Table(right_map)) => {
+
+        (Value::Table(mut base_map), Value::Table(graft_map)) => {
             if merge_depth > 0 {
-                for (rname, rvalue) in right_map {
-                    match left_map.remove(&rname) {
+                for (rname, rvalue) in graft_map {
+                    match base_map.remove(&rname) {
                         Some(lvalue) => {
-                            let merged_value = merge_toml_values(lvalue, rvalue, merge_depth - 1);
-                            left_map.insert(rname, merged_value);
+                            let merged_value =
+                                collate_toml(lvalue, rvalue, collation, merge_depth - 1);
+                            base_map.insert(rname, merged_value);
                         }
                         None => {
-                            left_map.insert(rname, rvalue);
+                            base_map.insert(rname, rvalue);
                         }
                     }
                 }
-                Value::Table(left_map)
+                Value::Table(base_map)
             } else {
-                Value::Table(right_map)
+                Value::Table(graft_map)
             }
         }
-        // Catch everything else we didn't handle, and use the right value
+
+        // Catch everything else we didn't handle, and use the graft value
         (_, value) => value,
     }
 }
 
 #[cfg(test)]
 mod test_toml_collation {
-    use super::{merge_toml_values, Configuration};
+    use super::{collate_toml, CollationMode, Configuration};
 
     // NOTE PartialEq for toml::Value is (understandably) order sensitive over array elements, so
     // we convert to `topiary::Configuration` for equality testing. Technically this means our
@@ -318,8 +324,9 @@ mod test_toml_collation {
         let base = toml::from_str(BASE).unwrap();
         let graft = toml::from_str(GRAFT).unwrap();
 
-        // TODO Update function call for respective collation mode
-        let merged: Configuration = merge_toml_values(base, graft, 3).try_into().unwrap();
+        let merged: Configuration = collate_toml(base, graft, &CollationMode::Merge, 3)
+            .try_into()
+            .unwrap();
 
         let expected: Configuration = toml::from_str(
             r#"
@@ -343,8 +350,9 @@ mod test_toml_collation {
         let base = toml::from_str(BASE).unwrap();
         let graft = toml::from_str(GRAFT).unwrap();
 
-        // TODO Update function call for respective collation mode
-        let revised: Configuration = merge_toml_values(base, graft, 3).try_into().unwrap();
+        let revised: Configuration = collate_toml(base, graft, &CollationMode::Revise, 3)
+            .try_into()
+            .unwrap();
 
         let expected: Configuration = toml::from_str(
             r#"
