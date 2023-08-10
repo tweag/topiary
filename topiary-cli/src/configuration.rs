@@ -287,3 +287,79 @@ pub fn merge_toml_values(left: toml::Value, right: toml::Value, merge_depth: usi
         (_, value) => value,
     }
 }
+
+#[cfg(test)]
+mod test_toml_collation {
+    use super::{merge_toml_values, Configuration};
+
+    // NOTE PartialEq for toml::Value is (understandably) order sensitive over array elements, so
+    // we convert to `topiary::Configuration` for equality testing. Technically this means our
+    // collation tests are not completely general, but that's not really important.
+
+    static BASE: &str = r#"
+        [[language]]
+        name = "example"
+        extensions = ["eg"]
+
+        [[language]]
+        name = "demo"
+        extensions = ["demo"]
+    "#;
+
+    static GRAFT: &str = r#"
+        [[language]]
+        name = "example"
+        extensions = ["example"]
+        indent = "\t"
+    "#;
+
+    #[test]
+    fn merge() {
+        let base = toml::from_str(BASE).unwrap();
+        let graft = toml::from_str(GRAFT).unwrap();
+
+        // TODO Update function call for respective collation mode
+        let merged: Configuration = merge_toml_values(base, graft, 3).try_into().unwrap();
+
+        let expected: Configuration = toml::from_str(
+            r#"
+            [[language]]
+            name = "example"
+            extensions = ["eg", "example"]
+            indent = "\t"
+
+            [[language]]
+            name = "demo"
+            extensions = ["demo"]
+            "#,
+        )
+        .unwrap();
+
+        assert_eq!(merged, expected);
+    }
+
+    #[test]
+    fn revise() {
+        let base = toml::from_str(BASE).unwrap();
+        let graft = toml::from_str(GRAFT).unwrap();
+
+        // TODO Update function call for respective collation mode
+        let revised: Configuration = merge_toml_values(base, graft, 3).try_into().unwrap();
+
+        let expected: Configuration = toml::from_str(
+            r#"
+            [[language]]
+            name = "example"
+            extensions = ["example"]
+            indent = "\t"
+
+            [[language]]
+            name = "demo"
+            extensions = ["demo"]
+            "#,
+        )
+        .unwrap();
+
+        assert_eq!(revised, expected);
+    }
+}
