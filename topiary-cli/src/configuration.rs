@@ -201,7 +201,7 @@ fn configuration_toml(
             sources
                 .iter()
                 .map(|source| source.try_into())
-                .reduce(|config, toml| Ok(collate_toml(config?, toml?, collation.into())))
+                .reduce(|config, toml| Ok(collate_toml(config?, toml?, collation)))
                 .unwrap()
         }
     }
@@ -241,12 +241,17 @@ fn find_workspace_configuration_dir() -> Option<PathBuf> {
 /// * Repo: https://github.com/helix-editor/helix
 /// * Rev:  df09490
 /// * Path: helix-loader/src/lib.rs
-fn collate_toml(base: toml::Value, graft: toml::Value, merge_depth: usize) -> toml::Value {
+fn collate_toml<T>(base: toml::Value, graft: toml::Value, merge_depth: T) -> toml::Value
+where
+    T: Into<usize>,
+{
     use toml::Value;
 
     fn get_name(v: &Value) -> Option<&str> {
         v.get("name").and_then(Value::as_str)
     }
+
+    let merge_depth: usize = merge_depth.into();
 
     match (base, graft, merge_depth) {
         // Fallback to the graft value if the recursion depth bottoms out
@@ -325,7 +330,7 @@ mod test_config_collation {
         let base = toml::from_str(BASE).unwrap();
         let graft = toml::from_str(GRAFT).unwrap();
 
-        let merged: Configuration = collate_toml(base, graft, (&CollationMode::Merge).into())
+        let merged: Configuration = collate_toml(base, graft, &CollationMode::Merge)
             .try_into()
             .unwrap();
 
@@ -351,7 +356,7 @@ mod test_config_collation {
         let base = toml::from_str(BASE).unwrap();
         let graft = toml::from_str(GRAFT).unwrap();
 
-        let revised: Configuration = collate_toml(base, graft, (&CollationMode::Revise).into())
+        let revised: Configuration = collate_toml(base, graft, &CollationMode::Revise)
             .try_into()
             .unwrap();
 
