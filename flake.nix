@@ -61,7 +61,7 @@
               topiary-inplace = pkgs.writeShellApplication {
                 name = "topiary-inplace";
                 text = ''
-                  ${code.topiary-cli}/bin/topiary --in-place --input-files "$@";
+                  ${code.topiary-cli}/bin/topiary fmt "$@";
                 '';
               };
             in
