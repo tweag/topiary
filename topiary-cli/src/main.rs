@@ -1,7 +1,8 @@
+mod cli;
 mod configuration;
 mod error;
 mod output;
-mod visualise;
+mod visualisation;
 
 use std::{
     eprintln,
@@ -12,91 +13,13 @@ use std::{
     process::ExitCode,
 };
 
-use clap::{ArgGroup, Parser};
 use configuration::parse_configuration;
 
 use crate::{
     error::{CLIError, CLIResult, TopiaryError},
     output::OutputFile,
-    visualise::Visualisation,
 };
-use topiary::{formatter, Language, Operation, SupportedLanguage, TopiaryQuery};
-
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-// Require at least one of --language or --input-files (n.b., language > input)
-#[command(group(ArgGroup::new("rule").multiple(true).required(true).args(&["language", "input_files"]),))]
-struct Args {
-    /// Which language to parse and format
-    #[arg(short, long, value_enum, display_order = 1)]
-    language: Option<SupportedLanguage>,
-
-    /// Path to an input file or multiple input files. If omitted, or equal
-    /// to "-", read from standard input. If multiple files are provided,
-    /// `in_place` is assumed.
-    #[arg(short = 'f', long, num_args = 0.., display_order = 2, default_values_t = ["-".to_string()])]
-    input_files: Vec<String>,
-
-    /// Which query file to use
-    #[arg(short, long, display_order = 3)]
-    query: Option<PathBuf>,
-
-    /// Path to an output file. If omitted, or equal to "-", write to standard
-    /// output.
-    #[arg(short, long, display_order = 4)]
-    output_file: Option<String>,
-
-    /// Format the input files in place.
-    #[arg(short, long, requires = "input_files", display_order = 5)]
-    in_place: bool,
-
-    /// Visualise the syntax tree, rather than format.
-    #[arg(
-        short,
-        long,
-        value_enum,
-        aliases = &["view", "visualize"],
-        value_name = "OUTPUT_FORMAT",
-        conflicts_with_all = &["in_place", "skip_idempotence"],
-        require_equals = true,
-        num_args = 0..=1,
-        default_missing_value = "json",
-        display_order = 6
-    )]
-    visualise: Option<Visualisation>,
-
-    /// Do not check that formatting twice gives the same output
-    #[arg(short, long, display_order = 7)]
-    skip_idempotence: bool,
-
-    /// Output the full configuration to stderr before continuing
-    #[arg(long, display_order = 8)]
-    output_configuration: bool,
-
-    /// Format as much as possible even if some of the input causes parsing errors
-    #[arg(short, long, display_order = 9)]
-    tolerate_parsing_errors: bool,
-
-    /// Override all configuration with the provided file
-    #[arg(long, env = "TOPIARY_CONFIGURATION_OVERRIDE", display_order = 10)]
-    configuration_override: Option<PathBuf>,
-
-    /// Add the specified configuration file with the highest prority
-    #[arg(short, long, env = "TOPIARY_CONFIGURATION_FILE", display_order = 11)]
-    configuration_file: Option<PathBuf>,
-}
-
-// /// Collects all the values needed for the eventual formatting. This helper
-// /// struct just makes it easy to collect them all in a Vec.
-// /// If `--in-place` was specified or if `--input-files` was
-// /// given more than one file, the input and output will be the same file and
-// /// the entire FormatStruct will be placed in a Vector. In all other cases the vector
-// /// will still be created, but it will be a singleton vector.
-// struct FormatStruct<'a> {
-//     input: &'a dyn Read,
-//     output: BufWriter<OutputFile>,
-//     language: &'a Language,
-// }
+use topiary::{formatter, Language, Operation, TopiaryQuery};
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -113,7 +36,7 @@ async fn run() -> CLIResult<()> {
 
     // Restructure Args to match our expected behaviour
     let args = {
-        let mut args = Args::parse();
+        let mut args = cli::parse();
 
         // Remove duplicates from the input_files, (among other things, avoids being able to pass "-" twice)
         args.input_files.sort_unstable();
