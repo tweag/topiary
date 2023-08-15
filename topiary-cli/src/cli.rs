@@ -11,8 +11,8 @@ use crate::{
 };
 
 #[derive(Debug, Parser)]
-// NOTE infer_subcommands would be useful, but our heavy use of aliases is problematic (see
-// clap-rs/clap#5021)
+// NOTE Don't use infer_subcommands, as that could fossilise the interface. We define explicit
+// aliases instead. (See https://clig.dev/#future-proofing)
 #[command(about, author, long_about = None, version)]
 pub struct Cli {
     // Global options
