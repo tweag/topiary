@@ -133,7 +133,7 @@ where
 impl From<toml::de::Error> for TopiaryError {
     fn from(e: toml::de::Error) -> Self {
         TopiaryError::Bin(
-            "Could not parse user configuration".to_owned(),
+            "Could not parse configuration".into(),
             Some(CLIError::Generic(Box::new(e))),
         )
     }
@@ -142,7 +142,7 @@ impl From<toml::de::Error> for TopiaryError {
 impl From<serde_toml_merge::Error> for TopiaryError {
     fn from(e: serde_toml_merge::Error) -> Self {
         TopiaryError::Bin(
-            format!("Could not merge the default configuration and user configurations. Error occured while merging: {}", e.path),
+            format!("Could not collate configuration from {}", e.path),
             None,
         )
     }
@@ -151,7 +151,7 @@ impl From<serde_toml_merge::Error> for TopiaryError {
 impl From<tokio::task::JoinError> for TopiaryError {
     fn from(e: tokio::task::JoinError) -> Self {
         TopiaryError::Bin(
-            "Could not join parallel formatting tasks".to_owned(),
+            "Could not join parallel formatting tasks".into(),
             Some(CLIError::Generic(Box::new(e))),
         )
     }

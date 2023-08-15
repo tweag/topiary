@@ -2,6 +2,7 @@
 /// A basic configuration, written in toml, it is included buildtime and parsed runtime.
 /// Additional configuration has to be provided by the user of the library.
 use std::collections::HashSet;
+use std::fmt;
 
 use crate::{language::Language, FormatterError, FormatterResult};
 use serde::{Deserialize, Serialize};
@@ -63,6 +64,14 @@ impl Configuration {
 impl Default for Configuration {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl fmt::Display for Configuration {
+    /// Pretty-print configuration as TOML
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        let toml = toml::to_string_pretty(self).map_err(|_| fmt::Error)?;
+        write!(f, "{toml}")
     }
 }
 

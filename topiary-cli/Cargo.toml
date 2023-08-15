@@ -28,9 +28,11 @@ path = "src/main.rs"
 # Eventually we will want to dynamically load them, like Helix does.
 # NOTE clap/wrap_help isn't perfect (see clap-rs/clap#5022)
 clap = { workspace = true, features = ["derive", "env", "wrap_help"] }
+directories = { workspace = true }
 env_logger = { workspace = true }
 futures = { workspace = true }
-directories = { workspace = true }
+indoc = { workspace = true }
+itertools = { workspace = true }
 log = { workspace = true }
 serde-toml-merge = { workspace = true }
 tempfile = { workspace = true }

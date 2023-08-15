@@ -42,18 +42,11 @@ pub struct GlobalArgs {
     /// Configuration collation mode
     #[arg(
         long,
-        default_value = "coalesce",
+        default_value = "merge",
         display_order = 101,
         env = "TOPIARY_CONFIG_COLLATION",
         global = true,
-        hide_env_values = true,
-
-        // FIXME There appears to be a bug with clap: If this argument is specified via its
-        // environment variable, then the required argument (--configuration) *only* works if it is
-        // also specified via its environment variable. If you use the CLI argument, it complains
-        // that the argument doesn't exist. This behaviour only occurs with subcommands, but that
-        // is exactly our use case, here. (See clap-rs/clap#5020)
-        requires = "configuration"
+        hide_env_values = true
     )]
     pub configuration_collation: Option<configuration::CollationMode>,
 }
