@@ -132,8 +132,7 @@ topiary --visualise[=FORMAT] \
 
 After:
 ```
-topiary vis [--tolerate-parsing-errors] \
-            [--format FORMAT] \
+topiary vis [--format FORMAT] \
             INPUT_FILE \
             [> OUTPUT_FILE]
 ```
@@ -150,8 +149,7 @@ topiary --visualise[=FORMAT] \
 
 After (use IO redirection):
 ```
-topiary vis [--tolerate-parsing-errors] \
-            [--format FORMAT] \
+topiary vis [--format FORMAT] \
             (--langauge LANGUAGE | --query QUERY) \
             < INPUT_FILE \
             [> OUTPUT_FILE]

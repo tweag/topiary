@@ -43,7 +43,7 @@ async fn run() -> CLIResult<()> {
     // Delegate by subcommand
     match args.command {
         Commands::Fmt {
-            parse,
+            tolerate_parsing_errors,
             skip_idempotence,
             language,
             query,
@@ -53,7 +53,6 @@ async fn run() -> CLIResult<()> {
         }
 
         Commands::Vis {
-            parse,
             format,
             language,
             query,

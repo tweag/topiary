@@ -51,15 +51,6 @@ pub struct GlobalArgs {
     pub configuration_collation: Option<configuration::CollationMode>,
 }
 
-// These are "parser" global arguments; i.e., those that are relevant to all subcommands that will
-// parse input. They will need to be added to all such subcommands, with #[command(flatten)].
-#[derive(Args, Debug)]
-pub struct ParseArgs {
-    /// Consume as much as possible in the presence of parsing errors
-    #[arg(short, long)]
-    tolerate_parsing_errors: bool,
-}
-
 #[derive(Debug, Subcommand)]
 pub enum Commands {
     /// Format inputs
@@ -76,8 +67,9 @@ pub enum Commands {
             .args(&["language", "query", "files"])
     )]
     Fmt {
-        #[command(flatten)]
-        parse: ParseArgs,
+        /// Consume as much as possible in the presence of parsing errors
+        #[arg(short, long)]
+        tolerate_parsing_errors: bool,
 
         /// Do not check that formatting twice gives the same output
         #[arg(short, long)]
@@ -109,9 +101,6 @@ pub enum Commands {
             .args(&["language", "query", "file"])
     )]
     Vis {
-        #[command(flatten)]
-        parse: ParseArgs,
-
         /// Visualisation format
         #[arg(short, long, default_value = "dot")]
         format: visualisation::Format,

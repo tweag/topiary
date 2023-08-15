@@ -274,9 +274,6 @@ Arguments:
           Input file (omit to read from stdin)
 
 Options:
-  -t, --tolerate-parsing-errors
-          Consume as much as possible in the presence of parsing errors
-
   -f, --format <FORMAT>
           Visualisation format
 
