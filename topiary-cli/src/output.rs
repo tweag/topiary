@@ -1,7 +1,7 @@
 use crate::error::CLIResult;
 use std::{
     ffi::OsString,
-    io::{stdout, Write},
+    io::{stdout, ErrorKind, Write},
     path::Path,
 };
 use tempfile::NamedTempFile;
@@ -22,8 +22,16 @@ impl OutputFile {
         match path {
             "-" => Ok(Self::Stdout),
             file => {
-                let path = Path::new(file).canonicalize()?;
+                // `canonicalize` if the given path exists, otherwise fallback to what was given
+                let path = Path::new(file).canonicalize().or_else(|e| match e.kind() {
+                    ErrorKind::NotFound => Ok(file.into()),
+                    _ => Err(e),
+                })?;
+
+                // The call to `parent` will only return `None` if `path` is the root directory,
+                // but that doesn't make sense as an output file, so unwrapping is safe
                 let parent = path.parent().unwrap();
+
                 Ok(Self::Disk {
                     staged: NamedTempFile::new_in(parent)?,
                     output: file.into(),
