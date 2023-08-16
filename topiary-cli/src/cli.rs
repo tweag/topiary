@@ -51,21 +51,58 @@ pub struct GlobalArgs {
     pub configuration_collation: Option<configuration::CollationMode>,
 }
 
+// Subtype for exactly one input:
+// * FILE                 => Read input from disk, visualisation output to stdout
+// * --language | --query => Read input from stdin, visualisation output to stdout
+#[derive(Args, Debug)]
+#[command(
+    // Require exactly one of --language, --query, or FILES...
+    group = ArgGroup::new("source")
+        .multiple(false)
+        .required(true)
+        .args(&["language", "query", "file"])
+)]
+pub struct ExactlyOneInput {
+    /// Topiary supported language (for formatting stdin)
+    #[arg(short, long)]
+    language: Option<SupportedLanguage>,
+
+    /// Topiary query file (for formatting stdin)
+    #[arg(short, long)]
+    query: Option<PathBuf>,
+
+    /// Input file (omit to read from stdin)
+    file: Option<PathBuf>,
+}
+
+// Subtype for at least one input
+// * FILES...             => Read input(s) from disk, format in place
+// * --language | --query => Read input from stdin, output to stdout
+#[derive(Args, Debug)]
+#[command(
+    // Require exactly one of --language, --query, or FILES...
+    group = ArgGroup::new("source")
+        .multiple(false)
+        .required(true)
+        .args(&["language", "query", "files"])
+)]
+pub struct AtLeastOneInput {
+    /// Topiary supported language (for formatting stdin)
+    #[arg(short, long)]
+    language: Option<SupportedLanguage>,
+
+    /// Topiary query file (for formatting stdin)
+    #[arg(short, long)]
+    query: Option<PathBuf>,
+
+    /// Input files and directories (omit to read from stdin)
+    files: Vec<PathBuf>,
+}
+
 #[derive(Debug, Subcommand)]
 pub enum Commands {
     /// Format inputs
-    // NOTE FILES...             => Read input(s) from disk, format in place
-    //      --language | --query => Read input from stdin, output to stdout
-    #[command(
-        alias = "format",
-        display_order = 1,
-
-        // Require exactly one of --language, --query, or FILES...
-        group = ArgGroup::new("source")
-            .multiple(false)
-            .required(true)
-            .args(&["language", "query", "files"])
-    )]
+    #[command(alias = "format", display_order = 1)]
     Fmt {
         /// Consume as much as possible in the presence of parsing errors
         #[arg(short, long)]
@@ -75,46 +112,19 @@ pub enum Commands {
         #[arg(short, long)]
         skip_idempotence: bool,
 
-        /// Topiary supported language (for formatting stdin)
-        #[arg(short, long)]
-        language: Option<SupportedLanguage>,
-
-        /// Topiary query file (for formatting stdin)
-        #[arg(short, long)]
-        query: Option<PathBuf>,
-
-        /// Input files and directories (omit to read from stdin)
-        files: Vec<PathBuf>,
+        #[command(flatten)]
+        inputs: AtLeastOneInput,
     },
 
     /// Visualise the input's Tree-sitter parse tree
-    // NOTE FILE                 => Read input from disk, visualisation output to stdout
-    //      --language | --query => Read input from stdin, visualisation output to stdout
-    #[command(
-        aliases = &["visualise", "visualize", "view"],
-        display_order = 2,
-
-        // Require exactly one of --language, --query, or FILE
-        group = ArgGroup::new("source")
-            .multiple(false)
-            .required(true)
-            .args(&["language", "query", "file"])
-    )]
+    #[command(aliases = &["visualise", "visualize", "view"], display_order = 2)]
     Vis {
         /// Visualisation format
         #[arg(short, long, default_value = "dot")]
         format: visualisation::Format,
 
-        /// Topiary supported language (for formatting stdin)
-        #[arg(short, long)]
-        language: Option<SupportedLanguage>,
-
-        /// Topiary query file (for formatting stdin)
-        #[arg(short, long)]
-        query: Option<PathBuf>,
-
-        /// Input file (omit to read from stdin)
-        file: Option<PathBuf>,
+        #[command(flatten)]
+        input: ExactlyOneInput,
     },
 
     /// Print the current configuration
@@ -150,7 +160,10 @@ pub fn get_args() -> CLIResult<Cli> {
     // file, but that's going to be done sooner-or-later by Topiary, so there's no need.
 
     match &mut args.command {
-        Commands::Fmt { files, .. } => {
+        Commands::Fmt {
+            inputs: AtLeastOneInput { files, .. },
+            ..
+        } => {
             // If we're given a list of FILES... then we assume them to all be on disk, even if "-"
             // is passed as an argument (i.e., interpret this as a valid filename, rather than as
             // stdin). We deduplicate this list to avoid formatting the same file multiple times
@@ -162,7 +175,10 @@ pub fn get_args() -> CLIResult<Cli> {
         }
 
         Commands::Vis {
-            file: Some(file), ..
+            input: ExactlyOneInput {
+                file: Some(file), ..
+            },
+            ..
         } => {
             // Make sure our FILE is not a directory
             if file.is_dir() {

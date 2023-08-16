@@ -45,19 +45,12 @@ async fn run() -> CLIResult<()> {
         Commands::Fmt {
             tolerate_parsing_errors,
             skip_idempotence,
-            language,
-            query,
-            files,
+            inputs,
         } => {
             todo!();
         }
 
-        Commands::Vis {
-            format,
-            language,
-            query,
-            file,
-        } => {
+        Commands::Vis { format, input } => {
             todo!();
         }
 
