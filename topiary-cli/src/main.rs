@@ -1,7 +1,7 @@
 mod cli;
 mod configuration;
 mod error;
-mod output;
+mod io;
 mod visualisation;
 
 use std::{
@@ -16,7 +16,7 @@ use std::{
 use crate::{
     cli::Commands,
     error::{CLIError, CLIResult, TopiaryError},
-    output::OutputFile,
+    io::OutputFile,
 };
 use topiary::{formatter, Language, Operation, TopiaryQuery};
 
