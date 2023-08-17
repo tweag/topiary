@@ -51,52 +51,59 @@ pub struct GlobalArgs {
     pub configuration_collation: Option<configuration::CollationMode>,
 }
 
+#[derive(Args, Debug)]
+pub struct Stdin {
+    /// Topiary supported language (for formatting stdin)
+    #[arg(short, long)]
+    pub language: SupportedLanguage,
+
+    /// Topiary query file override (when formatting stdin)
+    #[arg(short, long, requires = "language")]
+    pub query: Option<PathBuf>,
+}
+
 // Subtype for exactly one input:
-// * FILE                 => Read input from disk, visualisation output to stdout
-// * --language | --query => Read input from stdin, visualisation output to stdout
+// * FILE       => Read input from disk, visualisation output to stdout
+// * --language => Read input from stdin, visualisation output to stdout
 #[derive(Args, Debug)]
 #[command(
-    // Require exactly one of --language, --query, or FILES...
+    // Require exactly one of --language, or FILES...
     group = ArgGroup::new("source")
         .multiple(false)
         .required(true)
-        .args(&["language", "query", "file"])
+        .args(&["language", "file"])
 )]
 pub struct ExactlyOneInput {
-    /// Topiary supported language (for formatting stdin)
-    #[arg(short, long)]
-    language: Option<SupportedLanguage>,
-
-    /// Topiary query file (for formatting stdin)
-    #[arg(short, long)]
-    query: Option<PathBuf>,
+    #[command(flatten)]
+    pub stdin: Option<Stdin>,
 
     /// Input file (omit to read from stdin)
-    file: Option<PathBuf>,
+    ///
+    /// Language detection and query selection is automatic, mapped from file extensions defined in
+    /// the Topiary configuration.
+    pub file: Option<PathBuf>,
 }
 
 // Subtype for at least one input
-// * FILES...             => Read input(s) from disk, format in place
-// * --language | --query => Read input from stdin, output to stdout
+// * FILES...   => Read input(s) from disk, format in place
+// * --language => Read input from stdin, output to stdout
 #[derive(Args, Debug)]
 #[command(
     // Require exactly one of --language, --query, or FILES...
     group = ArgGroup::new("source")
         .multiple(false)
         .required(true)
-        .args(&["language", "query", "files"])
+        .args(&["language", "files"])
 )]
 pub struct AtLeastOneInput {
-    /// Topiary supported language (for formatting stdin)
-    #[arg(short, long)]
-    language: Option<SupportedLanguage>,
-
-    /// Topiary query file (for formatting stdin)
-    #[arg(short, long)]
-    query: Option<PathBuf>,
+    #[command(flatten)]
+    pub stdin: Option<Stdin>,
 
     /// Input files and directories (omit to read from stdin)
-    files: Vec<PathBuf>,
+    ///
+    /// Language detection and query selection is automatic, mapped from file extensions defined in
+    /// the Topiary configuration.
+    pub files: Vec<PathBuf>,
 }
 
 #[derive(Debug, Subcommand)]

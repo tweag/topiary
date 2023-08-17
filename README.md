@@ -189,12 +189,12 @@ Options:
           [default: merge]
 
           Possible values:
-          - merge:    When multiple sources of configuration are available, matching items are updated from
-            the higher priority source, with collections merged as the union of sets
-          - revise:   When multiple sources of configuration are available, matching items (including
-            collections) are superseded from the higher priority source
-          - override: When multiple sources of configuration are available, the highest priority source is
-            taken. All values from lower priority sources are discarded
+          - merge:    When multiple sources of configuration are available, matching items are
+            updated from the higher priority source, with collections merged as the union of sets
+          - revise:   When multiple sources of configuration are available, matching items
+            (including collections) are superseded from the higher priority source
+          - override: When multiple sources of configuration are available, the highest priority
+            source is taken. All values from lower priority sources are discarded
 
   -h, --help
           Print help (see a summary with '-h')
@@ -211,11 +211,14 @@ Options:
 ```
 Format inputs
 
-Usage: topiary fmt [OPTIONS] <--language <LANGUAGE>|--query <QUERY>|FILES>
+Usage: topiary fmt [OPTIONS] <--language <LANGUAGE>|FILES>
 
 Arguments:
   [FILES]...
           Input files and directories (omit to read from stdin)
+
+          Language detection and query selection is automatic, mapped from file extensions defined
+          in the Topiary configuration.
 
 Options:
   -t, --tolerate-parsing-errors
@@ -230,7 +233,7 @@ Options:
           [possible values: json, nickel, ocaml, ocaml-interface, ocamllex, toml]
 
   -q, --query <QUERY>
-          Topiary query file (for formatting stdin)
+          Topiary query file override (when formatting stdin)
 
   -C, --configuration <CONFIGURATION>
           Configuration file
@@ -244,12 +247,12 @@ Options:
           [default: merge]
 
           Possible values:
-          - merge:    When multiple sources of configuration are available, matching items are updated from
-            the higher priority source, with collections merged as the union of sets
-          - revise:   When multiple sources of configuration are available, matching items (including
-            collections) are superseded from the higher priority source
-          - override: When multiple sources of configuration are available, the highest priority source is
-            taken. All values from lower priority sources are discarded
+          - merge:    When multiple sources of configuration are available, matching items are
+            updated from the higher priority source, with collections merged as the union of sets
+          - revise:   When multiple sources of configuration are available, matching items
+            (including collections) are superseded from the higher priority source
+          - override: When multiple sources of configuration are available, the highest priority
+            source is taken. All values from lower priority sources are discarded
 
   -h, --help
           Print help (see a summary with '-h')
@@ -267,11 +270,14 @@ either `--language` or `--query` arguments, omitting any input files.
 ```
 Visualise the input's Tree-sitter parse tree
 
-Usage: topiary vis [OPTIONS] <--language <LANGUAGE>|--query <QUERY>|FILE>
+Usage: topiary vis [OPTIONS] <--language <LANGUAGE>|FILE>
 
 Arguments:
   [FILE]
           Input file (omit to read from stdin)
+
+          Language detection and query selection is automatic, mapped from file extensions defined
+          in the Topiary configuration.
 
 Options:
   -f, --format <FORMAT>
@@ -289,7 +295,7 @@ Options:
           [possible values: json, nickel, ocaml, ocaml-interface, ocamllex, toml]
 
   -q, --query <QUERY>
-          Topiary query file (for formatting stdin)
+          Topiary query file override (when formatting stdin)
 
   -C, --configuration <CONFIGURATION>
           Configuration file
@@ -303,12 +309,12 @@ Options:
           [default: merge]
 
           Possible values:
-          - merge:    When multiple sources of configuration are available, matching items are updated from
-            the higher priority source, with collections merged as the union of sets
-          - revise:   When multiple sources of configuration are available, matching items (including
-            collections) are superseded from the higher priority source
-          - override: When multiple sources of configuration are available, the highest priority source is
-            taken. All values from lower priority sources are discarded
+          - merge:    When multiple sources of configuration are available, matching items are
+            updated from the higher priority source, with collections merged as the union of sets
+          - revise:   When multiple sources of configuration are available, matching items
+            (including collections) are superseded from the higher priority source
+          - override: When multiple sources of configuration are available, the highest priority
+            source is taken. All values from lower priority sources are discarded
 
   -h, --help
           Print help (see a summary with '-h')
@@ -342,12 +348,12 @@ Options:
           [default: merge]
 
           Possible values:
-          - merge:    When multiple sources of configuration are available, matching items are updated from
-            the higher priority source, with collections merged as the union of sets
-          - revise:   When multiple sources of configuration are available, matching items (including
-            collections) are superseded from the higher priority source
-          - override: When multiple sources of configuration are available, the highest priority source is
-            taken. All values from lower priority sources are discarded
+          - merge:    When multiple sources of configuration are available, matching items are
+            updated from the higher priority source, with collections merged as the union of sets
+          - revise:   When multiple sources of configuration are available, matching items
+            (including collections) are superseded from the higher priority source
+          - override: When multiple sources of configuration are available, the highest priority
+            source is taken. All values from lower priority sources are discarded
 
   -h, --help
           Print help (see a summary with '-h')
@@ -405,7 +411,7 @@ sources where Topiary checks for such a file.
 
 ### Configuration Sources
 
-At buildtime the [languages.toml](./languages.toml) in the root of
+At build time the [languages.toml](./languages.toml) in the root of
 this repository is embedded into Topiary. This file is parsed at
 runtime. The purpose of this `languages.toml` file is to provide sane
 defaults for users of Topiary (both the library and the binary).
