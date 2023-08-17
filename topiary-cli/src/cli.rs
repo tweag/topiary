@@ -51,6 +51,7 @@ pub struct GlobalArgs {
     pub configuration_collation: Option<configuration::CollationMode>,
 }
 
+// NOTE This abstraction is largely to workaround clap-rs/clap#4707
 #[derive(Args, Debug)]
 pub struct Stdin {
     /// Topiary supported language (for formatting stdin)
