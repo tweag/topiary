@@ -21,7 +21,7 @@ type QueryPath = PathBuf;
 ///
 /// These are captured by the CLI parser, with `cli::AtLeastOneInput` and `cli::ExactlyOneInput`.
 /// We use this struct to normalise the interface for downstream (using `From` implementations).
-enum InputFrom {
+pub enum InputFrom {
     Stdin(SupportedLanguage, Option<QueryPath>),
     Files(Vec<PathBuf>),
 }
@@ -74,7 +74,7 @@ pub struct InputFile<'cfg> {
     query: QueryPath,
 }
 
-// TODO This does not feel very satisfactory, but it's enough to satisfy the Topiary API...
+// TODO This feels like a leaky abstraction, but it's enough to satisfy the Topiary API...
 impl<'cfg> InputFile<'cfg> {
     // Convert our `InputFile` into language definition values that Topiary can consume
     pub async fn to_language_definition(
@@ -102,33 +102,32 @@ impl<'cfg> Read for InputFile<'cfg> {
     }
 }
 
-/// `Inputs` is an iterator of fully qualified `InputFile`s, which is populated by its constructor
-/// from any type that implements `Into<InputFrom>`
-pub struct Inputs<'cfg>(Vec<InputFile<'cfg>>);
+/// `Inputs` is an iterator of fully qualified `InputFile`s, each wrapped in `CLIResult`, which is
+/// populated by its constructor from any type that implements `Into<InputFrom>`
+pub struct Inputs<'cfg>(Vec<CLIResult<InputFile<'cfg>>>);
 
 impl<'cfg, 'i> Inputs<'cfg> {
-    pub fn new<T>(config: &'cfg Configuration, inputs: &'i T) -> CLIResult<Self>
+    pub fn new<T>(config: &'cfg Configuration, inputs: &'i T) -> Self
     where
         &'i T: Into<InputFrom>,
     {
         let inputs = match inputs.into() {
             InputFrom::Stdin(language, query) => {
-                let language = language.to_language(config);
-                let query = query.unwrap_or(language.query_file()?);
+                vec![(|| {
+                    let language = language.to_language(config);
+                    let query = query.unwrap_or(language.query_file()?);
 
-                vec![InputFile {
-                    source: InputSource::Stdin,
-                    language,
-                    query,
-                }]
+                    Ok(InputFile {
+                        source: InputSource::Stdin,
+                        language,
+                        query,
+                    })
+                })()]
             }
 
-            // TODO Using `.flat_map` here silently discards input files that cannot be opened or
-            // mapped to a language. It makes sense that files Topiary can't handle are just
-            // skipped over, but it shouldn't be silent.
             InputFrom::Files(files) => files
                 .into_iter()
-                .flat_map(|path| -> CLIResult<InputFile> {
+                .map(|path| {
                     let file = File::open(&path)?;
 
                     let language = Language::detect(&path, config)?;
@@ -143,12 +142,12 @@ impl<'cfg, 'i> Inputs<'cfg> {
                 .collect(),
         };
 
-        Ok(Self(inputs))
+        Self(inputs)
     }
 }
 
 impl<'cfg> Iterator for Inputs<'cfg> {
-    type Item = InputFile<'cfg>;
+    type Item = CLIResult<InputFile<'cfg>>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.0.pop()

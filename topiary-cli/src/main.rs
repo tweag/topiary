@@ -8,10 +8,10 @@ use std::{error::Error, process::ExitCode};
 
 use crate::{
     cli::Commands,
-    error::{CLIResult, TopiaryError},
+    error::CLIResult,
     io::{Inputs, OutputFile},
 };
-use topiary::{formatter, FormatterError, Operation};
+use topiary::{formatter, Operation};
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -44,42 +44,27 @@ async fn run() -> CLIResult<()> {
         }
 
         Commands::Vis { format, input } => {
-            // We should have 0 or 1 inputs
-            let mut inputs = Inputs::new(&config, &input)?;
+            // We are guaranteed (by clap) to have exactly one input, so it's safe to unwrap
+            let mut input = Inputs::new(&config, &input).next().unwrap()?;
+            let mut output = OutputFile::Stdout;
 
-            match inputs.next() {
-                Some(mut input) => {
-                    // Always write the visualisation to stdout
-                    let mut output = OutputFile::Stdout;
+            // TODO `InputFile::to_language_definition` will re-process the `(Language, PathBuf)`
+            // tuple for each valid input file. Here we only have one file, but when it comes to
+            // formatting, many input files will share the same `(Language, PathBuf)` tuples, so
+            // we'll end up doing a lot of unnecessary work, including IO (although that'll
+            // probably be cached by the OS). Caching these values in memory would make sense.
+            let (query, language, grammar) = input.to_language_definition().await?;
 
-                    // TODO This doesn't feel very satisfactory...
-                    let (query, language, grammar) = input.to_language_definition().await?;
-
-                    formatter(
-                        &mut input,
-                        &mut output,
-                        &query,
-                        &language,
-                        &grammar,
-                        Operation::Visualise {
-                            output_format: format.into(),
-                        },
-                    )?;
-                }
-
-                // This can happen if we give Topiary a file that it can't map to a language
-                None => {
-                    // We know we've been given a file as input, so it's safe to unwrap
-                    let unknown = input.file.unwrap();
-                    let extension = unknown
-                        .extension()
-                        .map(|ext| ext.to_string_lossy().to_string());
-
-                    return Err(TopiaryError::Lib(FormatterError::LanguageDetection(
-                        unknown, extension,
-                    )));
-                }
-            }
+            formatter(
+                &mut input,
+                &mut output,
+                &query,
+                &language,
+                &grammar,
+                Operation::Visualise {
+                    output_format: format.into(),
+                },
+            )?;
         }
 
         Commands::Cfg => {
