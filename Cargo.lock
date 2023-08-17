@@ -1306,6 +1306,7 @@ dependencies = [
  "tokio",
  "toml",
  "topiary",
+ "tree-sitter-facade",
 ]
 
 [[package]]

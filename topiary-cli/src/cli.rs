@@ -53,7 +53,7 @@ pub struct GlobalArgs {
 
 // NOTE This abstraction is largely to workaround clap-rs/clap#4707
 #[derive(Args, Debug)]
-pub struct Stdin {
+pub struct FromStdin {
     /// Topiary supported language (for formatting stdin)
     #[arg(short, long)]
     pub language: SupportedLanguage,
@@ -76,7 +76,7 @@ pub struct Stdin {
 )]
 pub struct ExactlyOneInput {
     #[command(flatten)]
-    pub stdin: Option<Stdin>,
+    pub stdin: Option<FromStdin>,
 
     /// Input file (omit to read from stdin)
     ///
@@ -98,7 +98,7 @@ pub struct ExactlyOneInput {
 )]
 pub struct AtLeastOneInput {
     #[command(flatten)]
-    pub stdin: Option<Stdin>,
+    pub stdin: Option<FromStdin>,
 
     /// Input files and directories (omit to read from stdin)
     ///

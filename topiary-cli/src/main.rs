@@ -4,21 +4,14 @@ mod error;
 mod io;
 mod visualisation;
 
-use std::{
-    eprintln,
-    error::Error,
-    fs::File,
-    io::{stdin, BufReader, BufWriter, Read},
-    path::PathBuf,
-    process::ExitCode,
-};
+use std::{error::Error, process::ExitCode};
 
 use crate::{
     cli::Commands,
-    error::{CLIError, CLIResult, TopiaryError},
-    io::OutputFile,
+    error::{CLIResult, TopiaryError},
+    io::{Inputs, OutputFile},
 };
-use topiary::{formatter, Language, Operation, TopiaryQuery};
+use topiary::{formatter, FormatterError, Operation};
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -51,7 +44,42 @@ async fn run() -> CLIResult<()> {
         }
 
         Commands::Vis { format, input } => {
-            todo!();
+            // We should have 0 or 1 inputs
+            let mut inputs = Inputs::new(&config, &input)?;
+
+            match inputs.next() {
+                Some(mut input) => {
+                    // Always write the visualisation to stdout
+                    let mut output = OutputFile::Stdout;
+
+                    // TODO This doesn't feel very satisfactory...
+                    let (query, language, grammar) = input.to_language_definition().await?;
+
+                    formatter(
+                        &mut input,
+                        &mut output,
+                        &query,
+                        &language,
+                        &grammar,
+                        Operation::Visualise {
+                            output_format: format.into(),
+                        },
+                    )?;
+                }
+
+                // This can happen if we give Topiary a file that it can't map to a language
+                None => {
+                    // We know we've been given a file as input, so it's safe to unwrap
+                    let unknown = input.file.unwrap();
+                    let extension = unknown
+                        .extension()
+                        .map(|ext| ext.to_string_lossy().to_string());
+
+                    return Err(TopiaryError::Lib(FormatterError::LanguageDetection(
+                        unknown, extension,
+                    )));
+                }
+            }
         }
 
         Commands::Cfg => {
