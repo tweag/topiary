@@ -261,7 +261,8 @@ Options:
 
 When formatting inputs from disk, language selection is detected from
 the input files' extensions. To format standard input, you must specify
-either `--language` or `--query` arguments, omitting any input files.
+the `--language` and, optionally, `--query` arguments, omitting any
+input files.
 
 #### Visualise
 
@@ -323,8 +324,8 @@ Options:
 
 When visualising inputs from disk, language selection is detected from
 the input file's extension. To visualise standard input, you must
-specify either `--language` or `--query` arguments, omitting the input
-file. The visualisation output is written to standard out.
+specify the `--language` and, optionally, `--query` arguments, omitting
+the input file. The visualisation output is written to standard out.
 
 #### Configuration
 
