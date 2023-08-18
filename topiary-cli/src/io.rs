@@ -225,6 +225,14 @@ impl OutputFile {
 
         Ok(())
     }
+
+    /// Expose output sink, for logging
+    pub fn sink(&self) -> Cow<str> {
+        match &self {
+            Self::Stdout => "standard output".into(),
+            Self::Disk { output, .. } => output.to_string_lossy(),
+        }
+    }
 }
 
 impl Write for OutputFile {

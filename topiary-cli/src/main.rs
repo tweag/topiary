@@ -48,7 +48,12 @@ async fn run() -> CLIResult<()> {
             let mut input = Inputs::new(&config, &input).next().unwrap()?;
             let mut output = OutputFile::Stdout;
 
-            log::info!("Visualising {} as {}", input.source(), input.language());
+            log::info!(
+                "Visualising {}, as {}, to {}",
+                input.source(),
+                input.language(),
+                output.sink()
+            );
 
             // TODO `InputFile::to_language_definition` will re-process the `(Language, PathBuf)`
             // tuple for each valid input file. Here we only have one file, but when it comes to
