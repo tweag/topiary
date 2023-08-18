@@ -2,6 +2,7 @@ mod cli;
 mod configuration;
 mod error;
 mod io;
+mod language;
 mod visualisation;
 
 use std::{error::Error, process::ExitCode};
