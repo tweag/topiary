@@ -1,4 +1,5 @@
 use std::{
+    borrow::Cow,
     ffi::OsString,
     fs::File,
     io::{stdin, stdout, BufReader, ErrorKind, Read, Result, Write},
@@ -76,7 +77,7 @@ pub struct InputFile<'cfg> {
 
 // TODO This feels like a leaky abstraction, but it's enough to satisfy the Topiary API...
 impl<'cfg> InputFile<'cfg> {
-    // Convert our `InputFile` into language definition values that Topiary can consume
+    /// Convert our `InputFile` into language definition values that Topiary can consume
     pub async fn to_language_definition(
         &self,
     ) -> CLIResult<(TopiaryQuery, Language, tree_sitter_facade::Language)> {
@@ -90,6 +91,24 @@ impl<'cfg> InputFile<'cfg> {
         };
 
         Ok((query, self.language.clone(), grammar))
+    }
+
+    /// Expose input source, for logging
+    pub fn source(&self) -> Cow<str> {
+        match &self.source {
+            InputSource::Stdin => "standard input".into(),
+            InputSource::Disk(path, _) => path.to_string_lossy(),
+        }
+    }
+
+    /// Expose language for input, for logging
+    pub fn language(&self) -> &str {
+        &self.language.name
+    }
+
+    /// Expose query path for input, for logging
+    pub fn query(&self) -> Cow<str> {
+        self.query.to_string_lossy()
     }
 }
 

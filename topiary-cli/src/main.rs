@@ -48,6 +48,8 @@ async fn run() -> CLIResult<()> {
             let mut input = Inputs::new(&config, &input).next().unwrap()?;
             let mut output = OutputFile::Stdout;
 
+            log::info!("Visualising {} as {}", input.source(), input.language());
+
             // TODO `InputFile::to_language_definition` will re-process the `(Language, PathBuf)`
             // tuple for each valid input file. Here we only have one file, but when it comes to
             // formatting, many input files will share the same `(Language, PathBuf)` tuples, so
