@@ -62,7 +62,7 @@ impl From<AtLeastOneInput> for InputFrom {
 #[derive(Debug)]
 enum InputSource {
     Stdin,
-    Disk(PathBuf, File),
+    Disk(PathBuf, Option<File>),
 }
 
 /// An `InputFile` is the unit of input for Topiary, encapsulating everything needed for downstream
@@ -95,9 +95,16 @@ impl<'cfg> InputFile<'cfg> {
 
 impl<'cfg> Read for InputFile<'cfg> {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        match self.source {
+        match &mut self.source {
             InputSource::Stdin => stdin().lock().read(buf),
-            InputSource::Disk(_, ref mut file) => file.read(buf),
+
+            InputSource::Disk(path, fd) => {
+                if fd.is_none() {
+                    *fd = Some(File::open(path)?);
+                }
+
+                fd.as_mut().unwrap().read(buf)
+            }
         }
     }
 }
@@ -128,13 +135,11 @@ impl<'cfg, 'i> Inputs<'cfg> {
             InputFrom::Files(files) => files
                 .into_iter()
                 .map(|path| {
-                    let file = File::open(&path)?;
-
                     let language = Language::detect(&path, config)?;
                     let query = language.query_file()?;
 
                     Ok(InputFile {
-                        source: InputSource::Disk(path, file),
+                        source: InputSource::Disk(path, None),
                         language,
                         query,
                     })
