@@ -44,15 +44,15 @@ impl From<&ExactlyOneInput> for InputFrom {
     }
 }
 
-impl From<AtLeastOneInput> for InputFrom {
-    fn from(input: AtLeastOneInput) -> Self {
+impl From<&AtLeastOneInput> for InputFrom {
+    fn from(input: &AtLeastOneInput) -> Self {
         match input {
             AtLeastOneInput {
                 stdin: Some(FromStdin { language, query }),
                 ..
-            } => InputFrom::Stdin(language, query),
+            } => InputFrom::Stdin(language.to_owned(), query.to_owned()),
 
-            AtLeastOneInput { files, .. } => InputFrom::Files(files),
+            AtLeastOneInput { files, .. } => InputFrom::Files(files.to_owned()),
         }
     }
 }
