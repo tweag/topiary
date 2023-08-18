@@ -35,11 +35,11 @@ let id1 = if true then Fun.id else function x -> x
 
 let id2 = if true then Fun.id else function x -> x | y -> y
 
-let id3 = if 
-true 
-then 
-Fun.id 
-else 
+let id3 = if
+true
+then
+Fun.id
+else
 function x -> x
 
 let id4 = function x -> x
