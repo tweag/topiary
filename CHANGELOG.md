@@ -95,7 +95,7 @@ After (use IO redirection):
 ```
 topiary [--skip-idempotence] \
         [--tolerate-parsing-errors] \
-        (--langauge LANGUAGE | --query QUERY) \
+        (--langauge LANGUAGE [--query QUERY]) \
         < INPUT_FILE \
         > OUTPUT_FILE
 ```
@@ -106,7 +106,7 @@ Before:
 ```
 topariy [--skip-idempotence] \
         [--tolerate-parsing-errors] \
-        (--langauge LANGUAGE | --query QUERY) \
+        (--langauge LANGUAGE [--query QUERY]) \
         (--input-files - | < INPUT_FILE) \
         [--output-file -]
 ```
@@ -115,7 +115,7 @@ After (use IO redirection):
 ```
 topiary [--skip-idempotence] \
         [--tolerate-parsing-errors] \
-        (--langauge LANGUAGE | --query QUERY) \
+        (--langauge LANGUAGE [--query QUERY]) \
         < INPUT_FILE
 ```
 
@@ -132,8 +132,7 @@ topiary --visualise[=FORMAT] \
 
 After:
 ```
-topiary vis [--tolerate-parsing-errors] \
-            [--format FORMAT] \
+topiary vis [--format FORMAT] \
             INPUT_FILE \
             [> OUTPUT_FILE]
 ```
@@ -143,16 +142,15 @@ topiary vis [--tolerate-parsing-errors] \
 Before:
 ```
 topiary --visualise[=FORMAT] \
-        (--langauge LANGUAGE | --query QUERY) \
+        (--langauge LANGUAGE [--query QUERY]) \
         < INPUT_FILE \
         [--output-file OUTPUT_FILE | > OUTPUT_FILE]
 ```
 
 After (use IO redirection):
 ```
-topiary vis [--tolerate-parsing-errors] \
-            [--format FORMAT] \
-            (--langauge LANGUAGE | --query QUERY) \
+topiary vis [--format FORMAT] \
+            (--langauge LANGUAGE [--query QUERY]) \
             < INPUT_FILE \
             [> OUTPUT_FILE]
 ```
@@ -186,12 +184,13 @@ topiary --configuration CONFIG_FILE \
 
 ###### Examining Computed Configuration
 
-Before (to standard error, then proceeding with other functions):
+Before (to standard error, as debug output, then proceeding with other
+functions):
 ```
 topiary --output-configuration ...
 ```
 
-After (to standard output, as a dedicated function):
+After (to standard output, in TOML format, as a dedicated function):
 ```
 topiary cfg
 ```

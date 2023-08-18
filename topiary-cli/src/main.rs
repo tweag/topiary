@@ -1,24 +1,17 @@
 mod cli;
 mod configuration;
 mod error;
-mod output;
+mod io;
 mod visualisation;
 
-use std::{
-    eprintln,
-    error::Error,
-    fs::File,
-    io::{stdin, BufReader, BufWriter, Read},
-    path::PathBuf,
-    process::ExitCode,
-};
+use std::{error::Error, process::ExitCode};
 
 use crate::{
     cli::Commands,
-    error::{CLIError, CLIResult, TopiaryError},
-    output::OutputFile,
+    error::CLIResult,
+    io::{Inputs, OutputFile},
 };
-use topiary::{formatter, Language, Operation, TopiaryQuery};
+use topiary::{formatter, Operation};
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -43,23 +36,42 @@ async fn run() -> CLIResult<()> {
     // Delegate by subcommand
     match args.command {
         Commands::Fmt {
-            parse,
+            tolerate_parsing_errors,
             skip_idempotence,
-            language,
-            query,
-            files,
+            inputs,
         } => {
             todo!();
         }
 
-        Commands::Vis {
-            parse,
-            format,
-            language,
-            query,
-            file,
-        } => {
-            todo!();
+        Commands::Vis { format, input } => {
+            // We are guaranteed (by clap) to have exactly one input, so it's safe to unwrap
+            let mut input = Inputs::new(&config, &input).next().unwrap()?;
+            let mut output = OutputFile::Stdout;
+
+            log::info!(
+                "Visualising {}, as {}, to {}",
+                input.source(),
+                input.language(),
+                output.sink()
+            );
+
+            // TODO `InputFile::to_language_definition` will re-process the `(Language, PathBuf)`
+            // tuple for each valid input file. Here we only have one file, but when it comes to
+            // formatting, many input files will share the same `(Language, PathBuf)` tuples, so
+            // we'll end up doing a lot of unnecessary work, including IO (although that'll
+            // probably be cached by the OS). Caching these values in memory would make sense.
+            let (query, language, grammar) = input.to_language_definition().await?;
+
+            formatter(
+                &mut input,
+                &mut output,
+                &query,
+                &language,
+                &grammar,
+                Operation::Visualise {
+                    output_format: format.into(),
+                },
+            )?;
         }
 
         Commands::Cfg => {
