@@ -92,7 +92,7 @@ impl PartialEq for Configuration {
 
 impl fmt::Display for Configuration {
     /// Pretty-print configuration as TOML
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let toml = toml::to_string_pretty(self).map_err(|_| fmt::Error)?;
         write!(f, "{toml}")
     }

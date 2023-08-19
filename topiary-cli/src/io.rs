@@ -1,6 +1,7 @@
 use std::{
     borrow::Cow,
     ffi::OsString,
+    fmt,
     fs::File,
     io::{stdin, stdout, BufReader, ErrorKind, Read, Result, Write},
     path::{Path, PathBuf},
@@ -61,9 +62,18 @@ impl From<&AtLeastOneInput> for InputFrom {
 /// Each `InputFile` needs to locate its source (standard input or disk), such that its `io::Read`
 /// implementation can do the right thing.
 #[derive(Debug)]
-enum InputSource {
+pub enum InputSource {
     Stdin,
     Disk(PathBuf, Option<File>),
+}
+
+impl fmt::Display for InputSource {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Stdin => write!(f, "standard input"),
+            Self::Disk(path, _) => write!(f, "{}", path.to_string_lossy()),
+        }
+    }
 }
 
 /// An `InputFile` is the unit of input for Topiary, encapsulating everything needed for downstream
@@ -93,22 +103,19 @@ impl<'cfg> InputFile<'cfg> {
         Ok((query, self.language.clone(), grammar))
     }
 
-    /// Expose input source, for logging
-    pub fn source(&self) -> Cow<str> {
-        match &self.source {
-            InputSource::Stdin => "standard input".into(),
-            InputSource::Disk(path, _) => path.to_string_lossy(),
-        }
+    /// Expose input source
+    pub fn source(&self) -> &InputSource {
+        &self.source
     }
 
-    /// Expose language for input, for logging
-    pub fn language(&self) -> &str {
-        &self.language.name
+    /// Expose language for input
+    pub fn language(&self) -> &Language {
+        &self.language
     }
 
-    /// Expose query path for input, for logging
-    pub fn query(&self) -> Cow<str> {
-        self.query.to_string_lossy()
+    /// Expose query path for input
+    pub fn query(&self) -> &PathBuf {
+        &self.query
     }
 }
 
@@ -225,12 +232,13 @@ impl OutputFile {
 
         Ok(())
     }
+}
 
-    /// Expose output sink, for logging
-    pub fn sink(&self) -> Cow<str> {
-        match &self {
-            Self::Stdout => "standard output".into(),
-            Self::Disk { output, .. } => output.to_string_lossy(),
+impl fmt::Display for OutputFile {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Stdout => write!(f, "standard ouput"),
+            Self::Disk { output, .. } => write!(f, "{}", output.to_string_lossy()),
         }
     }
 }

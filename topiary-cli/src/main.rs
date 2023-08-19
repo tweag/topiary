@@ -53,7 +53,7 @@ async fn run() -> CLIResult<()> {
                 "Visualising {}, as {}, to {}",
                 input.source(),
                 input.language(),
-                output.sink()
+                output
             );
 
             // TODO `InputFile::to_language_definition` will re-process the `(Language, PathBuf)`
