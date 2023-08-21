@@ -1,9 +1,8 @@
 use std::{
-    borrow::Cow,
     ffi::OsString,
     fmt,
     fs::File,
-    io::{stdin, stdout, BufReader, ErrorKind, Read, Result, Write},
+    io::{stdin, stdout, ErrorKind, Read, Result, Write},
     path::{Path, PathBuf},
 };
 
@@ -13,6 +12,7 @@ use topiary::{Configuration, Language, SupportedLanguage, TopiaryQuery};
 use crate::{
     cli::{AtLeastOneInput, ExactlyOneInput, FromStdin},
     error::{CLIResult, TopiaryError},
+    language::LanguageDefinition,
 };
 
 type QueryPath = PathBuf;
@@ -85,22 +85,20 @@ pub struct InputFile<'cfg> {
     query: QueryPath,
 }
 
-// TODO This feels like a leaky abstraction, but it's enough to satisfy the Topiary API...
 impl<'cfg> InputFile<'cfg> {
     /// Convert our `InputFile` into language definition values that Topiary can consume
-    pub async fn to_language_definition(
-        &self,
-    ) -> CLIResult<(TopiaryQuery, Language, tree_sitter_facade::Language)> {
+    pub async fn to_language_definition(&self) -> CLIResult<LanguageDefinition> {
         let grammar = self.language.grammar().await?;
         let query = {
-            let mut reader = BufReader::new(File::open(&self.query)?);
-            let mut contents = String::new();
-            reader.read_to_string(&mut contents)?;
-
+            let contents = tokio::fs::read_to_string(&self.query).await?;
             TopiaryQuery::new(&grammar, &contents)?
         };
 
-        Ok((query, self.language.clone(), grammar))
+        Ok(LanguageDefinition {
+            query,
+            language: self.language.clone(),
+            grammar,
+        })
     }
 
     /// Expose input source
@@ -110,7 +108,7 @@ impl<'cfg> InputFile<'cfg> {
 
     /// Expose language for input
     pub fn language(&self) -> &Language {
-        &self.language
+        self.language
     }
 
     /// Expose query path for input

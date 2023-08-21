@@ -2,7 +2,7 @@ use std::{
     collections::HashMap,
     hash::{Hash, Hasher},
     path::PathBuf,
-    sync::{Arc, Mutex},
+    sync::{Arc, RwLock},
 };
 
 use topiary::{Language, TopiaryQuery};
@@ -18,9 +18,8 @@ pub struct LanguageDefinition {
 }
 
 /// Key type for the cache of language definitions
-///
-/// NOTE This is not public, as it is constructed from an `io::InputFile` reference
-struct LanguageKey<'cfg> {
+#[derive(Eq, PartialEq)]
+pub struct LanguageKey<'cfg> {
     language: &'cfg Language,
     query: PathBuf,
 }
@@ -32,27 +31,37 @@ impl<'cfg> Hash for LanguageKey<'cfg> {
     }
 }
 
-impl<'i, 'cfg> From<&'i InputFile<'cfg>> for LanguageKey<'cfg> {
-    fn from(input: &'i InputFile<'cfg>) -> Self {
-        todo!()
+impl<'cfg> From<&'cfg InputFile<'cfg>> for LanguageKey<'cfg> {
+    fn from(input: &'cfg InputFile<'cfg>) -> Self {
+        Self {
+            language: input.language(),
+            query: input.query().into(),
+        }
     }
 }
 
 /// Thread-safe language definition cache
-pub struct LanguageDefinitionCache<'cfg>(Mutex<HashMap<LanguageKey<'cfg>, LanguageDefinition>>);
+pub struct LanguageDefinitionCache<'cfg>(
+    RwLock<HashMap<LanguageKey<'cfg>, Arc<LanguageDefinition>>>,
+);
 
 impl<'cfg> LanguageDefinitionCache<'cfg> {
-    pub fn new() -> Arc<Self> {
-        Arc::new(LanguageDefinitionCache(Mutex::new(HashMap::new())))
+    pub fn new() -> Self {
+        LanguageDefinitionCache(RwLock::new(HashMap::new()))
     }
 
-    pub fn fetch<'k, T>(&mut self, key: &'k T) -> CLIResult<LanguageDefinition>
-    where
-        &'k T: Into<LanguageKey<'cfg>>,
-    {
-        self.0.lock()?;
+    /// Fetch the language definition from the cache, populating if necessary, with thread-safety
+    pub async fn fetch(&self, input: &'cfg InputFile<'cfg>) -> CLIResult<Arc<LanguageDefinition>> {
+        let key = input.into();
 
-        let key = key.into();
-        todo!()
+        // Return the language definition from the cache, behind a read lock, if it exists...
+        if let Some(lang_def) = self.0.read()?.get(&key) {
+            return Ok(Arc::clone(lang_def));
+        }
+
+        // ...otherwise, fetch the language definition, to populate the cache behind a write lock
+        let lang_def = Arc::new(input.to_language_definition().await?);
+        self.0.write()?.insert(key, Arc::clone(&lang_def));
+        Ok(lang_def)
     }
 }

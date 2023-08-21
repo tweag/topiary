@@ -35,7 +35,7 @@ itertools = { workspace = true }
 log = { workspace = true }
 serde-toml-merge = { workspace = true }
 tempfile = { workspace = true }
-tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+tokio = { workspace = true, features = ["fs", "rt-multi-thread", "macros"] }
 toml = { workspace = true }
 topiary = { path = "../topiary" }
 tree-sitter-facade = { workspace = true }

@@ -11,6 +11,7 @@ use crate::{
     cli::Commands,
     error::CLIResult,
     io::{Inputs, OutputFile},
+    language::LanguageDefinitionCache,
 };
 use topiary::{formatter, Operation};
 
@@ -34,6 +35,8 @@ async fn run() -> CLIResult<()> {
         args.global.configuration_collation.as_ref().unwrap(),
     )?;
 
+    let cache = LanguageDefinitionCache::new();
+
     // Delegate by subcommand
     match args.command {
         Commands::Fmt {
@@ -49,6 +52,9 @@ async fn run() -> CLIResult<()> {
             let mut input = Inputs::new(&config, &input).next().unwrap()?;
             let mut output = OutputFile::Stdout;
 
+            // We don't need the cache, here, but for the sake of consistency
+            let lang_def = cache.fetch(&input).await?;
+
             log::info!(
                 "Visualising {}, as {}, to {}",
                 input.source(),
@@ -56,19 +62,12 @@ async fn run() -> CLIResult<()> {
                 output
             );
 
-            // TODO `InputFile::to_language_definition` will re-process the `(Language, PathBuf)`
-            // tuple for each valid input file. Here we only have one file, but when it comes to
-            // formatting, many input files will share the same `(Language, PathBuf)` tuples, so
-            // we'll end up doing a lot of unnecessary work, including IO (although that'll
-            // probably be cached by the OS). Caching these values in memory would make sense.
-            let (query, language, grammar) = input.to_language_definition().await?;
-
             formatter(
                 &mut input,
                 &mut output,
-                &query,
-                &language,
-                &grammar,
+                &lang_def.query,
+                &lang_def.language,
+                &lang_def.grammar,
                 Operation::Visualise {
                     output_format: format.into(),
                 },
