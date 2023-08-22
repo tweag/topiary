@@ -11,7 +11,7 @@ use crate::{
     cli::Commands,
     error::CLIResult,
     io::{Inputs, OutputFile},
-    language::LanguageDefinitionCache,
+    //language::LanguageDefinitionCache,
 };
 use topiary::{formatter, Operation};
 
@@ -35,8 +35,6 @@ async fn run() -> CLIResult<()> {
         args.global.configuration_collation.as_ref().unwrap(),
     )?;
 
-    let cache = LanguageDefinitionCache::new();
-
     // Delegate by subcommand
     match args.command {
         Commands::Fmt {
@@ -44,16 +42,80 @@ async fn run() -> CLIResult<()> {
             skip_idempotence,
             inputs,
         } => {
-            todo!();
+            let inputs = Inputs::new(&config, &inputs);
+            //let cache = LanguageDefinitionCache::new();
+
+            let (_, tasks) = async_scoped::TokioScope::scope_and_block(|scope| {
+                for input in inputs {
+                    scope.spawn({
+                        //let cache = &cache;
+
+                        async {
+                            match input {
+                                Ok(mut input) => {
+                                    // TODO BufReader and BufWriter
+                                    let mut output = OutputFile::try_from(&input)?;
+
+                                    //let lang_def = cache.fetch(&input).await?;
+                                    let lang_def = input.to_language_definition().await?;
+
+                                    log::info!(
+                                        "Formatting {}, as {} using {}, to {}",
+                                        input.source(),
+                                        input.language(),
+                                        input.query().to_string_lossy(),
+                                        output
+                                    );
+
+                                    formatter(
+                                        &mut input,
+                                        &mut output,
+                                        &lang_def.query,
+                                        &lang_def.language,
+                                        &lang_def.grammar,
+                                        Operation::Format {
+                                            skip_idempotence,
+                                            tolerate_parsing_errors,
+                                        },
+                                    )?;
+
+                                    output.persist()?;
+                                }
+
+                                Err(error) => {
+                                    // By this point, we've lost any reference to the original
+                                    // input; we trust that it is embedded into `error`.
+                                    log::warn!("Skipping: {error}");
+                                }
+                            }
+
+                            CLIResult::Ok(())
+                        }
+                    });
+                }
+            });
+
+            // TODO This outputs all the errors from the concurrent tasks _after_ they've
+            // completed. For join failures, that makes sense, but for Topiary errors, we lose
+            // context in the logs. Topiary error handling should be done within the task.
+            for task in tasks {
+                match task {
+                    Err(join_error) => print_error(&join_error),
+                    Ok(Err(topiary_error)) => print_error(&topiary_error),
+                    _ => {}
+                }
+            }
         }
 
         Commands::Vis { format, input } => {
             // We are guaranteed (by clap) to have exactly one input, so it's safe to unwrap
+            // TODO BufReader and BufWriter
             let mut input = Inputs::new(&config, &input).next().unwrap()?;
             let mut output = OutputFile::Stdout;
 
-            // We don't need the cache, here, but for the sake of consistency
-            let lang_def = cache.fetch(&input).await?;
+            // We don't need a `LanguageDefinitionCache` when there's only one input,
+            // which saves us the thread-safety overhead
+            let lang_def = input.to_language_definition().await?;
 
             log::info!(
                 "Visualising {}, as {}, to {}",
@@ -82,145 +144,6 @@ async fn run() -> CLIResult<()> {
 
     Ok(())
 }
-
-/*
-    let io_files: Vec<(String, String)> = if args.in_place || args.input_files.len() > 1 {
-        args.input_files
-            .iter()
-            .map(|f| (f.clone(), f.clone()))
-            .collect()
-    } else {
-        // Clap guarantees our input_files is non-empty
-        vec![(
-            args.input_files.first().unwrap().clone(),
-            match args.output_file.as_deref() {
-                Some("-") | None => String::from("-"),
-                Some(f) => String::from(f),
-            },
-        )]
-    };
-
-    type IoFile = (
-        String,
-        String,
-        Language,
-        Option<PathBuf>,
-        CLIResult<PathBuf>,
-    );
-
-    // Add the language and query Path to the io_files
-    let io_files: Vec<IoFile> = io_files
-        .into_iter()
-        // Add the appropriate language to all of the tuples
-        .map(|(i, o)| {
-            let language = if let Some(language) = args.language {
-                language.to_language(&configuration).clone()
-            } else {
-                Language::detect(&i, &configuration)?.clone()
-            };
-
-            let query_path = if let Some(query) = &args.query {
-                Ok(query.clone())
-            } else {
-                language.query_file()
-            }
-            .map_err(TopiaryError::Lib);
-
-            Ok((i, o, language, args.query.clone(), query_path))
-        })
-        .collect::<CLIResult<Vec<_>>>()?;
-
-    // Converts the simple types into arguments we can pass to the `formatter` function
-    // _ holds the tree_sitter_facade::Language
-    let fmt_args: Vec<(String, String, Language, _, TopiaryQuery)> =
-        futures::future::try_join_all(io_files.into_iter().map(
-            |(i, o, language, query_arg, query_path)| async move {
-                let grammar = language.grammar().await?;
-
-                let query = query_path
-                    .and_then(|query_path| {
-                        {
-                            let mut reader = BufReader::new(File::open(query_path)?);
-                            let mut contents = String::new();
-                            reader.read_to_string(&mut contents)?;
-                            Ok(contents)
-                        }
-                        .map_err(|e| {
-                            TopiaryError::Bin(
-                                "Could not open query file".into(),
-                                Some(CLIError::IOError(e)),
-                            )
-                        })
-                    })
-                    .and_then(|query_content: String| {
-                        Ok(TopiaryQuery::new(&grammar, &query_content)?)
-                    })
-                    .or_else(|e| {
-                        // If we weren't able to read the query file, and the user didn't
-                        // request a specific query file, we should fall back to the built-in
-                        // queries.
-                        if query_arg.is_none() {
-                            log::info!(
-                                "No language file found for {language:?}. Will use built-in query."
-                            );
-                            Ok((&language).try_into()?)
-                        } else {
-                            Err(e)
-                        }
-                    })?;
-
-                Ok::<_, TopiaryError>((i, o, language, grammar, query))
-            },
-        ))
-        .await?;
-
-    // The operation needs not be part of the Vector of Structs because it is the same for every formatting instance
-    let operation = if let Some(visualisation) = args.visualise {
-        Operation::Visualise {
-            output_format: visualisation.into(),
-        }
-    } else {
-        Operation::Format {
-            skip_idempotence: args.skip_idempotence,
-            tolerate_parsing_errors: args.tolerate_parsing_errors,
-        }
-    };
-
-    let tasks: Vec<_> = fmt_args
-        .into_iter()
-        .map(|(input, output, language, grammar, query)| -> tokio::task::JoinHandle<Result<(), TopiaryError>> {
-            tokio::spawn(async move {
-                    let mut input: Box<dyn Read> = match input.as_str() {
-                        "-" => Box::new(stdin()),
-                        file => Box::new(BufReader::new(File::open(file)?)),
-                    };
-                    let mut output: BufWriter<OutputFile> = BufWriter::new(OutputFile::new(&output)?);
-
-                    formatter(
-                        &mut input,
-                        &mut output,
-                        &query,
-                        &language,
-                        &grammar,
-                        operation,
-                    )?;
-
-                    output.into_inner()?.persist()?;
-
-                    Ok(())
-            })
-        })
-        .collect();
-
-    for task in tasks {
-        // The await results in a `Result<Result<(), TopiaryError>, JoinError>`.
-        // The first ? concerns the `JoinError`, the second one the `TopiaryError`.
-        task.await??;
-    }
-
-    Ok(())
-}
-*/
 
 fn print_error(e: &dyn Error) {
     log::error!("{e}");
