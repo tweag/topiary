@@ -54,6 +54,8 @@
             pre-commit-hook = builtins.deepSeq self.lib.${system}.pre-commit-hook pkgs.hello;
           };
 
+          devShells.default = pkgs.callPackage ./shell.nix {checks = self.checks.${system};};
+
           ## For easy use in https://github.com/cachix/pre-commit-hooks.nix
           lib.pre-commit-hook = {
             enable = true;
