@@ -5,7 +5,11 @@ mod io;
 mod language;
 mod visualisation;
 
-use std::{error::Error, process::ExitCode};
+use std::{
+    error::Error,
+    io::{BufReader, BufWriter},
+    process::ExitCode,
+};
 
 use crate::{
     cli::Commands,
@@ -52,9 +56,8 @@ async fn run() -> CLIResult<()> {
 
                         async {
                             match input {
-                                Ok(mut input) => {
-                                    // TODO BufReader and BufWriter
-                                    let mut output = OutputFile::try_from(&input)?;
+                                Ok(input) => {
+                                    let output = OutputFile::try_from(&input)?;
 
                                     //let lang_def = cache.fetch(&input).await?;
                                     let lang_def = input.to_language_definition().await?;
@@ -67,9 +70,12 @@ async fn run() -> CLIResult<()> {
                                         output
                                     );
 
+                                    let mut buf_input = BufReader::new(input);
+                                    let mut buf_output = BufWriter::new(output);
+
                                     formatter(
-                                        &mut input,
-                                        &mut output,
+                                        &mut buf_input,
+                                        &mut buf_output,
                                         &lang_def.query,
                                         &lang_def.language,
                                         &lang_def.grammar,
@@ -79,7 +85,7 @@ async fn run() -> CLIResult<()> {
                                         },
                                     )?;
 
-                                    output.persist()?;
+                                    buf_output.into_inner()?.persist()?;
                                 }
 
                                 Err(error) => {
@@ -109,9 +115,8 @@ async fn run() -> CLIResult<()> {
 
         Commands::Vis { format, input } => {
             // We are guaranteed (by clap) to have exactly one input, so it's safe to unwrap
-            // TODO BufReader and BufWriter
-            let mut input = Inputs::new(&config, &input).next().unwrap()?;
-            let mut output = OutputFile::Stdout;
+            let input = Inputs::new(&config, &input).next().unwrap()?;
+            let output = OutputFile::Stdout;
 
             // We don't need a `LanguageDefinitionCache` when there's only one input,
             // which saves us the thread-safety overhead
@@ -124,9 +129,12 @@ async fn run() -> CLIResult<()> {
                 output
             );
 
+            let mut buf_input = BufReader::new(input);
+            let mut buf_output = BufWriter::new(output);
+
             formatter(
-                &mut input,
-                &mut output,
+                &mut buf_input,
+                &mut buf_output,
                 &lang_def.query,
                 &lang_def.language,
                 &lang_def.grammar,
