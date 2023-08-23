@@ -13,7 +13,7 @@ use std::{
 
 use crate::{
     cli::Commands,
-    error::CLIResult,
+    error::{CLIError, CLIResult, TopiaryError},
     io::{Inputs, OutputFile},
     language::LanguageDefinitionCache,
 };
@@ -49,65 +49,80 @@ async fn run() -> CLIResult<()> {
             let inputs = Inputs::new(&config, &inputs);
             let cache = LanguageDefinitionCache::new();
 
-            let (_, tasks) = async_scoped::TokioScope::scope_and_block(|scope| {
+            let (_, mut results) = async_scoped::TokioScope::scope_and_block(|scope| {
                 for input in inputs {
                     scope.spawn(async {
-                        match input {
+                        // NOTE "try blocks" and "async closures" are both unstable features. As
+                        // such, to report errors when they happen -- rather than collated at the
+                        // end -- we have to resort to this awkward dance, so we can benefit from
+                        // `?` syntax sugar. Rewrite with a "try block" once the feature is stable.
+                        let result: CLIResult<()> = match input {
                             Ok(input) => {
                                 // FIXME The cache is performing suboptimally; see `language.rs`
-                                let output = OutputFile::try_from(&input)?;
-                                let lang_def = cache.fetch(&input).await?;
+                                let lang_def = match cache.fetch(&input).await {
+                                    Ok(lang_def) => lang_def,
+                                    Err(error) => return Err(error),
+                                };
 
-                                log::info!(
-                                    "Formatting {}, as {} using {}, to {}",
-                                    input.source(),
-                                    input.language(),
-                                    input.query().to_string_lossy(),
-                                    output
-                                );
+                                tryvial::try_block! {
+                                    let output = OutputFile::try_from(&input)?;
 
-                                let mut buf_input = BufReader::new(input);
-                                let mut buf_output = BufWriter::new(output);
+                                    log::info!(
+                                        "Formatting {}, as {} using {}, to {}",
+                                        input.source(),
+                                        input.language(),
+                                        input.query().to_string_lossy(),
+                                        output
+                                    );
 
-                                formatter(
-                                    &mut buf_input,
-                                    &mut buf_output,
-                                    &lang_def.query,
-                                    &lang_def.language,
-                                    &lang_def.grammar,
-                                    Operation::Format {
-                                        skip_idempotence,
-                                        tolerate_parsing_errors,
-                                    },
-                                )?;
+                                    let mut buf_input = BufReader::new(input);
+                                    let mut buf_output = BufWriter::new(output);
 
-                                buf_output.into_inner()?.persist()?;
+                                    formatter(
+                                        &mut buf_input,
+                                        &mut buf_output,
+                                        &lang_def.query,
+                                        &lang_def.language,
+                                        &lang_def.grammar,
+                                        Operation::Format {
+                                            skip_idempotence,
+                                            tolerate_parsing_errors,
+                                        },
+                                    )?;
+
+                                    buf_output.into_inner()?.persist()?;
+                                }
                             }
 
-                            Err(error) => {
-                                // By this point, we've lost any reference to the original
-                                // input; we trust that it is embedded into `error`.
-                                log::warn!("Skipping: {error}");
-                            }
+                            // This happens when the input resolver cannot establish an input
+                            // source, language or query file.
+                            Err(error) => Err(error),
+                        };
+
+                        if let Err(error) = &result {
+                            // By this point, we've lost any reference to the original
+                            // input; we trust that it is embedded into `error`.
+                            log::warn!("Skipping: {error}");
                         }
 
-                        CLIResult::Ok(())
+                        result
                     });
                 }
             });
 
-            // TODO This outputs all the errors from the concurrent tasks _after_ they've
-            // completed. For join failures, that makes sense, but for Topiary errors, we lose
-            // context in the logs. Topiary error handling should be done within the task.
-            for task in tasks {
-                match task {
-                    Err(join_error) => print_error(&join_error),
-                    Ok(Err(topiary_error)) => print_error(&topiary_error),
-                    _ => {}
-                }
+            if results.len() == 1 {
+                // If we just had one input, then handle errors as normal
+                results.remove(0)??
+            } else if results
+                .iter()
+                .any(|result| matches!(result, Err(_) | Ok(Err(_))))
+            {
+                // For multiple inputs, bail out if any failed with a "multiple errors" failure
+                return Err(TopiaryError::Bin(
+                    "Processing of some inputs failed; see warning logs for details".into(),
+                    Some(CLIError::Multiple),
+                ));
             }
-
-            // TODO Exit code: if 1 input => normal; all inputs => multiple failures
         }
 
         Commands::Vis { format, input } => {

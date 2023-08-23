@@ -379,6 +379,12 @@ formatting. Otherwise, the following exit codes are defined:
 | Language detection error     |    6 |
 | Idempotency error            |    7 |
 | Unspecified formatting error |    8 |
+| Multiple errors              |    9 |
+
+When given multiple inputs, Topiary will do its best to process them
+all, even in the presence of errors. Should _any_ errors occur, Topiary
+will return a non-zero exit code. For more details on the nature of
+these errors, run Topiary at the `warn` logging level.
 
 #### Example
 

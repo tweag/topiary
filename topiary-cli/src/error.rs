@@ -18,6 +18,7 @@ pub enum TopiaryError {
 pub enum CLIError {
     IOError(io::Error),
     Generic(Box<dyn error::Error>),
+    Multiple,
 }
 
 /// # Safety
@@ -48,6 +49,7 @@ impl error::Error for TopiaryError {
             Self::Lib(error) => error.source(),
             Self::Bin(_, Some(CLIError::IOError(error))) => Some(error),
             Self::Bin(_, Some(CLIError::Generic(error))) => error.source(),
+            Self::Bin(_, Some(CLIError::Multiple)) => None,
             Self::Bin(_, None) => None,
         }
     }
@@ -56,6 +58,9 @@ impl error::Error for TopiaryError {
 impl From<TopiaryError> for ExitCode {
     fn from(e: TopiaryError) -> Self {
         let exit_code = match e {
+            // Multiple errors: Exit 9
+            TopiaryError::Bin(_, Some(CLIError::Multiple)) => 9,
+
             // Idempotency parsing errors: Exit 8
             TopiaryError::Lib(FormatterError::IdempotenceParsing(_)) => 8,
 
