@@ -1,110 +1,127 @@
-use assert_cmd::Command;
-use std::{
-    fs::File,
-    io::{Read, Write},
-    path::Path,
-};
-use tempfile::NamedTempFile;
+use std::{fs, fs::File, io::Write, path::PathBuf};
 
-// Simple exemplar JSON state, to verify the formatter
+use assert_cmd::Command;
+use tempfile::TempDir;
+
+// Simple exemplar JSON and TOML state, to verify the formatter
 // is doing something... and hopefully the right thing
 const JSON_INPUT: &str = r#"{   "test"  :123}"#;
-const JSON_EXPECTED: &str = r#"{ "test": 123 }"#;
+const JSON_EXPECTED: &str = r#"{ "test": 123 }
+"#;
 
-struct State(NamedTempFile);
+const TOML_INPUT: &str = r#"   test=    123"#;
+const TOML_EXPECTED: &str = r#"test = 123
+"#;
+
+struct State(TempDir, PathBuf);
 
 impl State {
-    fn new(payload: &str) -> Self {
-        let mut state = NamedTempFile::new().unwrap();
+    fn new(payload: &str, extension: &str) -> Self {
+        let tmp_dir = TempDir::new().unwrap();
+        let tmp_file = tmp_dir.path().join(format!("state.{extension}"));
+
+        let mut state = File::create(&tmp_file).unwrap();
         write!(state, "{payload}").unwrap();
 
-        Self(state)
+        Self(tmp_dir, tmp_file)
     }
 
-    fn path(&self) -> &Path {
-        self.0.path()
+    fn path(&self) -> &PathBuf {
+        &self.1
     }
 
     fn read(&self) -> String {
-        // For an in place edit, Topiary will remove the original file. As such, we can't use
-        // NamedTempFile::reopen, as the original no longer exists; we have to "reopen" it by path.
-        let mut file = File::open(self.path()).unwrap();
-        let mut contents = String::new();
-        file.read_to_string(&mut contents).unwrap();
-
-        contents
+        fs::read_to_string(self.path()).unwrap()
     }
 }
 
 #[test]
-fn test_file_output() {
-    let output = State::new("");
-
+fn test_fmt_stdin() {
     let mut topiary = Command::cargo_bin("topiary").unwrap();
+
     topiary
         .env("TOPIARY_LANGUAGE_DIR", "../languages")
+        .arg("fmt")
         .arg("--language")
         .arg("json")
-        .arg("--output-file")
-        .arg(output.path())
         .write_stdin(JSON_INPUT)
         .assert()
-        .success();
-
-    assert_eq!(output.read().trim(), JSON_EXPECTED);
+        .success()
+        .stdout(JSON_EXPECTED);
 }
 
 #[test]
-fn test_no_clobber() {
-    let json = State::new(JSON_INPUT);
-    let input_path = json.path();
-
+fn test_fmt_stdin_query() {
     let mut topiary = Command::cargo_bin("topiary").unwrap();
+
     topiary
         .env("TOPIARY_LANGUAGE_DIR", "../languages")
+        .arg("fmt")
         .arg("--language")
         .arg("json")
-        .arg("--input-files")
-        .arg(input_path)
-        .arg("--output-file")
-        .arg(input_path)
+        .arg("--query")
+        .arg("../languages/json.scm")
+        .write_stdin(JSON_INPUT)
+        .assert()
+        .success()
+        .stdout(JSON_EXPECTED);
+}
+
+#[test]
+fn test_fmt_files() {
+    let json = State::new(JSON_INPUT, "json");
+    let toml = State::new(TOML_INPUT, "toml");
+
+    let mut topiary = Command::cargo_bin("topiary").unwrap();
+
+    topiary
+        .env("TOPIARY_LANGUAGE_DIR", "../languages")
+        .arg("fmt")
+        .arg(json.path())
+        .arg(toml.path())
         .assert()
         .success();
 
-    // NOTE We only assume, here, that the state has been modified by the call to Topiary. It may
-    // be worthwhile asserting (e.g., change in mtime, etc.).
-    assert_eq!(json.read().trim(), JSON_EXPECTED);
+    assert_eq!(json.read(), JSON_EXPECTED);
+    assert_eq!(toml.read(), TOML_EXPECTED);
 }
 
 #[test]
-fn test_in_place() {
-    let json = State::new(JSON_INPUT);
-    let input_path = json.path();
+fn test_fmt_dir() {
+    let json = State::new(JSON_INPUT, "json");
 
     let mut topiary = Command::cargo_bin("topiary").unwrap();
+
     topiary
         .env("TOPIARY_LANGUAGE_DIR", "../languages")
-        .arg("--language")
-        .arg("json")
-        .arg("--input-files")
-        .arg(input_path)
-        .arg("--in-place")
+        .arg("fmt")
+        .arg(json.path().parent().unwrap())
         .assert()
         .success();
 
-    // NOTE We only assume, here, that the state has been modified by the call to Topiary. It may
-    // be worthwhile asserting (e.g., change in mtime, etc.).
-    assert_eq!(json.read().trim(), JSON_EXPECTED);
+    assert_eq!(json.read(), JSON_EXPECTED);
 }
 
 #[test]
-fn test_in_place_no_input() {
+fn test_fmt_invalid() {
     let mut topiary = Command::cargo_bin("topiary").unwrap();
+
+    // Can't specify --language with input files
     topiary
         .env("TOPIARY_LANGUAGE_DIR", "../languages")
+        .arg("fmt")
         .arg("--language")
         .arg("json")
-        .arg("--in-place")
+        .arg("/path/to/some/input")
+        .assert()
+        .failure();
+
+    // Can't specify --query without --language
+    topiary
+        .env("TOPIARY_LANGUAGE_DIR", "../languages")
+        .arg("fmt")
+        .arg("--query")
+        .arg("/path/to/query")
         .assert()
         .failure();
 }
