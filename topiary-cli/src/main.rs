@@ -15,7 +15,7 @@ use crate::{
     cli::Commands,
     error::CLIResult,
     io::{Inputs, OutputFile},
-    //language::LanguageDefinitionCache,
+    language::LanguageDefinitionCache,
 };
 use topiary::{formatter, Operation};
 
@@ -47,56 +47,51 @@ async fn run() -> CLIResult<()> {
             inputs,
         } => {
             let inputs = Inputs::new(&config, &inputs);
-            //let cache = LanguageDefinitionCache::new();
+            let cache = LanguageDefinitionCache::new();
 
             let (_, tasks) = async_scoped::TokioScope::scope_and_block(|scope| {
                 for input in inputs {
-                    scope.spawn({
-                        //let cache = &cache;
+                    scope.spawn(async {
+                        match input {
+                            Ok(input) => {
+                                // FIXME The cache is performing suboptimally; see `language.rs`
+                                let output = OutputFile::try_from(&input)?;
+                                let lang_def = cache.fetch(&input).await?;
 
-                        async {
-                            match input {
-                                Ok(input) => {
-                                    let output = OutputFile::try_from(&input)?;
+                                log::info!(
+                                    "Formatting {}, as {} using {}, to {}",
+                                    input.source(),
+                                    input.language(),
+                                    input.query().to_string_lossy(),
+                                    output
+                                );
 
-                                    //let lang_def = cache.fetch(&input).await?;
-                                    let lang_def = input.to_language_definition().await?;
+                                let mut buf_input = BufReader::new(input);
+                                let mut buf_output = BufWriter::new(output);
 
-                                    log::info!(
-                                        "Formatting {}, as {} using {}, to {}",
-                                        input.source(),
-                                        input.language(),
-                                        input.query().to_string_lossy(),
-                                        output
-                                    );
+                                formatter(
+                                    &mut buf_input,
+                                    &mut buf_output,
+                                    &lang_def.query,
+                                    &lang_def.language,
+                                    &lang_def.grammar,
+                                    Operation::Format {
+                                        skip_idempotence,
+                                        tolerate_parsing_errors,
+                                    },
+                                )?;
 
-                                    let mut buf_input = BufReader::new(input);
-                                    let mut buf_output = BufWriter::new(output);
-
-                                    formatter(
-                                        &mut buf_input,
-                                        &mut buf_output,
-                                        &lang_def.query,
-                                        &lang_def.language,
-                                        &lang_def.grammar,
-                                        Operation::Format {
-                                            skip_idempotence,
-                                            tolerate_parsing_errors,
-                                        },
-                                    )?;
-
-                                    buf_output.into_inner()?.persist()?;
-                                }
-
-                                Err(error) => {
-                                    // By this point, we've lost any reference to the original
-                                    // input; we trust that it is embedded into `error`.
-                                    log::warn!("Skipping: {error}");
-                                }
+                                buf_output.into_inner()?.persist()?;
                             }
 
-                            CLIResult::Ok(())
+                            Err(error) => {
+                                // By this point, we've lost any reference to the original
+                                // input; we trust that it is embedded into `error`.
+                                log::warn!("Skipping: {error}");
+                            }
                         }
+
+                        CLIResult::Ok(())
                     });
                 }
             });
@@ -111,6 +106,8 @@ async fn run() -> CLIResult<()> {
                     _ => {}
                 }
             }
+
+            // TODO Exit code: if 1 input => normal; all inputs => multiple failures
         }
 
         Commands::Vis { format, input } => {
