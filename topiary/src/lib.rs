@@ -17,14 +17,12 @@ use pretty_assertions::StrComparison;
 use tree_sitter::Position;
 
 pub use crate::{
-    configuration::{default_configuration_toml, Configuration},
     error::{FormatterError, IoError},
-    language::{Language, SupportedLanguage},
+    language::Language,
     tree_sitter::{apply_query, SyntaxNode, TopiaryQuery, Visualisation},
 };
 
 mod atom_collection;
-mod configuration;
 mod error;
 mod graphviz;
 mod language;
@@ -194,9 +192,7 @@ pub enum Operation {
 pub fn formatter(
     input: &mut impl io::Read,
     output: &mut impl io::Write,
-    query: &TopiaryQuery,
     language: &Language,
-    grammar: &tree_sitter_facade::Language,
     operation: Operation,
 ) -> FormatterResult<()> {
     let content = read_input(input).map_err(|e| {
@@ -214,8 +210,13 @@ pub fn formatter(
             // All the work related to tree-sitter and the query is done here
             log::info!("Apply Tree-sitter query");
 
-            let mut atoms =
-                tree_sitter::apply_query(&content, query, grammar, tolerate_parsing_errors, false)?;
+            let mut atoms = tree_sitter::apply_query(
+                &content,
+                &language.query,
+                &language.grammar,
+                tolerate_parsing_errors,
+                false,
+            )?;
 
             // Various post-processing of whitespace
             atoms.post_process();
@@ -230,7 +231,7 @@ pub fn formatter(
             let trimmed = trim_whitespace(&rendered);
 
             if !skip_idempotence {
-                idempotence_check(&trimmed, query, language, grammar, tolerate_parsing_errors)?;
+                idempotence_check(&trimmed, language, tolerate_parsing_errors)?;
             }
 
             write!(output, "{trimmed}")?;
@@ -275,9 +276,7 @@ fn trim_whitespace(s: &str) -> String {
 /// `Err(FormatterError::Formatting(...))` if the formatting failed
 fn idempotence_check(
     content: &str,
-    query: &TopiaryQuery,
     language: &Language,
-    grammar: &tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<()> {
     log::info!("Checking for idempotence ...");
@@ -288,9 +287,7 @@ fn idempotence_check(
     match formatter(
         &mut input,
         &mut output,
-        query,
         language,
-        grammar,
         Operation::Format {
             skip_idempotence: true,
             tolerate_parsing_errors,
@@ -321,8 +318,8 @@ mod tests {
     use test_log::test;
 
     use crate::{
-        configuration::Configuration, error::FormatterError, formatter,
-        test_utils::pretty_assert_eq, Operation, TopiaryQuery,
+        error::FormatterError, formatter, test_utils::pretty_assert_eq, Language, Operation,
+        TopiaryQuery,
     };
 
     /// Attempt to parse invalid json, expecting a failure
@@ -331,17 +328,18 @@ mod tests {
         let mut input = r#"{"foo":{"bar"}}"#.as_bytes();
         let mut output = Vec::new();
         let query_content = "(#language! json)";
-        let configuration = Configuration::parse_default_configuration().unwrap();
-        let language = configuration.get_language("json").unwrap();
-        let grammar = language.grammar().await.unwrap();
-        let query = TopiaryQuery::new(&grammar, query_content).unwrap();
+        let grammar = tree_sitter_json::language().into();
+        let language = Language {
+            name: "json".to_owned(),
+            query: TopiaryQuery::new(&grammar, query_content).unwrap(),
+            grammar,
+            indent: None,
+        };
 
         match formatter(
             &mut input,
             &mut output,
-            &query,
-            language,
-            &grammar,
+            &language,
             Operation::Format {
                 skip_idempotence: true,
                 tolerate_parsing_errors: false,
@@ -365,18 +363,19 @@ mod tests {
         let expected = "{ \"one\": {\"bar\"   \"baz\"}, \"two\": \"bar\" }\n";
 
         let mut output = Vec::new();
-        let query_content = fs::read_to_string("../queries/json.scm").unwrap();
-        let configuration = Configuration::parse_default_configuration().unwrap();
-        let language = configuration.get_language("json").unwrap();
-        let grammar = language.grammar().await.unwrap();
-        let query = TopiaryQuery::new(&grammar, &query_content).unwrap();
+        let query_content = fs::read_to_string("../languages/json.scm").unwrap();
+        let grammar = tree_sitter_json::language().into();
+        let language = Language {
+            name: "json".to_owned(),
+            query: TopiaryQuery::new(&grammar, &query_content).unwrap(),
+            grammar,
+            indent: None,
+        };
 
         formatter(
             &mut input,
             &mut output,
-            &query,
-            language,
-            &grammar,
+            &language,
             Operation::Format {
                 skip_idempotence: true,
                 tolerate_parsing_errors: true,

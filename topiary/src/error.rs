@@ -198,12 +198,6 @@ where
     }
 }
 
-impl From<serde_json::Error> for FormatterError {
-    fn from(e: serde_json::Error) -> Self {
-        Self::Internal("Could not serialise JSON output".into(), Some(Box::new(e)))
-    }
-}
-
 impl From<tree_sitter_facade::LanguageError> for FormatterError {
     fn from(e: tree_sitter_facade::LanguageError) -> Self {
         Self::Internal(
@@ -216,14 +210,5 @@ impl From<tree_sitter_facade::LanguageError> for FormatterError {
 impl From<tree_sitter_facade::ParserError> for FormatterError {
     fn from(e: tree_sitter_facade::ParserError) -> Self {
         Self::Internal("Error while parsing".into(), Some(Box::new(e)))
-    }
-}
-
-impl From<toml::de::Error> for FormatterError {
-    fn from(e: toml::de::Error) -> Self {
-        Self::Internal(
-            "Error while parsing the internal configuration file".to_owned(),
-            Some(Box::new(e)),
-        )
     }
 }
