@@ -1,5 +1,8 @@
 use std::{
-    collections::{hash_map::DefaultHasher, HashMap},
+    collections::{
+        hash_map::{DefaultHasher, Entry},
+        HashMap,
+    },
     hash::{Hash, Hasher},
     sync::Arc,
 };
@@ -41,31 +44,33 @@ impl LanguageDefinitionCache {
         // correct behaviour when we have near-simultaneous cache access; see issue #605.)
         let mut cache = self.0.lock().await;
 
-        // Return the language definition from the cache, if it exists...
-        if let Some(lang_def) = cache.get(&key) {
-            log::debug!(
-                "Cache {:p}: Hit at {:#016x} ({}, {})",
-                self,
-                key,
-                input.language(),
-                input.query().file_name().unwrap().to_string_lossy()
-            );
+        Ok(match cache.entry(key) {
+            // Return the language definition from the cache, if it exists...
+            Entry::Occupied(lang_def) => {
+                log::debug!(
+                    "Cache {:p}: Hit at {:#016x} ({}, {})",
+                    self,
+                    key,
+                    input.language(),
+                    input.query().file_name().unwrap().to_string_lossy()
+                );
 
-            return Ok(Arc::clone(lang_def));
-        }
+                lang_def.get().to_owned()
+            }
 
-        // ...otherwise, fetch the language definition, to populate the cache
-        let lang_def = Arc::new(input.to_language_definition().await?);
-        cache.insert(key, Arc::clone(&lang_def));
+            // ...otherwise, fetch the language definition, to populate the cache
+            Entry::Vacant(slot) => {
+                log::debug!(
+                    "Cache {:p}: Insert at {:#016x} ({}, {})",
+                    self,
+                    key,
+                    input.language(),
+                    input.query().file_name().unwrap().to_string_lossy()
+                );
 
-        log::debug!(
-            "Cache {:p}: Insert at {:#016x} ({}, {})",
-            self,
-            key,
-            input.language(),
-            input.query().file_name().unwrap().to_string_lossy()
-        );
-
-        Ok(lang_def)
+                let lang_def = Arc::new(input.to_language_definition().await?);
+                slot.insert(lang_def).to_owned()
+            }
+        })
     }
 }
