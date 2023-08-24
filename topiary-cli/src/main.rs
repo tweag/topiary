@@ -2,14 +2,20 @@ mod cli;
 mod configuration;
 mod error;
 mod io;
+mod language;
 mod visualisation;
 
-use std::{error::Error, process::ExitCode};
+use std::{
+    error::Error,
+    io::{BufReader, BufWriter},
+    process::ExitCode,
+};
 
 use crate::{
     cli::Commands,
-    error::CLIResult,
+    error::{CLIError, CLIResult, TopiaryError},
     io::{Inputs, OutputFile},
+    language::LanguageDefinitionCache,
 };
 use topiary::{formatter, Operation};
 
@@ -40,34 +46,110 @@ async fn run() -> CLIResult<()> {
             skip_idempotence,
             inputs,
         } => {
-            todo!();
+            let inputs = Inputs::new(&config, &inputs);
+            let cache = LanguageDefinitionCache::new();
+
+            let (_, mut results) = async_scoped::TokioScope::scope_and_block(|scope| {
+                for input in inputs {
+                    scope.spawn(async {
+                        // NOTE "try blocks" and "async closures" are both unstable features. As
+                        // such, to report errors when they happen -- rather than collated at the
+                        // end -- we have to resort to this awkward dance, so we can benefit from
+                        // `?` syntax sugar. Rewrite with a "try block" once the feature is stable.
+                        let result: CLIResult<()> = match input {
+                            Ok(input) => {
+                                // FIXME The cache is performing suboptimally; see `language.rs`
+                                let lang_def = match cache.fetch(&input).await {
+                                    Ok(lang_def) => lang_def,
+                                    Err(error) => return Err(error),
+                                };
+
+                                tryvial::try_block! {
+                                    let output = OutputFile::try_from(&input)?;
+
+                                    log::info!(
+                                        "Formatting {}, as {} using {}, to {}",
+                                        input.source(),
+                                        input.language(),
+                                        input.query().to_string_lossy(),
+                                        output
+                                    );
+
+                                    let mut buf_input = BufReader::new(input);
+                                    let mut buf_output = BufWriter::new(output);
+
+                                    formatter(
+                                        &mut buf_input,
+                                        &mut buf_output,
+                                        &lang_def.query,
+                                        &lang_def.language,
+                                        &lang_def.grammar,
+                                        Operation::Format {
+                                            skip_idempotence,
+                                            tolerate_parsing_errors,
+                                        },
+                                    )?;
+
+                                    buf_output.into_inner()?.persist()?;
+                                }
+                            }
+
+                            // This happens when the input resolver cannot establish an input
+                            // source, language or query file.
+                            Err(error) => Err(error),
+                        };
+
+                        if let Err(error) = &result {
+                            // By this point, we've lost any reference to the original
+                            // input; we trust that it is embedded into `error`.
+                            log::warn!("Skipping: {error}");
+                        }
+
+                        result
+                    });
+                }
+            });
+
+            if results.len() == 1 {
+                // If we just had one input, then handle errors as normal
+                results.remove(0)??
+            } else if results
+                .iter()
+                .any(|result| matches!(result, Err(_) | Ok(Err(_))))
+            {
+                // For multiple inputs, bail out if any failed with a "multiple errors" failure
+                return Err(TopiaryError::Bin(
+                    "Processing of some inputs failed; see warning logs for details".into(),
+                    Some(CLIError::Multiple),
+                ));
+            }
         }
 
         Commands::Vis { format, input } => {
             // We are guaranteed (by clap) to have exactly one input, so it's safe to unwrap
-            let mut input = Inputs::new(&config, &input).next().unwrap()?;
-            let mut output = OutputFile::Stdout;
+            let input = Inputs::new(&config, &input).next().unwrap()?;
+            let output = OutputFile::Stdout;
+
+            // We don't need a `LanguageDefinitionCache` when there's only one input,
+            // which saves us the thread-safety overhead
+            let lang_def = input.to_language_definition().await?;
 
             log::info!(
                 "Visualising {}, as {}, to {}",
                 input.source(),
                 input.language(),
-                output.sink()
+                output
             );
 
-            // TODO `InputFile::to_language_definition` will re-process the `(Language, PathBuf)`
-            // tuple for each valid input file. Here we only have one file, but when it comes to
-            // formatting, many input files will share the same `(Language, PathBuf)` tuples, so
-            // we'll end up doing a lot of unnecessary work, including IO (although that'll
-            // probably be cached by the OS). Caching these values in memory would make sense.
-            let (query, language, grammar) = input.to_language_definition().await?;
+            let mut buf_input = BufReader::new(input);
+            let mut buf_output = BufWriter::new(output);
 
             formatter(
-                &mut input,
-                &mut output,
-                &query,
-                &language,
-                &grammar,
+                &mut buf_input,
+                &mut buf_output,
+                &lang_def.query,
+                &lang_def.language,
+                &lang_def.grammar,
                 Operation::Visualise {
                     output_format: format.into(),
                 },
@@ -82,145 +164,6 @@ async fn run() -> CLIResult<()> {
 
     Ok(())
 }
-
-/*
-    let io_files: Vec<(String, String)> = if args.in_place || args.input_files.len() > 1 {
-        args.input_files
-            .iter()
-            .map(|f| (f.clone(), f.clone()))
-            .collect()
-    } else {
-        // Clap guarantees our input_files is non-empty
-        vec![(
-            args.input_files.first().unwrap().clone(),
-            match args.output_file.as_deref() {
-                Some("-") | None => String::from("-"),
-                Some(f) => String::from(f),
-            },
-        )]
-    };
-
-    type IoFile = (
-        String,
-        String,
-        Language,
-        Option<PathBuf>,
-        CLIResult<PathBuf>,
-    );
-
-    // Add the language and query Path to the io_files
-    let io_files: Vec<IoFile> = io_files
-        .into_iter()
-        // Add the appropriate language to all of the tuples
-        .map(|(i, o)| {
-            let language = if let Some(language) = args.language {
-                language.to_language(&configuration).clone()
-            } else {
-                Language::detect(&i, &configuration)?.clone()
-            };
-
-            let query_path = if let Some(query) = &args.query {
-                Ok(query.clone())
-            } else {
-                language.query_file()
-            }
-            .map_err(TopiaryError::Lib);
-
-            Ok((i, o, language, args.query.clone(), query_path))
-        })
-        .collect::<CLIResult<Vec<_>>>()?;
-
-    // Converts the simple types into arguments we can pass to the `formatter` function
-    // _ holds the tree_sitter_facade::Language
-    let fmt_args: Vec<(String, String, Language, _, TopiaryQuery)> =
-        futures::future::try_join_all(io_files.into_iter().map(
-            |(i, o, language, query_arg, query_path)| async move {
-                let grammar = language.grammar().await?;
-
-                let query = query_path
-                    .and_then(|query_path| {
-                        {
-                            let mut reader = BufReader::new(File::open(query_path)?);
-                            let mut contents = String::new();
-                            reader.read_to_string(&mut contents)?;
-                            Ok(contents)
-                        }
-                        .map_err(|e| {
-                            TopiaryError::Bin(
-                                "Could not open query file".into(),
-                                Some(CLIError::IOError(e)),
-                            )
-                        })
-                    })
-                    .and_then(|query_content: String| {
-                        Ok(TopiaryQuery::new(&grammar, &query_content)?)
-                    })
-                    .or_else(|e| {
-                        // If we weren't able to read the query file, and the user didn't
-                        // request a specific query file, we should fall back to the built-in
-                        // queries.
-                        if query_arg.is_none() {
-                            log::info!(
-                                "No language file found for {language:?}. Will use built-in query."
-                            );
-                            Ok((&language).try_into()?)
-                        } else {
-                            Err(e)
-                        }
-                    })?;
-
-                Ok::<_, TopiaryError>((i, o, language, grammar, query))
-            },
-        ))
-        .await?;
-
-    // The operation needs not be part of the Vector of Structs because it is the same for every formatting instance
-    let operation = if let Some(visualisation) = args.visualise {
-        Operation::Visualise {
-            output_format: visualisation.into(),
-        }
-    } else {
-        Operation::Format {
-            skip_idempotence: args.skip_idempotence,
-            tolerate_parsing_errors: args.tolerate_parsing_errors,
-        }
-    };
-
-    let tasks: Vec<_> = fmt_args
-        .into_iter()
-        .map(|(input, output, language, grammar, query)| -> tokio::task::JoinHandle<Result<(), TopiaryError>> {
-            tokio::spawn(async move {
-                    let mut input: Box<dyn Read> = match input.as_str() {
-                        "-" => Box::new(stdin()),
-                        file => Box::new(BufReader::new(File::open(file)?)),
-                    };
-                    let mut output: BufWriter<OutputFile> = BufWriter::new(OutputFile::new(&output)?);
-
-                    formatter(
-                        &mut input,
-                        &mut output,
-                        &query,
-                        &language,
-                        &grammar,
-                        operation,
-                    )?;
-
-                    output.into_inner()?.persist()?;
-
-                    Ok(())
-            })
-        })
-        .collect();
-
-    for task in tasks {
-        // The await results in a `Result<Result<(), TopiaryError>, JoinError>`.
-        // The first ? concerns the `JoinError`, the second one the `TopiaryError`.
-        task.await??;
-    }
-
-    Ok(())
-}
-*/
 
 fn print_error(e: &dyn Error) {
     log::error!("{e}");

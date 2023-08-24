@@ -1,6 +1,8 @@
-use std::collections::HashSet;
-use std::io;
-use std::path::{Path, PathBuf};
+use std::{
+    collections::HashSet,
+    fmt, io,
+    path::{Path, PathBuf},
+};
 
 use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
@@ -15,7 +17,7 @@ pub struct Language {
     /// the Configuration, and to convert from a language to the respective tree-sitter
     /// grammar.
     pub name: String,
-    /// A Set of the filetype extentions associated with this particular language.
+    /// A Set of the filetype extensions associated with this particular language.
     /// Enables Topiary to pick the right language given an input file
     pub extensions: HashSet<String>,
     /// The indentation string used for that particular language. Defaults to "  "
@@ -100,6 +102,12 @@ impl Language {
             error
         })?
         .into())
+    }
+}
+
+impl fmt::Display for Language {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)
     }
 }
 

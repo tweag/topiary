@@ -1,4 +1,4 @@
-use std::{error, fmt, io, process::ExitCode, result};
+use std::{error, fmt, io, process::ExitCode, result, sync};
 use topiary::FormatterError;
 
 /// A convenience wrapper around `std::result::Result<T, TopiaryError>`.
@@ -18,6 +18,7 @@ pub enum TopiaryError {
 pub enum CLIError {
     IOError(io::Error),
     Generic(Box<dyn error::Error>),
+    Multiple,
 }
 
 /// # Safety
@@ -48,6 +49,7 @@ impl error::Error for TopiaryError {
             Self::Lib(error) => error.source(),
             Self::Bin(_, Some(CLIError::IOError(error))) => Some(error),
             Self::Bin(_, Some(CLIError::Generic(error))) => error.source(),
+            Self::Bin(_, Some(CLIError::Multiple)) => None,
             Self::Bin(_, None) => None,
         }
     }
@@ -56,6 +58,9 @@ impl error::Error for TopiaryError {
 impl From<TopiaryError> for ExitCode {
     fn from(e: TopiaryError) -> Self {
         let exit_code = match e {
+            // Multiple errors: Exit 9
+            TopiaryError::Bin(_, Some(CLIError::Multiple)) => 9,
+
             // Idempotency parsing errors: Exit 8
             TopiaryError::Lib(FormatterError::IdempotenceParsing(_)) => 8,
 
@@ -127,6 +132,13 @@ where
             "Could not flush internal buffer".into(),
             Some(CLIError::Generic(Box::new(e))),
         )
+    }
+}
+
+impl<T> From<sync::PoisonError<T>> for TopiaryError {
+    fn from(_: sync::PoisonError<T>) -> Self {
+        // TODO Pass the error into `CLIError::Generic`, without invalidating lifetime constraints
+        Self::Bin("Could not acquire cache lock".into(), None)
     }
 }
 

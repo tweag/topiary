@@ -36,6 +36,7 @@ targets = ["x86_64-unknown-linux-gnu", "x86_64-apple-darwin", "x86_64-pc-windows
 
 [workspace.dependencies]
 assert_cmd = "2.0"
+async-scoped = { version = "0.7.1", features = ["use-tokio"] }
 cfg-if = "1.0.0"
 clap = { version = "4.3", features = [ "env" ] }
 criterion = "0.5"
@@ -65,6 +66,7 @@ tree-sitter-ocamllex = "0.20.2"
 tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-query" }
 tree-sitter-rust = "0.20.3"
 tree-sitter-toml = "0.20.0"
+tryvial = "0.2.0"
 unescape = "0.1"
 wasm-bindgen = "0.2.84"
 wasm-bindgen-futures = "0.4.34"
