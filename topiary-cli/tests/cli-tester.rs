@@ -1,6 +1,10 @@
 use std::{fs, fs::File, io::Write, path::PathBuf};
 
 use assert_cmd::Command;
+use predicates::{
+    prelude::PredicateBooleanExt,
+    str::{ends_with, starts_with},
+};
 use tempfile::TempDir;
 
 // Simple exemplar JSON and TOML state, to verify the formatter
@@ -122,6 +126,57 @@ fn test_fmt_invalid() {
         .arg("fmt")
         .arg("--query")
         .arg("/path/to/query")
+        .assert()
+        .failure();
+}
+
+#[test]
+fn test_vis() {
+    let mut topiary = Command::cargo_bin("topiary").unwrap();
+
+    // Sanity check output is a valid DOT graph
+    let is_graph = starts_with("graph {").and(ends_with("}\n"));
+
+    topiary
+        .env("TOPIARY_LANGUAGE_DIR", "../languages")
+        .arg("vis")
+        .arg("--language")
+        .arg("json")
+        .write_stdin(JSON_INPUT)
+        .assert()
+        .success()
+        .stdout(is_graph);
+}
+
+#[test]
+fn test_vis_invalid() {
+    let mut topiary = Command::cargo_bin("topiary").unwrap();
+
+    // Can't specify --language with input file
+    topiary
+        .env("TOPIARY_LANGUAGE_DIR", "../languages")
+        .arg("vis")
+        .arg("--language")
+        .arg("json")
+        .arg("/path/to/some/input")
+        .assert()
+        .failure();
+
+    // Can't specify --query without --language
+    topiary
+        .env("TOPIARY_LANGUAGE_DIR", "../languages")
+        .arg("vis")
+        .arg("--query")
+        .arg("/path/to/query")
+        .assert()
+        .failure();
+
+    // Can't specify multiple input files
+    topiary
+        .env("TOPIARY_LANGUAGE_DIR", "../languages")
+        .arg("vis")
+        .arg("/path/to/some/input")
+        .arg("/path/to/another/input")
         .assert()
         .failure();
 }
