@@ -1,4 +1,4 @@
-use std::{fs, fs::File, io::Write, path::PathBuf};
+use std::{fmt, fs, fs::File, io::Write, path::PathBuf};
 
 use assert_cmd::Command;
 use predicates::{
@@ -179,4 +179,32 @@ fn test_vis_invalid() {
         .arg("/path/to/another/input")
         .assert()
         .failure();
+}
+
+#[test]
+fn test_cfg() {
+    let mut topiary = Command::cargo_bin("topiary").unwrap();
+
+    topiary
+        .env("TOPIARY_LANGUAGE_DIR", "../languages")
+        .arg("cfg")
+        .assert()
+        .success()
+        .stdout(IsToml);
+}
+
+struct IsToml;
+
+impl predicates::Predicate<str> for IsToml {
+    fn eval(&self, variable: &str) -> bool {
+        toml::Value::try_from(variable).is_ok()
+    }
+}
+
+impl predicates::reflection::PredicateReflection for IsToml {}
+
+impl fmt::Display for IsToml {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "is_toml")
+    }
 }
