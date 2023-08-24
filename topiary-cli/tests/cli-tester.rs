@@ -44,7 +44,7 @@ fn test_fmt_stdin() {
     let mut topiary = Command::cargo_bin("topiary").unwrap();
 
     topiary
-        .env("TOPIARY_LANGUAGE_DIR", "../languages")
+        .env("TOPIARY_LANGUAGE_DIR", "../queries")
         .arg("fmt")
         .arg("--language")
         .arg("json")
@@ -59,12 +59,12 @@ fn test_fmt_stdin_query() {
     let mut topiary = Command::cargo_bin("topiary").unwrap();
 
     topiary
-        .env("TOPIARY_LANGUAGE_DIR", "../languages")
+        .env("TOPIARY_LANGUAGE_DIR", "../queries")
         .arg("fmt")
         .arg("--language")
         .arg("json")
         .arg("--query")
-        .arg("../languages/json.scm")
+        .arg("../queries/json.scm")
         .write_stdin(JSON_INPUT)
         .assert()
         .success()
@@ -97,7 +97,7 @@ fn test_fmt_dir() {
     let mut topiary = Command::cargo_bin("topiary").unwrap();
 
     topiary
-        .env("TOPIARY_LANGUAGE_DIR", "../languages")
+        .env("TOPIARY_LANGUAGE_DIR", "../queries")
         .arg("fmt")
         .arg(json.path().parent().unwrap())
         .assert()
@@ -112,7 +112,7 @@ fn test_fmt_invalid() {
 
     // Can't specify --language with input files
     topiary
-        .env("TOPIARY_LANGUAGE_DIR", "../languages")
+        .env("TOPIARY_LANGUAGE_DIR", "../queries")
         .arg("fmt")
         .arg("--language")
         .arg("json")

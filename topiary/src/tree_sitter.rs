@@ -55,100 +55,6 @@ impl TopiaryQuery {
             query_content: query_content.to_owned(),
         })
     }
-
-    /// Creates a new `TopiaryQuery` using the built-in Bash query file.
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn bash() -> TopiaryQuery {
-        Self::new(
-            &tree_sitter_bash::language().into(),
-            include_str!("../languages/bash.scm"),
-        )
-        .expect("parsing built-in query")
-    }
-
-    /// Creates a new `TopiaryQuery` using the built-in Json query file.
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn json() -> TopiaryQuery {
-        Self::new(
-            &tree_sitter_json::language().into(),
-            include_str!("../languages/json.scm"),
-        )
-        .expect("parsing built-in query")
-    }
-
-    /// Creates a new `TopiaryQuery` using the built-in Nickel query file.
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn nickel() -> TopiaryQuery {
-        Self::new(
-            &tree_sitter_nickel::language().into(),
-            include_str!("../languages/nickel.scm"),
-        )
-        .expect("parsing built-in query")
-    }
-
-    /// Creates a new `TopiaryQuery` for Ocaml using the built-in Ocaml query
-    /// file.
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn ocaml() -> TopiaryQuery {
-        Self::new(
-            &tree_sitter_ocaml::language_ocaml().into(),
-            include_str!("../languages/ocaml.scm"),
-        )
-        .expect("parsing built-in query")
-    }
-
-    /// Creates a new `TopiaryQuery` for Ocaml interface using the built-in
-    /// Ocaml query file.
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn ocaml_interface() -> TopiaryQuery {
-        Self::new(
-            &tree_sitter_ocaml::language_ocaml_interface().into(),
-            include_str!("../languages/ocaml.scm"),
-        )
-        .expect("parsing built-in query")
-    }
-
-    /// Creates a new `TopiaryQuery` for Ocamllex using the built-in Ocamllex query
-    /// file.
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn ocamllex() -> TopiaryQuery {
-        Self::new(
-            &tree_sitter_ocamllex::language().into(),
-            include_str!("../languages/ocamllex.scm"),
-        )
-        .expect("parsing built-in query")
-    }
-
-    /// Creates a new `TopiaryQuery` using the built-in Rust query file.
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn rust() -> TopiaryQuery {
-        Self::new(
-            &tree_sitter_rust::language().into(),
-            include_str!("../languages/rust.scm"),
-        )
-        .expect("parsing built-in query")
-    }
-
-    /// Creates a new `TopiaryQuery` using the built-in Toml query file.
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn toml() -> TopiaryQuery {
-        Self::new(
-            &tree_sitter_toml::language().into(),
-            include_str!("../languages/toml.scm"),
-        )
-        .expect("parsing built-in query")
-    }
-
-    /// Creates a new `TopiaryQuery` using the built-in query file for the
-    /// Tree-sitter query language.
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn tree_sitter_query() -> TopiaryQuery {
-        Self::new(
-            &tree_sitter_query::language().into(),
-            include_str!("../languages/tree-sitter-query.scm"),
-        )
-        .expect("parsing built-in query")
-    }
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -157,15 +63,42 @@ impl TryFrom<&crate::Language> for TopiaryQuery {
 
     fn try_from(language: &crate::Language) -> FormatterResult<Self> {
         match language.name.as_str() {
-            "bash" => Ok(TopiaryQuery::bash()),
-            "json" => Ok(TopiaryQuery::json()),
-            "nickel" => Ok(TopiaryQuery::nickel()),
-            "ocaml" => Ok(TopiaryQuery::ocaml()),
-            "ocaml_interface" => Ok(TopiaryQuery::ocaml_interface()),
-            "ocamllex" => Ok(TopiaryQuery::ocamllex()),
-            "rust" => Ok(TopiaryQuery::rust()),
-            "toml" => Ok(TopiaryQuery::toml()),
-            "tree_sitter_query" => Ok(TopiaryQuery::tree_sitter_query()),
+            "bash" => TopiaryQuery::new(
+                &tree_sitter_bash::language().into(),
+                topiary_queries::bash(),
+            ),
+            "json" => TopiaryQuery::new(
+                &tree_sitter_json::language().into(),
+                topiary_queries::json(),
+            ),
+            "nickel" => TopiaryQuery::new(
+                &tree_sitter_nickel::language().into(),
+                topiary_queries::nickel(),
+            ),
+            "ocaml" => TopiaryQuery::new(
+                &tree_sitter_ocaml::language_ocaml().into(),
+                topiary_queries::ocaml(),
+            ),
+            "ocaml_interface" => TopiaryQuery::new(
+                &tree_sitter_ocaml::language_ocaml_interface().into(),
+                topiary_queries::ocaml_interface(),
+            ),
+            "ocamllex" => TopiaryQuery::new(
+                &tree_sitter_ocamllex::language().into(),
+                topiary_queries::ocamllex(),
+            ),
+            "rust" => TopiaryQuery::new(
+                &tree_sitter_rust::language().into(),
+                topiary_queries::rust(),
+            ),
+            "toml" => TopiaryQuery::new(
+                &tree_sitter_toml::language().into(),
+                topiary_queries::toml(),
+            ),
+            "tree_sitter_query" => TopiaryQuery::new(
+                &tree_sitter_query::language().into(),
+                topiary_queries::tree_sitter_query(),
+            ),
             name => Err(FormatterError::UnsupportedLanguage(name.to_string())),
         }
     }

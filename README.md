@@ -123,10 +123,10 @@ This won't work if you are running Topiary from another directory than this
 repository. In order to use Topiary without restriction, **you must set the
 environment variable `TOPIARY_LANGUAGE_DIR` to point to the directory where
 Topiary's language query files (`.scm`) are located**. By default, you should
-set it to `<local path of the topiary repository>/languages`, for example:
+set it to `<local path of the topiary repository>/queries`, for example:
 
 ```sh
-export TOPIARY_LANGUAGE_DIR=/home/me/tools/topiary/languages
+export TOPIARY_LANGUAGE_DIR=/home/me/tools/topiary/queries
 topiary fmt ./projects/helloworld/hello.ml
 ```
 

@@ -117,7 +117,7 @@ impl fmt::Display for Language {
 ///
 /// 1. Under the `TOPIARY_LANGUAGE_DIR` environment variable at runtime;
 /// 2. Under the `TOPIARY_LANGUAGE_DIR` environment variable at build time;
-/// 3. Under the `./languages` subdirectory.
+/// 3. Under the `./queries` subdirectory.
 ///
 /// If all of these fail, we return an I/O error.
 ///
@@ -144,8 +144,8 @@ impl TryFrom<&Language> for PathBuf {
         let potentials: [Option<Self>; 4] = [
             std::env::var("TOPIARY_LANGUAGE_DIR").map(Self::from).ok(),
             option_env!("TOPIARY_LANGUAGE_DIR").map(Self::from),
-            Some(Self::from("./languages")),
-            Some(Self::from("../languages")),
+            Some(Self::from("./queries")),
+            Some(Self::from("../queries")),
         ];
 
         potentials
