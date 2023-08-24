@@ -69,7 +69,6 @@ async fn run() -> CLIResult<()> {
                         // `?` syntax sugar. Rewrite with a "try block" once the feature is stable.
                         let result: CLIResult<()> = match input {
                             Ok(input) => {
-                                // FIXME The cache is performing suboptimally; see `language.rs`
                                 let lang_def = match cache.fetch(&input).await {
                                     Ok(lang_def) => lang_def,
                                     Err(error) => return Err(error),
