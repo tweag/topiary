@@ -1,6 +1,5 @@
 node_modules
 target
 /result
-/.envrc
 /.direnv
 *.profraw
