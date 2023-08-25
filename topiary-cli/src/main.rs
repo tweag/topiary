@@ -11,7 +11,7 @@ use std::{
     process::ExitCode,
 };
 
-use log::LevelFilter;
+use topiary::{formatter, Operation};
 
 use crate::{
     cli::Commands,
@@ -19,7 +19,6 @@ use crate::{
     io::{Inputs, OutputFile},
     language::LanguageDefinitionCache,
 };
-use topiary::{formatter, Operation};
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -33,16 +32,6 @@ async fn main() -> ExitCode {
 
 async fn run() -> CLIResult<()> {
     let args = cli::get_args()?;
-
-    env_logger::Builder::new()
-        .filter_level(match args.global.verbose {
-            0 => LevelFilter::Error,
-            1 => LevelFilter::Warn,
-            2 => LevelFilter::Info,
-            3 => LevelFilter::Debug,
-            _ => LevelFilter::Trace,
-        })
-        .init();
 
     let (annotations, config) = configuration::fetch(
         &args.global.configuration,
