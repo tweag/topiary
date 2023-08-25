@@ -2,6 +2,8 @@
 
 use clap::{ArgAction, ArgGroup, Args, Parser, Subcommand};
 use std::path::PathBuf;
+
+use log::LevelFilter;
 use topiary::SupportedLanguage;
 
 use crate::{
@@ -171,6 +173,18 @@ fn traverse_fs(files: &mut Vec<PathBuf>) -> CLIResult<()> {
 /// Parse CLI arguments and normalise them for the caller
 pub fn get_args() -> CLIResult<Cli> {
     let mut args = Cli::parse();
+
+    // This is the earliest point that we can initialise the logger, from the --verbose flags,
+    // before any fallible operations have started
+    env_logger::Builder::new()
+        .filter_level(match args.global.verbose {
+            0 => LevelFilter::Error,
+            1 => LevelFilter::Warn,
+            2 => LevelFilter::Info,
+            3 => LevelFilter::Debug,
+            _ => LevelFilter::Trace,
+        })
+        .init();
 
     // NOTE We do not check that input files are actual files (with Path::is_file), because that
     // would break in the case of, for example, named pipes; thus also adding a platform dimension

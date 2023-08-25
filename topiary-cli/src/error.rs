@@ -1,4 +1,4 @@
-use std::{error, fmt, io, process::ExitCode, result, sync};
+use std::{error, fmt, io, process::ExitCode, result};
 use topiary::FormatterError;
 
 /// A convenience wrapper around `std::result::Result<T, TopiaryError>`.
@@ -132,13 +132,6 @@ where
             "Could not flush internal buffer".into(),
             Some(CLIError::Generic(Box::new(e))),
         )
-    }
-}
-
-impl<T> From<sync::PoisonError<T>> for TopiaryError {
-    fn from(_: sync::PoisonError<T>) -> Self {
-        // TODO Pass the error into `CLIError::Generic`, without invalidating lifetime constraints
-        Self::Bin("Could not acquire cache lock".into(), None)
     }
 }
 

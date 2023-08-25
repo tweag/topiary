@@ -1,9 +1,13 @@
 use std::{
-    collections::{hash_map::DefaultHasher, HashMap},
+    collections::{
+        hash_map::{DefaultHasher, Entry},
+        HashMap,
+    },
     hash::{Hash, Hasher},
-    sync::{Arc, RwLock},
+    sync::Arc,
 };
 
+use tokio::sync::Mutex;
 use topiary::{Language, TopiaryQuery};
 
 use crate::{error::CLIResult, io::InputFile};
@@ -17,18 +21,14 @@ pub struct LanguageDefinition {
 }
 
 /// Thread-safe language definition cache
-pub struct LanguageDefinitionCache(RwLock<HashMap<u64, Arc<LanguageDefinition>>>);
+pub struct LanguageDefinitionCache(Mutex<HashMap<u64, Arc<LanguageDefinition>>>);
 
 impl LanguageDefinitionCache {
     pub fn new() -> Self {
-        LanguageDefinitionCache(RwLock::new(HashMap::new()))
+        LanguageDefinitionCache(Mutex::new(HashMap::new()))
     }
 
     /// Fetch the language definition from the cache, populating if necessary, with thread-safety
-    // FIXME Locking is not working as expected. The read/write locks ensure atomicity -- so it's
-    // not UN-thread-safe -- but many threads/futures can pass the read lock and go into the write
-    // branch. Using a `Mutex` over the whole `HashMap`, rather than a `RwLock`, breaks the `Send`
-    // constraint of the async scope...
     pub async fn fetch<'i>(&self, input: &'i InputFile<'i>) -> CLIResult<Arc<LanguageDefinition>> {
         // There's no need to store the input's identifying information (language name and query)
         // in the key, so we use its hash directly. This side-steps any awkward lifetime issues.
@@ -40,31 +40,37 @@ impl LanguageDefinitionCache {
             hash.finish()
         };
 
-        // Return the language definition from the cache, behind a read lock, if it exists...
-        if let Some(lang_def) = self.0.read()?.get(&key) {
-            log::debug!(
-                "Cache {:p}: Hit at {:#016x} ({}, {})",
-                self,
-                key,
-                input.language(),
-                input.query().file_name().unwrap().to_string_lossy()
-            );
+        // Lock the entire `HashMap` on access. (This may seem blunt, but is necessary for the
+        // correct behaviour when we have near-simultaneous cache access; see issue #605.)
+        let mut cache = self.0.lock().await;
 
-            return Ok(Arc::clone(lang_def));
-        }
+        Ok(match cache.entry(key) {
+            // Return the language definition from the cache, if it exists...
+            Entry::Occupied(lang_def) => {
+                log::debug!(
+                    "Cache {:p}: Hit at {:#016x} ({}, {})",
+                    self,
+                    key,
+                    input.language(),
+                    input.query().file_name().unwrap().to_string_lossy()
+                );
 
-        // ...otherwise, fetch the language definition, to populate the cache behind a write lock
-        let lang_def = Arc::new(input.to_language_definition().await?);
-        self.0.write()?.insert(key, Arc::clone(&lang_def));
+                lang_def.get().to_owned()
+            }
 
-        log::debug!(
-            "Cache {:p}: Insert at {:#016x} ({}, {})",
-            self,
-            key,
-            input.language(),
-            input.query().file_name().unwrap().to_string_lossy()
-        );
+            // ...otherwise, fetch the language definition, to populate the cache
+            Entry::Vacant(slot) => {
+                log::debug!(
+                    "Cache {:p}: Insert at {:#016x} ({}, {})",
+                    self,
+                    key,
+                    input.language(),
+                    input.query().file_name().unwrap().to_string_lossy()
+                );
 
-        Ok(lang_def)
+                let lang_def = Arc::new(input.to_language_definition().await?);
+                slot.insert(lang_def).to_owned()
+            }
+        })
     }
 }
