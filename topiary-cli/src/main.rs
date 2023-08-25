@@ -11,6 +11,8 @@ use std::{
     process::ExitCode,
 };
 
+use log::LevelFilter;
+
 use crate::{
     cli::Commands,
     error::{CLIError, CLIResult, TopiaryError},
@@ -30,9 +32,18 @@ async fn main() -> ExitCode {
 }
 
 async fn run() -> CLIResult<()> {
-    env_logger::init();
-
     let args = cli::get_args()?;
+
+    env_logger::Builder::new()
+        .filter_level(match args.global.verbose {
+            0 => LevelFilter::Error,
+            1 => LevelFilter::Warn,
+            2 => LevelFilter::Info,
+            3 => LevelFilter::Debug,
+            _ => LevelFilter::Trace,
+        })
+        .init();
+
     let (annotations, config) = configuration::fetch(
         &args.global.configuration,
         // The collation value is always set, so we can safely unwrap

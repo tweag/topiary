@@ -1,6 +1,6 @@
 //! Command line interface argument parsing.
 
-use clap::{ArgGroup, Args, Parser, Subcommand};
+use clap::{ArgAction, ArgGroup, Args, Parser, Subcommand};
 use std::path::PathBuf;
 use topiary::SupportedLanguage;
 
@@ -49,6 +49,16 @@ pub struct GlobalArgs {
         hide_env_values = true
     )]
     pub configuration_collation: Option<configuration::CollationMode>,
+
+    /// Logging verbosity (increased per occurrence)
+    #[arg(
+        short,
+        long,
+        action = ArgAction::Count,
+        global = true,
+        display_order = 102
+    )]
+    pub verbose: u8,
 }
 
 // NOTE This abstraction is largely to workaround clap-rs/clap#4707

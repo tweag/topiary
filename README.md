@@ -196,6 +196,9 @@ Options:
           - override: When multiple sources of configuration are available, the highest priority
             source is taken. All values from lower priority sources are discarded
 
+  -v, --verbose...
+          Logging verbosity (increased per occurrence)
+
   -h, --help
           Print help (see a summary with '-h')
 
@@ -253,6 +256,9 @@ Options:
             (including collections) are superseded from the higher priority source
           - override: When multiple sources of configuration are available, the highest priority
             source is taken. All values from lower priority sources are discarded
+
+  -v, --verbose...
+          Logging verbosity (increased per occurrence)
 
   -h, --help
           Print help (see a summary with '-h')
@@ -317,6 +323,9 @@ Options:
           - override: When multiple sources of configuration are available, the highest priority
             source is taken. All values from lower priority sources are discarded
 
+  -v, --verbose...
+          Logging verbosity (increased per occurrence)
+
   -h, --help
           Print help (see a summary with '-h')
 ```
@@ -356,6 +365,9 @@ Options:
           - override: When multiple sources of configuration are available, the highest priority
             source is taken. All values from lower priority sources are discarded
 
+  -v, --verbose...
+          Logging verbosity (increased per occurrence)
+
   -h, --help
           Print help (see a summary with '-h')
 ```
@@ -363,6 +375,20 @@ Options:
 
 Please refer to the [Configuration](#configuration-1) section below to
 understand the different sources of configuration and collation modes.
+
+#### Logging
+
+By default, the Topiary CLI will only output error messages. You can
+increase the logging verbosity with a respective number of
+`-v`/`--verbose` flags:
+
+| Verbosity Flag | Logging Level           |
+| :------------- | :---------------------- |
+| None           | Errors                  |
+| `-v`           | ...and warnings         |
+| `-vv`          | ...and information      |
+| `-vvv`         | ...and debugging output |
+| `-vvvv`        | ...and tracing output   |
 
 #### Exit Codes
 
@@ -407,9 +433,6 @@ It will output the following formatted code:
 ```json
 { "foo": "bar" }
 ```
-
-Set the `RUST_LOG=debug` environment variable if you want to enable
-debug logging.
 
 ## Configuration
 
@@ -1252,7 +1275,7 @@ suggested way to work:
    `crate::language::Language` and process it everywhere, then make a
    mostly empty query file with just the `(#language!)` configuration.
 
-4. Run `RUST_LOG=debug cargo test`.
+4. Run `RUST_LOG=debug cargo test -p topiary input_output_tester`.
 
    Provided it works, it should output a lot of log messages. Copy that
    output to a text editor. You are particularly interested in the CST
@@ -1260,8 +1283,8 @@ suggested way to work:
    compilation_unit (0, 0) - (5942, 0)} - Named: true`.
 
    :bulb: As an alternative to using the debugging output, the
-   `--visualise` command line option exists to output the Tree-sitter
-   syntax tree in a variety of formats.
+   `vis` visualisation subcommand line option exists to output the
+   Tree-sitter syntax tree in a variety of formats.
 
 5. The test run will output all the differences between the actual
    output and the expected output, e.g. missing spaces between tokens.
