@@ -1275,11 +1275,18 @@ suggested way to work:
    `crate::language::Language` and process it everywhere, then make a
    mostly empty query file with just the `(#language!)` configuration.
 
-4. Run `RUST_LOG=debug cargo test -p topiary input_output_tester`.
+4. Run:
 
-   Provided it works, it should output a lot of log messages. Copy that
-   output to a text editor. You are particularly interested in the CST
-   output that starts with a line like this: `CST node: {Node
+   ```
+   RUST_LOG=debug \
+   cargo test -p topiary \
+              input_output_tester \
+              -- --nocapture
+   ```
+
+   Provided it works, it should output a _lot_ of log messages. Copy
+   that output to a text editor. You are particularly interested in the
+   CST output that starts with a line like this: `CST node: {Node
    compilation_unit (0, 0) - (5942, 0)} - Named: true`.
 
    :bulb: As an alternative to using the debugging output, the
