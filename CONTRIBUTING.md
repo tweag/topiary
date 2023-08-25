@@ -101,7 +101,7 @@ for that like this:
 ```bash
 cd web-playground
 npm install
-npm start
+npm run dev
 ```
 
 If you want to build the playground so it works with the full website running
