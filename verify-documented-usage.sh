@@ -1,4 +1,6 @@
-#!/usr/bin/env bash
+#!/usr/bin/env nix-shell
+#!nix-shell -i bash --packages diffutils gnused
+#shellcheck shell=bash
 
 set -euo pipefail
 
