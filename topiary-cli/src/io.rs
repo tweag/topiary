@@ -119,13 +119,11 @@ impl<'cfg> InputFile<'cfg> {
     /// Convert our `InputFile` into language definition values that Topiary can consume
     pub async fn to_language_definition(&self) -> CLIResult<LanguageDefinition> {
         let grammar = self.language.grammar().await?;
-        let query = match &self.query {
-            QuerySource::Path(query) => {
-                let contents = tokio::fs::read_to_string(query).await?;
-                TopiaryQuery::new(&grammar, &contents)?
-            }
-            QuerySource::BuiltIn(_) => todo!(),
+        let contents = match &self.query {
+            QuerySource::Path(query) => tokio::fs::read_to_string(query).await?,
+            QuerySource::BuiltIn(contents) => contents.to_owned(),
         };
+        let query = TopiaryQuery::new(&grammar, &contents)?;
 
         Ok(LanguageDefinition {
             query,
