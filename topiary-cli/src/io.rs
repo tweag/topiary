@@ -33,6 +33,12 @@ impl From<&PathBuf> for QuerySource {
     }
 }
 
+impl From<&str> for QuerySource {
+    fn from(string: &str) -> Self {
+        QuerySource::BuiltIn(String::from(string))
+    }
+}
+
 impl Display for QuerySource {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -177,7 +183,22 @@ impl<'cfg, 'i> Inputs<'cfg> {
             InputFrom::Stdin(language, query) => {
                 vec![(|| {
                     let language = language.to_language(config);
-                    let query = query.unwrap_or(language.query_file()?.into());
+                    let query = match query {
+                        // The user specified a query file
+                        Some(p) => p.into(),
+                        // The user did not specify a file, try the default locations
+                        None => match language.query_file() {
+                            Ok(p) => p.into(),
+                            // For some reason, Topiary could not find any
+                            // matching file in a default location. As a final attempt, use try to the the
+                            // builtin ones. Store the error, return that if we
+                            // fail to find anything, because the builtin error might be unexpected.
+                            Err(e) => {
+                                log::warn!("No query files found in any of the expected locations. Falling back to compile-time included files.");
+                                to_query(language).map_err(|_| e)?.into()
+                            }
+                        },
+                    };
 
                     Ok(InputFile {
                         source: InputSource::Stdin,
@@ -302,53 +323,17 @@ impl<'cfg> TryFrom<&InputFile<'cfg>> for OutputFile {
     }
 }
 
-fn to_query(language: Language) -> CLIResult<TopiaryQuery> {
+fn to_query(language: &Language) -> CLIResult<QuerySource> {
     match language.name.as_str() {
-        "bash" => TopiaryQuery::new(
-            &tree_sitter_bash::language().into(),
-            topiary_queries::bash(),
-        )
-        .map_err(TopiaryError::from),
-        "json" => TopiaryQuery::new(
-            &tree_sitter_json::language().into(),
-            topiary_queries::json(),
-        )
-        .map_err(TopiaryError::from),
-        "nickel" => TopiaryQuery::new(
-            &tree_sitter_nickel::language().into(),
-            topiary_queries::nickel(),
-        )
-        .map_err(TopiaryError::from),
-        "ocaml" => TopiaryQuery::new(
-            &tree_sitter_ocaml::language_ocaml().into(),
-            topiary_queries::ocaml(),
-        )
-        .map_err(TopiaryError::from),
-        "ocaml_interface" => TopiaryQuery::new(
-            &tree_sitter_ocaml::language_ocaml_interface().into(),
-            topiary_queries::ocaml_interface(),
-        )
-        .map_err(TopiaryError::from),
-        "ocamllex" => TopiaryQuery::new(
-            &tree_sitter_ocamllex::language().into(),
-            topiary_queries::ocamllex(),
-        )
-        .map_err(TopiaryError::from),
-        "rust" => TopiaryQuery::new(
-            &tree_sitter_rust::language().into(),
-            topiary_queries::rust(),
-        )
-        .map_err(TopiaryError::from),
-        "toml" => TopiaryQuery::new(
-            &tree_sitter_toml::language().into(),
-            topiary_queries::toml(),
-        )
-        .map_err(TopiaryError::from),
-        "tree_sitter_query" => TopiaryQuery::new(
-            &tree_sitter_query::language().into(),
-            topiary_queries::tree_sitter_query(),
-        )
-        .map_err(TopiaryError::from),
+        "bash" => Ok(topiary_queries::bash().into()),
+        "json" => Ok(topiary_queries::json().into()),
+        "nickel" => Ok(topiary_queries::nickel().into()),
+        "ocaml" => Ok(topiary_queries::ocaml().into()),
+        "ocaml_interface" => Ok(topiary_queries::ocaml_interface().into()),
+        "ocamllex" => Ok(topiary_queries::ocamllex().into()),
+        "rust" => Ok(topiary_queries::rust().into()),
+        "toml" => Ok(topiary_queries::toml().into()),
+        "tree_sitter_query" => Ok(topiary_queries::tree_sitter_query().into()),
         name => Err(TopiaryError::Bin(
             format!(
                 "The specified language is unsupported: {}",
