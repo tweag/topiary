@@ -19,6 +19,7 @@ pub enum CLIError {
     IOError(io::Error),
     Generic(Box<dyn error::Error>),
     Multiple,
+    UnsupportedLanguage(String),
 }
 
 /// # Safety
@@ -50,6 +51,7 @@ impl error::Error for TopiaryError {
             Self::Bin(_, Some(CLIError::IOError(error))) => Some(error),
             Self::Bin(_, Some(CLIError::Generic(error))) => error.source(),
             Self::Bin(_, Some(CLIError::Multiple)) => None,
+            Self::Bin(_, Some(CLIError::UnsupportedLanguage(_))) => None,
             Self::Bin(_, None) => None,
         }
     }

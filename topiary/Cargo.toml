@@ -27,8 +27,6 @@ toml = { workspace = true }
 tree-sitter-facade = { workspace = true }
 unescape = { workspace = true }
 
-topiary-queries = { path = "../topiary-queries" }
-
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tokio = { workspace = true }
 tree-sitter-json = { workspace = true }

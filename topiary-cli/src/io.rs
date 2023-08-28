@@ -1,6 +1,6 @@
 use std::{
     ffi::OsString,
-    fmt,
+    fmt::{self, Display},
     fs::File,
     io::{stdin, stdout, ErrorKind, Read, Result, Write},
     path::{Path, PathBuf},
@@ -11,11 +11,36 @@ use topiary::{Configuration, Language, SupportedLanguage, TopiaryQuery};
 
 use crate::{
     cli::{AtLeastOneInput, ExactlyOneInput, FromStdin},
-    error::{CLIResult, TopiaryError},
+    error::{CLIError, CLIResult, TopiaryError},
     language::LanguageDefinition,
 };
 
-type QuerySource = PathBuf;
+#[derive(Debug, Clone, Hash)]
+pub enum QuerySource {
+    Path(PathBuf),
+    BuiltIn(String),
+}
+
+impl From<PathBuf> for QuerySource {
+    fn from(path: PathBuf) -> Self {
+        QuerySource::Path(path)
+    }
+}
+
+impl From<&PathBuf> for QuerySource {
+    fn from(path: &PathBuf) -> Self {
+        QuerySource::Path(path.clone())
+    }
+}
+
+impl Display for QuerySource {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            QuerySource::Path(p) => write!(f, "{}", p.to_string_lossy()),
+            QuerySource::BuiltIn(_) => write!(f, "built-in query"),
+        }
+    }
+}
 
 /// Unified interface for input sources. We either have input from:
 /// * Standard input, in which case we need to specify the language and, optionally, query override
@@ -34,7 +59,10 @@ impl From<&ExactlyOneInput> for InputFrom {
             ExactlyOneInput {
                 stdin: Some(FromStdin { language, query }),
                 ..
-            } => InputFrom::Stdin(language.to_owned(), query.to_owned()),
+            } => InputFrom::Stdin(
+                language.to_owned(),
+                query.as_ref().map(|p| p.into()).to_owned(),
+            ),
 
             ExactlyOneInput {
                 file: Some(path), ..
@@ -51,7 +79,10 @@ impl From<&AtLeastOneInput> for InputFrom {
             AtLeastOneInput {
                 stdin: Some(FromStdin { language, query }),
                 ..
-            } => InputFrom::Stdin(language.to_owned(), query.to_owned()),
+            } => InputFrom::Stdin(
+                language.to_owned(),
+                query.as_ref().map(|p| p.into()).to_owned(),
+            ),
 
             AtLeastOneInput { files, .. } => InputFrom::Files(files.to_owned()),
         }
@@ -88,9 +119,12 @@ impl<'cfg> InputFile<'cfg> {
     /// Convert our `InputFile` into language definition values that Topiary can consume
     pub async fn to_language_definition(&self) -> CLIResult<LanguageDefinition> {
         let grammar = self.language.grammar().await?;
-        let query = {
-            let contents = tokio::fs::read_to_string(&self.query).await?;
-            TopiaryQuery::new(&grammar, &contents)?
+        let query = match &self.query {
+            QuerySource::Path(query) => {
+                let contents = tokio::fs::read_to_string(query).await?;
+                TopiaryQuery::new(&grammar, &contents)?
+            }
+            QuerySource::BuiltIn(_) => todo!(),
         };
 
         Ok(LanguageDefinition {
@@ -111,7 +145,7 @@ impl<'cfg> InputFile<'cfg> {
     }
 
     /// Expose query path for input
-    pub fn query(&self) -> &PathBuf {
+    pub fn query(&self) -> &QuerySource {
         &self.query
     }
 }
@@ -145,7 +179,7 @@ impl<'cfg, 'i> Inputs<'cfg> {
             InputFrom::Stdin(language, query) => {
                 vec![(|| {
                     let language = language.to_language(config);
-                    let query = query.unwrap_or(language.query_file()?);
+                    let query = query.unwrap_or(language.query_file()?.into());
 
                     Ok(InputFile {
                         source: InputSource::Stdin,
@@ -159,7 +193,7 @@ impl<'cfg, 'i> Inputs<'cfg> {
                 .into_iter()
                 .map(|path| {
                     let language = Language::detect(&path, config)?;
-                    let query = language.query_file()?;
+                    let query = language.query_file()?.into();
 
                     Ok(InputFile {
                         source: InputSource::Disk(path, None),
@@ -267,5 +301,62 @@ impl<'cfg> TryFrom<&InputFile<'cfg>> for OutputFile {
             InputSource::Stdin => Ok(Self::Stdout),
             InputSource::Disk(path, _) => Self::new(path.to_string_lossy().as_ref()),
         }
+    }
+}
+
+fn to_query(language: Language) -> CLIResult<TopiaryQuery> {
+    match language.name.as_str() {
+        "bash" => TopiaryQuery::new(
+            &tree_sitter_bash::language().into(),
+            topiary_queries::bash(),
+        )
+        .map_err(TopiaryError::from),
+        "json" => TopiaryQuery::new(
+            &tree_sitter_json::language().into(),
+            topiary_queries::json(),
+        )
+        .map_err(TopiaryError::from),
+        "nickel" => TopiaryQuery::new(
+            &tree_sitter_nickel::language().into(),
+            topiary_queries::nickel(),
+        )
+        .map_err(TopiaryError::from),
+        "ocaml" => TopiaryQuery::new(
+            &tree_sitter_ocaml::language_ocaml().into(),
+            topiary_queries::ocaml(),
+        )
+        .map_err(TopiaryError::from),
+        "ocaml_interface" => TopiaryQuery::new(
+            &tree_sitter_ocaml::language_ocaml_interface().into(),
+            topiary_queries::ocaml_interface(),
+        )
+        .map_err(TopiaryError::from),
+        "ocamllex" => TopiaryQuery::new(
+            &tree_sitter_ocamllex::language().into(),
+            topiary_queries::ocamllex(),
+        )
+        .map_err(TopiaryError::from),
+        "rust" => TopiaryQuery::new(
+            &tree_sitter_rust::language().into(),
+            topiary_queries::rust(),
+        )
+        .map_err(TopiaryError::from),
+        "toml" => TopiaryQuery::new(
+            &tree_sitter_toml::language().into(),
+            topiary_queries::toml(),
+        )
+        .map_err(TopiaryError::from),
+        "tree_sitter_query" => TopiaryQuery::new(
+            &tree_sitter_query::language().into(),
+            topiary_queries::tree_sitter_query(),
+        )
+        .map_err(TopiaryError::from),
+        name => Err(TopiaryError::Bin(
+            format!(
+                "The specified language is unsupported: {}",
+                name.to_string()
+            ),
+            Some(CLIError::UnsupportedLanguage(name.to_string())),
+        )),
     }
 }

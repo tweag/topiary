@@ -40,7 +40,17 @@ tempfile = { workspace = true }
 tokio = { workspace = true, features = ["fs", "rt-multi-thread", "sync", "macros"] }
 toml = { workspace = true }
 topiary = { path = "../topiary" }
+topiary-queries = { path = "../topiary-queries" }
 tree-sitter-facade = { workspace = true }
+
+tree-sitter-json = { workspace = true }
+tree-sitter-rust = { workspace = true }
+tree-sitter-toml = { workspace = true }
+tree-sitter-bash = { workspace = true }
+tree-sitter-nickel = { workspace = true }
+tree-sitter-query = { workspace = true }
+tree-sitter-ocaml = { workspace = true }
+tree-sitter-ocamllex = { workspace = true }
 
 [dev-dependencies]
 assert_cmd = { workspace = true }

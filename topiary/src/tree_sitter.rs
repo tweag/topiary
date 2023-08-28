@@ -57,53 +57,6 @@ impl TopiaryQuery {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-impl TryFrom<&crate::Language> for TopiaryQuery {
-    type Error = FormatterError;
-
-    fn try_from(language: &crate::Language) -> FormatterResult<Self> {
-        match language.name.as_str() {
-            "bash" => TopiaryQuery::new(
-                &tree_sitter_bash::language().into(),
-                topiary_queries::bash(),
-            ),
-            "json" => TopiaryQuery::new(
-                &tree_sitter_json::language().into(),
-                topiary_queries::json(),
-            ),
-            "nickel" => TopiaryQuery::new(
-                &tree_sitter_nickel::language().into(),
-                topiary_queries::nickel(),
-            ),
-            "ocaml" => TopiaryQuery::new(
-                &tree_sitter_ocaml::language_ocaml().into(),
-                topiary_queries::ocaml(),
-            ),
-            "ocaml_interface" => TopiaryQuery::new(
-                &tree_sitter_ocaml::language_ocaml_interface().into(),
-                topiary_queries::ocaml_interface(),
-            ),
-            "ocamllex" => TopiaryQuery::new(
-                &tree_sitter_ocamllex::language().into(),
-                topiary_queries::ocamllex(),
-            ),
-            "rust" => TopiaryQuery::new(
-                &tree_sitter_rust::language().into(),
-                topiary_queries::rust(),
-            ),
-            "toml" => TopiaryQuery::new(
-                &tree_sitter_toml::language().into(),
-                topiary_queries::toml(),
-            ),
-            "tree_sitter_query" => TopiaryQuery::new(
-                &tree_sitter_query::language().into(),
-                topiary_queries::tree_sitter_query(),
-            ),
-            name => Err(FormatterError::UnsupportedLanguage(name.to_string())),
-        }
-    }
-}
-
 impl From<Point> for Position {
     fn from(point: Point) -> Self {
         Self {

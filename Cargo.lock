@@ -1335,7 +1335,6 @@ dependencies = [
  "tokio",
  "tokio-test",
  "toml",
- "topiary-queries",
  "tree-sitter-bash",
  "tree-sitter-facade",
  "tree-sitter-json",
@@ -1369,7 +1368,16 @@ dependencies = [
  "tokio",
  "toml",
  "topiary",
+ "topiary-queries",
+ "tree-sitter-bash",
  "tree-sitter-facade",
+ "tree-sitter-json",
+ "tree-sitter-nickel",
+ "tree-sitter-ocaml",
+ "tree-sitter-ocamllex",
+ "tree-sitter-query",
+ "tree-sitter-rust",
+ "tree-sitter-toml",
 ]
 
 [[package]]
