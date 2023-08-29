@@ -189,9 +189,7 @@ impl SupportedLanguage {
             }
         }
 
-        // Every supported language MUST have an entry in the builtin
-        // configuration, and so there should always be a match.
-        unreachable!()
+        unreachable!("A match should always be returned because every supported language must have an entry in the builtin configuration file")
     }
 
     pub fn name(&self) -> &str {

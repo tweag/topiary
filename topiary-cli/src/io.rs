@@ -40,8 +40,7 @@ impl From<&ExactlyOneInput> for InputFrom {
                 file: Some(path), ..
             } => InputFrom::Files(vec![path.to_owned()]),
 
-            // We're guaranteed (by clap) to have at least one of the above
-            _ => unreachable!(),
+            _ => unreachable!("Clap guarantees input is always one of the above"),
         }
     }
 }
