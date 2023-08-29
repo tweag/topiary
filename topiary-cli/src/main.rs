@@ -63,34 +63,30 @@ async fn run() -> CLIResult<()> {
                                     Err(error) => return Err(error),
                                 };
 
-                                tryvial::try_block! {
-                                    let output = OutputFile::try_from(&input)?;
+                                let output = OutputFile::try_from(&input)?;
+                                log::info!(
+                                    "Formatting {}, as {} using {}, to {}",
+                                    input.source(),
+                                    input.language(),
+                                    input.query().to_string_lossy(),
+                                    output
+                                );
+                                let mut buf_input = BufReader::new(input);
+                                let mut buf_output = BufWriter::new(output);
+                                formatter(
+                                    &mut buf_input,
+                                    &mut buf_output,
+                                    &lang_def.query,
+                                    &lang_def.language,
+                                    &lang_def.grammar,
+                                    Operation::Format {
+                                        skip_idempotence,
+                                        tolerate_parsing_errors,
+                                    },
+                                )?;
+                                buf_output.into_inner()?.persist()?;
 
-                                    log::info!(
-                                        "Formatting {}, as {} using {}, to {}",
-                                        input.source(),
-                                        input.language(),
-                                        input.query().to_string_lossy(),
-                                        output
-                                    );
-
-                                    let mut buf_input = BufReader::new(input);
-                                    let mut buf_output = BufWriter::new(output);
-
-                                    formatter(
-                                        &mut buf_input,
-                                        &mut buf_output,
-                                        &lang_def.query,
-                                        &lang_def.language,
-                                        &lang_def.grammar,
-                                        Operation::Format {
-                                            skip_idempotence,
-                                            tolerate_parsing_errors,
-                                        },
-                                    )?;
-
-                                    buf_output.into_inner()?.persist()?;
-                                }
+                                Ok(())
                             }
 
                             // This happens when the input resolver cannot establish an input

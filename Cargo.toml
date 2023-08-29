@@ -67,7 +67,6 @@ tree-sitter-ocamllex = "0.20.2"
 tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-query" }
 tree-sitter-rust = "0.20.3"
 tree-sitter-toml = "0.20.0"
-tryvial = "0.2.0"
 unescape = "0.1"
 wasm-bindgen = "0.2.84"
 wasm-bindgen-futures = "0.4.34"

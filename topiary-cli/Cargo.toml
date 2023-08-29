@@ -40,7 +40,6 @@ tokio = { workspace = true, features = ["fs", "rt-multi-thread", "sync", "macros
 toml = { workspace = true }
 topiary = { path = "../topiary" }
 tree-sitter-facade = { workspace = true }
-tryvial = { workspace = true }
 
 [dev-dependencies]
 assert_cmd = { workspace = true }
