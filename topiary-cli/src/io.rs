@@ -15,7 +15,7 @@ use crate::{
     language::LanguageDefinition,
 };
 
-type QueryPath = PathBuf;
+type QuerySource = PathBuf;
 
 /// Unified interface for input sources. We either have input from:
 /// * Standard input, in which case we need to specify the language and, optionally, query override
@@ -24,7 +24,7 @@ type QueryPath = PathBuf;
 /// These are captured by the CLI parser, with `cli::AtLeastOneInput` and `cli::ExactlyOneInput`.
 /// We use this struct to normalise the interface for downstream (using `From` implementations).
 pub enum InputFrom {
-    Stdin(SupportedLanguage, Option<QueryPath>),
+    Stdin(SupportedLanguage, Option<QuerySource>),
     Files(Vec<PathBuf>),
 }
 
@@ -81,7 +81,7 @@ impl fmt::Display for InputSource {
 pub struct InputFile<'cfg> {
     source: InputSource,
     language: &'cfg Language,
-    query: QueryPath,
+    query: QuerySource,
 }
 
 impl<'cfg> InputFile<'cfg> {
