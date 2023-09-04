@@ -52,18 +52,11 @@ async fn run() -> CLIResult<()> {
             let (_, mut results) = async_scoped::TokioScope::scope_and_block(|scope| {
                 for input in inputs {
                     scope.spawn(async {
-                        // NOTE "try blocks" and "async closures" are both unstable features. As
-                        // such, to report errors when they happen -- rather than collated at the
-                        // end -- we have to resort to this awkward dance, so we can benefit from
-                        // `?` syntax sugar. Rewrite with a "try block" once the feature is stable.
                         let result: CLIResult<()> = match input {
                             Ok(input) => {
-                                let lang_def = match cache.fetch(&input).await {
-                                    Ok(lang_def) => lang_def,
-                                    Err(error) => return Err(error),
-                                };
-
+                                let lang_def = cache.fetch(&input).await?;
                                 let output = OutputFile::try_from(&input)?;
+
                                 log::info!(
                                     "Formatting {}, as {} using {}, to {}",
                                     input.source(),
@@ -71,8 +64,10 @@ async fn run() -> CLIResult<()> {
                                     input.query().to_string_lossy(),
                                     output
                                 );
+
                                 let mut buf_input = BufReader::new(input);
                                 let mut buf_output = BufWriter::new(output);
+
                                 formatter(
                                     &mut buf_input,
                                     &mut buf_output,
@@ -84,6 +79,7 @@ async fn run() -> CLIResult<()> {
                                         tolerate_parsing_errors,
                                     },
                                 )?;
+
                                 buf_output.into_inner()?.persist()?;
 
                                 Ok(())
