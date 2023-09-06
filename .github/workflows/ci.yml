@@ -31,7 +31,7 @@ jobs:
         run: export GC_DONT_GC=1; nix -L flake check
 
       - name: Build and test executable
-        run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- fmt -l json'
+        run: echo '{ "foo": "bar" }' | nix run . -- fmt -l json
 
       - name: Verify that usage in README.md matches CLI output
         run: ./verify-documented-usage.sh
