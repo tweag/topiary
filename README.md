@@ -125,7 +125,7 @@ environment variable `TOPIARY_LANGUAGE_DIR` to point to the directory where
 Topiary's language query files (`.scm`) are located**. By default, you should
 set it to `<local path of the topiary repository>/languages`, for example:
 
-```console
+```sh
 export TOPIARY_LANGUAGE_DIR=/home/me/tools/topiary/languages
 topiary fmt ./projects/helloworld/hello.ml
 ```
@@ -417,7 +417,7 @@ formatting. Otherwise, the following exit codes are defined:
 When given multiple inputs, Topiary will do its best to process them
 all, even in the presence of errors. Should _any_ errors occur, Topiary
 will return a non-zero exit code. For more details on the nature of
-these errors, run Topiary at the `warn` logging level.
+these errors, run Topiary at the `warn` logging level (with `-v`).
 
 #### Example
 
