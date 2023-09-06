@@ -2,7 +2,7 @@
 
 Full documentation for the CLI can be found in the project's
 [`README`](/README.md). Herein we summarise how the v0.2.3 functionality
-maps to the new interface, to aid migration.
+maps to the new interface introduced in v0.3.0, to aid migration.
 
 ## Formatting
 
