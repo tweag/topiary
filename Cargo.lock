@@ -203,9 +203,12 @@ checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
 
 [[package]]
 name = "cc"
-version = "1.0.79"
+version = "1.0.83"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50d30906286121d95be3d479533b458f87493b30a4b5f79a607db8f5d11aa91f"
+checksum = "f1174fb0b6ec23863f8b971027804a42614e347eafb0a95bf0b12cdae21fc4d0"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "cfg-if"
@@ -818,9 +821,9 @@ dependencies = [
 
 [[package]]
 name = "pin-project-lite"
-version = "0.2.10"
+version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c40d25201921e5ff0c862a505c6557ea88568a4e3ace775ab55e93f2f4f9d57"
+checksum = "8afb450f006bf6385ca15ef45d71d2288452bc3683ce2e2cacc0d18e4be60b58"
 
 [[package]]
 name = "pin-utils"
@@ -1227,11 +1230,10 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.29.1"
+version = "1.32.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "532826ff75199d5833b9d2c5fe410f29235e25704ee5f0ef599fb51c21f4a4da"
+checksum = "17ed6077ed6cd6c74735e21f37eb16dc3935f96878b1fe961074089cc80893f9"
 dependencies = [
- "autocfg",
  "backtrace",
  "num_cpus",
  "pin-project-lite",
@@ -1406,9 +1408,8 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter-json"
-version = "0.19.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "90b04c4e1a92139535eb9fca4ec8fa9666cc96b618005d3ae35f3c957fa92f92"
+version = "0.20.0"
+source = "git+https://github.com/tree-sitter/tree-sitter-json.git#ca3f8919800e3c1ad4508de3bfd7b0b860ce434f"
 dependencies = [
  "cc",
  "tree-sitter",
@@ -1426,8 +1427,7 @@ dependencies = [
 [[package]]
 name = "tree-sitter-ocaml"
 version = "0.20.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd1163abc658cf8ae0ecffbd8f4bd3ee00a2b98729de74f3b08f0e24f3ac208a"
+source = "git+https://github.com/tree-sitter/tree-sitter-ocaml.git#694c57718fd85d514f8b81176038e7a4cfabcaaf"
 dependencies = [
  "cc",
  "tree-sitter",
@@ -1436,8 +1436,7 @@ dependencies = [
 [[package]]
 name = "tree-sitter-ocamllex"
 version = "0.20.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e774222086fd065999b6605fb231fbfc386bf782aa7dbad52503ff00b429a62"
+source = "git+https://github.com/314eter/tree-sitter-ocamllex.git#4b9898ccbf198602bb0dec9cd67cc1d2c0a4fad2"
 dependencies = [
  "cc",
  "tree-sitter",
@@ -1454,9 +1453,8 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter-rust"
-version = "0.20.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "797842733e252dc11ae5d403a18060bf337b822fc2ae5ddfaa6ff4d9cc20bda6"
+version = "0.20.4"
+source = "git+https://github.com/tree-sitter/tree-sitter-rust.git#17a6b15562b09db1f27b8f5f26f17edbb2aac097"
 dependencies = [
  "cc",
  "tree-sitter",
@@ -1464,9 +1462,8 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter-toml"
-version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca517f578a98b23d20780247cc2688407fa81effad5b627a5a364ec3339b53e8"
+version = "0.5.1"
+source = "git+https://github.com/tree-sitter/tree-sitter-toml.git#342d9be207c2dba869b9967124c679b5e6fd0ebe"
 dependencies = [
  "cc",
  "tree-sitter",
