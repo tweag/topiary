@@ -270,6 +270,8 @@ the input files' extensions. To format standard input, you must specify
 the `--language` and, optionally, `--query` arguments, omitting any
 input files.
 
+Note: `format` is a recognised alias of the `fmt` subcommand.
+
 #### Visualise
 
 <!-- DO NOT REMOVE THE "usage" COMMENTS -->
@@ -336,6 +338,9 @@ the input file's extension. To visualise standard input, you must
 specify the `--language` and, optionally, `--query` arguments, omitting
 the input file. The visualisation output is written to standard out.
 
+Note: `visualise`, `visualize` and `view` are recognised aliases of the
+`vis` subcommand.
+
 #### Configuration
 
 <!-- DO NOT REMOVE THE "usage" COMMENTS -->
@@ -375,6 +380,8 @@ Options:
 
 Please refer to the [Configuration](#configuration-1) section below to
 understand the different sources of configuration and collation modes.
+
+Note: `config` is a recognised alias of the `cfg` subcommand.
 
 #### Logging
 
