@@ -1,7 +1,8 @@
 /// Topiary can be configured using the `Configuration` struct.
 /// A basic configuration, written in toml, it is included buildtime and parsed runtime.
 /// Additional configuration has to be provided by the user of the library.
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
+use std::fmt;
 
 use crate::{language::Language, FormatterError, FormatterResult};
 use serde::{Deserialize, Serialize};
@@ -63,6 +64,37 @@ impl Configuration {
 impl Default for Configuration {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+/// Convert `Configuration` values into `HashMap`s, keyed on `Language::name`
+// NOTE There are optimisations to be had here, to avoid cloning, but life's too short!
+impl From<&Configuration> for HashMap<String, Language> {
+    fn from(config: &Configuration) -> Self {
+        HashMap::from_iter(config.language.iter().map(|language| {
+            let name = language.name.clone();
+            let language = language.clone();
+
+            (name, language)
+        }))
+    }
+}
+
+// Order-invariant equality; required for unit testing
+impl PartialEq for Configuration {
+    fn eq(&self, other: &Self) -> bool {
+        let lhs: HashMap<String, Language> = self.into();
+        let rhs: HashMap<String, Language> = other.into();
+
+        lhs == rhs
+    }
+}
+
+impl fmt::Display for Configuration {
+    /// Pretty-print configuration as TOML
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let toml = toml::to_string_pretty(self).map_err(|_| fmt::Error)?;
+        write!(f, "{toml}")
     }
 }
 

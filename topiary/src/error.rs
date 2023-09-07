@@ -96,7 +96,7 @@ impl fmt::Display for FormatterError {
 
                 match extension {
                     Some(extension) => write!(f,
-                        "Cannot detect language {file} due to unknown extension '.{extension}'. Try specifying language explicitly.",
+                        "Cannot detect language {file} due to unknown extension '.{extension}'. Try specifying language explicitly, or updating your configuration.",
                     ),
                     None => write!(f,
                         "Cannot detect language {file}. Try specifying language explicitly."

@@ -26,16 +26,21 @@ path = "src/main.rs"
 [dependencies]
 # For now we just load the tree-sitter language parsers statically.
 # Eventually we will want to dynamically load them, like Helix does.
-clap = { workspace = true, features = ["derive"] }
+async-scoped = { workspace = true }
+clap = { workspace = true, features = ["derive", "env", "wrap_help"] }
+directories = { workspace = true }
 env_logger = { workspace = true }
 futures = { workspace = true }
-directories = { workspace = true }
+indoc = { workspace = true }
+itertools = { workspace = true }
 log = { workspace = true }
 serde-toml-merge = { workspace = true }
 tempfile = { workspace = true }
-tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+tokio = { workspace = true, features = ["fs", "rt-multi-thread", "sync", "macros"] }
 toml = { workspace = true }
 topiary = { path = "../topiary" }
+tree-sitter-facade = { workspace = true }
 
 [dev-dependencies]
 assert_cmd = { workspace = true }
+predicates = { workspace = true }

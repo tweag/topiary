@@ -1,6 +1,8 @@
-use std::collections::HashSet;
-use std::io;
-use std::path::{Path, PathBuf};
+use std::{
+    collections::HashSet,
+    fmt, io,
+    path::{Path, PathBuf},
+};
 
 use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
@@ -15,7 +17,7 @@ pub struct Language {
     /// the Configuration, and to convert from a language to the respective tree-sitter
     /// grammar.
     pub name: String,
-    /// A Set of the filetype extentions associated with this particular language.
+    /// A Set of the filetype extensions associated with this particular language.
     /// Enables Topiary to pick the right language given an input file
     pub extensions: HashSet<String>,
     /// The indentation string used for that particular language. Defaults to "  "
@@ -103,6 +105,12 @@ impl Language {
     }
 }
 
+impl fmt::Display for Language {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)
+    }
+}
+
 /// Convert a Language into the canonical basename of its query file, under the most appropriate
 /// search path. We test 3 different locations for query files, in the following priority order,
 /// returning the first that exists:
@@ -181,9 +189,7 @@ impl SupportedLanguage {
             }
         }
 
-        // Every supported language MUST have an entry in the builtin
-        // configuration, and so there should always be a match.
-        unreachable!()
+        unreachable!("A match should always be returned because every supported language must have an entry in the builtin configuration file")
     }
 
     pub fn name(&self) -> &str {

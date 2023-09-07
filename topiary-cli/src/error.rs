@@ -18,6 +18,7 @@ pub enum TopiaryError {
 pub enum CLIError {
     IOError(io::Error),
     Generic(Box<dyn error::Error>),
+    Multiple,
 }
 
 /// # Safety
@@ -48,6 +49,7 @@ impl error::Error for TopiaryError {
             Self::Lib(error) => error.source(),
             Self::Bin(_, Some(CLIError::IOError(error))) => Some(error),
             Self::Bin(_, Some(CLIError::Generic(error))) => error.source(),
+            Self::Bin(_, Some(CLIError::Multiple)) => None,
             Self::Bin(_, None) => None,
         }
     }
@@ -56,6 +58,9 @@ impl error::Error for TopiaryError {
 impl From<TopiaryError> for ExitCode {
     fn from(e: TopiaryError) -> Self {
         let exit_code = match e {
+            // Multiple errors: Exit 9
+            TopiaryError::Bin(_, Some(CLIError::Multiple)) => 9,
+
             // Idempotency parsing errors: Exit 8
             TopiaryError::Lib(FormatterError::IdempotenceParsing(_)) => 8,
 
@@ -133,7 +138,7 @@ where
 impl From<toml::de::Error> for TopiaryError {
     fn from(e: toml::de::Error) -> Self {
         TopiaryError::Bin(
-            "Could not parse user configuration".to_owned(),
+            "Could not parse configuration".into(),
             Some(CLIError::Generic(Box::new(e))),
         )
     }
@@ -142,7 +147,7 @@ impl From<toml::de::Error> for TopiaryError {
 impl From<serde_toml_merge::Error> for TopiaryError {
     fn from(e: serde_toml_merge::Error) -> Self {
         TopiaryError::Bin(
-            format!("Could not merge the default configuration and user configurations. Error occured while merging: {}", e.path),
+            format!("Could not collate configuration from {}", e.path),
             None,
         )
     }
@@ -151,7 +156,7 @@ impl From<serde_toml_merge::Error> for TopiaryError {
 impl From<tokio::task::JoinError> for TopiaryError {
     fn from(e: tokio::task::JoinError) -> Self {
         TopiaryError::Bin(
-            "Could not join parallel formatting tasks".to_owned(),
+            "Could not join parallel formatting tasks".into(),
             Some(CLIError::Generic(Box::new(e))),
         )
     }

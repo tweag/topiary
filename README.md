@@ -125,9 +125,9 @@ environment variable `TOPIARY_LANGUAGE_DIR` to point to the directory where
 Topiary's language query files (`.scm`) are located**. By default, you should
 set it to `<local path of the topiary repository>/languages`, for example:
 
-```console
+```sh
 export TOPIARY_LANGUAGE_DIR=/home/me/tools/topiary/languages
-topiary -i -f ./projects/helloworld/hello.ml
+topiary fmt ./projects/helloworld/hello.ml
 ```
 
 `TOPIARY_LANGUAGE_DIR` can alternatively be set at build time. Topiary will pick
@@ -159,44 +159,243 @@ pre-commit-check = nix-pre-commit-hooks.run {
 
 ### Usage
 
+The Topiary CLI uses a number of subcommands to delineate functionality.
+These can be listed with `topiary --help`; each subcommand then has its
+own, dedicated help text.
+
+<!-- DO NOT REMOVE THE "usage" COMMENTS -->
+<!-- usage:start:ROOT -->
 ```
 CLI app for Topiary, the universal code formatter.
 
-Usage: topiary [OPTIONS] <--language <LANGUAGE>|--input-files [<INPUT_FILES>...]>
+Usage: topiary [OPTIONS] <COMMAND>
+
+Commands:
+  fmt   Format inputs
+  vis   Visualise the input's Tree-sitter parse tree
+  cfg   Print the current configuration
+  help  Print this message or the help of the given subcommand(s)
 
 Options:
-  -l, --language <LANGUAGE>
-          Which language to parse and format [possible values: json, nickel, ocaml, ocaml-interface, ocamllex, toml]
-  -f, --input-files [<INPUT_FILES>...]
-          Path to an input file or multiple input files. If omitted, or equal to "-", read from standard input. If multiple files are provided, `in_place` is assumed [default: -]
-  -q, --query <QUERY>
-          Which query file to use
-  -o, --output-file <OUTPUT_FILE>
-          Path to an output file. If omitted, or equal to "-", write to standard output
-  -i, --in-place
-          Format the input files in place
-  -v, --visualise[=<OUTPUT_FORMAT>]
-          Visualise the syntax tree, rather than format [possible values: json, dot]
-  -s, --skip-idempotence
-          Do not check that formatting twice gives the same output
-      --output-configuration
-          Output the full configuration to stderr before continuing
-  -t, --tolerate-parsing-errors
-          Format as much as possible even if some of the input causes parsing errors
-      --configuration-override <CONFIGURATION_OVERRIDE>
-          Override all configuration with the provided file [env: TOPIARY_CONFIGURATION_OVERRIDE=]
-  -c, --configuration-file <CONFIGURATION_FILE>
-          Add the specified configuration file with the highest prority [env: TOPIARY_CONFIGURATION_FILE=]
+  -C, --configuration <CONFIGURATION>
+          Configuration file
+
+          [env: TOPIARY_CONFIG_FILE]
+
+      --configuration-collation <CONFIGURATION_COLLATION>
+          Configuration collation mode
+
+          [env: TOPIARY_CONFIG_COLLATION]
+          [default: merge]
+
+          Possible values:
+          - merge:    When multiple sources of configuration are available, matching items are
+            updated from the higher priority source, with collections merged as the union of sets
+          - revise:   When multiple sources of configuration are available, matching items
+            (including collections) are superseded from the higher priority source
+          - override: When multiple sources of configuration are available, the highest priority
+            source is taken. All values from lower priority sources are discarded
+
+  -v, --verbose...
+          Logging verbosity (increased per occurrence)
+
   -h, --help
-          Print help
+          Print help (see a summary with '-h')
+
   -V, --version
           Print version
 ```
+<!-- usage:end:ROOT -->
 
-Language selection is based on precedence, in the following order:
-* A specified language
-* Detected from the input file's extension
-* A specified query file
+#### Format
+
+<!-- DO NOT REMOVE THE "usage" COMMENTS -->
+<!-- usage:start:fmt -->
+```
+Format inputs
+
+Usage: topiary fmt [OPTIONS] <--language <LANGUAGE>|FILES>
+
+Arguments:
+  [FILES]...
+          Input files and directories (omit to read from stdin)
+
+          Language detection and query selection is automatic, mapped from file extensions defined
+          in the Topiary configuration.
+
+Options:
+  -t, --tolerate-parsing-errors
+          Consume as much as possible in the presence of parsing errors
+
+  -s, --skip-idempotence
+          Do not check that formatting twice gives the same output
+
+  -l, --language <LANGUAGE>
+          Topiary supported language (for formatting stdin)
+
+          [possible values: json, nickel, ocaml, ocaml-interface, ocamllex, toml]
+
+  -q, --query <QUERY>
+          Topiary query file override (when formatting stdin)
+
+  -C, --configuration <CONFIGURATION>
+          Configuration file
+
+          [env: TOPIARY_CONFIG_FILE]
+
+      --configuration-collation <CONFIGURATION_COLLATION>
+          Configuration collation mode
+
+          [env: TOPIARY_CONFIG_COLLATION]
+          [default: merge]
+
+          Possible values:
+          - merge:    When multiple sources of configuration are available, matching items are
+            updated from the higher priority source, with collections merged as the union of sets
+          - revise:   When multiple sources of configuration are available, matching items
+            (including collections) are superseded from the higher priority source
+          - override: When multiple sources of configuration are available, the highest priority
+            source is taken. All values from lower priority sources are discarded
+
+  -v, --verbose...
+          Logging verbosity (increased per occurrence)
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+<!-- usage:end:fmt -->
+
+When formatting inputs from disk, language selection is detected from
+the input files' extensions. To format standard input, you must specify
+the `--language` and, optionally, `--query` arguments, omitting any
+input files.
+
+Note: `format` is a recognised alias of the `fmt` subcommand.
+
+#### Visualise
+
+<!-- DO NOT REMOVE THE "usage" COMMENTS -->
+<!-- usage:start:vis -->
+```
+Visualise the input's Tree-sitter parse tree
+
+Usage: topiary vis [OPTIONS] <--language <LANGUAGE>|FILE>
+
+Arguments:
+  [FILE]
+          Input file (omit to read from stdin)
+
+          Language detection and query selection is automatic, mapped from file extensions defined
+          in the Topiary configuration.
+
+Options:
+  -f, --format <FORMAT>
+          Visualisation format
+
+          [default: dot]
+
+          Possible values:
+          - dot:  GraphViz DOT serialisation
+          - json: JSON serialisation
+
+  -l, --language <LANGUAGE>
+          Topiary supported language (for formatting stdin)
+
+          [possible values: json, nickel, ocaml, ocaml-interface, ocamllex, toml]
+
+  -q, --query <QUERY>
+          Topiary query file override (when formatting stdin)
+
+  -C, --configuration <CONFIGURATION>
+          Configuration file
+
+          [env: TOPIARY_CONFIG_FILE]
+
+      --configuration-collation <CONFIGURATION_COLLATION>
+          Configuration collation mode
+
+          [env: TOPIARY_CONFIG_COLLATION]
+          [default: merge]
+
+          Possible values:
+          - merge:    When multiple sources of configuration are available, matching items are
+            updated from the higher priority source, with collections merged as the union of sets
+          - revise:   When multiple sources of configuration are available, matching items
+            (including collections) are superseded from the higher priority source
+          - override: When multiple sources of configuration are available, the highest priority
+            source is taken. All values from lower priority sources are discarded
+
+  -v, --verbose...
+          Logging verbosity (increased per occurrence)
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+<!-- usage:end:vis -->
+
+When visualising inputs from disk, language selection is detected from
+the input file's extension. To visualise standard input, you must
+specify the `--language` and, optionally, `--query` arguments, omitting
+the input file. The visualisation output is written to standard out.
+
+Note: `visualise`, `visualize` and `view` are recognised aliases of the
+`vis` subcommand.
+
+#### Configuration
+
+<!-- DO NOT REMOVE THE "usage" COMMENTS -->
+<!-- usage:start:cfg -->
+```
+Print the current configuration
+
+Usage: topiary cfg [OPTIONS]
+
+Options:
+  -C, --configuration <CONFIGURATION>
+          Configuration file
+
+          [env: TOPIARY_CONFIG_FILE]
+
+      --configuration-collation <CONFIGURATION_COLLATION>
+          Configuration collation mode
+
+          [env: TOPIARY_CONFIG_COLLATION]
+          [default: merge]
+
+          Possible values:
+          - merge:    When multiple sources of configuration are available, matching items are
+            updated from the higher priority source, with collections merged as the union of sets
+          - revise:   When multiple sources of configuration are available, matching items
+            (including collections) are superseded from the higher priority source
+          - override: When multiple sources of configuration are available, the highest priority
+            source is taken. All values from lower priority sources are discarded
+
+  -v, --verbose...
+          Logging verbosity (increased per occurrence)
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+<!-- usage:end:cfg -->
+
+Please refer to the [Configuration](#configuration-1) section below to
+understand the different sources of configuration and collation modes.
+
+Note: `config` is a recognised alias of the `cfg` subcommand.
+
+#### Logging
+
+By default, the Topiary CLI will only output error messages. You can
+increase the logging verbosity with a respective number of
+`-v`/`--verbose` flags:
+
+| Verbosity Flag | Logging Level           |
+| :------------- | :---------------------- |
+| None           | Errors                  |
+| `-v`           | ...and warnings         |
+| `-vv`          | ...and information      |
+| `-vvv`         | ...and debugging output |
+| `-vvvv`        | ...and tracing output   |
 
 #### Exit Codes
 
@@ -204,7 +403,7 @@ The Topiary process will exit with a zero exit code upon successful
 formatting. Otherwise, the following exit codes are defined:
 
 | Reason                       | Code |
-| :--------------------------- | ---- |
+| :--------------------------- | ---: |
 | Unspecified error            |    1 |
 | CLI argument parsing error   |    2 |
 | I/O error                    |    3 |
@@ -213,21 +412,27 @@ formatting. Otherwise, the following exit codes are defined:
 | Language detection error     |    6 |
 | Idempotency error            |    7 |
 | Unspecified formatting error |    8 |
+| Multiple errors              |    9 |
+
+When given multiple inputs, Topiary will do its best to process them
+all, even in the presence of errors. Should _any_ errors occur, Topiary
+will return a non-zero exit code. For more details on the nature of
+these errors, run Topiary at the `warn` logging level (with `-v`).
 
 #### Example
 
 Once built, the program can be run like this:
 
 ```bash
-echo '{"foo":"bar"}' | topiary --language json
+echo '{"foo":"bar"}' | topiary fmt --language json
 ```
 
 `topiary` can also be built and run from source via either Cargo or Nix,
 if you have those installed:
 
 ```bash
-echo '{"foo":"bar"}' | cargo run -- --language json
-echo '{"foo":"bar"}' | nix run . -- --language json
+echo '{"foo":"bar"}' | cargo run -- fmt --language json
+echo '{"foo":"bar"}' | nix run . -- fmt --language json
 ```
 
 It will output the following formatted code:
@@ -236,44 +441,54 @@ It will output the following formatted code:
 { "foo": "bar" }
 ```
 
-Set the `RUST_LOG=debug` environment variable if you want to enable
-debug logging.
-
 ## Configuration
-Topiary is configured using `languages.toml` files. There are three
-locations where Topiary checks for such a file.
 
-### Locations
-At buildtime the [languages.toml](./languages.toml) in the root of
-this repository is included into Topiary. This file is parsed at
+Topiary is configured using `languages.toml` files. There are up to four
+sources where Topiary checks for such a file.
+
+### Configuration Sources
+
+At build time the [languages.toml](./languages.toml) in the root of
+this repository is embedded into Topiary. This file is parsed at
 runtime. The purpose of this `languages.toml` file is to provide sane
 defaults for users of Topiary (both the library and the binary).
 
-The other two are read by the Topiary binary at runtime and allow the user to
+The next two are read by the Topiary binary at runtime and allow the user to
 configure Topiary to their needs. The first is intended to be user specific, and
 can thus be found in the configuration directory of the OS:
-```
-Unix: /home/alice/.config/topiary/languages.toml
-Windows: C:\Users\Alice\AppData\Roaming\Topiary\config\languages.toml
-MacOS: /Users/Alice/Library/Application Support/Topiary/languages.toml
-```
+
+| OS      | Typical Configuration Path                                        |
+| :------ | :---------------------------------------------------------------- |
+| Unix    | `/home/alice/.config/topiary/languages.toml`                      |
+| Windows | `C:\Users\Alice\AppData\Roaming\Topiary\config\languages.toml`    |
+| macOS   | `/Users/Alice/Library/Application Support/Topiary/languages.toml` |
+
 This file is not automatically created by Topiary.
 
-The last location is intended to be a project-specific settings file for
-Topiary. When running Topiary in some directory, it will look up in the file
-tree until it finds a .topiary directory. It will then read the `languages.toml`
+The next source is intended to be a project-specific settings file for
+Topiary. When running Topiary in some directory, it will ascend the file
+tree until it finds a `.topiary` directory. It will then read any `languages.toml`
 file present in that directory.
 
-The Topiary binary parses these file in the following order, any configuration
-options defined earlier are overwritten by those defined later.
+Finally, an explicit configuration file may be specified using the
+`-C`/`--configuration` command line argument (or the
+`TOPIARY_CONFIG_FILE` environment variable). This is intended for
+driving Topiary under very specific use-cases.
 
-1. The builtin configuration file
-2. The user configuration file in the OS's configuration directory
-3. The project specific topiary configuration
+The Topiary binary parses these sources in the following order. The
+action taken to coalesce matching items is dependent on the [collation
+mode](#configuration-collation).
+
+1. The builtin configuration file.
+2. The user configuration file in the OS's configuration directory.
+3. The project specific Topiary configuration.
+4. The explicit configuration file specified as a CLI argument.
 
 ### Configuration Options
+
 The configuration file contains a list of languages, each language configuration
 headed by ``[[language]]``. For instance, the one for Nickel is defined as such:
+
 ```toml
 [[language]]
 name = "nickel"
@@ -281,7 +496,7 @@ extensions = ["ncl"]
 ```
 
 The `name` field is used by Topiary to associate the language entry with the
-query file and tree-sitter grammar. This field should be written lowercase.
+query file and Tree-sitter grammar. This value should be written in lowercase.
 The `name` field is mandatory for every ``[[language]]`` block in every
 configuration file.
 
@@ -290,9 +505,94 @@ need to exist in every configuration file. It is sufficient if, for every
 language, there is a single configuration file that defines the list of
 extensions for that language.
 
-A final optional field called `indent` exists to define the indentation method
+A final optional field, called `indent`, exists to define the indentation method
 for that language. Topiary defaults to two spaces `"  "` if it cannot find the
 indent field in any configuration file for a specific language.
+
+### Configuration Collation
+
+When parsing configuration from multiple sources, Topiary can collate
+matching configuration items (matched on language name) in various ways.
+The collation mode is set by the `--configuration-collation` command
+line argument (or the `TOPIARY_CONFIG_COLLATION` environment variable).
+
+The different modes are best explained by example. Consider the
+following two configurations, in priority order from lowest to highest
+(comments have been added for illustrative purposes):
+
+```toml
+# Lowest priority configuration
+
+[[language]]
+name = "example"
+extensions = ["eg"]
+
+[[language]]
+name = "demo"
+extensions = ["demo"]
+```
+
+```toml
+# Highest priority configuration
+
+[[language]]
+name = "example"
+extensions = ["example"]
+indent = "    "
+```
+
+#### Merge Mode (Default)
+
+Matching items are updated from the higher priority source, with
+collections merged as the union of sets.
+
+```toml
+# For the "example" language:
+# * The collated extensions is the union of the source extensions
+# * The indentation is taken from the highest priority source
+[[language]]
+name = "example"
+extensions = ["eg", "example"]
+indent = "    "
+
+# The "demo" language is unchanged
+[[language]]
+name = "demo"
+extensions = ["demo"]
+```
+
+#### Revise Mode
+
+Matching items (including collections) are superseded from the higher
+priority source.
+
+```toml
+# The "example" language's values are taken from the highest priority source
+[[language]]
+name = "example"
+extensions = ["example"]
+indent = "    "
+
+# The "demo" language is unchanged
+[[language]]
+name = "demo"
+extensions = ["demo"]
+```
+
+#### Override Mode
+
+The highest priority source is taken. All values from lower priority
+sources are discarded.
+
+```toml
+# The "example" language's values are taken from the highest priority source
+[[language]]
+name = "example"
+extensions = ["example"]
+indent = "    "
+
+# The "demo" language does not exist in the highest priority source, so is omitted
+```
 
 ## Design
 
@@ -982,16 +1282,23 @@ suggested way to work:
    `crate::language::Language` and process it everywhere, then make a
    mostly empty query file with just the `(#language!)` configuration.
 
-4. Run `RUST_LOG=debug cargo test`.
+4. Run:
 
-   Provided it works, it should output a lot of log messages. Copy that
-   output to a text editor. You are particularly interested in the CST
-   output that starts with a line like this: `CST node: {Node
+   ```
+   RUST_LOG=debug \
+   cargo test -p topiary \
+              input_output_tester \
+              -- --nocapture
+   ```
+
+   Provided it works, it should output a _lot_ of log messages. Copy
+   that output to a text editor. You are particularly interested in the
+   CST output that starts with a line like this: `CST node: {Node
    compilation_unit (0, 0) - (5942, 0)} - Named: true`.
 
    :bulb: As an alternative to using the debugging output, the
-   `--visualise` command line option exists to output the Tree-sitter
-   syntax tree in a variety of formats.
+   `vis` visualisation subcommand line option exists to output the
+   Tree-sitter syntax tree in a variety of formats.
 
 5. The test run will output all the differences between the actual
    output and the expected output, e.g. missing spaces between tokens.
