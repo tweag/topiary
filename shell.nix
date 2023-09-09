@@ -7,7 +7,12 @@
   update-wasm-grammars = pkgs.writeShellApplication {
     name = "update-wasm-grammars";
 
-    runtimeInputs = with pkgs; [git tree-sitter emscripten];
+    runtimeInputs = with pkgs; [
+      emscripten
+      git
+      toml2json
+      tree-sitter
+    ];
 
     text = builtins.readFile ./update-wasm-grammars.sh;
   };

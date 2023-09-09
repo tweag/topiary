@@ -89,9 +89,8 @@ To use docker instead, the legacy approach can still be used (using JSON as an e
    Whichever of these options you pick, we will assume `JSON_GRAMMAR` is the directory where the `grammar.js` can be found.
 4. Make sure you have a file at
    `JSON_GRAMMAR/src/grammar.json`.
-5. Run `npx tree-sitter build-wasm JSON_GRAMMAR`. If you get a
-   Docker permission error, you may want to try `sudo chmod 666
-/var/run/docker.sock`.
+5. Run `npx tree-sitter build-wasm JSON_GRAMMAR`. If you get a Docker permission
+   error, you may have to add yourself to the docker group.
 6. `mv tree-sitter-json.wasm web-playground/public/scripts/`
 
 For OCaml, the process is slightly different because the tree-sitter-ocaml repository/package contains two grammars:
