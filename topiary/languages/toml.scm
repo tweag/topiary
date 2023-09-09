@@ -28,7 +28,7 @@
 )
 
 (table
-  [(bare_key) (dotted_key)]
+  [(bare_key) (dotted_key) (quoted_key)]
   .
   "]" @append_hardline
 )

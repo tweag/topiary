@@ -68,3 +68,10 @@ hosts = [
 # Issue 621
 [dog."tater.man"]
 type.name = "pug"
+
+["zip"]
+cve = [
+  "CVE-2018-13410",
+  # total garbage CVE.
+]
+comment = "this cve is only valid with attacker-controlled flags to zip"
