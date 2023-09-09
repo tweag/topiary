@@ -83,6 +83,11 @@ cve = ["CVE-2018-13410",
 
 comment = "this cve is only valid with attacker-controlled flags to zip"
 
+["inline.comments"]
+multiline_with_comments = ["bar","blee",
+"baz",         # dont
+"boo"
+]
 
 [dog."tater.man"]
 type.name = "pug"
