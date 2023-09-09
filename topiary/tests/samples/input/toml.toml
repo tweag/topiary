@@ -68,3 +68,6 @@ hosts = [
   "omega"
 ]
 
+# Issue 621
+[dog."tater.man"]
+type.name = "pug"
