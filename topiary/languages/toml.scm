@@ -1,7 +1,10 @@
 ; Sometimes we want to indicate that certain parts of our source text should
 ; not be formatted, but taken as is. We use the leaf capture name to inform the
 ; tool of this.
-(string) @leaf
+[
+  (string)
+  (quoted_key)
+] @leaf
 
 ; Allow blank line before
 [
@@ -25,13 +28,13 @@
 )
 
 (table
-  [(bare_key) (dotted_key)]
+  [(bare_key) (quoted_key) (dotted_key)]
   .
   "]" @append_hardline
 )
 
 (table_array_element
-  [(bare_key) (dotted_key)]
+  [(bare_key) (quoted_key) (dotted_key)]
   .
   "]]" @append_hardline
 )
