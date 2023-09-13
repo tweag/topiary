@@ -1313,7 +1313,7 @@
   (#scope_id! "fun_expr_before_arrow")
 )
 
-; Indent and allow softlines in tuples, such as
+; Indent and allow softlines in tuples and local opens, such as
 ; let _ =
 ;   (
 ;     long_value_1,
@@ -1321,6 +1321,13 @@
 ;     long_value_3
 ;   )
 (parenthesized_expression
+  .
+  "(" @append_empty_softline @append_indent_start
+  ")" @prepend_indent_end @prepend_empty_softline
+  .
+)
+(local_open_expression
+  "."
   .
   "(" @append_empty_softline @append_indent_start
   ")" @prepend_indent_end @prepend_empty_softline
