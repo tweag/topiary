@@ -1520,6 +1520,23 @@
   (#scope_id! "ppx_sequence_expression")
 )
 
+; Allow softlines in or patterns in matches, such as
+; match foo with
+; | A | B | C
+; | D | E | F -> bar
+; As above, or patterns are nested grammar elements, so we must identify the
+; top-level one: it is the one that is directly below a (match_case) node.
+
+(match_case
+  (or_pattern) @prepend_begin_scope @append_end_scope
+  (#scope_id! "top_level_or_pattern")
+)
+
+(or_pattern
+  "|" @prepend_hardline
+  (#multi_line_scope_only! "top_level_or_pattern")
+)
+
 ; Indent and add softlines in lists and arrays, such as
 ; let _ =
 ;   [
