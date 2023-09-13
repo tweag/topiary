@@ -655,6 +655,10 @@ let [1; snd] = [1; 2]
 type a = int and
 b = float
 
+type a = int
+
+and b = float
+
 (* Messing around with quoted strings and curly brackets *)
 type string_record = { my_string: string; }
 let quoted_string =

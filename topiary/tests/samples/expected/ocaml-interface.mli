@@ -4590,16 +4590,19 @@ type 'kind operation = {
   shell: Operation.shell_header;
   protocol_data: 'kind protocol_data;
 }
+
 and 'kind protocol_data = {
   contents: 'kind contents_list;
   signature: signature option;
 }
+
 and _ contents_list =
   | Single : 'kind contents -> 'kind contents_list
   | Cons :
     'kind Kind.manager contents
     * 'rest Kind.manager contents_list ->
       ('kind * 'rest) Kind.manager contents_list
+
 and _ contents =
   | Preendorsement : consensus_content -> Kind.preendorsement contents
   | Endorsement : consensus_content -> Kind.endorsement contents
@@ -4672,6 +4675,7 @@ and _ contents =
       storage_limit: Z.t;
     } ->
       'kind Kind.manager contents
+
 and _ manager_operation =
   | Reveal : public_key -> Kind.reveal manager_operation
   | Transaction :

@@ -70,6 +70,12 @@
   (let_and_operator) @allow_blank_line_before
 )
 
+; In a definition including several mutually recursive types,
+; one can skip a line before each of them.
+(type_definition
+  "and" @allow_blank_line_before
+)
+
 ; Append line breaks. If there is a comment following, we don't add anything,
 ; because the input softlines and spaces above will already have sorted out the
 ; formatting.
