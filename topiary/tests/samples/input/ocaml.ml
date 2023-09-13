@@ -1045,3 +1045,9 @@ let _ = foo bar @@ let () = qux in
 let _ =
   myBlockIntroducingFunction @@ fun x ->
     something horrible onto x
+
+(* #617: multi-line or_pattern in match case *)
+let _ =
+  match foo with
+  | A | B | C
+  | D | E | F -> bar
