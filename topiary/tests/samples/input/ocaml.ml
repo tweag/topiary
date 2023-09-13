@@ -894,6 +894,12 @@ let _ = {
   foo = let bar = baz in bar
 }
 
+(* #618: spacing/softlines in local opens *)
+let _ =
+  Foo.(bar
+    baz    baaz
+  )
+
 (* Open and let open *)
 open Foo
 open Bar
