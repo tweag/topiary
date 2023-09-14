@@ -171,10 +171,11 @@ CLI app for Topiary, the universal code formatter.
 Usage: topiary [OPTIONS] <COMMAND>
 
 Commands:
-  format     Format inputs
-  visualise  Visualise the input's Tree-sitter parse tree
-  config     Print the current configuration
-  help       Print this message or the help of the given subcommand(s)
+  format      Format inputs
+  visualise   Visualise the input's Tree-sitter parse tree
+  config      Print the current configuration
+  completion  Generate shell completion script
+  help        Print this message or the help of the given subcommand(s)
 
 Options:
   -C, --configuration <CONFIGURATION>
@@ -382,6 +383,59 @@ Please refer to the [Configuration](#configuration-1) section below to
 understand the different sources of configuration and collation modes.
 
 Note: `cfg` is a recognised alias of the `config` subcommand.
+
+#### Shell Completion
+
+Shell completion scripts for Topiary can be generated with the
+`completion` subcommand. The output of which can be sourced into your
+shell session or profile, as required.
+
+<!-- DO NOT REMOVE THE "usage" COMMENTS -->
+<!-- usage:start:completion -->
+```
+Generate shell completion script
+
+Usage: topiary completion [OPTIONS] [SHELL]
+
+Arguments:
+  [SHELL]
+          Shell (omit to detect from the environment)
+
+          [possible values: bash, elvish, fish, powershell, zsh]
+
+Options:
+  -C, --configuration <CONFIGURATION>
+          Configuration file
+
+          [env: TOPIARY_CONFIG_FILE]
+
+      --configuration-collation <CONFIGURATION_COLLATION>
+          Configuration collation mode
+
+          [env: TOPIARY_CONFIG_COLLATION]
+          [default: merge]
+
+          Possible values:
+          - merge:    When multiple sources of configuration are available, matching items are
+            updated from the higher priority source, with collections merged as the union of sets
+          - revise:   When multiple sources of configuration are available, matching items
+            (including collections) are superseded from the higher priority source
+          - override: When multiple sources of configuration are available, the highest priority
+            source is taken. All values from lower priority sources are discarded
+
+  -v, --verbose...
+          Logging verbosity (increased per occurrence)
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+<!-- usage:end:completion -->
+
+For example, in Bash:
+
+```bash
+source <(topiary completion)
+```
 
 #### Logging
 

@@ -1,7 +1,8 @@
 //! Command line interface argument parsing.
 
-use clap::{ArgAction, ArgGroup, Args, Parser, Subcommand};
-use std::path::PathBuf;
+use clap::{ArgAction, ArgGroup, Args, CommandFactory, Parser, Subcommand};
+use clap_complete::{generate, shells::Shell};
+use std::{io::stdout, path::PathBuf};
 
 use log::LevelFilter;
 use topiary::SupportedLanguage;
@@ -151,6 +152,13 @@ pub enum Commands {
     /// Print the current configuration
     #[command(alias = "cfg", display_order = 3)]
     Config,
+
+    /// Generate shell completion script
+    #[command(display_order = 100)]
+    Completion {
+        /// Shell (omit to detect from the environment)
+        shell: Option<Shell>,
+    },
 }
 
 /// Given a vector of paths, recursively expand those that identify as directories, in place
@@ -222,8 +230,25 @@ pub fn get_args() -> CLIResult<Cli> {
             }
         }
 
+        // Attempt to detect shell from environment, when omitted
+        Commands::Completion { shell: None } => {
+            let detected_shell = Shell::from_env().ok_or(TopiaryError::Bin(
+                "Cannot detect shell from environment".into(),
+                None,
+            ))?;
+
+            args.command = Commands::Completion {
+                shell: Some(detected_shell),
+            };
+        }
+
         _ => {}
     }
 
     Ok(args)
+}
+
+/// Generate shell completion script, for the given shell, and output to stdout
+pub fn completion(shell: Shell) {
+    generate(shell, &mut Cli::command(), "topiary", &mut stdout());
 }

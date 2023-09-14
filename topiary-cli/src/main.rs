@@ -148,8 +148,13 @@ async fn run() -> CLIResult<()> {
         }
 
         Commands::Config => {
-            // Output collated configuration as TOML, with annotations about how we got there
+            // Output collated configuration gtas TOML, with annotations about how we got there
             print!("{annotations}\n{config}");
+        }
+
+        Commands::Completion { shell } => {
+            // The CLI parser fails if no shell is provided/detected, so it's safe to unwrap here
+            cli::completion(shell.unwrap());
         }
     }
 
