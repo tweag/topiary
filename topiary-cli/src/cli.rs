@@ -119,11 +119,12 @@ pub struct AtLeastOneInput {
     pub files: Vec<PathBuf>,
 }
 
+// NOTE When changing the subcommands, please update verify-documented-usage.sh respectively.
 #[derive(Debug, Subcommand)]
 pub enum Commands {
     /// Format inputs
-    #[command(alias = "format", display_order = 1)]
-    Fmt {
+    #[command(alias = "fmt", display_order = 1)]
+    Format {
         /// Consume as much as possible in the presence of parsing errors
         #[arg(short, long)]
         tolerate_parsing_errors: bool,
@@ -137,8 +138,8 @@ pub enum Commands {
     },
 
     /// Visualise the input's Tree-sitter parse tree
-    #[command(aliases = &["visualise", "visualize", "view"], display_order = 2)]
-    Vis {
+    #[command(aliases = &["vis", "visualize", "view"], display_order = 2)]
+    Visualise {
         /// Visualisation format
         #[arg(short, long, default_value = "dot")]
         format: visualisation::Format,
@@ -148,8 +149,8 @@ pub enum Commands {
     },
 
     /// Print the current configuration
-    #[command(alias = "config", display_order = 3)]
-    Cfg,
+    #[command(alias = "cfg", display_order = 3)]
+    Config,
 }
 
 /// Given a vector of paths, recursively expand those that identify as directories, in place
@@ -192,7 +193,7 @@ pub fn get_args() -> CLIResult<Cli> {
     // file, but that's going to be done sooner-or-later by Topiary, so there's no need.
 
     match &mut args.command {
-        Commands::Fmt {
+        Commands::Format {
             inputs: AtLeastOneInput { files, .. },
             ..
         } => {
@@ -206,7 +207,7 @@ pub fn get_args() -> CLIResult<Cli> {
             traverse_fs(files)?;
         }
 
-        Commands::Vis {
+        Commands::Visualise {
             input: ExactlyOneInput {
                 file: Some(file), ..
             },

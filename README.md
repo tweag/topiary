@@ -171,10 +171,10 @@ CLI app for Topiary, the universal code formatter.
 Usage: topiary [OPTIONS] <COMMAND>
 
 Commands:
-  fmt   Format inputs
-  vis   Visualise the input's Tree-sitter parse tree
-  cfg   Print the current configuration
-  help  Print this message or the help of the given subcommand(s)
+  format     Format inputs
+  visualise  Visualise the input's Tree-sitter parse tree
+  config     Print the current configuration
+  help       Print this message or the help of the given subcommand(s)
 
 Options:
   -C, --configuration <CONFIGURATION>
@@ -210,11 +210,11 @@ Options:
 #### Format
 
 <!-- DO NOT REMOVE THE "usage" COMMENTS -->
-<!-- usage:start:fmt -->
+<!-- usage:start:format -->
 ```
 Format inputs
 
-Usage: topiary fmt [OPTIONS] <--language <LANGUAGE>|FILES>
+Usage: topiary format [OPTIONS] <--language <LANGUAGE>|FILES>
 
 Arguments:
   [FILES]...
@@ -263,23 +263,23 @@ Options:
   -h, --help
           Print help (see a summary with '-h')
 ```
-<!-- usage:end:fmt -->
+<!-- usage:end:format -->
 
 When formatting inputs from disk, language selection is detected from
 the input files' extensions. To format standard input, you must specify
 the `--language` and, optionally, `--query` arguments, omitting any
 input files.
 
-Note: `format` is a recognised alias of the `fmt` subcommand.
+Note: `fmt` is a recognised alias of the `format` subcommand.
 
 #### Visualise
 
 <!-- DO NOT REMOVE THE "usage" COMMENTS -->
-<!-- usage:start:vis -->
+<!-- usage:start:visualise -->
 ```
 Visualise the input's Tree-sitter parse tree
 
-Usage: topiary vis [OPTIONS] <--language <LANGUAGE>|FILE>
+Usage: topiary visualise [OPTIONS] <--language <LANGUAGE>|FILE>
 
 Arguments:
   [FILE]
@@ -331,24 +331,24 @@ Options:
   -h, --help
           Print help (see a summary with '-h')
 ```
-<!-- usage:end:vis -->
+<!-- usage:end:visualise -->
 
 When visualising inputs from disk, language selection is detected from
 the input file's extension. To visualise standard input, you must
 specify the `--language` and, optionally, `--query` arguments, omitting
 the input file. The visualisation output is written to standard out.
 
-Note: `visualise`, `visualize` and `view` are recognised aliases of the
-`vis` subcommand.
+Note: `vis`, `visualize` and `view` are recognised aliases of the
+`visualise` subcommand.
 
 #### Configuration
 
 <!-- DO NOT REMOVE THE "usage" COMMENTS -->
-<!-- usage:start:cfg -->
+<!-- usage:start:config -->
 ```
 Print the current configuration
 
-Usage: topiary cfg [OPTIONS]
+Usage: topiary config [OPTIONS]
 
 Options:
   -C, --configuration <CONFIGURATION>
@@ -376,12 +376,12 @@ Options:
   -h, --help
           Print help (see a summary with '-h')
 ```
-<!-- usage:end:cfg -->
+<!-- usage:end:config -->
 
 Please refer to the [Configuration](#configuration-1) section below to
 understand the different sources of configuration and collation modes.
 
-Note: `config` is a recognised alias of the `cfg` subcommand.
+Note: `cfg` is a recognised alias of the `config` subcommand.
 
 #### Logging
 
