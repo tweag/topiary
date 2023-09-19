@@ -39,6 +39,7 @@ assert_cmd = "2.0"
 async-scoped = { version = "0.7.1", features = ["use-tokio"] }
 cfg-if = "1.0.0"
 clap = { version = "4.3", features = [ "env" ] }
+clap_complete = "4.4.1"
 criterion = "0.5"
 directories = "5.0"
 env_logger = "0.10"

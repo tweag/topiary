@@ -40,7 +40,7 @@ diff-usage() {
 }
 
 main() {
-  local -a subcommands=(ROOT fmt vis cfg)
+  local -a subcommands=(ROOT format visualise config completion)
 
   local _diff
   local _subcommand

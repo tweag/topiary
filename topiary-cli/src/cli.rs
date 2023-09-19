@@ -1,7 +1,8 @@
 //! Command line interface argument parsing.
 
-use clap::{ArgAction, ArgGroup, Args, Parser, Subcommand};
-use std::path::PathBuf;
+use clap::{ArgAction, ArgGroup, Args, CommandFactory, Parser, Subcommand};
+use clap_complete::{generate, shells::Shell};
+use std::{io::stdout, path::PathBuf};
 
 use log::LevelFilter;
 use topiary::SupportedLanguage;
@@ -119,11 +120,12 @@ pub struct AtLeastOneInput {
     pub files: Vec<PathBuf>,
 }
 
+// NOTE When changing the subcommands, please update verify-documented-usage.sh respectively.
 #[derive(Debug, Subcommand)]
 pub enum Commands {
     /// Format inputs
-    #[command(alias = "format", display_order = 1)]
-    Fmt {
+    #[command(alias = "fmt", display_order = 1)]
+    Format {
         /// Consume as much as possible in the presence of parsing errors
         #[arg(short, long)]
         tolerate_parsing_errors: bool,
@@ -137,8 +139,8 @@ pub enum Commands {
     },
 
     /// Visualise the input's Tree-sitter parse tree
-    #[command(aliases = &["visualise", "visualize", "view"], display_order = 2)]
-    Vis {
+    #[command(aliases = &["vis", "visualize", "view"], display_order = 2)]
+    Visualise {
         /// Visualisation format
         #[arg(short, long, default_value = "dot")]
         format: visualisation::Format,
@@ -148,8 +150,15 @@ pub enum Commands {
     },
 
     /// Print the current configuration
-    #[command(alias = "config", display_order = 3)]
-    Cfg,
+    #[command(alias = "cfg", display_order = 3)]
+    Config,
+
+    /// Generate shell completion script
+    #[command(display_order = 100)]
+    Completion {
+        /// Shell (omit to detect from the environment)
+        shell: Option<Shell>,
+    },
 }
 
 /// Given a vector of paths, recursively expand those that identify as directories, in place
@@ -192,7 +201,7 @@ pub fn get_args() -> CLIResult<Cli> {
     // file, but that's going to be done sooner-or-later by Topiary, so there's no need.
 
     match &mut args.command {
-        Commands::Fmt {
+        Commands::Format {
             inputs: AtLeastOneInput { files, .. },
             ..
         } => {
@@ -206,7 +215,7 @@ pub fn get_args() -> CLIResult<Cli> {
             traverse_fs(files)?;
         }
 
-        Commands::Vis {
+        Commands::Visualise {
             input: ExactlyOneInput {
                 file: Some(file), ..
             },
@@ -221,8 +230,25 @@ pub fn get_args() -> CLIResult<Cli> {
             }
         }
 
+        // Attempt to detect shell from environment, when omitted
+        Commands::Completion { shell: None } => {
+            let detected_shell = Shell::from_env().ok_or(TopiaryError::Bin(
+                "Cannot detect shell from environment".into(),
+                None,
+            ))?;
+
+            args.command = Commands::Completion {
+                shell: Some(detected_shell),
+            };
+        }
+
         _ => {}
     }
 
     Ok(args)
+}
+
+/// Generate shell completion script, for the given shell, and output to stdout
+pub fn completion(shell: Shell) {
+    generate(shell, &mut Cli::command(), "topiary", &mut stdout());
 }

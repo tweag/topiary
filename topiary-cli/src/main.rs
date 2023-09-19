@@ -41,7 +41,7 @@ async fn run() -> CLIResult<()> {
 
     // Delegate by subcommand
     match args.command {
-        Commands::Fmt {
+        Commands::Format {
             tolerate_parsing_errors,
             skip_idempotence,
             inputs,
@@ -116,7 +116,7 @@ async fn run() -> CLIResult<()> {
             }
         }
 
-        Commands::Vis { format, input } => {
+        Commands::Visualise { format, input } => {
             // We are guaranteed (by clap) to have exactly one input, so it's safe to unwrap
             let input = Inputs::new(&config, &input).next().unwrap()?;
             let output = OutputFile::Stdout;
@@ -147,9 +147,14 @@ async fn run() -> CLIResult<()> {
             )?;
         }
 
-        Commands::Cfg => {
-            // Output collated configuration as TOML, with annotations about how we got there
+        Commands::Config => {
+            // Output collated configuration gtas TOML, with annotations about how we got there
             print!("{annotations}\n{config}");
+        }
+
+        Commands::Completion { shell } => {
+            // The CLI parser fails if no shell is provided/detected, so it's safe to unwrap here
+            cli::completion(shell.unwrap());
         }
     }
 

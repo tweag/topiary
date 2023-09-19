@@ -171,10 +171,11 @@ CLI app for Topiary, the universal code formatter.
 Usage: topiary [OPTIONS] <COMMAND>
 
 Commands:
-  fmt   Format inputs
-  vis   Visualise the input's Tree-sitter parse tree
-  cfg   Print the current configuration
-  help  Print this message or the help of the given subcommand(s)
+  format      Format inputs
+  visualise   Visualise the input's Tree-sitter parse tree
+  config      Print the current configuration
+  completion  Generate shell completion script
+  help        Print this message or the help of the given subcommand(s)
 
 Options:
   -C, --configuration <CONFIGURATION>
@@ -210,11 +211,11 @@ Options:
 #### Format
 
 <!-- DO NOT REMOVE THE "usage" COMMENTS -->
-<!-- usage:start:fmt -->
+<!-- usage:start:format -->
 ```
 Format inputs
 
-Usage: topiary fmt [OPTIONS] <--language <LANGUAGE>|FILES>
+Usage: topiary format [OPTIONS] <--language <LANGUAGE>|FILES>
 
 Arguments:
   [FILES]...
@@ -263,23 +264,23 @@ Options:
   -h, --help
           Print help (see a summary with '-h')
 ```
-<!-- usage:end:fmt -->
+<!-- usage:end:format -->
 
 When formatting inputs from disk, language selection is detected from
 the input files' extensions. To format standard input, you must specify
 the `--language` and, optionally, `--query` arguments, omitting any
 input files.
 
-Note: `format` is a recognised alias of the `fmt` subcommand.
+Note: `fmt` is a recognised alias of the `format` subcommand.
 
 #### Visualise
 
 <!-- DO NOT REMOVE THE "usage" COMMENTS -->
-<!-- usage:start:vis -->
+<!-- usage:start:visualise -->
 ```
 Visualise the input's Tree-sitter parse tree
 
-Usage: topiary vis [OPTIONS] <--language <LANGUAGE>|FILE>
+Usage: topiary visualise [OPTIONS] <--language <LANGUAGE>|FILE>
 
 Arguments:
   [FILE]
@@ -331,24 +332,24 @@ Options:
   -h, --help
           Print help (see a summary with '-h')
 ```
-<!-- usage:end:vis -->
+<!-- usage:end:visualise -->
 
 When visualising inputs from disk, language selection is detected from
 the input file's extension. To visualise standard input, you must
 specify the `--language` and, optionally, `--query` arguments, omitting
 the input file. The visualisation output is written to standard out.
 
-Note: `visualise`, `visualize` and `view` are recognised aliases of the
-`vis` subcommand.
+Note: `vis`, `visualize` and `view` are recognised aliases of the
+`visualise` subcommand.
 
 #### Configuration
 
 <!-- DO NOT REMOVE THE "usage" COMMENTS -->
-<!-- usage:start:cfg -->
+<!-- usage:start:config -->
 ```
 Print the current configuration
 
-Usage: topiary cfg [OPTIONS]
+Usage: topiary config [OPTIONS]
 
 Options:
   -C, --configuration <CONFIGURATION>
@@ -376,12 +377,65 @@ Options:
   -h, --help
           Print help (see a summary with '-h')
 ```
-<!-- usage:end:cfg -->
+<!-- usage:end:config -->
 
 Please refer to the [Configuration](#configuration-1) section below to
 understand the different sources of configuration and collation modes.
 
-Note: `config` is a recognised alias of the `cfg` subcommand.
+Note: `cfg` is a recognised alias of the `config` subcommand.
+
+#### Shell Completion
+
+Shell completion scripts for Topiary can be generated with the
+`completion` subcommand. The output of which can be sourced into your
+shell session or profile, as required.
+
+<!-- DO NOT REMOVE THE "usage" COMMENTS -->
+<!-- usage:start:completion -->
+```
+Generate shell completion script
+
+Usage: topiary completion [OPTIONS] [SHELL]
+
+Arguments:
+  [SHELL]
+          Shell (omit to detect from the environment)
+
+          [possible values: bash, elvish, fish, powershell, zsh]
+
+Options:
+  -C, --configuration <CONFIGURATION>
+          Configuration file
+
+          [env: TOPIARY_CONFIG_FILE]
+
+      --configuration-collation <CONFIGURATION_COLLATION>
+          Configuration collation mode
+
+          [env: TOPIARY_CONFIG_COLLATION]
+          [default: merge]
+
+          Possible values:
+          - merge:    When multiple sources of configuration are available, matching items are
+            updated from the higher priority source, with collections merged as the union of sets
+          - revise:   When multiple sources of configuration are available, matching items
+            (including collections) are superseded from the higher priority source
+          - override: When multiple sources of configuration are available, the highest priority
+            source is taken. All values from lower priority sources are discarded
+
+  -v, --verbose...
+          Logging verbosity (increased per occurrence)
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+<!-- usage:end:completion -->
+
+For example, in Bash:
+
+```bash
+source <(topiary completion)
+```
 
 #### Logging
 
