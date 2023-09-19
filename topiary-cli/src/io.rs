@@ -65,10 +65,7 @@ impl From<&ExactlyOneInput> for InputFrom {
             ExactlyOneInput {
                 stdin: Some(FromStdin { language, query }),
                 ..
-            } => InputFrom::Stdin(
-                language.to_owned(),
-                query.as_ref().map(|p| p.into()).to_owned(),
-            ),
+            } => InputFrom::Stdin(language.to_owned(), query.as_ref().map(|p| p.into())),
 
             ExactlyOneInput {
                 file: Some(path), ..
@@ -85,10 +82,7 @@ impl From<&AtLeastOneInput> for InputFrom {
             AtLeastOneInput {
                 stdin: Some(FromStdin { language, query }),
                 ..
-            } => InputFrom::Stdin(
-                language.to_owned(),
-                query.as_ref().map(|p| p.into()).to_owned(),
-            ),
+            } => InputFrom::Stdin(language.to_owned(), query.as_ref().map(|p| p.into())),
 
             AtLeastOneInput { files, .. } => InputFrom::Files(files.to_owned()),
         }
@@ -185,7 +179,7 @@ impl<'cfg, 'i> Inputs<'cfg> {
                     let language = language.to_language(config);
                     let query = match query {
                         // The user specified a query file
-                        Some(p) => p.into(),
+                        Some(p) => p,
                         // The user did not specify a file, try the default locations
                         None => match language.query_file() {
                             Ok(p) => p.into(),
@@ -195,7 +189,7 @@ impl<'cfg, 'i> Inputs<'cfg> {
                             // fail to find anything, because the builtin error might be unexpected.
                             Err(e) => {
                                 log::warn!("No query files found in any of the expected locations. Falling back to compile-time included files.");
-                                to_query(language).map_err(|_| e)?.into()
+                                to_query(language).map_err(|_| e)?
                             }
                         },
                     };
@@ -335,10 +329,7 @@ fn to_query(language: &Language) -> CLIResult<QuerySource> {
         "toml" => Ok(topiary_queries::toml().into()),
         "tree_sitter_query" => Ok(topiary_queries::tree_sitter_query().into()),
         name => Err(TopiaryError::Bin(
-            format!(
-                "The specified language is unsupported: {}",
-                name.to_string()
-            ),
+            format!("The specified language is unsupported: {}", name),
             Some(CLIError::UnsupportedLanguage(name.to_string())),
         )),
     }
