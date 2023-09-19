@@ -64,7 +64,7 @@ idempotency() {
 main() {
   local query="${1-}"
   if ! [[ -e "${query}" ]]; then
-    query="languages/${query}.scm"
+    query="queries/${query}.scm"
     [[ -e "${query}" ]] || fail "Couldn't find language query file '${query}'"
   fi
 

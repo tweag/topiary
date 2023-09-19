@@ -26,8 +26,9 @@ let
         "Cargo.lock"
         "Cargo.toml"
         "languages.toml"
-        "languages"
+        "queries"
         "topiary"
+        "topiary-queries"
         "topiary-cli"
         "topiary-playground"
         "tests"
@@ -91,17 +92,26 @@ in
     pname = "topiary";
     cargoExtraArgs = "-p topiary-cli";
     postInstall = ''
-      install -Dm444 languages/* -t $out/share/languages
+      install -Dm444 queries/* -t $out/share/queries
     '';
 
     # Set TOPIARY_LANGUAGE_DIR to the Nix store
     # for the build
-    TOPIARY_LANGUAGE_DIR = "${placeholder "out"}/share/languages";
+    TOPIARY_LANGUAGE_DIR = "${placeholder "out"}/share/queries";
 
     # Set TOPIARY_LANGUAGE_DIR to the working directory
     # in a development shell
     shellHook = ''
-      export TOPIARY_LANGUAGE_DIR=$PWD/languages
+      export TOPIARY_LANGUAGE_DIR=$PWD/queries
+    '';
+  });
+
+  topiary-queries = craneLib.buildPackage (commonArgs
+    // {
+    pname = "topiary-queries";
+    cargoExtraArgs = "-p topiary-queries";
+    postInstall = ''
+      install -Dm444 queries/* -t $out/share/queries
     '';
   });
 

@@ -52,7 +52,7 @@ impl LanguageDefinitionCache {
                     self,
                     key,
                     input.language(),
-                    input.query().file_name().unwrap().to_string_lossy()
+                    input.query()
                 );
 
                 lang_def.get().to_owned()
@@ -65,7 +65,7 @@ impl LanguageDefinitionCache {
                     self,
                     key,
                     input.language(),
-                    input.query().file_name().unwrap().to_string_lossy()
+                    input.query()
                 );
 
                 let lang_def = Arc::new(input.to_language_definition().await?);

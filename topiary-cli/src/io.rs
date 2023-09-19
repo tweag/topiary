@@ -1,6 +1,6 @@
 use std::{
     ffi::OsString,
-    fmt,
+    fmt::{self, Display},
     fs::File,
     io::{stdin, stdout, ErrorKind, Read, Result, Write},
     path::{Path, PathBuf},
@@ -11,11 +11,42 @@ use topiary::{Configuration, Language, SupportedLanguage, TopiaryQuery};
 
 use crate::{
     cli::{AtLeastOneInput, ExactlyOneInput, FromStdin},
-    error::{CLIResult, TopiaryError},
+    error::{CLIError, CLIResult, TopiaryError},
     language::LanguageDefinition,
 };
 
-type QuerySource = PathBuf;
+#[derive(Debug, Clone, Hash)]
+pub enum QuerySource {
+    Path(PathBuf),
+    BuiltIn(String),
+}
+
+impl From<PathBuf> for QuerySource {
+    fn from(path: PathBuf) -> Self {
+        QuerySource::Path(path)
+    }
+}
+
+impl From<&PathBuf> for QuerySource {
+    fn from(path: &PathBuf) -> Self {
+        QuerySource::Path(path.clone())
+    }
+}
+
+impl From<&str> for QuerySource {
+    fn from(string: &str) -> Self {
+        QuerySource::BuiltIn(String::from(string))
+    }
+}
+
+impl Display for QuerySource {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            QuerySource::Path(p) => write!(f, "{}", p.to_string_lossy()),
+            QuerySource::BuiltIn(_) => write!(f, "built-in query"),
+        }
+    }
+}
 
 /// Unified interface for input sources. We either have input from:
 /// * Standard input, in which case we need to specify the language and, optionally, query override
@@ -34,7 +65,7 @@ impl From<&ExactlyOneInput> for InputFrom {
             ExactlyOneInput {
                 stdin: Some(FromStdin { language, query }),
                 ..
-            } => InputFrom::Stdin(language.to_owned(), query.to_owned()),
+            } => InputFrom::Stdin(language.to_owned(), query.as_ref().map(|p| p.into())),
 
             ExactlyOneInput {
                 file: Some(path), ..
@@ -51,7 +82,7 @@ impl From<&AtLeastOneInput> for InputFrom {
             AtLeastOneInput {
                 stdin: Some(FromStdin { language, query }),
                 ..
-            } => InputFrom::Stdin(language.to_owned(), query.to_owned()),
+            } => InputFrom::Stdin(language.to_owned(), query.as_ref().map(|p| p.into())),
 
             AtLeastOneInput { files, .. } => InputFrom::Files(files.to_owned()),
         }
@@ -88,10 +119,11 @@ impl<'cfg> InputFile<'cfg> {
     /// Convert our `InputFile` into language definition values that Topiary can consume
     pub async fn to_language_definition(&self) -> CLIResult<LanguageDefinition> {
         let grammar = self.language.grammar().await?;
-        let query = {
-            let contents = tokio::fs::read_to_string(&self.query).await?;
-            TopiaryQuery::new(&grammar, &contents)?
+        let contents = match &self.query {
+            QuerySource::Path(query) => tokio::fs::read_to_string(query).await?,
+            QuerySource::BuiltIn(contents) => contents.to_owned(),
         };
+        let query = TopiaryQuery::new(&grammar, &contents)?;
 
         Ok(LanguageDefinition {
             query,
@@ -111,7 +143,7 @@ impl<'cfg> InputFile<'cfg> {
     }
 
     /// Expose query path for input
-    pub fn query(&self) -> &PathBuf {
+    pub fn query(&self) -> &QuerySource {
         &self.query
     }
 }
@@ -145,7 +177,22 @@ impl<'cfg, 'i> Inputs<'cfg> {
             InputFrom::Stdin(language, query) => {
                 vec![(|| {
                     let language = language.to_language(config);
-                    let query = query.unwrap_or(language.query_file()?);
+                    let query = match query {
+                        // The user specified a query file
+                        Some(p) => p,
+                        // The user did not specify a file, try the default locations
+                        None => match language.query_file() {
+                            Ok(p) => p.into(),
+                            // For some reason, Topiary could not find any
+                            // matching file in a default location. As a final attempt, use try to the the
+                            // builtin ones. Store the error, return that if we
+                            // fail to find anything, because the builtin error might be unexpected.
+                            Err(e) => {
+                                log::warn!("No query files found in any of the expected locations. Falling back to compile-time included files.");
+                                to_query(language).map_err(|_| e)?
+                            }
+                        },
+                    };
 
                     Ok(InputFile {
                         source: InputSource::Stdin,
@@ -159,7 +206,7 @@ impl<'cfg, 'i> Inputs<'cfg> {
                 .into_iter()
                 .map(|path| {
                     let language = Language::detect(&path, config)?;
-                    let query = language.query_file()?;
+                    let query = language.query_file()?.into();
 
                     Ok(InputFile {
                         source: InputSource::Disk(path, None),
@@ -267,5 +314,23 @@ impl<'cfg> TryFrom<&InputFile<'cfg>> for OutputFile {
             InputSource::Stdin => Ok(Self::Stdout),
             InputSource::Disk(path, _) => Self::new(path.to_string_lossy().as_ref()),
         }
+    }
+}
+
+fn to_query(language: &Language) -> CLIResult<QuerySource> {
+    match language.name.as_str() {
+        "bash" => Ok(topiary_queries::bash().into()),
+        "json" => Ok(topiary_queries::json().into()),
+        "nickel" => Ok(topiary_queries::nickel().into()),
+        "ocaml" => Ok(topiary_queries::ocaml().into()),
+        "ocaml_interface" => Ok(topiary_queries::ocaml_interface().into()),
+        "ocamllex" => Ok(topiary_queries::ocamllex().into()),
+        "rust" => Ok(topiary_queries::rust().into()),
+        "toml" => Ok(topiary_queries::toml().into()),
+        "tree_sitter_query" => Ok(topiary_queries::tree_sitter_query().into()),
+        name => Err(TopiaryError::Bin(
+            format!("The specified language is unsupported: {}", name),
+            Some(CLIError::UnsupportedLanguage(name.to_string())),
+        )),
     }
 }

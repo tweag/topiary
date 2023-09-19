@@ -61,7 +61,7 @@ async fn run() -> CLIResult<()> {
                                     "Formatting {}, as {} using {}, to {}",
                                     input.source(),
                                     input.language(),
-                                    input.query().to_string_lossy(),
+                                    input.query(),
                                     output
                                 );
 

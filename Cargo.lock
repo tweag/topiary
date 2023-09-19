@@ -1368,7 +1368,16 @@ dependencies = [
  "tokio",
  "toml",
  "topiary",
+ "topiary-queries",
+ "tree-sitter-bash",
  "tree-sitter-facade",
+ "tree-sitter-json",
+ "tree-sitter-nickel",
+ "tree-sitter-ocaml",
+ "tree-sitter-ocamllex",
+ "tree-sitter-query",
+ "tree-sitter-rust",
+ "tree-sitter-toml",
 ]
 
 [[package]]
@@ -1382,6 +1391,10 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
 ]
+
+[[package]]
+name = "topiary-queries"
+version = "0.2.3"
 
 [[package]]
 name = "tree-sitter"
