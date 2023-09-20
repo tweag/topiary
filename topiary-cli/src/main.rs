@@ -11,7 +11,7 @@ use std::{
     process::ExitCode,
 };
 
-use topiary::{formatter, Operation};
+use topiary_core::{formatter, Operation};
 
 use crate::{
     cli::Commands,

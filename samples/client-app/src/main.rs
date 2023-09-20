@@ -1,4 +1,4 @@
-use topiary::{formatter, Configuration, Operation, TopiaryQuery};
+use topiary_core::{formatter, Configuration, Operation, TopiaryQuery};
 
 #[tokio::main]
 async fn main() {

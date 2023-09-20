@@ -3,7 +3,7 @@ use directories::ProjectDirs;
 use indoc::formatdoc;
 use itertools::Itertools;
 use std::{env::current_dir, fmt, path::PathBuf};
-use topiary::{default_configuration_toml, Configuration};
+use topiary_core::{default_configuration_toml, Configuration};
 
 use crate::error::{CLIResult, TopiaryError};
 
@@ -164,7 +164,7 @@ impl TryFrom<&ConfigSource> for toml::Value {
 
 /// Return the valid sources of configuration, in priority order (lowest to highest):
 ///
-/// 1. Built-in configuration (`topiary::default_configuration_toml`)
+/// 1. Built-in configuration (`topiary_core::default_configuration_toml`)
 /// 2. `~/.config/topiary/languages.toml` (or equivalent)
 /// 3. `.topiary/languages.toml` (or equivalent)
 /// 4. `file`, passed as a CLI argument/environment variable
@@ -305,7 +305,7 @@ mod test_config_collation {
     use super::{collate_toml, CollationMode, Configuration};
 
     // NOTE PartialEq for toml::Value is (understandably) order sensitive over array elements, so
-    // we deserialse to `topiary::Configuration` for equality testing. This also has the effect of
+    // we deserialse to `topiary_core::Configuration` for equality testing. This also has the effect of
     // side-stepping potential duplication, from concatenation, when using `CollationMode::Merge`.
 
     static BASE: &str = r#"

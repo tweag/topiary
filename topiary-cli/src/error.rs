@@ -1,5 +1,5 @@
 use std::{error, fmt, io, process::ExitCode, result};
-use topiary::FormatterError;
+use topiary_core::FormatterError;
 
 /// A convenience wrapper around `std::result::Result<T, TopiaryError>`.
 pub type CLIResult<T> = result::Result<T, TopiaryError>;

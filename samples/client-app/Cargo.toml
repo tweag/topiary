@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "^1.28.1", features = ["rt-multi-thread", "macros"] }
-topiary = { path = "../../topiary" }
+topiary-core = { path = "../../topiary-core" }

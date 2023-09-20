@@ -161,7 +161,7 @@ pub enum Operation {
 /// # tokio_test::block_on(async {
 /// use std::fs::File;
 /// use std::io::{BufReader, Read};
-/// use topiary::{formatter, Configuration, FormatterError, TopiaryQuery, Operation};
+/// use topiary_core::{formatter, Configuration, FormatterError, TopiaryQuery, Operation};
 ///
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();

@@ -15,7 +15,7 @@ If you do `cargo install flamegraph`, you can generate a performance flamegraph
 like this:
 
 ```bash
-CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph -- -l ocaml < topiary/tests/samples/input/ocaml.ml > formatted.ml
+CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph -- -l ocaml < topiary-core/tests/samples/input/ocaml.ml > formatted.ml
 ```
 
 ## Code Coverage

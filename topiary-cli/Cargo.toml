@@ -39,7 +39,7 @@ serde-toml-merge = { workspace = true }
 tempfile = { workspace = true }
 tokio = { workspace = true, features = ["fs", "rt-multi-thread", "sync", "macros"] }
 toml = { workspace = true }
-topiary = { path = "../topiary" }
+topiary-core = { path = "../topiary-core" }
 topiary-queries = { path = "../topiary-queries" }
 tree-sitter-facade = { workspace = true }
 

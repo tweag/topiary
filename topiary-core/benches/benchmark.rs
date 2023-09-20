@@ -2,8 +2,8 @@ use criterion::async_executor::FuturesExecutor;
 use criterion::{criterion_group, criterion_main, Criterion};
 use std::fs;
 use std::io;
-use topiary::{formatter, Operation};
-use topiary::{Configuration, TopiaryQuery};
+use topiary_core::{formatter, Operation};
+use topiary_core::{Configuration, TopiaryQuery};
 
 async fn format() {
     let input = fs::read_to_string("tests/samples/input/ocaml.ml").unwrap();

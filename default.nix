@@ -27,7 +27,7 @@ let
         "Cargo.toml"
         "languages.toml"
         "queries"
-        "topiary"
+        "topiary-core"
         "topiary-queries"
         "topiary-cli"
         "topiary-playground"
@@ -79,11 +79,11 @@ in
     cargoTestCommand = "cargo bench --profile release";
   });
 
-  topiary-lib = craneLib.buildPackage (commonArgs
+  topiary-core = craneLib.buildPackage (commonArgs
     // {
     inherit cargoArtifacts;
-    pname = "topiary-lib";
-    cargoExtraArgs = "-p topiary";
+    pname = "topiary-core";
+    cargoExtraArgs = "-p topiary-core";
   });
 
   topiary-cli = craneLib.buildPackage (commonArgs

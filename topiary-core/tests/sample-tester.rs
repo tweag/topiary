@@ -5,7 +5,7 @@ use std::path::Path;
 use log::info;
 use test_log::test;
 
-use topiary::{
+use topiary_core::{
     apply_query, formatter, test_utils::pretty_assert_eq, Configuration, FormatterError, Language,
     Operation, TopiaryQuery,
 };
