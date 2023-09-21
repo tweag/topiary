@@ -72,28 +72,34 @@ In order to build or update the Wasm playground, you can run this:
 ./update-wasm-app.sh
 ```
 
-If you need to add or update Tree-sitter grammar Wasm files, you can do it like
-this (using JSON as an example):
+If you need to add or update Tree-sitter grammar Wasm files, the easiest way would be using Nix.
+
+Simply enter our `devShell` with `nix develop`, and then run `update-wasm-grammars`.
+Alternatively, if you have `git`, `tree-sitter` and `emcc` in your `PATH`, you can run the `./update-wasm-grammars.sh` file.
+
+To use docker instead, the legacy approach can still be used (using JSON as an example):
 
 1. Make sure you have Docker running and that you are member of the `docker`
    group so you can run it without being root.
-2. npm install tree-sitter-cli
-3. npm install tree-sitter-json
-4. An alternative to the above step is to clone a Git repo with the grammars and
-   copy it into `node_modules`.
-5. Make sure you have a file at
-   `node_modules/tree-sitter-json/src/grammar.json`.
-6. Run `npx tree-sitter build-wasm node_modules/tree-sitter-json`. If you get a
-   Docker permission error, you may want to try `sudo chmod 666
-/var/run/docker.sock`.
-7. mv tree-sitter-json.wasm web-playground/public/scripts/
+2. `npm install tree-sitter-cli` (or some other way)
+3. `npm install tree-sitter-json` (or by cloning the git repository)
+   - If you used npm, tree-sitter-json will be fetched under `node_modules/tree-sitter-json/`
+   - If you used git, it will be wherever you cloned the repository (most likely `tree-sitter-json/`)
 
-For OCaml, the process is slightly different:
+   Whichever of these options you pick, we will assume `JSON_GRAMMAR` is the directory where the `grammar.js` can be found.
+4. Make sure you have a file at
+   `JSON_GRAMMAR/src/grammar.json`.
+5. Run `npx tree-sitter build-wasm JSON_GRAMMAR`. If you get a Docker permission
+   error, you may have to add yourself to the docker group.
+6. `mv tree-sitter-json.wasm web-playground/public/scripts/`
 
-1. npm install tree-sitter-cli
-2. npm install tree-sitter-ocaml
-3. Run `npx tree-sitter build-wasm node_modules/tree-sitter-ocaml/ocaml`.
-4. mv tree-sitter-ocaml.wasm web-playground/public/scripts/
+For OCaml, the process is slightly different because the tree-sitter-ocaml repository/package contains two grammars:
+
+1. `npm install tree-sitter-cli`
+2. `npm install tree-sitter-ocaml` (or git, like above)
+3. Run `npx tree-sitter build-wasm OCAML_GRAMMAR/ocaml`.
+4. Run `npx tree-sitter build-wasm OCAML_GRAMMAR/ocaml_interface`.
+5. `mv tree-sitter-ocaml*.wasm web-playground/public/scripts/`
 
 The playground frontend is a small React app. You can run a development server
 for that like this:

@@ -3,12 +3,26 @@
 {
   pkgs ? import <nixpkgs> {},
   checks ? {},
-}:
-pkgs.mkShell {
-  inputsFrom = builtins.attrValues checks;
+}: let
+  update-wasm-grammars = pkgs.writeShellApplication {
+    name = "update-wasm-grammars";
 
-  buildInputs = with pkgs; [
-    cargo-flamegraph
-    rust-analyzer
-  ];
-}
+    runtimeInputs = with pkgs; [
+      emscripten
+      git
+      toml2json
+      tree-sitter
+    ];
+
+    text = builtins.readFile ./update-wasm-grammars.sh;
+  };
+in
+  pkgs.mkShell {
+    inputsFrom = builtins.attrValues checks;
+
+    buildInputs = with pkgs; [
+      update-wasm-grammars
+      cargo-flamegraph
+      rust-analyzer
+    ];
+  }
