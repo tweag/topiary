@@ -123,7 +123,7 @@ impl<'cfg> InputFile<'cfg> {
             QuerySource::Path(query) => tokio::fs::read_to_string(query).await?,
             QuerySource::BuiltIn(contents) => contents.to_owned(),
         };
-        let query = TopiaryQuery::new(&grammar, &contents)?;
+        let query = TopiaryQuery::new(grammar, &contents)?;
 
         Ok(LanguageDefinition {
             query,

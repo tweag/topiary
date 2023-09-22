@@ -17,7 +17,7 @@ use crate::{error::CLIResult, io::InputFile};
 pub struct LanguageDefinition {
     pub query: TopiaryQuery,
     pub language: Language,
-    pub grammar: tree_sitter_facade::Language,
+    pub grammar: ::tree_sitter::Language,
 }
 
 /// Thread-safe language definition cache

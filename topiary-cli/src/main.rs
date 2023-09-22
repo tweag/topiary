@@ -73,7 +73,7 @@ async fn run() -> CLIResult<()> {
                                     &mut buf_output,
                                     &lang_def.query,
                                     &lang_def.language,
-                                    &lang_def.grammar,
+                                    lang_def.grammar,
                                     Operation::Format {
                                         skip_idempotence,
                                         tolerate_parsing_errors,
@@ -140,7 +140,7 @@ async fn run() -> CLIResult<()> {
                 &mut buf_output,
                 &lang_def.query,
                 &lang_def.language,
-                &lang_def.grammar,
+                lang_def.grammar,
                 Operation::Visualise {
                     output_format: format.into(),
                 },

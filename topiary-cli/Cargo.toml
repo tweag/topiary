@@ -42,6 +42,7 @@ toml = { workspace = true }
 topiary = { path = "../topiary" }
 topiary-queries = { path = "../topiary-queries" }
 
+tree-sitter = { workspace = true }
 tree-sitter-json = { workspace = true }
 tree-sitter-rust = { workspace = true }
 tree-sitter-toml = { workspace = true }
