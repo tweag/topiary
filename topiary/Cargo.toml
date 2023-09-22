@@ -24,7 +24,7 @@ regex = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 toml = { workspace = true }
-tree-sitter-facade = { workspace = true }
+tree-sitter = { workspace = true }
 unescape = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]

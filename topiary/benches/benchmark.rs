@@ -11,7 +11,7 @@ async fn format() {
     let configuration = Configuration::parse_default_configuration().unwrap();
     let language = configuration.get_language("ocaml").unwrap();
     let grammar = language.grammar().await.unwrap();
-    let query = TopiaryQuery::new(&grammar, &query_content).unwrap();
+    let query = TopiaryQuery::new(grammar, &query_content).unwrap();
 
     let mut input = input.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
@@ -21,7 +21,7 @@ async fn format() {
         &mut output,
         &query,
         language,
-        &grammar,
+        grammar,
         Operation::Format {
             skip_idempotence: true,
             tolerate_parsing_errors: false,

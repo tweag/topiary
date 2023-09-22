@@ -1,9 +1,7 @@
 use std::collections::HashSet;
 
+use ::tree_sitter::{Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryPredicate, Tree};
 use serde::Serialize;
-use tree_sitter_facade::{
-    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryPredicate, Tree,
-};
 
 use crate::{
     atom_collection::{AtomCollection, QueryPredicates},
@@ -23,8 +21,8 @@ pub enum Visualisation {
 /// is how editors usually refer to a position. Derived from tree_sitter::Point.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Position {
-    pub row: u32,
-    pub column: u32,
+    pub row: usize,
+    pub column: usize,
 }
 
 /// Topiary often needs both the tree-sitter `Query` and the original content
@@ -44,7 +42,7 @@ impl TopiaryQuery {
     /// This function will return an error if tree-sitter failed to parse the
     /// query file.
     pub fn new(
-        grammar: &tree_sitter_facade::Language,
+        grammar: ::tree_sitter::Language,
         query_content: &str,
     ) -> FormatterResult<TopiaryQuery> {
         let query = Query::new(grammar, query_content)
@@ -60,8 +58,8 @@ impl TopiaryQuery {
 impl From<Point> for Position {
     fn from(point: Point) -> Self {
         Self {
-            row: point.row() + 1,
-            column: point.column() + 1,
+            row: point.row + 1,
+            column: point.column + 1,
         }
     }
 }
@@ -108,7 +106,7 @@ impl From<Node<'_>> for SyntaxNode {
 // A struct to statically store the public fields of query match results,
 // to avoid running queries twice.
 struct LocalQueryMatch<'a> {
-    pattern_index: u32,
+    pattern_index: usize,
     captures: Vec<QueryCapture<'a>>,
 }
 
@@ -125,7 +123,7 @@ struct LocalQueryMatch<'a> {
 pub fn apply_query(
     input_content: &str,
     query: &TopiaryQuery,
-    grammar: &tree_sitter_facade::Language,
+    grammar: ::tree_sitter::Language,
     tolerate_parsing_errors: bool,
     should_check_input_exhaustivity: bool,
 ) -> FormatterResult<AtomCollection> {
@@ -138,18 +136,18 @@ pub fn apply_query(
     let mut matches: Vec<LocalQueryMatch> = Vec::new();
     let capture_names = query.query.capture_names();
 
-    for query_match in query.query.matches(&root, source, &mut cursor) {
-        let local_captures: Vec<QueryCapture> = query_match.captures().collect();
+    for query_match in cursor.matches(&query.query, root, source) {
+        let local_captures: Vec<QueryCapture> = query_match.captures.to_owned();
 
         matches.push(LocalQueryMatch {
-            pattern_index: query_match.pattern_index(),
+            pattern_index: query_match.pattern_index,
             captures: local_captures,
         });
     }
 
     if should_check_input_exhaustivity {
         let ref_match_count = matches.len();
-        check_input_exhaustivity(ref_match_count, query, grammar, &root, source)?;
+        check_input_exhaustivity(ref_match_count, query, grammar, root, source)?;
     }
 
     // Find the ids of all tree-sitter nodes that were identified as a leaf
@@ -176,22 +174,22 @@ pub fn apply_query(
         let mut predicates = QueryPredicates::default();
 
         for p in query.query.general_predicates(m.pattern_index) {
-            predicates = handle_predicate(&p, &predicates)?;
+            predicates = handle_predicate(p, &predicates)?;
         }
         check_predicates(&predicates)?;
 
         // If any capture is a do_nothing, then do nothing.
         if m.captures
             .iter()
-            .map(|c| c.name(&capture_names))
+            .map(|c| capture_names[c.index as usize].as_str())
             .any(|name| name == "do_nothing")
         {
             continue;
         }
 
         for c in m.captures {
-            let name = c.name(&capture_names);
-            atoms.resolve_capture(&name, &c.node(), &predicates)?;
+            let name = capture_names[c.index as usize].as_str();
+            atoms.resolve_capture(&name, &c.node, &predicates)?;
         }
     }
 
@@ -209,16 +207,16 @@ pub fn apply_query(
 // or the last error if all grammars fail.
 pub fn parse<'a>(
     content: &str,
-    grammar: &'a tree_sitter_facade::Language,
+    grammar: ::tree_sitter::Language,
     tolerate_parsing_errors: bool,
-) -> FormatterResult<(Tree, &'a tree_sitter_facade::Language)> {
-    let mut parser = Parser::new()?;
+) -> FormatterResult<(Tree, ::tree_sitter::Language)> {
+    let mut parser = Parser::new();
     parser.set_language(grammar).map_err(|_| {
         FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
     })?;
 
     let tree = parser
-        .parse(content, None)?
+        .parse(content, None)
         .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))?;
 
     // Fail parsing if we don't get a complete syntax tree.
@@ -236,10 +234,10 @@ fn check_for_error_nodes(node: &Node) -> FormatterResult<()> {
 
         // Report 1-based lines and columns.
         return Err(FormatterError::Parsing {
-            start_line: start.row() + 1,
-            start_column: start.column() + 1,
-            end_line: end.row() + 1,
-            end_column: end.column() + 1,
+            start_line: start.row + 1,
+            start_column: start.column + 1,
+            end_line: end.row + 1,
+            end_column: end.column + 1,
         });
     }
 
@@ -259,8 +257,8 @@ fn collect_leaf_ids(matches: &[LocalQueryMatch], capture_names: &[String]) -> Ha
 
     for m in matches {
         for c in &m.captures {
-            if c.name(capture_names) == "leaf" {
-                ids.insert(c.node().id());
+            if capture_names[c.index as usize] == "leaf" {
+                ids.insert(c.node.id());
             }
         }
     }
@@ -288,25 +286,33 @@ fn handle_predicate(
     predicate: &QueryPredicate,
     predicates: &QueryPredicates,
 ) -> FormatterResult<QueryPredicates> {
-    let operator = &*predicate.operator();
+    let operator = predicate.operator.to_string();
+    let arg1 = predicate
+        .args
+        .get(0)
+        .ok_or_else(|| FormatterError::Query(format!("{operator} needs an argument"), None));
     if "delimiter!" == operator {
-        let arg =
-            predicate.args().into_iter().next().ok_or_else(|| {
-                FormatterError::Query(format!("{operator} needs an argument"), None)
-            })?;
-        Ok(QueryPredicates {
-            delimiter: Some(arg),
-            ..predicates.clone()
-        })
+        match arg1? {
+            tree_sitter::QueryPredicateArg::Capture(_) => Err(FormatterError::Query(
+                format!("{operator} capture arguments are as of yet unsupported"),
+                None,
+            )),
+            tree_sitter::QueryPredicateArg::String(str) => Ok(QueryPredicates {
+                delimiter: Some(str.as_ref().to_owned()),
+                ..predicates.clone()
+            }),
+        }
     } else if "scope_id!" == operator {
-        let arg =
-            predicate.args().into_iter().next().ok_or_else(|| {
-                FormatterError::Query(format!("{operator} needs an argument"), None)
-            })?;
-        Ok(QueryPredicates {
-            scope_id: Some(arg),
-            ..predicates.clone()
-        })
+        match arg1? {
+            tree_sitter::QueryPredicateArg::Capture(_) => Err(FormatterError::Query(
+                format!("{operator} capture arguments are as of yet unsupported"),
+                None,
+            )),
+            tree_sitter::QueryPredicateArg::String(str) => Ok(QueryPredicates {
+                scope_id: Some(str.as_ref().to_owned()),
+                ..predicates.clone()
+            }),
+        }
     } else if "single_line_only!" == operator {
         Ok(QueryPredicates {
             single_line_only: true,
@@ -318,23 +324,27 @@ fn handle_predicate(
             ..predicates.clone()
         })
     } else if "single_line_scope_only!" == operator {
-        let arg =
-            predicate.args().into_iter().next().ok_or_else(|| {
-                FormatterError::Query(format!("{operator} needs an argument"), None)
-            })?;
-        Ok(QueryPredicates {
-            single_line_scope_only: Some(arg),
-            ..predicates.clone()
-        })
+        match arg1? {
+            tree_sitter::QueryPredicateArg::Capture(_) => Err(FormatterError::Query(
+                format!("{operator} capture arguments are as of yet unsupported"),
+                None,
+            )),
+            tree_sitter::QueryPredicateArg::String(str) => Ok(QueryPredicates {
+                single_line_scope_only: Some(str.as_ref().to_owned()),
+                ..predicates.clone()
+            }),
+        }
     } else if "multi_line_scope_only!" == operator {
-        let arg =
-            predicate.args().into_iter().next().ok_or_else(|| {
-                FormatterError::Query(format!("{operator} needs an argument"), None)
-            })?;
-        Ok(QueryPredicates {
-            multi_line_scope_only: Some(arg),
-            ..predicates.clone()
-        })
+        match arg1? {
+            tree_sitter::QueryPredicateArg::Capture(_) => Err(FormatterError::Query(
+                format!("{operator} capture arguments are as of yet unsupported"),
+                None,
+            )),
+            tree_sitter::QueryPredicateArg::String(str) => Ok(QueryPredicates {
+                multi_line_scope_only: Some(str.as_ref().to_owned()),
+                ..predicates.clone()
+            }),
+        }
     } else {
         Ok(predicates.clone())
     }
@@ -386,8 +396,8 @@ fn check_predicates(predicates: &QueryPredicates) -> FormatterResult<()> {
 fn check_input_exhaustivity(
     ref_match_count: usize,
     original_query: &TopiaryQuery,
-    grammar: &tree_sitter_facade::Language,
-    root: &Node,
+    grammar: ::tree_sitter::Language,
+    root: Node,
     source: &[u8],
 ) -> FormatterResult<()> {
     let pattern_count = original_query.query.pattern_count();
@@ -409,7 +419,8 @@ fn check_input_exhaustivity(
             .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
         query.disable_pattern(i);
         let mut cursor = QueryCursor::new();
-        let match_count = query.matches(root, source, &mut cursor).count();
+        let match_count = cursor.matches(&query, root, source).count();
+
         if match_count == ref_match_count {
             let index_start = query.start_byte_for_pattern(i);
             let index_end = if i == pattern_count - 1 {

@@ -21,10 +21,10 @@ pub enum FormatterError {
 
     /// Tree-sitter could not parse the input without errors.
     Parsing {
-        start_line: u32,
-        start_column: u32,
-        end_line: u32,
-        end_column: u32,
+        start_line: usize,
+        start_column: usize,
+        end_line: usize,
+        end_column: usize,
     },
 
     /// The query contains a pattern that had no match in the input file.
@@ -33,7 +33,7 @@ pub enum FormatterError {
 
     /// There was an error in the query file. If this happened using our
     /// provided query files, it is a bug. Please log an issue.
-    Query(String, Option<tree_sitter_facade::QueryError>),
+    Query(String, Option<tree_sitter::QueryError>),
 
     /// Could not detect the input language from the (filename,
     /// Option<extension>)
@@ -204,18 +204,12 @@ impl From<serde_json::Error> for FormatterError {
     }
 }
 
-impl From<tree_sitter_facade::LanguageError> for FormatterError {
-    fn from(e: tree_sitter_facade::LanguageError) -> Self {
+impl From<tree_sitter::LanguageError> for FormatterError {
+    fn from(e: tree_sitter::LanguageError) -> Self {
         Self::Internal(
             "Error while loading language grammar".into(),
             Some(Box::new(e)),
         )
-    }
-}
-
-impl From<tree_sitter_facade::ParserError> for FormatterError {
-    fn from(e: tree_sitter_facade::ParserError) -> Self {
-        Self::Internal("Error while parsing".into(), Some(Box::new(e)))
     }
 }
 

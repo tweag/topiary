@@ -35,7 +35,7 @@ async fn input_output_tester() {
 
             let grammar = language.grammar().await.unwrap();
 
-            let query = TopiaryQuery::new(&grammar, &query_content).unwrap();
+            let query = TopiaryQuery::new(grammar, &query_content).unwrap();
 
             info!(
                 "Formatting file {} as {}.",
@@ -50,7 +50,7 @@ async fn input_output_tester() {
                 &mut output,
                 &query,
                 language,
-                &grammar,
+                grammar,
                 Operation::Format {
                     skip_idempotence: false,
                     tolerate_parsing_errors: true,
@@ -84,14 +84,14 @@ async fn formatted_query_tester() {
 
         let grammar = language.grammar().await.unwrap();
 
-        let query = TopiaryQuery::new(&grammar, &query_content).unwrap();
+        let query = TopiaryQuery::new(grammar, &query_content).unwrap();
 
         formatter(
             &mut input,
             &mut output,
             &query,
             language,
-            &grammar,
+            grammar,
             Operation::Format {
                 skip_idempotence: false,
                 tolerate_parsing_errors: false,
@@ -126,9 +126,9 @@ async fn exhaustive_query_tester() {
 
         let grammar = language.grammar().await.unwrap();
 
-        let query = TopiaryQuery::new(&grammar, &query_content).unwrap();
+        let query = TopiaryQuery::new(grammar, &query_content).unwrap();
 
-        apply_query(&input_content, &query, &grammar, false, true).unwrap_or_else(|e| {
+        apply_query(&input_content, &query, grammar, false, true).unwrap_or_else(|e| {
             if let FormatterError::PatternDoesNotMatch(_) = e {
                 panic!("Found untested query in file {query_file:?}:\n{e}");
             } else {

@@ -12,9 +12,9 @@
 
 use std::io;
 
+use crate::tree_sitter::Position;
 use itertools::Itertools;
 use pretty_assertions::StrComparison;
-use tree_sitter::Position;
 
 pub use crate::{
     configuration::{default_configuration_toml, Configuration},
@@ -36,7 +36,7 @@ pub mod test_utils;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ScopeInformation {
-    line_number: u32,
+    line_number: usize,
     scope_id: String,
 }
 
@@ -196,7 +196,7 @@ pub fn formatter(
     output: &mut impl io::Write,
     query: &TopiaryQuery,
     language: &Language,
-    grammar: &tree_sitter_facade::Language,
+    grammar: ::tree_sitter::Language,
     operation: Operation,
 ) -> FormatterResult<()> {
     let content = read_input(input).map_err(|e| {
@@ -277,7 +277,7 @@ fn idempotence_check(
     content: &str,
     query: &TopiaryQuery,
     language: &Language,
-    grammar: &tree_sitter_facade::Language,
+    grammar: ::tree_sitter::Language,
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<()> {
     log::info!("Checking for idempotence ...");
@@ -334,14 +334,14 @@ mod tests {
         let configuration = Configuration::parse_default_configuration().unwrap();
         let language = configuration.get_language("json").unwrap();
         let grammar = language.grammar().await.unwrap();
-        let query = TopiaryQuery::new(&grammar, query_content).unwrap();
+        let query = TopiaryQuery::new(grammar, query_content).unwrap();
 
         match formatter(
             &mut input,
             &mut output,
             &query,
             language,
-            &grammar,
+            grammar,
             Operation::Format {
                 skip_idempotence: true,
                 tolerate_parsing_errors: false,
@@ -369,14 +369,14 @@ mod tests {
         let configuration = Configuration::parse_default_configuration().unwrap();
         let language = configuration.get_language("json").unwrap();
         let grammar = language.grammar().await.unwrap();
-        let query = TopiaryQuery::new(&grammar, &query_content).unwrap();
+        let query = TopiaryQuery::new(grammar, &query_content).unwrap();
 
         formatter(
             &mut input,
             &mut output,
             &query,
             language,
-            &grammar,
+            grammar,
             Operation::Format {
                 skip_idempotence: true,
                 tolerate_parsing_errors: true,

@@ -62,7 +62,7 @@ impl Language {
     ///
     /// If the language is not supported, a `FormatterError` will be returned.
     #[cfg(not(target_arch = "wasm32"))]
-    pub async fn grammar(&self) -> FormatterResult<tree_sitter_facade::Language> {
+    pub async fn grammar(&self) -> FormatterResult<tree_sitter::Language> {
         Ok(match self.name.as_str() {
             "bash" => tree_sitter_bash::language(),
             "json" => tree_sitter_json::language(),

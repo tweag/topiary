@@ -5,7 +5,7 @@ use std::{
     ops::Deref,
 };
 
-use tree_sitter_facade::Node;
+use tree_sitter::Node;
 
 use crate::{Atom, FormatterError, FormatterResult, ScopeCondition, ScopeInformation};
 
@@ -177,13 +177,13 @@ impl AtomCollection {
         // instead of creating it for both branches, create them once here.
         let scope_information_prepend = || -> FormatterResult<ScopeInformation> {
             Ok(ScopeInformation {
-                line_number: node.start_position().row(),
+                line_number: node.start_position().row,
                 scope_id: requires_scope_id()?.to_owned(),
             })
         };
         let scope_information_append = || -> FormatterResult<ScopeInformation> {
             Ok(ScopeInformation {
-                line_number: node.end_position().row(),
+                line_number: node.end_position().row,
                 scope_id: requires_scope_id()?.to_owned(),
             })
         };
@@ -592,7 +592,7 @@ impl AtomCollection {
     /// The second pass applies the modifications to the atoms.
     fn post_process_scopes(&mut self) {
         type ScopeId = String;
-        type LineIndex = u32;
+        type LineIndex = usize;
         type ScopedNodeId = usize;
         // `opened_scopes` maintains stacks of opened scopes,
         // the line at which they started,
@@ -1026,8 +1026,8 @@ fn detect_multi_line_nodes(dfs_nodes: &[Node]) -> HashSet<usize> {
     dfs_nodes
         .iter()
         .filter_map(|node| {
-            let start_line = node.start_position().row();
-            let end_line = node.end_position().row();
+            let start_line = node.start_position().row;
+            let end_line = node.end_position().row;
 
             if end_line > start_line {
                 log::debug!("Multi-line node {}: {:?}", node.id(), node,);
@@ -1055,7 +1055,7 @@ fn detect_multi_line_nodes(dfs_nodes: &[Node]) -> HashSet<usize> {
 ///
 /// A `NodesWithLinebreaks` struct that contains two sets of node IDs: one for the nodes that have a line break
 /// before them, and one for the nodes that have a line break after them.
-fn detect_line_breaks(dfs_nodes: &[Node], minimum_line_breaks: u32) -> NodesWithLinebreaks {
+fn detect_line_breaks(dfs_nodes: &[Node], minimum_line_breaks: usize) -> NodesWithLinebreaks {
     // Zip the flattened vector with its own tail => Iterator of pairs of adjacent nodes
     // Filter this by the threshold distance between pair components
     // Unzip into "nodes with spaces before" and "after" sets, respectively
@@ -1063,8 +1063,8 @@ fn detect_line_breaks(dfs_nodes: &[Node], minimum_line_breaks: u32) -> NodesWith
         .iter()
         .zip(dfs_nodes[1..].iter())
         .filter_map(|(left, right)| {
-            let last = left.end_position().row();
-            let next = right.start_position().row();
+            let last = left.end_position().row;
+            let next = right.start_position().row;
 
             if next >= last + minimum_line_breaks {
                 log::debug!(
