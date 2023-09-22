@@ -1320,7 +1320,7 @@ dependencies = [
 
 [[package]]
 name = "topiary"
-version = "0.2.3"
+version = "0.3.0"
 dependencies = [
  "clap",
  "criterion",
@@ -1352,7 +1352,7 @@ dependencies = [
 
 [[package]]
 name = "topiary-cli"
-version = "0.2.3"
+version = "0.3.0"
 dependencies = [
  "assert_cmd",
  "async-scoped",
@@ -1384,7 +1384,7 @@ dependencies = [
 
 [[package]]
 name = "topiary-playground"
-version = "0.2.3"
+version = "0.3.0"
 dependencies = [
  "cfg-if",
  "itertools 0.11.0",
@@ -1396,7 +1396,7 @@ dependencies = [
 
 [[package]]
 name = "topiary-queries"
-version = "0.2.3"
+version = "0.3.0"
 
 [[package]]
 name = "tree-sitter"
