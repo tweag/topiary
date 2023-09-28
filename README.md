@@ -1424,11 +1424,11 @@ terminal, it will format the given source input with the requested query
 file, updating the output on any inotify event against those files.
 
 ```
-Usage: playground.sh (LANGUAGE | QUERY_FILE) [INPUT_SOURCE]
+Usage: ${PROGNAME} LANGUAGE [QUERY_FILE] [INPUT_SOURCE]
 
 LANGUAGE can be one of the supported languages (e.g., "ocaml", "rust",
-etc.); alternatively, give the path to the query file itself, as
-QUERY_FILE.
+etc.). The packaged formatting queries for this language can be
+overridden by specifying a QUERY_FILE.
 
 The INPUT_SOURCE is optional. If not specified, it defaults to trying
 to find the bundled integration test input file for the given language.
