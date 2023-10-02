@@ -42,18 +42,36 @@ This name should be decided amongst the team before the release.
 
 ## Unreleased
 
-[Full list of changes](https://github.com/tweag/topiary/compare/v0.2.3...HEAD)
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.3.0...HEAD)
+
+## v0.3.0 - Dreamy Dracaena - 2023-09-22
+
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.2.3...v0.3.0)
 
 ### Added
 * [#538](https://github.com/tweag/topiary/pull/538) Using `cargo-dist` to release Topiary binaries.
-* [#528](https://github.com/tweag/topiary/pull/528) Added a sample app and convenience functions for using the built-in queries.
+* [#528](https://github.com/tweag/topiary/pull/528) [#609](https://github.com/tweag/topiary/pull/609) Created a `topiary-queries` crate that exports the builtin query files.
 * [#526](https://github.com/tweag/topiary/pull/526) Multi-line comments can be indented properly using the new predicate @multi_line_indent_all.
+* [#533](https://github.com/tweag/topiary/pull/533) Topiary can now process multiple files with one call.
+* [#553](https://github.com/tweag/topiary/pull/553) In Nickel, indent when a new infix_expr chain starts.
+* [#557](https://github.com/tweag/topiary/pull/557) Topiary now falls back to the buildin queries when no other query files could be located.
+* [#573](https://github.com/tweag/topiary/pull/573) Added OCamllex support (without injections).
+* [#576](https://github.com/tweag/topiary/pull/576) Added append/prepend versions of scope captures.
 
 ### Changed
 * [#535](https://github.com/tweag/topiary/pull/535) Improved error message when idempotency fails due to invalid output in the first pass.
-* [#533](https://github.com/tweag/topiary/pull/533) Update tree-sitter-ocaml to 0.20.3
 * [#576](https://github.com/tweag/topiary/pull/576) Allows prepending/appending `@begin_scope` and `@end_scope`
 * [#583](https://github.com/tweag/topiary/pull/583) Modernisation of the command line interface (see [the CLI Migration Guide](/docs/migration-0.2-0.3.md), for details)
+* [#535](https://github.com/tweag/topiary/pull/535) Change the error message for an idempotency error to be more descriptive.
+* [#536](https://github.com/tweag/topiary/pull/536) [#537](https://github.com/tweag/topiary/pull/537) [#578](https://github.com/tweag/topiary/pull/578) [#626](https://github.com/tweag/topiary/pull/626) [#627](https://github.com/tweag/topiary/pull/627) [#628](https://github.com/tweag/topiary/pull/628) Various OCaml improvements.
+* [#623](https://github.com/tweag/topiary/pull/623) [#624](https://github.com/tweag/topiary/pull/624) [#625](https://github.com/tweag/topiary/pull/625) Various Toml improvements thanks @pjjw.
+
+### Fixed
+* [#533](https://github.com/tweag/topiary/pull/533) Bump tree-sitter-ocaml version, which allowed reintroduction of some removed queries.
+* [#550](https://github.com/tweag/topiary/pull/550) Fixed handling of antispace in post-processing.
+* [#552](https://github.com/tweag/topiary/pull/552) Fixed Nickel tag removal.
+* [#554](https://github.com/tweag/topiary/pull/554) [#555](https://github.com/tweag/topiary/pull/555) Fixed Nickel idempotency issue related to annotations.
+* [#565](https://github.com/tweag/topiary/pull/565) Fixed an issue where Topiary would remove whitespace between predicate parameters in query files.
 
 ## v0.2.3 - Cyclic Cypress - 2023-06-20
 
