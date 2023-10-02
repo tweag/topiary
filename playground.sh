@@ -14,11 +14,11 @@ fail() {
   cat >&2 <<-EOF
 	Error: ${error}
 
-	Usage: ${PROGNAME} (LANGUAGE | QUERY_FILE) [INPUT_SOURCE]
+	Usage: ${PROGNAME} LANGUAGE [QUERY_FILE] [INPUT_SOURCE]
 
 	LANGUAGE can be one of the supported languages (e.g., "ocaml", "rust",
-	etc.); alternatively, give the path to the query file itself, as
-	QUERY_FILE.
+	etc.). The packaged formatting queries for this language can be
+	overridden by specifying a QUERY_FILE.
 
 	The INPUT_SOURCE is optional. If not specified, it defaults to trying
 	to find the bundled integration test input file for the given language.
@@ -36,40 +36,73 @@ get_sample_input() {
 }
 
 format() {
-  local query="$1"
-  local input="$2"
-  local skip_idempotence="${3-1}"
+  local language="$1"
+  local query="$2"
+  local input="$3"
+  local skip_idempotence="${4-1}"
 
-  local -a topiary_args=(--query "${query}")
+  local -a topiary_args=(
+    --language "${language}"
+    --query "${query}"
+  )
+
   (( skip_idempotence )) && topiary_args+=(--skip-idempotence)
 
   cargo run --quiet -- fmt "${topiary_args[@]}" < "${input}"
 }
 
 idempotency() {
-  local query="$1"
-  local input="$2"
+  local language="$1"
+  local query="$2"
+  local input="$3"
 
-  if format "${query}" "${input}" 0 >/dev/null 2>&1; then
+  if format "${language}" "${query}" "${input}" 0 >/dev/null 2>&1; then
     printf "Yes"
+  elif (( $? == 7 )); then
+    printf "No"
   else
-    if (( $? == 7 )); then
-      printf "No"
-    else
-      printf "n/a"
-    fi
+    printf "n/a"
   fi
 }
 
 main() {
-  local query="${1-}"
-  if ! [[ -e "${query}" ]]; then
-    query="queries/${query}.scm"
-    [[ -e "${query}" ]] || fail "Couldn't find language query file '${query}'"
-  fi
+  local language
+  local query
+  local input
 
-  local language="$(basename --suffix=.scm "${query}")"
-  local input="${2-$(get_sample_input "${language}")}"
+  case $# in
+    1)
+      language="$1"
+      query="queries/${language}.scm"
+      input="$(get_sample_input "${language}")"
+      ;;
+
+    2)
+      language="$1"
+
+      if [[ "$2" =~ \.scm$ ]]; then
+        query="$2"
+        input="$(get_sample_input "${language}")"
+      else
+        query="queries/${language}.scm"
+        input="$2"
+      fi
+      ;;
+
+    3)
+      language="$1"
+      query="$2"
+      input="$3"
+      ;;
+
+    *)
+      fail "Invalid command line arguments"
+      ;;
+  esac
+
+  local language="$1"
+
+  [[ -e "${query}" ]] || fail "Couldn't find language query file '${query}'"
   [[ -e "${input}" ]] || fail "Couldn't find input source file '${input}'"
 
   # Horizontal rule (this is a function because executing it in a TTY-
@@ -81,14 +114,15 @@ main() {
 
     hr
     cat <<-EOF
+		Language      ${language}
 		Query File    ${query}
 		Input Source  ${input}
 		EOF
     hr
 
-    format "${query}" "${input}" || true
+    format "${language}" "${query}" "${input}" || true
     hr
-    printf "Idempotent    %s\n" "$(idempotency "${query}" "${input}")"
+    printf "Idempotent    %s\n" "$(idempotency "${language}" "${query}" "${input}")"
 
     # NOTE Different editors have different strategies for modifying
     # files, so we wait on multiple events. This *may* not be an
