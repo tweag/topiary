@@ -21,6 +21,8 @@ log = { workspace = true }
 pretty_assertions = { workspace = true }
 prettydiff = { workspace = true }
 regex = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
 tree-sitter-facade = { workspace = true }
 unescape = { workspace = true }
 

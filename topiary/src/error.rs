@@ -198,6 +198,12 @@ where
     }
 }
 
+impl From<serde_json::Error> for FormatterError {
+    fn from(e: serde_json::Error) -> Self {
+        Self::Internal("Could not serialise JSON output".into(), Some(Box::new(e)))
+    }
+}
+
 impl From<tree_sitter_facade::LanguageError> for FormatterError {
     fn from(e: tree_sitter_facade::LanguageError) -> Self {
         Self::Internal(
