@@ -15,18 +15,44 @@ use indoc::formatdoc;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
-use crate::error::{CLIResult, TopiaryError};
+use crate::error::{CLIError, CLIResult, TopiaryError};
 
-// TODO
-use crate::{language::Language, FormatterError, FormatterResult};
+/// Language definitions, as far as the CLI and configuration are concerned, contain everything
+/// needed to configure formatting for that language.
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Language {
+    /// The name of the language, used as a key when looking up information in `Configuration` and
+    /// to convert to the respective Tree-sitter grammar
+    pub name: String,
 
-/// The configuration of Topiary. Contains information on how to format every language.
-/// Can be provided by the user of the library, or alternatively, Topiary ships with a default
-/// configuration that can be accessed using `default_configuration_toml` or
-/// `parse_default_configuration`.
+    /// A set of the filetype extensions associated with this language. This enables Topiary to
+    /// switch to the right language based on the input filename.
+    pub extensions: HashSet<String>,
+
+    /// The indentation string used for this language; defaults to "  " (i.e., two spaces). Any
+    /// string can be provided, but in most instances it will be some whitespace (e.g., "    ",
+    /// "\t", etc.)
+    indent: Option<String>,
+}
+
+// TODO I don't think we're going to need this here...but maybe
+impl Language {
+    pub fn indent(&self) -> &str {
+        match self.indent {
+            Some(indent) => &indent,
+            None => "  ",
+        }
+    }
+}
+
+/// The configuration of the Topiary CLI.
+///
+/// Contains information on how to format every language the user is interested in, modulo what is
+/// supported. It can be provided by the user of the library, or alternatively, Topiary ships with
+/// default configuration that can be accessed using `Configuration::default_toml`.
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Configuration {
-    pub language: Vec<Language>,
+    language: Vec<Language>,
 }
 
 impl Configuration {
@@ -36,47 +62,55 @@ impl Configuration {
 
     /// Collects the known extensions of all languages into a single HashSet.
     /// Useful for testing if Topiary is able to configure the given file.
-    #[must_use]
-    pub fn known_extensions(&self) -> HashSet<&str> {
-        let mut res: HashSet<&str> = HashSet::new();
-        for lang in &self.language {
-            for ext in &lang.extensions {
-                res.insert(ext);
-            }
-        }
-        res
+    pub fn known_extensions(&self) -> HashSet<String> {
+        self.language
+            .iter()
+            .fold(HashSet::new(), |extensions, language| {
+                &extensions | &language.extensions
+            })
     }
 
     /// Gets a language configuration from the entire configuration.
     ///
     /// # Errors
     ///
-    /// If the provided language name cannot be found in the Configuration, this
-    /// function returns a `FormatterError:UnsupportedLanguage`
+    /// If the provided language name cannot be found in the `Configuration`, this
+    /// function returns a `TopiaryError`
     pub fn get_language<T: AsRef<str>>(&self, name: T) -> FormatterResult<&Language> {
-        for lang in &self.language {
-            if lang.name == name.as_ref() {
-                return Ok(lang);
-            }
-        }
-        return Err(FormatterError::UnsupportedLanguage(
-            name.as_ref().to_string(),
-        ));
+        self.language
+            .iter()
+            .find(|&&language| language.name == name.as_ref())
+            .ok_or(TopiaryError::Bin(
+                format!("Unsupported language: \"{name}\""),
+                Some(CLIError::UnsupportedLanguage(name.into())),
+            ))
     }
 
-    /// Parse the default configuration directly into a `Configuration`,
-    /// This is useful for users of Topiary that have no special requirements.
-    /// It is also incredibly useful in tests.
-    pub fn parse_default_configuration() -> FormatterResult<Self> {
-        default_configuration_toml()
-            .try_into()
-            .map_err(FormatterError::from)
+    /// Default built-in languages.toml, parsed to a deserialised value.
+    ///
+    /// We do not parse to a `Configuration` value because the deserialsed TOML is easier to work
+    /// with. Specifically, It allows additional configuration -- from other sources -- to be
+    /// collated, to arrive at the final runtime configuration. (Parsing straight to
+    /// `Configuration` doesn't work well, because that forces every configuration file to define
+    /// every part of the configuration.)
+    fn default_toml() -> toml::Value {
+        let default_config = include_str!("../languages.toml");
+
+        // We assume that the shipped built-in TOML is valid, so `.expect` is fine
+        toml::from_str(default_config)
+            .expect("Could not parse built-in languages.toml as valid TOML")
     }
 }
 
-impl Default for Configuration {
-    fn default() -> Self {
-        Self::new()
+/// Convert deserialised TOML values into `Configuration` values
+impl TryFrom<toml::Value> for Configuration {
+    type Error = TopiaryError;
+
+    // This is particularly useful for testing
+    fn try_from(toml: toml::Value) -> CLIResult<Self> {
+        Configuration::default_toml()
+            .try_into()
+            .map_err(TopiaryError::from)
     }
 }
 
@@ -109,17 +143,6 @@ impl fmt::Display for Configuration {
         let toml = toml::to_string_pretty(self).map_err(|_| fmt::Error)?;
         write!(f, "{toml}")
     }
-}
-
-/// Default built-in languages.toml parsed to a toml file.
-/// We parse the configuration file in two phases, the first is to a `toml::Value`
-/// This function is exported to allow users of the library to merge their own
-/// configuration with the builtin one.
-/// Parsing straight to a `Configuration` doesn't work well, because that forces
-/// every configuration file to define every part of the configuration.
-pub fn default_configuration_toml() -> toml::Value {
-    let default_config = include_str!("../languages.toml");
-    toml::from_str(default_config).expect("Could not parse built-in languages.toml to valid toml")
 }
 
 type Annotations = String;
@@ -262,7 +285,7 @@ impl TryFrom<&ConfigSource> for toml::Value {
 
     fn try_from(source: &ConfigSource) -> Result<Self, Self::Error> {
         match source {
-            ConfigSource::Builtin => Ok(default_configuration_toml()),
+            ConfigSource::Builtin => Ok(Configuration::default_toml()),
 
             ConfigSource::File(file) => {
                 let config = std::fs::read_to_string(file)?;
@@ -279,7 +302,7 @@ impl TryFrom<&ConfigSource> for toml::Value {
 
 /// Return the valid sources of configuration, in priority order (lowest to highest):
 ///
-/// 1. Built-in configuration (`topiary::default_configuration_toml`)
+/// 1. Built-in configuration (per `Configuration::default_toml()`)
 /// 2. `~/.config/topiary/languages.toml` (or equivalent)
 /// 3. `.topiary/languages.toml` (or equivalent)
 /// 4. `file`, passed as a CLI argument/environment variable
