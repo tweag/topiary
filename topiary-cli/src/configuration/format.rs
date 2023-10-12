@@ -1,12 +1,17 @@
 //! Configuration serialisation and deserialisation
 
-// FIXME rust-analyzer is not behaving while the code is significantly broken. More imports are
-// required...
-use std::collections::HashSet;
+use std::{
+    collections::{HashMap, HashSet},
+    fmt,
+};
+
+use serde::{Deserialize, Serialize};
+
+use crate::error::{CLIError, CLIResult, TopiaryError};
 
 /// Language definitions, as far as the CLI and configuration are concerned, contain everything
 /// needed to configure formatting for that language.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct Language {
     /// The name of the language, used as a key when looking up information in `Configuration` and
     /// to convert to the respective Tree-sitter grammar
@@ -63,13 +68,16 @@ impl Configuration {
     ///
     /// If the provided language name cannot be found in the `Configuration`, this
     /// function returns a `TopiaryError`
-    pub fn get_language<T: AsRef<str>>(&self, name: T) -> FormatterResult<&Language> {
+    pub fn get_language<T>(&self, name: T) -> CLIResult<&Language>
+    where
+        T: AsRef<str> + fmt::Display,
+    {
         self.language
             .iter()
             .find(|&&language| language.name == name.as_ref())
             .ok_or(TopiaryError::Bin(
                 format!("Unsupported language: \"{name}\""),
-                Some(CLIError::UnsupportedLanguage(name.into())),
+                Some(CLIError::UnsupportedLanguage(name.to_string())),
             ))
     }
 
@@ -81,7 +89,7 @@ impl Configuration {
     /// `Configuration` doesn't work well, because that forces every configuration file to define
     /// every part of the configuration.)
     fn default_toml() -> toml::Value {
-        let default_config = include_str!("../languages.toml");
+        let default_config = include_str!("../../../languages.toml");
 
         // We assume that the shipped built-in TOML is valid, so `.expect` is fine
         toml::from_str(default_config)
@@ -102,15 +110,14 @@ impl TryFrom<toml::Value> for Configuration {
 }
 
 /// Convert `Configuration` values into `HashMap`s, keyed on `Language::name`
-// NOTE There are optimisations to be had here, to avoid cloning, but life's too short!
 impl From<&Configuration> for HashMap<String, Language> {
     fn from(config: &Configuration) -> Self {
-        HashMap::from_iter(config.language.iter().map(|language| {
-            let name = language.name.clone();
-            let language = language.clone();
-
-            (name, language)
-        }))
+        HashMap::from_iter(
+            config
+                .language
+                .iter()
+                .map(|language| (language.name, *language)),
+        )
     }
 }
 
