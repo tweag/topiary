@@ -3,59 +3,26 @@
 //! Additional configuration has to be provided by the user of the library.
 
 mod collate;
-mod format;
+pub mod format;
 mod fs;
 
-use std::{
-    collections::{HashMap, HashSet},
-    env::current_dir,
-    fmt,
-    path::PathBuf,
-};
+use std::{fmt, path::PathBuf};
 
-use clap::ValueEnum;
 use indoc::formatdoc;
 use itertools::Itertools;
-use serde::{Deserialize, Serialize};
 
-use crate::error::{CLIError, CLIResult, TopiaryError};
+use crate::error::{CLIResult, TopiaryError};
+use collate::collate_toml;
+pub use collate::CollationMode;
+use fs::{find_os_configuration_dir, find_workspace_configuration_dir};
 
 type Annotations = String;
-
-/// Collation mode for configuration values
-// NOTE The enum variants are in "natural" order, rather than
-// sorted lexicographically, for the sake of the help text
-#[derive(Clone, Debug, ValueEnum)]
-pub enum CollationMode {
-    /// When multiple sources of configuration are available, matching items are updated from the
-    /// higher priority source, with collections merged as the union of sets.
-    Merge,
-
-    /// When multiple sources of configuration are available, matching items (including
-    /// collections) are superseded from the higher priority source.
-    Revise,
-
-    /// When multiple sources of configuration are available, the highest priority source is taken.
-    /// All values from lower priority sources are discarded.
-    Override,
-}
-
-/// Map collation modes to merge depths for the TOML collation (see `collate_toml`)
-impl From<&CollationMode> for usize {
-    fn from(collation: &CollationMode) -> Self {
-        match collation {
-            CollationMode::Merge => 4,
-            CollationMode::Revise => 2,
-            _ => unreachable!(),
-        }
-    }
-}
 
 /// Consume the configuration from the usual sources, collated as specified
 pub fn fetch(
     file: &Option<PathBuf>,
     collation: &CollationMode,
-) -> CLIResult<(Annotations, Configuration)> {
+) -> CLIResult<(Annotations, format::Configuration)> {
     // If we have an explicit file, fail if it doesn't exist
     if let Some(path) = file {
         if !path.exists() {
@@ -160,7 +127,7 @@ impl TryFrom<&ConfigSource> for toml::Value {
 
     fn try_from(source: &ConfigSource) -> Result<Self, Self::Error> {
         match source {
-            ConfigSource::Builtin => Ok(Configuration::default_toml()),
+            ConfigSource::Builtin => Ok(format::Configuration::default_toml()),
 
             ConfigSource::File(file) => {
                 let config = std::fs::read_to_string(file)?;
