@@ -1,3 +1,6 @@
+use std::env::current_dir;
+use std::path::PathBuf;
+
 use directories::ProjectDirs;
 
 /// Find the OS-specific configuration directory
