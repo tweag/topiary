@@ -88,7 +88,7 @@ impl Configuration {
     /// collated, to arrive at the final runtime configuration. (Parsing straight to
     /// `Configuration` doesn't work well, because that forces every configuration file to define
     /// every part of the configuration.)
-    fn default_toml() -> toml::Value {
+    pub fn default_toml() -> toml::Value {
         let default_config = include_str!("../../../languages.toml");
 
         // We assume that the shipped built-in TOML is valid, so `.expect` is fine

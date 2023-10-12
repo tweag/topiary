@@ -1,3 +1,36 @@
+//! Configuration collation functionality
+
+use clap::ValueEnum;
+
+/// Collation mode for configuration values
+// NOTE The enum variants are in "natural" order, rather than
+// sorted lexicographically, for the sake of the help text
+#[derive(Clone, Debug, ValueEnum)]
+pub enum CollationMode {
+    /// When multiple sources of configuration are available, matching items are updated from the
+    /// higher priority source, with collections merged as the union of sets.
+    Merge,
+
+    /// When multiple sources of configuration are available, matching items (including
+    /// collections) are superseded from the higher priority source.
+    Revise,
+
+    /// When multiple sources of configuration are available, the highest priority source is taken.
+    /// All values from lower priority sources are discarded.
+    Override,
+}
+
+/// Map collation modes to merge depths for the TOML collation (see `collate_toml`)
+impl From<&CollationMode> for usize {
+    fn from(collation: &CollationMode) -> Self {
+        match collation {
+            CollationMode::Merge => 4,
+            CollationMode::Revise => 2,
+            _ => unreachable!(),
+        }
+    }
+}
+
 /// Collate two TOML documents, merging values from `graft` onto `base`.
 ///
 /// Arrays of tables with a `name` key (e.g., our `[[language]]` tables) are always merged; that
@@ -14,7 +47,7 @@
 /// * Repo: https://github.com/helix-editor/helix
 /// * Rev:  df09490
 /// * Path: helix-loader/src/lib.rs
-fn collate_toml<T>(base: toml::Value, graft: toml::Value, merge_depth: T) -> toml::Value
+pub fn collate_toml<T>(base: toml::Value, graft: toml::Value, merge_depth: T) -> toml::Value
 where
     T: Into<usize>,
 {
@@ -75,7 +108,8 @@ where
 
 #[cfg(test)]
 mod test_config_collation {
-    use super::{collate_toml, CollationMode, Configuration};
+    use super::{collate_toml, CollationMode};
+    use crate::configuration::format::Configuration;
 
     // NOTE PartialEq for toml::Value is (understandably) order sensitive over array elements, so
     // we deserialse to `topiary::Configuration` for equality testing. This also has the effect of
