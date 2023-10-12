@@ -3,8 +3,8 @@
 //! Additional configuration has to be provided by the user of the library.
 
 mod collate;
+mod format;
 mod fs;
-mod serde;
 
 use std::{
     collections::{HashMap, HashSet},
