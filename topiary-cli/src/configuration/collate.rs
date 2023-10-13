@@ -20,14 +20,16 @@ pub enum CollationMode {
     Override,
 }
 
-/// Map collation modes to merge depths for the TOML collation (see `collate_toml`)
-impl From<&CollationMode> for usize {
-    fn from(collation: &CollationMode) -> Self {
-        match collation {
+impl CollationMode {
+    pub fn collate_toml(&self, base: toml::Value, graft: toml::Value) -> toml::Value {
+        // Map collation modes to merge depths for the TOML collation (see `collate_toml`)
+        let merge_depth = match self {
             CollationMode::Merge => 4,
             CollationMode::Revise => 2,
-            _ => unreachable!(),
-        }
+            CollationMode::Override => return graft,
+        };
+
+        collate_toml(base, graft, merge_depth)
     }
 }
 
@@ -47,17 +49,12 @@ impl From<&CollationMode> for usize {
 /// * Repo: https://github.com/helix-editor/helix
 /// * Rev:  df09490
 /// * Path: helix-loader/src/lib.rs
-pub fn collate_toml<T>(base: toml::Value, graft: toml::Value, merge_depth: T) -> toml::Value
-where
-    T: Into<usize>,
-{
+fn collate_toml(base: toml::Value, graft: toml::Value, merge_depth: usize) -> toml::Value {
     use toml::Value;
 
     fn get_name(v: &Value) -> Option<&str> {
         v.get("name").and_then(Value::as_str)
     }
-
-    let merge_depth: usize = merge_depth.into();
 
     match (base, graft, merge_depth) {
         // Fallback to the graft value if the recursion depth bottoms out
@@ -108,7 +105,7 @@ where
 
 #[cfg(test)]
 mod test_config_collation {
-    use super::{collate_toml, CollationMode};
+    use super::CollationMode;
     use crate::configuration::format::Configuration;
 
     // NOTE PartialEq for toml::Value is (understandably) order sensitive over array elements, so
@@ -137,7 +134,8 @@ mod test_config_collation {
         let base = toml::from_str(BASE).unwrap();
         let graft = toml::from_str(GRAFT).unwrap();
 
-        let merged: Configuration = collate_toml(base, graft, &CollationMode::Merge)
+        let merged: Configuration = CollationMode::Merge
+            .collate_toml(base, graft)
             .try_into()
             .unwrap();
 
@@ -163,7 +161,8 @@ mod test_config_collation {
         let base = toml::from_str(BASE).unwrap();
         let graft = toml::from_str(GRAFT).unwrap();
 
-        let revised: Configuration = collate_toml(base, graft, &CollationMode::Revise)
+        let revised: Configuration = CollationMode::Revise
+            .collate_toml(base, graft)
             .try_into()
             .unwrap();
 
