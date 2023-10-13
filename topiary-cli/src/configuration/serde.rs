@@ -15,8 +15,8 @@ use crate::error::{CLIError, CLIResult, TopiaryError};
 /// needed to configure formatting for that language.
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct Language {
-    /// The name of the language, used as a key when looking up information in `Configuration` and
-    /// to convert to the respective Tree-sitter grammar
+    /// The name of the language, used as a key when looking up information in the deserialised
+    /// configuration and to convert to the respective Tree-sitter grammar
     pub name: String,
 
     /// A set of the filetype extensions associated with this language. This enables Topiary to
@@ -43,7 +43,7 @@ impl Language {
 ///
 /// Contains information on how to format every language the user is interested in, modulo what is
 /// supported. It can be provided by the user of the library, or alternatively, Topiary ships with
-/// default configuration that can be accessed using `Configuration::default_toml`.
+/// default configuration that can be accessed using `Serialisation::default_toml`.
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Serialisation {
     language: Vec<Language>,
@@ -68,7 +68,7 @@ impl Serialisation {
     ///
     /// # Errors
     ///
-    /// If the provided language name cannot be found in the `Configuration`, this
+    /// If the provided language name cannot be found in the `Serialisation`, this
     /// function returns a `TopiaryError`
     pub fn get_language<T>(&self, name: T) -> CLIResult<&Language>
     where
@@ -85,10 +85,10 @@ impl Serialisation {
 
     /// Default built-in languages.toml, parsed to a deserialised value.
     ///
-    /// We do not parse to a `Configuration` value because the deserialsed TOML is easier to work
+    /// We do not parse to a `Serialisation` value because the deserialsed TOML is easier to work
     /// with. Specifically, It allows additional configuration -- from other sources -- to be
     /// collated, to arrive at the final runtime configuration. (Parsing straight to
-    /// `Configuration` doesn't work well, because that forces every configuration file to define
+    /// `Serialisation` doesn't work well, because that forces every configuration file to define
     /// every part of the configuration.)
     pub fn default_toml() -> toml::Value {
         let default_config = include_str!("../../../languages.toml");
@@ -99,19 +99,17 @@ impl Serialisation {
     }
 }
 
-/// Convert deserialised TOML values into `Configuration` values
+/// Convert deserialised TOML values into `Serialisation` values
+// TODO Is this necessary, any more?
 impl TryFrom<toml::Value> for Serialisation {
     type Error = TopiaryError;
 
-    // This is particularly useful for testing
     fn try_from(toml: toml::Value) -> CLIResult<Self> {
-        Serialisation::default_toml()
-            .try_into()
-            .map_err(TopiaryError::from)
+        toml.try_into().map_err(TopiaryError::from)
     }
 }
 
-/// Convert `Configuration` values into `HashMap`s, keyed on `Language::name`
+/// Convert `Serialisation` values into `HashMap`s, keyed on `Language::name`
 impl From<&Serialisation> for HashMap<String, Language> {
     fn from(config: &Serialisation) -> Self {
         HashMap::from_iter(
