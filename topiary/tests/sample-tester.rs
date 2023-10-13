@@ -10,6 +10,8 @@ use topiary::{
     Operation, TopiaryQuery,
 };
 
+// FIXME Configuration is no longer part of the library
+
 #[test(tokio::test)]
 async fn input_output_tester() {
     let input_dir = fs::read_dir("tests/samples/input").unwrap();
