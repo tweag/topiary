@@ -7,10 +7,11 @@ use std::{
 };
 
 use tempfile::NamedTempFile;
-use topiary::{Configuration, Language, SupportedLanguage, TopiaryQuery};
+use topiary::{Language, SupportedLanguage, TopiaryQuery};
 
 use crate::{
     cli::{AtLeastOneInput, ExactlyOneInput, FromStdin},
+    configuration::Configuration,
     error::{CLIError, CLIResult, TopiaryError},
     language::LanguageDefinition,
 };
