@@ -26,6 +26,10 @@ impl CollationMode {
         let merge_depth = match self {
             CollationMode::Merge => 4,
             CollationMode::Revise => 2,
+
+            // This is unused. We collate over a slice in practice and, when overriding, it's best
+            // to return the last element of that slice, rather than deserialising each element and
+            // discarding all but the last (see crate::configuration::configuration_toml).
             CollationMode::Override => return graft,
         };
 
@@ -106,7 +110,7 @@ fn collate_toml(base: toml::Value, graft: toml::Value, merge_depth: usize) -> to
 #[cfg(test)]
 mod test_config_collation {
     use super::CollationMode;
-    use crate::configuration::format::Configuration;
+    use crate::configuration::serde::Serialisation;
 
     // NOTE PartialEq for toml::Value is (understandably) order sensitive over array elements, so
     // we deserialse to `topiary::Configuration` for equality testing. This also has the effect of
@@ -134,12 +138,12 @@ mod test_config_collation {
         let base = toml::from_str(BASE).unwrap();
         let graft = toml::from_str(GRAFT).unwrap();
 
-        let merged: Configuration = CollationMode::Merge
+        let merged: Serialisation = CollationMode::Merge
             .collate_toml(base, graft)
             .try_into()
             .unwrap();
 
-        let expected: Configuration = toml::from_str(
+        let expected: Serialisation = toml::from_str(
             r#"
             [[language]]
             name = "example"
@@ -161,12 +165,12 @@ mod test_config_collation {
         let base = toml::from_str(BASE).unwrap();
         let graft = toml::from_str(GRAFT).unwrap();
 
-        let revised: Configuration = CollationMode::Revise
+        let revised: Serialisation = CollationMode::Revise
             .collate_toml(base, graft)
             .try_into()
             .unwrap();
 
-        let expected: Configuration = toml::from_str(
+        let expected: Serialisation = toml::from_str(
             r#"
             [[language]]
             name = "example"

@@ -8,7 +8,7 @@ use log::LevelFilter;
 use topiary::SupportedLanguage;
 
 use crate::{
-    configuration,
+    configuration::collate::CollationMode,
     error::{CLIResult, TopiaryError},
     visualisation,
 };
@@ -51,7 +51,7 @@ pub struct GlobalArgs {
         global = true,
         hide_env_values = true
     )]
-    pub configuration_collation: Option<configuration::CollationMode>,
+    pub configuration_collation: Option<CollationMode>,
 
     /// Logging verbosity (increased per occurrence)
     #[arg(
