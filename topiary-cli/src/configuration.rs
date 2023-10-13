@@ -4,17 +4,16 @@
 
 mod collate;
 pub mod format;
-mod fs;
+mod source;
 
-use std::{fmt, path::PathBuf};
+use std::path::PathBuf;
 
 use indoc::formatdoc;
 use itertools::Itertools;
 
 use crate::error::{CLIResult, TopiaryError};
-use collate::collate_toml;
 pub use collate::CollationMode;
-use fs::{find_os_configuration_dir, find_workspace_configuration_dir};
+use source::ConfigSource;
 
 type Annotations = String;
 
@@ -33,7 +32,7 @@ pub fn fetch(
         }
     }
 
-    let sources = configuration_sources(file);
+    let sources = ConfigSource::fetch(file);
 
     Ok((
         annotate(&sources, collation),
@@ -63,103 +62,6 @@ fn annotate(sources: &[ConfigSource], collation: &CollationMode) -> String {
     )
 }
 
-/// Sources of TOML configuration
-#[derive(Debug)]
-enum ConfigSource {
-    Builtin,
-    File(PathBuf),
-
-    // This is a sentinel element for files that don't exist
-    Missing,
-}
-
-impl ConfigSource {
-    fn is_valid(&self) -> bool {
-        !matches!(self, Self::Missing)
-    }
-}
-
-impl fmt::Display for ConfigSource {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        match self {
-            Self::Builtin => write!(f, "Built-in configuration"),
-
-            Self::File(path) => {
-                // We only stringify the path when we know it exists, so the call to `canonicalize`
-                // is safe to unwrap. (All bets are off, if called from elsewhere.)
-                write!(f, "{}", path.canonicalize().unwrap().to_string_lossy())
-            }
-
-            Self::Missing => write!(f, "Missing configuration"),
-        }
-    }
-}
-
-impl From<Option<PathBuf>> for ConfigSource {
-    fn from(path: Option<PathBuf>) -> Self {
-        match path {
-            None => ConfigSource::Missing,
-
-            Some(path) => {
-                let candidate = if path.is_dir() {
-                    path.join("languages.toml")
-                } else {
-                    path
-                };
-
-                if candidate.exists() {
-                    ConfigSource::File(candidate)
-                } else {
-                    log::warn!(
-                        "Could not find configuration file: {}",
-                        candidate.to_string_lossy()
-                    );
-
-                    ConfigSource::Missing
-                }
-            }
-        }
-    }
-}
-
-impl TryFrom<&ConfigSource> for toml::Value {
-    type Error = TopiaryError;
-
-    fn try_from(source: &ConfigSource) -> Result<Self, Self::Error> {
-        match source {
-            ConfigSource::Builtin => Ok(format::Configuration::default_toml()),
-
-            ConfigSource::File(file) => {
-                let config = std::fs::read_to_string(file)?;
-                toml::from_str(&config).map_err(TopiaryError::from)
-            }
-
-            ConfigSource::Missing => Err(TopiaryError::Bin(
-                "Could not parse missing configuration".into(),
-                None,
-            )),
-        }
-    }
-}
-
-/// Return the valid sources of configuration, in priority order (lowest to highest):
-///
-/// 1. Built-in configuration (per `Configuration::default_toml()`)
-/// 2. `~/.config/topiary/languages.toml` (or equivalent)
-/// 3. `.topiary/languages.toml` (or equivalent)
-/// 4. `file`, passed as a CLI argument/environment variable
-fn configuration_sources(file: &Option<PathBuf>) -> Vec<ConfigSource> {
-    [
-        ConfigSource::Builtin,
-        Some(find_os_configuration_dir()).into(),
-        find_workspace_configuration_dir().into(),
-        file.clone().into(),
-    ]
-    .into_iter()
-    .filter(ConfigSource::is_valid)
-    .collect()
-}
-
 /// Consume configuration and collate as specified
 fn configuration_toml(
     sources: &[ConfigSource],
@@ -181,7 +83,7 @@ fn configuration_toml(
             sources
                 .iter()
                 .map(|source| source.try_into())
-                .reduce(|config, toml| Ok(collate_toml(config?, toml?, collation)))
+                .reduce(|config, toml| Ok(collation.collate_toml(config?, toml?)))
                 .unwrap()
         }
     }
