@@ -35,15 +35,8 @@ pub enum FormatterError {
     /// provided query files, it is a bug. Please log an issue.
     Query(String, Option<tree_sitter_facade::QueryError>),
 
-    /// Could not detect the input language from the (filename,
-    /// Option<extension>)
-    LanguageDetection(PathBuf, Option<String>),
-
     /// I/O-related errors
     Io(IoError),
-
-    /// The configuration file or command line mentions an unsupported language
-    UnsupportedLanguage(String),
 }
 
 /// A subtype of `FormatterError::Io`
@@ -88,22 +81,6 @@ impl fmt::Display for FormatterError {
                 write!(f, "Parsing error between line {start_line}, column {start_column} and line {end_line}, column {end_column}")
             }
 
-            Self::LanguageDetection(filename, extension) => {
-                let file: String = match filename.to_str().unwrap() {
-                    "-" => "from standard input".into(),
-                    _ => format!("of file '{}'", filename.to_string_lossy()),
-                };
-
-                match extension {
-                    Some(extension) => write!(f,
-                        "Cannot detect language {file} due to unknown extension '.{extension}'. Try specifying language explicitly, or updating your configuration.",
-                    ),
-                    None => write!(f,
-                        "Cannot detect language {file}. Try specifying language explicitly."
-                    ),
-                }
-            }
-
             Self::PatternDoesNotMatch(pattern_content) => {
                 write!(
                     f,
@@ -116,10 +93,6 @@ impl fmt::Display for FormatterError {
             | Self::Io(IoError::Filesystem(message, _) | IoError::Generic(message, _)) => {
                 write!(f, "{message}")
             }
-
-            Self::UnsupportedLanguage(language) => {
-                write!(f, "The following language is not supported: {language}")
-            }
         }
     }
 }
@@ -130,9 +103,7 @@ impl Error for FormatterError {
             Self::Idempotence
             | Self::Parsing { .. }
             | Self::PatternDoesNotMatch(_)
-            | Self::LanguageDetection(_, _)
-            | Self::Io(IoError::Generic(_, None))
-            | Self::UnsupportedLanguage(_) => None,
+            | Self::Io(IoError::Generic(_, None)) => None,
             Self::Internal(_, source) => source.as_ref().map(Deref::deref),
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::Io(IoError::Filesystem(_, source)) => Some(source),

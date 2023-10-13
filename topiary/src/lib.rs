@@ -159,7 +159,7 @@ pub enum Operation {
 /// # tokio_test::block_on(async {
 /// use std::fs::File;
 /// use std::io::{BufReader, Read};
-/// use topiary::{formatter, Configuration, FormatterError, TopiaryQuery, Operation};
+/// use topiary::{formatter, FormatterError, TopiaryQuery, Operation};
 ///
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
@@ -168,14 +168,10 @@ pub enum Operation {
 /// let mut query_content = String::new();
 /// query_file.read_to_string(&mut query_content).expect("read query file");
 ///
-/// let config = Configuration::parse_default_configuration().unwrap();
-/// let language = config.get_language("json").unwrap();
-/// let grammar = language
-///     .grammar()
-///     .await
-///     .expect("grammar");
+/// let grammar = tree_sitter_json::language();
 /// let query = TopiaryQuery::new(&grammar, &query_content).unwrap();
 ///
+/// // FIXME The signature of `formatter` has changed
 /// match formatter(&mut input, &mut output, &query, &language, &grammar, Operation::Format{ skip_idempotence: false, tolerate_parsing_errors: false }) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
