@@ -9,6 +9,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::{CLIError, CLIResult, TopiaryError};
 
+// TODO Should `Language` be in crate::language?...
+
 /// Language definitions, as far as the CLI and configuration are concerned, contain everything
 /// needed to configure formatting for that language.
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
