@@ -12,7 +12,7 @@ use indoc::formatdoc;
 use itertools::Itertools;
 
 use crate::{
-    configuration::{collate::CollationMode, serde::Serialisation, source::ConfigSource},
+    configuration::{collate::CollationMode, serde::Serialisation, source::Source},
     error::{CLIResult, TopiaryError},
 };
 
@@ -35,7 +35,7 @@ impl Configuration {
             }
         }
 
-        let sources = ConfigSource::fetch(file);
+        let sources = Source::fetch(file);
 
         let annotations = annotate(&sources, collation);
         let configuration = configuration_toml(&sources, collation)?
@@ -60,7 +60,7 @@ impl fmt::Display for Configuration {
 
 /// Return annotations for the configuration in the form of TOML comments
 /// (useful for human-readable output)
-fn annotate(sources: &[ConfigSource], collation: &CollationMode) -> String {
+fn annotate(sources: &[Source], collation: &CollationMode) -> String {
     formatdoc!(
         "
         # Configuration collated from the following sources,
@@ -79,10 +79,7 @@ fn annotate(sources: &[ConfigSource], collation: &CollationMode) -> String {
 }
 
 /// Consume configuration and collate as specified
-fn configuration_toml(
-    sources: &[ConfigSource],
-    collation: &CollationMode,
-) -> CLIResult<toml::Value> {
+fn configuration_toml(sources: &[Source], collation: &CollationMode) -> CLIResult<toml::Value> {
     match collation {
         CollationMode::Override => {
             // It's safe to unwrap here, as `sources` is guaranteed to contain at least one element

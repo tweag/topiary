@@ -8,7 +8,7 @@ use crate::{configuration::serde::Serialisation, error::TopiaryError};
 
 /// Sources of TOML configuration
 #[derive(Debug)]
-pub enum ConfigSource {
+pub enum Source {
     Builtin,
     File(PathBuf),
 
@@ -16,7 +16,7 @@ pub enum ConfigSource {
     Missing,
 }
 
-impl ConfigSource {
+impl Source {
     /// Return the valid sources of configuration, in priority order (lowest to highest):
     ///
     /// 1. Built-in configuration (per `Serialisation::default_toml()`)
@@ -31,7 +31,7 @@ impl ConfigSource {
             file.clone().into(),
         ]
         .into_iter()
-        .filter(ConfigSource::is_valid)
+        .filter(Source::is_valid)
         .collect()
     }
 
@@ -40,8 +40,8 @@ impl ConfigSource {
     }
 }
 
-impl fmt::Display for ConfigSource {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+impl fmt::Display for Source {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Builtin => write!(f, "Built-in configuration"),
 
@@ -56,10 +56,10 @@ impl fmt::Display for ConfigSource {
     }
 }
 
-impl From<Option<PathBuf>> for ConfigSource {
+impl From<Option<PathBuf>> for Source {
     fn from(path: Option<PathBuf>) -> Self {
         match path {
-            None => ConfigSource::Missing,
+            None => Source::Missing,
 
             Some(path) => {
                 let candidate = if path.is_dir() {
@@ -69,33 +69,33 @@ impl From<Option<PathBuf>> for ConfigSource {
                 };
 
                 if candidate.exists() {
-                    ConfigSource::File(candidate)
+                    Source::File(candidate)
                 } else {
                     log::warn!(
                         "Could not find configuration file: {}",
                         candidate.to_string_lossy()
                     );
 
-                    ConfigSource::Missing
+                    Source::Missing
                 }
             }
         }
     }
 }
 
-impl TryFrom<&ConfigSource> for toml::Value {
+impl TryFrom<&Source> for toml::Value {
     type Error = TopiaryError;
 
-    fn try_from(source: &ConfigSource) -> Result<Self, Self::Error> {
+    fn try_from(source: &Source) -> Result<Self, Self::Error> {
         match source {
-            ConfigSource::Builtin => Ok(Serialisation::default_toml()),
+            Source::Builtin => Ok(Serialisation::default_toml()),
 
-            ConfigSource::File(file) => {
+            Source::File(file) => {
                 let config = std::fs::read_to_string(file)?;
                 toml::from_str(&config).map_err(TopiaryError::from)
             }
 
-            ConfigSource::Missing => Err(TopiaryError::Bin(
+            Source::Missing => Err(TopiaryError::Bin(
                 "Could not parse missing configuration".into(),
                 None,
             )),
