@@ -15,6 +15,7 @@ use topiary::{formatter, Operation};
 
 use crate::{
     cli::Commands,
+    configuration::Configuration,
     error::{CLIError, CLIResult, TopiaryError},
     io::{Inputs, OutputFile},
     language::LanguageDefinitionCache,
@@ -33,7 +34,7 @@ async fn main() -> ExitCode {
 async fn run() -> CLIResult<()> {
     let args = cli::get_args()?;
 
-    let (annotations, config) = configuration::fetch(
+    let config = Configuration::fetch(
         &args.global.configuration,
         // The collation value is always set, so we can safely unwrap
         args.global.configuration_collation.as_ref().unwrap(),
@@ -148,8 +149,8 @@ async fn run() -> CLIResult<()> {
         }
 
         Commands::Config => {
-            // Output collated configuration gtas TOML, with annotations about how we got there
-            print!("{annotations}\n{config}");
+            // Output collated configuration as TOML, with annotations about how we got there
+            print!("{config}");
         }
 
         Commands::Completion { shell } => {

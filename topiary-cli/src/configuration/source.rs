@@ -4,7 +4,7 @@ use std::{env::current_dir, fmt, path::PathBuf};
 
 use directories::ProjectDirs;
 
-use crate::{configuration::format::Configuration, error::TopiaryError};
+use crate::{configuration::serde::Serialisation, error::TopiaryError};
 
 /// Sources of TOML configuration
 #[derive(Debug)]
@@ -19,7 +19,7 @@ pub enum ConfigSource {
 impl ConfigSource {
     /// Return the valid sources of configuration, in priority order (lowest to highest):
     ///
-    /// 1. Built-in configuration (per `Configuration::default_toml()`)
+    /// 1. Built-in configuration (per `Serialisation::default_toml()`)
     /// 2. `~/.config/topiary/languages.toml` (or equivalent)
     /// 3. `.topiary/languages.toml` (or equivalent)
     /// 4. `file`, passed as a CLI argument/environment variable
@@ -88,7 +88,7 @@ impl TryFrom<&ConfigSource> for toml::Value {
 
     fn try_from(source: &ConfigSource) -> Result<Self, Self::Error> {
         match source {
-            ConfigSource::Builtin => Ok(Configuration::default_toml()),
+            ConfigSource::Builtin => Ok(Serialisation::default_toml()),
 
             ConfigSource::File(file) => {
                 let config = std::fs::read_to_string(file)?;

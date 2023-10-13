@@ -43,13 +43,13 @@ impl Language {
 /// supported. It can be provided by the user of the library, or alternatively, Topiary ships with
 /// default configuration that can be accessed using `Configuration::default_toml`.
 #[derive(Deserialize, Serialize, Debug)]
-pub struct Configuration {
+pub struct Serialisation {
     language: Vec<Language>,
 }
 
-impl Configuration {
+impl Serialisation {
     pub fn new() -> Self {
-        Configuration { language: vec![] }
+        Serialisation { language: vec![] }
     }
 
     /// Collects the known extensions of all languages into a single HashSet.
@@ -98,20 +98,20 @@ impl Configuration {
 }
 
 /// Convert deserialised TOML values into `Configuration` values
-impl TryFrom<toml::Value> for Configuration {
+impl TryFrom<toml::Value> for Serialisation {
     type Error = TopiaryError;
 
     // This is particularly useful for testing
     fn try_from(toml: toml::Value) -> CLIResult<Self> {
-        Configuration::default_toml()
+        Serialisation::default_toml()
             .try_into()
             .map_err(TopiaryError::from)
     }
 }
 
 /// Convert `Configuration` values into `HashMap`s, keyed on `Language::name`
-impl From<&Configuration> for HashMap<String, Language> {
-    fn from(config: &Configuration) -> Self {
+impl From<&Serialisation> for HashMap<String, Language> {
+    fn from(config: &Serialisation) -> Self {
         HashMap::from_iter(
             config
                 .language
@@ -122,7 +122,7 @@ impl From<&Configuration> for HashMap<String, Language> {
 }
 
 // Order-invariant equality; required for unit testing
-impl PartialEq for Configuration {
+impl PartialEq for Serialisation {
     fn eq(&self, other: &Self) -> bool {
         let lhs: HashMap<String, Language> = self.into();
         let rhs: HashMap<String, Language> = other.into();
@@ -131,7 +131,7 @@ impl PartialEq for Configuration {
     }
 }
 
-impl fmt::Display for Configuration {
+impl fmt::Display for Serialisation {
     /// Pretty-print configuration as TOML
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let toml = toml::to_string_pretty(self).map_err(|_| fmt::Error)?;
