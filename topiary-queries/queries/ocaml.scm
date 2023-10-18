@@ -1506,38 +1506,16 @@
 ; top-level one: it is the one that is not preceded by a ";" (or ";%foo" for ppx sequences).
 (
   ";"? @do_nothing
-  .
   (sequence_expression
-    .
-    _
-    .
     ";"
-    .
-    "%"? @do_nothing
   ) @prepend_begin_scope @append_end_scope
   (#scope_id! "sequence_expression")
 )
 (sequence_expression
   ";" @append_spaced_scoped_softline
-  (#scope_id! "sequence_expression")
-)
-
-(
-  ";"?
   .
   "%"? @do_nothing
-  .
-  (attribute_id)?
-  .
-  (sequence_expression
-    .
-    _
-    .
-    ";"
-    .
-    "%"
-  ) @prepend_begin_scope @append_end_scope
-  (#scope_id! "ppx_sequence_expression")
+  (#scope_id! "sequence_expression")
 )
 (sequence_expression
   ";"
@@ -1545,7 +1523,7 @@
   "%"
   .
   (attribute_id) @append_spaced_scoped_softline
-  (#scope_id! "ppx_sequence_expression")
+  (#scope_id! "sequence_expression")
 )
 
 ; Allow softlines in or patterns in matches, such as
