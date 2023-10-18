@@ -1140,12 +1140,14 @@
   (type_constraint) @append_indent_end
 )
 
-(package_type
-  .
-  "(" @append_empty_softline @append_indent_start
-  ")" @prepend_empty_softline @prepend_indent_end
-  .
-) @prepend_spaced_softline
+(type_binding
+  (package_type
+    .
+    "(" @append_empty_softline @append_indent_start
+    ")" @prepend_empty_softline @prepend_indent_end
+    .
+  ) @prepend_spaced_softline
+)
 
 ; Consider type constraints to be "out of the block" when deciding
 ; whether to add a newline between "=" and a constructed type.
