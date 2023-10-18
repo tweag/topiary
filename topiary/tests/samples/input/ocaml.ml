@@ -1065,3 +1065,8 @@ module Make:
   functor (I: Interface.S) ->
   functor (_: Transport.S with type payload = I.data Payload.t) ->
   S
+
+(* #647: missing space for pattern matching of constructor holding list *)
+let _ =
+  match foo with
+  | Bar ["baz"] -> qux
