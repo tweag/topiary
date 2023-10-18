@@ -858,6 +858,7 @@
 (signature
   "sig" @append_spaced_softline
   [
+    (module_definition)
     (value_specification)
     (type_definition)
     ; start equivalence class
