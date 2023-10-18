@@ -1055,3 +1055,7 @@ let _ =
   match foo with
   | A | B | C
   | D | E | F -> bar
+
+(* #645: idempotency error on first-class module types *)
+let peer_functor : (module Peer.F) =
+  if !listening then (module Server) else (module Client)
