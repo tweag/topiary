@@ -1125,6 +1125,14 @@ let _ =
   | F ->
     bar
 
+(* #642: interleaving regular sequence with PPX sequence *)
+let () =
+  foo;
+  bar;%lwt
+  baz
+
+let () = foo; bar;%lwt baz
+
 (* #644: softlines before module definition in a module type *)
 module type F = sig
   module G: sig val h : string end
