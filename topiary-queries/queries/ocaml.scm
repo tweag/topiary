@@ -1366,7 +1366,7 @@
   (#scope_id! "tuple")
 )
 
-; Allow softlines in function types, such as
+; Allow softlines in function and functor types, such as
 ; type t =
 ;   a ->
 ;   (b -> c) ->
@@ -1396,6 +1396,17 @@
 (function_type
   "->" @append_spaced_scoped_softline
   (#scope_id! "function_type")
+)
+
+(
+  "->"? @do_nothing
+  .
+  (functor_type) @prepend_begin_scope @append_end_scope
+  (#scope_id! "functor_type")
+)
+(functor_type
+  "->" @append_spaced_scoped_softline
+  (#scope_id! "functor_type")
 )
 
 ; Allow softlines in boolean infix expressions, such as
