@@ -3088,7 +3088,8 @@ module Dal: sig
       context -> (context * Attestation.t) tzresult Lwt.t
   end
 
-  module Operations: sig module Publish_slot_header: sig
+  module Operations: sig
+    module Publish_slot_header: sig
       type t = {
         published_level: Raw_level.t;
         slot_index: Slot_index.t;

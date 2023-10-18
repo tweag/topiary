@@ -1056,6 +1056,19 @@ let _ =
   | A | B | C
   | D | E | F -> bar
 
+(* #644: softlines before module definition in a module type *)
+module type F = sig
+  module G : sig val h : string end
+
+  type ('state, 'proof, 'output) implementation =
+    (
+      module S with
+      type state = 'state
+      and type proof = 'proof
+      and type output_proof = 'output
+    )
+end
+
 (* #645: idempotency error on first-class module types *)
 let peer_functor : (module Peer.F) =
   if !listening then (module Server) else (module Client)
