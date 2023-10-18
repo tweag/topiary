@@ -1059,3 +1059,9 @@ let _ =
 (* #645: idempotency error on first-class module types *)
 let peer_functor : (module Peer.F) =
   if !listening then (module Server) else (module Client)
+
+(* #646: multi-line functor type formatted as single-line*)
+module Make:
+  functor (I: Interface.S) ->
+  functor (_: Transport.S with type payload = I.data Payload.t) ->
+  S
