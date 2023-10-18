@@ -501,6 +501,7 @@
     (field_get_expression)
     (local_open_pattern)
     (labeled_argument)
+    (list_pattern)
     ; start equivalence class
     (extended_module_path)
     (module_path)
