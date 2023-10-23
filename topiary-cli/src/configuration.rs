@@ -3,7 +3,7 @@
 //! Additional configuration has to be provided by the user of the library.
 
 pub mod collate;
-mod serde;
+pub mod serde;
 mod source;
 
 use std::{fmt, path::PathBuf};
@@ -15,6 +15,8 @@ use crate::{
     configuration::{collate::CollationMode, serde::Serialisation, source::Source},
     error::{CLIResult, TopiaryError},
 };
+
+use self::serde::Language;
 
 /// Annotated configuration of the Topiary CLI
 pub struct Configuration {
@@ -46,6 +48,14 @@ impl Configuration {
             annotations,
             configuration,
         })
+    }
+
+    /// Gets a language configuration from the entire configuration.
+    pub fn get_language<T>(&self, name: T) -> CLIResult<&Language>
+    where
+        T: AsRef<str> + fmt::Display,
+    {
+        self.configuration.get_language(name)
     }
 
     // TODO? expose known_extensions and get_language...

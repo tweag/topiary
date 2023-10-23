@@ -5,7 +5,6 @@ use clap_complete::{generate, shells::Shell};
 use std::{io::stdout, path::PathBuf};
 
 use log::LevelFilter;
-use topiary::SupportedLanguage;
 
 use crate::{
     configuration::collate::CollationMode,
@@ -67,9 +66,9 @@ pub struct GlobalArgs {
 // NOTE This abstraction is largely to workaround clap-rs/clap#4707
 #[derive(Args, Debug)]
 pub struct FromStdin {
-    /// Topiary supported language (for formatting stdin)
+    /// Topiary language identifier (for formatting stdin)
     #[arg(short, long)]
-    pub language: SupportedLanguage,
+    pub language: String,
 
     /// Topiary query file override (when formatting stdin)
     #[arg(short, long, requires = "language")]
