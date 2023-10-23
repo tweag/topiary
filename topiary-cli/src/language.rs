@@ -14,22 +14,21 @@ use crate::{error::CLIResult, io::InputFile};
 
 /// `LanguageDefinition` contains the necessary language-related values that the Topiary API
 /// expects to do its job
-pub struct LanguageDefinition {
+pub struct LanguageDefinition<'a> {
     pub query: TopiaryQuery,
-    pub language: Language,
-    pub grammar: tree_sitter_facade::Language,
+    pub language: &'a Language,
 }
 
 /// Thread-safe language definition cache
-pub struct LanguageDefinitionCache(Mutex<HashMap<u64, Arc<LanguageDefinition>>>);
+pub struct LanguageDefinitionCache<'a>(Mutex<HashMap<u64, Arc<LanguageDefinition<'a>>>>);
 
-impl LanguageDefinitionCache {
+impl<'a> LanguageDefinitionCache<'a> {
     pub fn new() -> Self {
         LanguageDefinitionCache(Mutex::new(HashMap::new()))
     }
 
     /// Fetch the language definition from the cache, populating if necessary, with thread-safety
-    pub async fn fetch<'i>(&self, input: &'i InputFile<'i>) -> CLIResult<Arc<LanguageDefinition>> {
+    pub async fn fetch(&self, input: &'a InputFile<'a>) -> CLIResult<Arc<LanguageDefinition>> {
         // There's no need to store the input's identifying information (language name and query)
         // in the key, so we use its hash directly. This side-steps any awkward lifetime issues.
         let key = {

@@ -69,8 +69,7 @@ impl From<TopiaryError> for ExitCode {
             // Idempotency errors: Exit 7
             TopiaryError::Lib(FormatterError::Idempotence) => 7,
 
-            // Language detection errors: Exit 6
-            TopiaryError::Lib(FormatterError::LanguageDetection(_, _)) => 6,
+            // Exit 6 no longer exists and is now reserved for compatibility reasons
 
             // Parsing errors: Exit 5
             TopiaryError::Lib(FormatterError::Parsing { .. }) => 5,

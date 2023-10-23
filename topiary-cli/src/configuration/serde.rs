@@ -2,7 +2,8 @@
 
 use std::{
     collections::{HashMap, HashSet},
-    fmt,
+    fmt, io,
+    path::PathBuf,
 };
 
 use serde::{Deserialize, Serialize};
@@ -36,6 +37,46 @@ impl Language {
             Some(indent) => &indent,
             None => "  ",
         }
+    }
+
+    pub fn find_query_file(&self) -> CLIResult<PathBuf> {
+        let basename = PathBuf::from(match self.name.as_str() {
+            "bash" => "bash",
+            "json" => "json",
+            "nickel" => "nickel",
+            "ocaml" | "ocaml_interface" => "ocaml",
+            "ocamllex" => "ocamllex",
+            "rust" => "rust",
+            "toml" => "toml",
+            "tree_sitter_query" => "tree-sitter-query",
+            name => {
+                return Err(TopiaryError::Bin(
+                    String::from("Topiary does not know about the provided language, and thus cannot find the related query file"),
+                    Some(CLIError::UnsupportedLanguage(name.to_string())),
+                ))
+            }
+        })
+        .with_extension("scm");
+
+        #[rustfmt::skip]
+        let potentials: [Option<PathBuf>; 4] = [
+            std::env::var("TOPIARY_LANGUAGE_DIR").map(PathBuf::from).ok(),
+            option_env!("TOPIARY_LANGUAGE_DIR").map(PathBuf::from),
+            Some(PathBuf::from("./queries")),
+            Some(PathBuf::from("../queries")),
+        ];
+
+        potentials
+            .into_iter()
+            .flatten()
+            .map(|path| path.join(&basename))
+            .find(|path| path.exists())
+            .ok_or_else(|| {
+                TopiaryError::Bin(
+                    "Language query file could not be found".into(),
+                    Some(CLIError::IOError(io::Error::from(io::ErrorKind::NotFound))),
+                )
+            })
     }
 }
 
