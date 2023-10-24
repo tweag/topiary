@@ -6,7 +6,10 @@ pub mod collate;
 pub mod serde;
 mod source;
 
-use std::{fmt, path::PathBuf};
+use std::{
+    fmt,
+    path::{Path, PathBuf},
+};
 
 use indoc::formatdoc;
 use itertools::Itertools;
@@ -58,7 +61,14 @@ impl Configuration {
         self.configuration.get_language(name)
     }
 
-    // TODO? expose known_extensions and get_language...
+    /// Convenience alias to detect the Language from a Path-like value's extension.
+    ///
+    /// # Errors
+    ///
+    /// If the file extension is not supported, a `FormatterError` will be returned.
+    pub fn detect<P: AsRef<Path>>(&self, path: P) -> CLIResult<&Language> {
+        self.configuration.detect(path)
+    }
 }
 
 impl fmt::Display for Configuration {

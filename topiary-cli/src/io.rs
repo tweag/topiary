@@ -214,8 +214,8 @@ impl<'cfg, 'i> Inputs<'cfg> {
             InputFrom::Files(files) => files
                 .into_iter()
                 .map(|path| {
-                    let language = Language::detect(&path, config)?;
-                    let query = language.query_file()?.into();
+                    let language = config.detect(&path)?;
+                    let query = language.find_query_file()?.into();
 
                     Ok(InputFile {
                         source: InputSource::Disk(path, None),

@@ -1,4 +1,4 @@
-use std::{error, fmt, io, process::ExitCode, result};
+use std::{error, fmt, io, path::PathBuf, process::ExitCode, result};
 use topiary::FormatterError;
 
 /// A convenience wrapper around `std::result::Result<T, TopiaryError>`.
@@ -20,6 +20,10 @@ pub enum CLIError {
     Generic(Box<dyn error::Error>),
     Multiple,
     UnsupportedLanguage(String),
+
+    /// Could not detect the input language from the (filename,
+    /// Option<extension>)
+    LanguageDetection(PathBuf, Option<String>),
 }
 
 /// # Safety
