@@ -3,7 +3,7 @@
 use std::{
     collections::{HashMap, HashSet},
     fmt, io,
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
 use serde::{Deserialize, Serialize};
@@ -137,6 +137,33 @@ impl Serialisation {
         // We assume that the shipped built-in TOML is valid, so `.expect` is fine
         toml::from_str(default_config)
             .expect("Could not parse built-in languages.toml as valid TOML")
+    }
+
+    /// Convenience alias to detect the Language from a Path-like value's extension.
+    ///
+    /// # Errors
+    ///
+    /// If the file extension is not supported, a `FormatterError` will be returned.
+    pub fn detect<P: AsRef<Path>>(&self, path: P) -> CLIResult<&Language> {
+        let pb = &path.as_ref().to_path_buf();
+        if let Some(extension) = pb.extension().map(|ext| ext.to_string_lossy()) {
+            for lang in &self.language {
+                if lang.extensions.contains::<String>(&extension.to_string()) {
+                    return Ok(lang);
+                }
+            }
+            return Err(TopiaryError::Bin(
+                "".to_owned(),
+                Some(CLIError::LanguageDetection(
+                    pb.clone(),
+                    Some(extension.to_string()),
+                )),
+            ));
+        }
+        Err(TopiaryError::Bin(
+            "".to_owned(),
+            Some(CLIError::LanguageDetection(pb.clone(), None)),
+        ))
     }
 }
 
