@@ -15,7 +15,6 @@ use crate::{error::CLIResult, io::InputFile};
 /// `LanguageDefinition` contains the necessary language-related values that the Topiary API
 /// expects to do its job
 pub struct LanguageDefinition {
-    pub query: TopiaryQuery,
     pub language: Language,
 }
 

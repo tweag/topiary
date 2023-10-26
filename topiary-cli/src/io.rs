@@ -128,17 +128,21 @@ pub struct InputFile<'cfg> {
 impl<'cfg> InputFile<'cfg> {
     /// Convert our `InputFile` into language definition values that Topiary can consume
     pub async fn to_language_definition(&self) -> CLIResult<LanguageDefinition> {
-        todo!()
-        // let contents = match &self.query {
-        //     QuerySource::Path(query) => tokio::fs::read_to_string(query).await?,
-        //     QuerySource::BuiltIn(contents) => contents.to_owned(),
-        // };
-        // let query = TopiaryQuery::new(&self.language.grammar, &contents)?;
+        let grammar = self.language().grammar()?;
+        let contents = match &self.query {
+            QuerySource::Path(query) => tokio::fs::read_to_string(query).await?,
+            QuerySource::BuiltIn(contents) => contents.to_owned(),
+        };
+        let query = TopiaryQuery::new(&grammar, &contents)?;
 
-        // Ok(LanguageDefinition {
-        //     query,
-        //     language: self.language,
-        // })
+        Ok(LanguageDefinition {
+            language: Language {
+                name: self.language.name.clone(),
+                query: query,
+                grammar: grammar,
+                indent: self.language().indent.clone(),
+            },
+        })
     }
 
     /// Expose input source
@@ -185,7 +189,7 @@ impl<'cfg, 'i> Inputs<'cfg> {
         let inputs = match inputs.into() {
             InputFrom::Stdin(language_name, query) => {
                 vec![(|| {
-                    let language = config.get_language(language_name)?;
+                    let language = config.get_language(&language_name)?;
                     let query_source: QuerySource = match query {
                         // The user specified a query file
                         Some(p) => p,
@@ -198,7 +202,7 @@ impl<'cfg, 'i> Inputs<'cfg> {
                             // fail to find anything, because the builtin error might be unexpected.
                             Err(e) => {
                                 log::warn!("No query files found in any of the expected locations. Falling back to compile-time included files.");
-                                to_query(language_name).map_err(|_| e)?
+                                to_query(&language_name).map_err(|_| e)?
                             }
                         },
                     };
