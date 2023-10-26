@@ -61,7 +61,7 @@ async fn run() -> CLIResult<()> {
                                 log::info!(
                                     "Formatting {}, as {} using {}, to {}",
                                     input.source(),
-                                    input.language(),
+                                    input.language().name,
                                     input.query(),
                                     output
                                 );
@@ -72,9 +72,7 @@ async fn run() -> CLIResult<()> {
                                 formatter(
                                     &mut buf_input,
                                     &mut buf_output,
-                                    &lang_def.query,
                                     &lang_def.language,
-                                    &lang_def.grammar,
                                     Operation::Format {
                                         skip_idempotence,
                                         tolerate_parsing_errors,
@@ -129,7 +127,7 @@ async fn run() -> CLIResult<()> {
             log::info!(
                 "Visualising {}, as {}, to {}",
                 input.source(),
-                input.language(),
+                input.language().name,
                 output
             );
 
@@ -139,9 +137,7 @@ async fn run() -> CLIResult<()> {
             formatter(
                 &mut buf_input,
                 &mut buf_output,
-                &lang_def.query,
                 &lang_def.language,
-                &lang_def.grammar,
                 Operation::Visualise {
                     output_format: format.into(),
                 },
