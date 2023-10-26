@@ -56,6 +56,7 @@ impl error::Error for TopiaryError {
             Self::Bin(_, Some(CLIError::Generic(error))) => error.source(),
             Self::Bin(_, Some(CLIError::Multiple)) => None,
             Self::Bin(_, Some(CLIError::UnsupportedLanguage(_))) => None,
+            Self::Bin(_, Some(CLIError::LanguageDetection(_, _))) => None,
             Self::Bin(_, None) => None,
         }
     }

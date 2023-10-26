@@ -14,21 +14,21 @@ use crate::{error::CLIResult, io::InputFile};
 
 /// `LanguageDefinition` contains the necessary language-related values that the Topiary API
 /// expects to do its job
-pub struct LanguageDefinition<'a> {
+pub struct LanguageDefinition {
     pub query: TopiaryQuery,
-    pub language: &'a Language,
+    pub language: Language,
 }
 
 /// Thread-safe language definition cache
-pub struct LanguageDefinitionCache<'a>(Mutex<HashMap<u64, Arc<LanguageDefinition<'a>>>>);
+pub struct LanguageDefinitionCache(Mutex<HashMap<u64, Arc<LanguageDefinition>>>);
 
-impl<'a> LanguageDefinitionCache<'a> {
+impl LanguageDefinitionCache {
     pub fn new() -> Self {
         LanguageDefinitionCache(Mutex::new(HashMap::new()))
     }
 
     /// Fetch the language definition from the cache, populating if necessary, with thread-safety
-    pub async fn fetch(&self, input: &'a InputFile<'a>) -> CLIResult<Arc<LanguageDefinition>> {
+    pub async fn fetch<'i>(&self, input: &'i InputFile<'i>) -> CLIResult<Arc<LanguageDefinition>> {
         // There's no need to store the input's identifying information (language name and query)
         // in the key, so we use its hash directly. This side-steps any awkward lifetime issues.
         let key = {
@@ -50,7 +50,7 @@ impl<'a> LanguageDefinitionCache<'a> {
                     "Cache {:p}: Hit at {:#016x} ({}, {})",
                     self,
                     key,
-                    input.language(),
+                    input.language().name,
                     input.query()
                 );
 
@@ -63,7 +63,7 @@ impl<'a> LanguageDefinitionCache<'a> {
                     "Cache {:p}: Insert at {:#016x} ({}, {})",
                     self,
                     key,
-                    input.language(),
+                    input.language().name,
                     input.query()
                 );
 

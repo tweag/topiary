@@ -14,7 +14,7 @@ use crate::error::{CLIError, CLIResult, TopiaryError};
 
 /// Language definitions, as far as the CLI and configuration are concerned, contain everything
 /// needed to configure formatting for that language.
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Deserialize, PartialEq, Serialize, Clone)]
 pub struct Language {
     /// The name of the language, used as a key when looking up information in the deserialised
     /// configuration and to convert to the respective Tree-sitter grammar
@@ -33,7 +33,7 @@ pub struct Language {
 // TODO I don't think we're going to need this here...but maybe
 impl Language {
     pub fn indent(&self) -> &str {
-        match self.indent {
+        match &self.indent {
             Some(indent) => &indent,
             None => "  ",
         }
@@ -117,7 +117,7 @@ impl Serialisation {
     {
         self.language
             .iter()
-            .find(|&&language| language.name == name.as_ref())
+            .find(|language| language.name == name.as_ref())
             .ok_or(TopiaryError::Bin(
                 format!("Unsupported language: \"{name}\""),
                 Some(CLIError::UnsupportedLanguage(name.to_string())),
@@ -184,7 +184,7 @@ impl From<&Serialisation> for HashMap<String, Language> {
             config
                 .language
                 .iter()
-                .map(|language| (language.name, *language)),
+                .map(|language| (language.name.clone(), language.clone())),
         )
     }
 }
