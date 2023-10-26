@@ -27,18 +27,11 @@ pub struct Language {
     /// The indentation string used for this language; defaults to "  " (i.e., two spaces). Any
     /// string can be provided, but in most instances it will be some whitespace (e.g., "    ",
     /// "\t", etc.)
-    indent: Option<String>,
+    pub indent: Option<String>,
 }
 
 // TODO I don't think we're going to need this here...but maybe
 impl Language {
-    pub fn indent(&self) -> &str {
-        match &self.indent {
-            Some(indent) => &indent,
-            None => "  ",
-        }
-    }
-
     pub fn find_query_file(&self) -> CLIResult<PathBuf> {
         let basename = PathBuf::from(match self.name.as_str() {
             "bash" => "bash",
@@ -77,6 +70,27 @@ impl Language {
                     Some(CLIError::IOError(io::Error::from(io::ErrorKind::NotFound))),
                 )
             })
+    }
+
+    pub fn grammar(&self) -> CLIResult<tree_sitter_facade::Language> {
+        Ok(match self.name.as_str() {
+            "bash" => tree_sitter_bash::language(),
+            "json" => tree_sitter_json::language(),
+            "nickel" => tree_sitter_nickel::language(),
+            "ocaml" => tree_sitter_ocaml::language_ocaml(),
+            "ocaml_interface" => tree_sitter_ocaml::language_ocaml_interface(),
+            "ocamllex" => tree_sitter_ocamllex::language(),
+            "rust" => tree_sitter_rust::language(),
+            "toml" => tree_sitter_toml::language(),
+            "tree_sitter_query" => tree_sitter_query::language(),
+            name => {
+                return Err(TopiaryError::Bin(
+                    format!("Could not find grammar for language {name}"),
+                    Some(CLIError::UnsupportedLanguage(name.to_string())),
+                ))
+            }
+        }
+        .into())
     }
 }
 
