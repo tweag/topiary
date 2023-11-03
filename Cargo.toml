@@ -79,6 +79,7 @@ tree-sitter-json = { git = "https://github.com/tree-sitter/tree-sitter-json.git"
 tree-sitter-nickel = { git = "https://github.com/nickel-lang/tree-sitter-nickel", rev = "33a64ec9a27058c52e4195f1030235dcdfc04747" }
 tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml.git" }
 tree-sitter-ocamllex = { git = "https://github.com/314eter/tree-sitter-ocamllex.git" }
+tree-sitter-pact = { git = "https://github.com/kadena-community/kadena.js.git", rev = "c662df3" }
 tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-query" }
 tree-sitter-rust = { git = "https://github.com/tree-sitter/tree-sitter-rust.git", rev = "e0e8b6de6e4aa354749c794f5f36a906dcccda74"}
 tree-sitter-toml = { git = "https://github.com/tree-sitter/tree-sitter-toml.git" }

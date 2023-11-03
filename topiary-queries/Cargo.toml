@@ -20,6 +20,7 @@ default = [
   "ocaml",
   "ocaml_interface",
   "ocamllex",
+  "pact",
   "rust",
   "toml",
   "tree_sitter_query",
@@ -30,6 +31,7 @@ nickel = []
 ocaml = []
 ocaml_interface = []
 ocamllex = []
+pact = []
 rust = []
 toml = []
 tree_sitter_query = []
