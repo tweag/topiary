@@ -40,6 +40,12 @@ pub fn ocamllex() -> &'static str {
     include_str!("../queries/ocamllex.scm")
 }
 
+/// Returns the Topiary-compatible query file for Pact.
+#[cfg(feature = "pact")]
+pub fn pact() -> &'static str {
+    include_str!("../queries/pact.scm")
+}
+
 /// Returns the Topiary-compatible query file for Rust.
 #[cfg(feature = "rust")]
 pub fn rust() -> &'static str {
