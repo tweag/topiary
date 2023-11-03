@@ -56,6 +56,9 @@ impl Language {
             #[cfg(feature = "ocamllex")]
             "ocamllex" => "ocamllex",
 
+            #[cfg(feature = "pact")]
+            "pact" => "pact",
+
             #[cfg(feature = "rust")]
             "rust" => "rust",
 
@@ -109,6 +112,9 @@ impl Language {
             #[cfg(feature = "ocamllex")]
             "ocamllex" => tree_sitter_ocamllex::language(),
 
+            #[cfg(feature = "pact")]
+            "pact" => tree_sitter_pact::language(),
+
             #[cfg(feature = "rust")]
             "rust" => tree_sitter_rust::language(),
 
@@ -146,6 +152,9 @@ impl Language {
 
             #[cfg(feature = "ocamllex")]
             "ocamllex" => "ocamllex",
+
+            #[cfg(feature = "pact")]
+            "pact" => "pact",
 
             #[cfg(feature = "rust")]
             "rust" => "rust",
