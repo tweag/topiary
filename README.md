@@ -1,8 +1,8 @@
 # Topiary
 
-![Latest Release][badge-release]
-![CI Status][badge-ci]
-![Discord][badge-discord]
+[![Latest Release][badge-release]][badge-release-link]
+[![CI Status][badge-ci]][badge-ci-link]
+[![Discord][badge-discord]][badge-discord-link]
 
 * [Topiary web site][topiary-website]
 * [Topiary playground][topiary-playground]
@@ -1474,8 +1474,11 @@ of choice open in another.
 <!-- Links -->
 
 [badge-ci]: https://img.shields.io/github/actions/workflow/status/tweag/topiary/ci.yml?logo=github
+[badge-ci-link]: https://github.com/tweag/topiary/actions/workflows/ci.yml
 [badge-discord]: https://img.shields.io/discord/1174731094726295632?logo=discord
+[badge-discord-link]: https://discord.gg/FSnkvNyyzC
 [badge-release]: https://img.shields.io/github/v/release/tweag/topiary?display_name=release&logo=github
+[badge-release-link]: https://github.com/tweag/topiary/releases/latest
 [bash]: https://www.gnu.org/software/bash
 [contributing]: CONTRIBUTING.md
 [difftastic]: https://difftastic.wilfred.me.uk
