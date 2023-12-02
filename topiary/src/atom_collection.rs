@@ -23,6 +23,35 @@ struct NodesWithLinebreaks {
 
 /// Contains Topiary's internal representation parsed document.
 #[derive(Debug)]
+pub struct CommentStream {
+    anchor_precedes: HashMap<Option<usize>, Vec<Atom>>,
+    anchor_follows: HashMap<Option<usize>, Vec<Atom>>,
+}
+
+impl CommentStream {
+    pub fn new() -> Self {
+        CommentStream {
+            anchor_precedes: HashMap::new(),
+            anchor_follows: HashMap::new(),
+        }
+    }
+
+    pub fn insert_comment_before(&mut self, anchor: Option<usize>, comment: Atom) -> () {
+        self.anchor_follows
+            .entry(anchor)
+            .or_insert(Vec::new())
+            .push(comment)
+    }
+
+    pub fn insert_comment_after(&mut self, anchor: Option<usize>, comment: Atom) -> () {
+        self.anchor_precedes
+            .entry(anchor)
+            .or_insert(Vec::new())
+            .push(comment)
+    }
+}
+
+#[derive(Debug)]
 pub struct AtomCollection {
     /// A flat list of all Atoms. This is is updated by some formatting
     /// directives, but most require some more complexity.
