@@ -7,7 +7,9 @@ use std::{
 
 use tree_sitter_facade::Node;
 
-use crate::{Atom, FormatterError, FormatterResult, ScopeCondition, ScopeInformation};
+use crate::{
+    tree_sitter::NodeExt, Atom, FormatterError, FormatterResult, ScopeCondition, ScopeInformation,
+};
 
 /// A struct that holds sets of node IDs that have line breaks before or after them.
 ///
@@ -205,7 +207,10 @@ impl AtomCollection {
         }
         if let Some(parent_id) = self.parent_leaf_nodes.get(&node.id()) {
             if *parent_id != node.id() {
-                log::warn!("Skipping because the match occurred below a leaf node: {node:?}");
+                log::warn!(
+                    "Skipping because the match occurred below a leaf node: {}",
+                    node.display_one_based()
+                );
                 return Ok(());
             }
         }
@@ -464,14 +469,14 @@ impl AtomCollection {
         let parent_ids = [parent_ids, &[id]].concat();
 
         log::debug!(
-            "CST node: {}{:?} - Named: {}",
+            "CST node: {}{} - Named: {}",
             "  ".repeat(level),
-            node,
+            node.display_one_based(),
             node.is_named()
         );
 
         if node.end_byte() == node.start_byte() {
-            log::debug!("Skipping zero-byte node: {node:?}");
+            log::debug!("Skipping zero-byte node: {}", node.display_one_based());
         } else if node.child_count() == 0
             || self.specified_leaf_nodes.contains(&node.id())
             // We treat error nodes as leafs when `tolerate_parsing_errors` is set to true.
@@ -511,7 +516,10 @@ impl AtomCollection {
         // TODO: Pre-populate these
         let target_node = self.first_leaf(node);
 
-        log::debug!("Prepending {atom:?} to node {:?}", target_node,);
+        log::debug!(
+            "Prepending {atom:?} to node {}",
+            target_node.display_one_based()
+        );
 
         self.prepend.entry(target_node.id()).or_default().push(atom);
     }
@@ -528,7 +536,10 @@ impl AtomCollection {
         let atom = self.wrap(atom, predicates);
         let target_node = self.last_leaf(node);
 
-        log::debug!("Appending {atom:?} to node {:?}", target_node,);
+        log::debug!(
+            "Appending {atom:?} to node {}",
+            target_node.display_one_based()
+        );
 
         self.append.entry(target_node.id()).or_default().push(atom);
     }
@@ -560,18 +571,18 @@ impl AtomCollection {
 
                 if self.multi_line_nodes.contains(&parent_id) {
                     log::debug!(
-                        "Expanding softline to hardline in node {:?} with parent {}: {:?}",
-                        node,
+                        "Expanding softline to hardline in node {} with parent {}: {}",
+                        node.display_one_based(),
                         parent_id,
-                        parent
+                        parent.display_one_based()
                     );
                     Atom::Hardline
                 } else if spaced {
                     log::debug!(
-                        "Expanding softline to space in node {:?} with parent {}: {:?}",
-                        node,
+                        "Expanding softline to space in node {} with parent {}: {}",
+                        node.display_one_based(),
                         parent_id,
-                        parent
+                        parent.display_one_based()
                     );
                     Atom::Space
                 } else {
@@ -1030,7 +1041,11 @@ fn detect_multi_line_nodes(dfs_nodes: &[Node]) -> HashSet<usize> {
             let end_line = node.end_position().row();
 
             if end_line > start_line {
-                log::debug!("Multi-line node {}: {:?}", node.id(), node,);
+                log::debug!(
+                    "Multi-line node {}: {}",
+                    node.id(),
+                    node.display_one_based()
+                );
                 return Some(node.id());
             }
 

@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, fmt::Display};
 
 use serde::Serialize;
 use tree_sitter_facade::{
@@ -25,6 +25,12 @@ pub enum Visualisation {
 pub struct Position {
     pub row: u32,
     pub column: u32,
+}
+
+impl Display for Position {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        write!(f, "({},{})", self.row, self.column)
+    }
 }
 
 /// Topiary often needs both the tree-sitter `Query` and the original content
@@ -104,12 +110,54 @@ impl From<Node<'_>> for SyntaxNode {
     }
 }
 
+/// Extension trait for [`Node`] to allow for 1-based display in logs.
+///
+/// (Can't be done as a [`Display`] impl on [`Node`] directly, since that would
+/// run into orphan issues. An alternative that would work is a [`Display`] impl
+/// on a wrapper struct.)
+pub trait NodeExt {
+    /// Produce a textual representation with 1-based row/column indexes.
+    fn display_one_based(&self) -> String;
+}
+
+impl<'a> NodeExt for Node<'a> {
+    fn display_one_based(&self) -> String {
+        format!(
+            "{{Node {:?} {} - {}}}",
+            self.kind(),
+            Position::from(self.start_position()),
+            Position::from(self.end_position()),
+        )
+    }
+}
+
 #[derive(Debug)]
 // A struct to statically store the public fields of query match results,
 // to avoid running queries twice.
 struct LocalQueryMatch<'a> {
     pattern_index: u32,
     captures: Vec<QueryCapture<'a>>,
+}
+
+impl<'a> Display for LocalQueryMatch<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "LocalQueryMatch {{ pattern_index: {}, captures: [ ",
+            self.pattern_index
+        )?;
+        for (index, capture) in self.captures.iter().enumerate() {
+            if index > 0 {
+                write!(f, ", ")?;
+            }
+            // .node() doesn't provide access to the inner [`tree_sitter`]
+            // object. As a result, we can't get the index out directly, so we
+            // skip it for now.
+            write!(f, "{}", capture.node().display_one_based())?;
+        }
+        write!(f, " ] }}")?;
+        Ok(())
+    }
 }
 
 /// Applies a query to an input content and returns a collection of atoms.
@@ -171,7 +219,7 @@ pub fn apply_query(
     // the end, but we don't know if we get a line_comment capture or not.
 
     for m in matches {
-        log::debug!("Processing match: {m:?}");
+        log::debug!("Processing match: {m}");
 
         let mut predicates = QueryPredicates::default();
 
