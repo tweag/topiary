@@ -20,7 +20,7 @@ readme.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "topiary"
+name = "topiary_cli"
 path = "src/main.rs"
 
 [dependencies]
