@@ -1,28 +1,13 @@
 # Allows `nix-shell` without having to go trough the trouble of pinning the same
 # version as is done by the flake.
-{
-  pkgs ? import <nixpkgs> {},
-  checks ? {},
-}: let
-  update-wasm-grammars = pkgs.writeShellApplication {
-    name = "update-wasm-grammars";
+{ pkgs ? import <nixpkgs> { }
+, checks ? { }
+,
+}: pkgs.mkShell {
+  inputsFrom = builtins.attrValues checks;
 
-    runtimeInputs = with pkgs; [
-      emscripten
-      git
-      toml2json
-      tree-sitter
-    ];
-
-    text = builtins.readFile ./update-wasm-grammars.sh;
-  };
-in
-  pkgs.mkShell {
-    inputsFrom = builtins.attrValues checks;
-
-    buildInputs = with pkgs; [
-      update-wasm-grammars
-      cargo-flamegraph
-      rust-analyzer
-    ];
-  }
+  buildInputs = with pkgs; [
+    cargo-flamegraph
+    rust-analyzer
+  ];
+}

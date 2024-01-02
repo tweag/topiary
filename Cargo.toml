@@ -9,7 +9,7 @@ readme = "README.md"
 license = "MIT"
 
 [workspace]
-members = ["topiary", "topiary-cli", "topiary-queries", "topiary-playground"]
+members = ["topiary", "topiary-cli", "topiary-queries" ]
 exclude = ["samples"]
 
 [profile.release]
@@ -68,6 +68,3 @@ tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-quer
 tree-sitter-rust = { git = "https://github.com/tree-sitter/tree-sitter-rust.git" }
 tree-sitter-toml = { git = "https://github.com/tree-sitter/tree-sitter-toml.git" }
 unescape = "0.1"
-wasm-bindgen = "0.2.84"
-wasm-bindgen-futures = "0.4.34"
-web-tree-sitter = { git = "https://github.com/tweag/web-tree-sitter-sys", default-features = false, package = "web-tree-sitter-sys" }

@@ -7,13 +7,6 @@
 ,
 }:
 let
-  wasmRustVersion = "1.70.0";
-  wasmTarget = "wasm32-unknown-unknown";
-
-  rustWithWasmTarget = pkgs.rust-bin.stable.${wasmRustVersion}.default.override {
-    targets = [ wasmTarget ];
-  };
-
   craneLib = crane.mkLib pkgs;
 
   commonArgs = {
@@ -30,7 +23,6 @@ let
         "topiary"
         "topiary-queries"
         "topiary-cli"
-        "topiary-playground"
         "tests"
       ];
     };
@@ -38,7 +30,6 @@ let
     nativeBuildInputs = with pkgs;
       [
         binaryen
-        wasm-bindgen-cli
       ]
       ++ lib.optionals stdenv.isDarwin [
         libiconv
@@ -46,24 +37,12 @@ let
   };
 
   cargoArtifacts = craneLib.buildDepsOnly commonArgs;
-
-  # NB: we don't need to overlay our custom toolchain for the *entire*
-  # pkgs (which would require rebuidling anything else which uses rust).
-  # Instead, we just want to update the scope that crane will use by appending
-  # our specific toolchain there.
-  craneLibWasm = craneLib.overrideToolchain rustWithWasmTarget;
 in
 {
   clippy = craneLib.cargoClippy (commonArgs
     // {
     inherit cargoArtifacts;
     cargoClippyExtraArgs = "-- --deny warnings";
-  });
-
-  clippy-wasm = craneLibWasm.cargoClippy (commonArgs
-    // {
-    inherit cargoArtifacts;
-    cargoClippyExtraArgs = "-p topiary-playground --target ${wasmTarget} -- --deny warnings";
   });
 
   fmt = craneLib.cargoFmt commonArgs;
@@ -112,33 +91,6 @@ in
     cargoExtraArgs = "-p topiary-queries";
     postInstall = ''
       install -Dm444 queries/* -t $out/share/queries
-    '';
-  });
-
-  topiary-playground = craneLibWasm.buildPackage (commonArgs
-    // {
-    inherit cargoArtifacts;
-    pname = "topiary-playground";
-    cargoExtraArgs = "-p topiary-playground --no-default-features --target ${wasmTarget}";
-
-    # Tests currently need to be run via `cargo wasi` which
-    # isn't packaged in nixpkgs yet...
-    doCheck = false;
-
-    postInstall = ''
-      echo 'Removing unneeded dir'
-      rm -rf $out/lib
-      echo 'Running wasm-bindgen'
-      wasm-bindgen --version
-      wasm-bindgen --target web --out-dir $out target/wasm32-unknown-unknown/release/topiary_playground.wasm;
-      echo 'Running wasm-opt'
-      wasm-opt --version
-      wasm-opt -Oz -o $out/output.wasm $out/topiary_playground_bg.wasm
-      echo 'Overwriting topiary_playground_bg.wasm with the optimized file'
-      mv $out/output.wasm $out/topiary_playground_bg.wasm
-      echo 'Extracting custom build outputs'
-      export LANGUAGES_EXPORT="$(ls -t target/wasm32-unknown-unknown/release/build/topiary-playground-*/out/languages_export.ts | head -1)"
-      cp $LANGUAGES_EXPORT $out/
     '';
   });
 }

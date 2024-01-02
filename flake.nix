@@ -42,12 +42,12 @@
       in
       {
         packages = with code; {
-          inherit topiary-playground topiary-queries;
+          inherit topiary-queries;
           default = topiary-cli;
         };
 
         checks = {
-          inherit (code) clippy clippy-wasm fmt topiary-lib topiary-cli topiary-playground audit benchmark;
+          inherit (code) clippy fmt topiary-lib topiary-cli audit benchmark;
 
           ## Check that the `lib.pre-commit-hook` output builds/evaluates
           ## correctly. `deepSeq e1 e2` evaluates `e1` strictly in depth before

@@ -40,7 +40,6 @@ tree-sitter-ocamllex = { workspace = true }
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 futures = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt"] }
-web-tree-sitter = { workspace = true, features = ["web"] }
 
 [dev-dependencies]
 criterion = { workspace = true, features = ["async_futures"] }
