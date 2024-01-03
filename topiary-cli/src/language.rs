@@ -8,7 +8,7 @@ use std::{
 };
 
 use tokio::sync::Mutex;
-use topiary::{Language, TopiaryQuery};
+use topiary::Language;
 
 use crate::{error::CLIResult, io::InputFile};
 
