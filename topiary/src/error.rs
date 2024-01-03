@@ -1,7 +1,7 @@
 //! This module defines all errors that might be propagated out of the library,
 //! including all of the trait implementations one might expect for Errors.
 
-use std::{error::Error, fmt, io, ops::Deref, path::PathBuf, str, string};
+use std::{error::Error, fmt, io, ops::Deref, str, string};
 
 /// The various errors the formatter may return.
 #[derive(Debug)]

@@ -1,7 +1,7 @@
 use std::{
     ffi::OsString,
     fmt::{self, Display},
-    fs::{self, File},
+    fs::File,
     io::{stdin, stdout, ErrorKind, Read, Result, Write},
     path::{Path, PathBuf},
 };
@@ -20,15 +20,6 @@ use crate::{
 pub enum QuerySource {
     Path(PathBuf),
     BuiltIn(String),
-}
-
-impl QuerySource {
-    pub fn content(&self) -> CLIResult<String> {
-        Ok(match &self {
-            QuerySource::Path(query) => fs::read_to_string(query)?,
-            QuerySource::BuiltIn(contents) => contents.to_owned(),
-        })
-    }
 }
 
 impl From<PathBuf> for QuerySource {
