@@ -159,20 +159,25 @@ pub enum Operation {
 /// # tokio_test::block_on(async {
 /// use std::fs::File;
 /// use std::io::{BufReader, Read};
-/// use topiary::{formatter, FormatterError, TopiaryQuery, Operation};
+/// use topiary::{formatter, Language, FormatterError, TopiaryQuery, Operation};
 ///
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
 /// let mut output = Vec::new();
+/// let json = tree_sitter_json::language();
+///
 /// let mut query_file = BufReader::new(File::open("../queries/json.scm").expect("query file"));
 /// let mut query_content = String::new();
 /// query_file.read_to_string(&mut query_content).expect("read query file");
 ///
-/// let grammar = tree_sitter_json::language();
-/// let query = TopiaryQuery::new(&grammar, &query_content).unwrap();
+/// let language: Language = Language {
+///     name: "json".to_owned(),
+///     query: TopiaryQuery::new(&json.into(), &query_content).unwrap(),
+///     grammar: json.into(),
+///     indent: None,
+/// };
 ///
-/// // FIXME The signature of `formatter` has changed
-/// match formatter(&mut input, &mut output, &query, &language, &grammar, Operation::Format{ skip_idempotence: false, tolerate_parsing_errors: false }) {
+/// match formatter(&mut input, &mut output, &language, Operation::Format{ skip_idempotence: false, tolerate_parsing_errors: false }) {
 ///   Ok(()) => {
 ///     let formatted = String::from_utf8(output).expect("valid utf-8");
 ///   }
@@ -359,7 +364,7 @@ mod tests {
         let expected = "{ \"one\": {\"bar\"   \"baz\"}, \"two\": \"bar\" }\n";
 
         let mut output = Vec::new();
-        let query_content = fs::read_to_string("../languages/json.scm").unwrap();
+        let query_content = fs::read_to_string("../topiary-queries/queries/json.scm").unwrap();
         let grammar = tree_sitter_json::language().into();
         let language = Language {
             name: "json".to_owned(),

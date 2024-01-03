@@ -181,6 +181,12 @@ impl Serialisation {
     }
 }
 
+impl Default for Serialisation {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Convert deserialised TOML values into `Serialisation` values
 // TODO Is this necessary, any more?
 impl TryFrom<toml::Value> for Serialisation {

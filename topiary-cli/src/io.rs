@@ -129,8 +129,8 @@ impl<'cfg> InputFile<'cfg> {
         Ok(LanguageDefinition {
             language: Language {
                 name: self.language.name.clone(),
-                query: query,
-                grammar: grammar,
+                query,
+                grammar,
                 indent: self.language().indent.clone(),
             },
         })
