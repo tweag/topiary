@@ -2,28 +2,29 @@ use criterion::async_executor::FuturesExecutor;
 use criterion::{criterion_group, criterion_main, Criterion};
 use std::fs;
 use std::io;
-use topiary::{formatter, Operation};
-use topiary::{Configuration, TopiaryQuery};
+use topiary::{formatter, Language, Operation, TopiaryQuery};
 
 // FIXME Configuration is no longer part of the library
 
 async fn format() {
     let input = fs::read_to_string("tests/samples/input/ocaml.ml").unwrap();
     let query_content = fs::read_to_string("../queries/ocaml.scm").unwrap();
-    let configuration = Configuration::parse_default_configuration().unwrap();
-    let language = configuration.get_language("ocaml").unwrap();
-    let grammar = language.grammar().await.unwrap();
-    let query = TopiaryQuery::new(&grammar, &query_content).unwrap();
+    let ocaml = tree_sitter_ocaml::language_ocaml();
 
     let mut input = input.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
 
+    let language: Language = Language {
+        name: "ocaml".to_owned(),
+        query: TopiaryQuery::new(&ocaml.into(), &query_content).unwrap(),
+        grammar: ocaml.into(),
+        indent: None,
+    };
+
     formatter(
         &mut input,
         &mut output,
-        &query,
-        language,
-        &grammar,
+        &language,
         Operation::Format {
             skip_idempotence: true,
             tolerate_parsing_errors: false,
