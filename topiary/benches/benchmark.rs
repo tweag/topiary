@@ -4,8 +4,6 @@ use std::fs;
 use std::io;
 use topiary::{formatter, Language, Operation, TopiaryQuery};
 
-// FIXME Configuration is no longer part of the library
-
 async fn format() {
     let input = fs::read_to_string("../topiary-cli/tests/samples/input/ocaml.ml").unwrap();
     let query_content = fs::read_to_string("../queries/ocaml.scm").unwrap();

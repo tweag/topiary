@@ -2,8 +2,6 @@ use std::fmt;
 
 use crate::TopiaryQuery;
 
-// FIXME
-
 /// A Language contains all the information Topiary requires to format that
 /// specific languages.
 #[derive(Debug)]
