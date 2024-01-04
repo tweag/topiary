@@ -13,7 +13,6 @@ use crate::{
     cli::{AtLeastOneInput, ExactlyOneInput, FromStdin},
     configuration::{self, Configuration},
     error::{CLIError, CLIResult, TopiaryError},
-    language::LanguageDefinition,
 };
 
 #[derive(Debug, Clone, Hash)]
@@ -118,7 +117,7 @@ pub struct InputFile<'cfg> {
 
 impl<'cfg> InputFile<'cfg> {
     /// Convert our `InputFile` into language definition values that Topiary can consume
-    pub async fn to_language_definition(&self) -> CLIResult<LanguageDefinition> {
+    pub async fn to_language(&self) -> CLIResult<Language> {
         let grammar = self.language().grammar()?;
         let contents = match &self.query {
             QuerySource::Path(query) => tokio::fs::read_to_string(query).await?,
@@ -126,13 +125,11 @@ impl<'cfg> InputFile<'cfg> {
         };
         let query = TopiaryQuery::new(&grammar, &contents)?;
 
-        Ok(LanguageDefinition {
-            language: Language {
-                name: self.language.name.clone(),
-                query,
-                grammar,
-                indent: self.language().indent.clone(),
-            },
+        Ok(Language {
+            name: self.language.name.clone(),
+            query,
+            grammar,
+            indent: self.language().indent.clone(),
         })
     }
 

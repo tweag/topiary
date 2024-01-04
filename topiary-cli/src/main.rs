@@ -55,7 +55,7 @@ async fn run() -> CLIResult<()> {
                     scope.spawn(async {
                         let result: CLIResult<()> = match input {
                             Ok(input) => {
-                                let lang_def = cache.fetch(&input).await?;
+                                let language = cache.fetch(&input).await?;
                                 let output = OutputFile::try_from(&input)?;
 
                                 log::info!(
@@ -72,7 +72,7 @@ async fn run() -> CLIResult<()> {
                                 formatter(
                                     &mut buf_input,
                                     &mut buf_output,
-                                    &lang_def.language,
+                                    &language,
                                     Operation::Format {
                                         skip_idempotence,
                                         tolerate_parsing_errors,
@@ -122,7 +122,7 @@ async fn run() -> CLIResult<()> {
 
             // We don't need a `LanguageDefinitionCache` when there's only one input,
             // which saves us the thread-safety overhead
-            let lang_def = input.to_language_definition().await?;
+            let language = input.to_language().await?;
 
             log::info!(
                 "Visualising {}, as {}, to {}",
@@ -137,7 +137,7 @@ async fn run() -> CLIResult<()> {
             formatter(
                 &mut buf_input,
                 &mut buf_output,
-                &lang_def.language,
+                &language,
                 Operation::Visualise {
                     output_format: format.into(),
                 },
