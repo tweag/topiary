@@ -62,7 +62,7 @@ toml = "0.7"
 tree-sitter-bash = { git = "https://github.com/tree-sitter/tree-sitter-bash" }
 tree-sitter-facade = { git = "https://github.com/tweag/tree-sitter-facade" }
 tree-sitter-json = { git = "https://github.com/tree-sitter/tree-sitter-json.git" }
-tree-sitter-nickel = { git = "https://github.com/nickel-lang/tree-sitter-nickel", rev = "b1a4718601ebd29a62bf3a7fd1069a99ccf48093" }
+tree-sitter-nickel = { git = "https://github.com/nickel-lang/tree-sitter-nickel", rev = "091b5dcc7d138901bcc162da9409c0bb626c0d27" }
 tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml.git" }
 tree-sitter-ocamllex = { git = "https://github.com/314eter/tree-sitter-ocamllex.git" }
 tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-query" }
