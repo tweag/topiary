@@ -1440,8 +1440,8 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter-nickel"
-version = "0.0.1"
-source = "git+https://github.com/nickel-lang/tree-sitter-nickel?rev=b1a4718601ebd29a62bf3a7fd1069a99ccf48093#b1a4718601ebd29a62bf3a7fd1069a99ccf48093"
+version = "0.1.0"
+source = "git+https://github.com/nickel-lang/tree-sitter-nickel?rev=091b5dcc7d138901bcc162da9409c0bb626c0d27#091b5dcc7d138901bcc162da9409c0bb626c0d27"
 dependencies = [
  "cc",
  "tree-sitter",
