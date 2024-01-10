@@ -1304,6 +1304,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "topiary-config"
+version = "0.3.0"
+
+[[package]]
 name = "topiary-playground"
 version = "0.3.0"
 dependencies = [

@@ -9,7 +9,7 @@ readme = "README.md"
 license = "MIT"
 
 [workspace]
-members = ["topiary", "topiary-cli", "topiary-queries", "topiary-playground"]
+members = ["topiary", "topiary-cli", "topiary-queries", "topiary-playground", "topiary-config"]
 exclude = ["samples"]
 
 [profile.release]

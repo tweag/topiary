@@ -1,0 +1,13 @@
+[package]
+name = "topiary-config"
+description = "Configuration parser and defaults for Topiary"
+categories = ["development-tools", "text-processing"]
+keywords = ["code-formatter", "formatter", "text", "tree-sitter"]
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+readme.workspace = true
+license.workspace = true

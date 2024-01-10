@@ -1,5 +1,4 @@
 mod cli;
-mod configuration;
 mod error;
 mod io;
 mod language;
@@ -15,7 +14,6 @@ use topiary::{formatter, Operation};
 
 use crate::{
     cli::Commands,
-    configuration::Configuration,
     error::{CLIError, CLIResult, TopiaryError},
     io::{Inputs, OutputFile},
     language::LanguageDefinitionCache,

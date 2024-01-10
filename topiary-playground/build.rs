@@ -5,8 +5,6 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::{env::current_dir, fs};
 
-use topiary::{Configuration, SupportedLanguage};
-
 fn to_js_string(path: PathBuf) -> String {
     fs::read_to_string(path)
         .unwrap()
