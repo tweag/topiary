@@ -4,7 +4,7 @@
 , crane
 , rust-overlay
 , nix-filter
-,
+, craneLib
 }:
 let
   wasmRustVersion = "1.70.0";
@@ -13,8 +13,6 @@ let
   rustWithWasmTarget = pkgs.rust-bin.stable.${wasmRustVersion}.default.override {
     targets = [ wasmTarget ];
   };
-
-  craneLib = crane.mkLib pkgs;
 
   commonArgs = {
     pname = "topiary";

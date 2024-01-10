@@ -1,9 +1,10 @@
 # Allows `nix-shell` without having to go trough the trouble of pinning the same
 # version as is done by the flake.
-{
-  pkgs ? import <nixpkgs> {},
-  checks ? {},
-}: let
+{ pkgs ? import <nixpkgs> { }
+, checks ? { }
+, craneLib
+}:
+let
   update-wasm-grammars = pkgs.writeShellApplication {
     name = "update-wasm-grammars";
 
@@ -17,12 +18,12 @@
     text = builtins.readFile ./update-wasm-grammars.sh;
   };
 in
-  pkgs.mkShell {
-    inputsFrom = builtins.attrValues checks;
+craneLib.devShell {
+  inherit checks;
 
-    buildInputs = with pkgs; [
-      update-wasm-grammars
-      cargo-flamegraph
-      rust-analyzer
-    ];
-  }
+  packages = with pkgs; [
+    update-wasm-grammars
+    cargo-flamegraph
+    rust-analyzer
+  ];
+}

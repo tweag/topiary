@@ -38,7 +38,10 @@
           inherit system;
           overlays = [ rust-overlay.overlays.default ];
         };
-        code = pkgs.callPackage ./default.nix { inherit advisory-db crane rust-overlay nix-filter; };
+
+        craneLib = crane.mkLib pkgs;
+
+        code = pkgs.callPackage ./default.nix { inherit advisory-db crane rust-overlay nix-filter craneLib; };
       in
       {
         packages = with code; {
@@ -56,7 +59,7 @@
           pre-commit-hook = builtins.deepSeq self.lib.${system}.pre-commit-hook pkgs.hello;
         };
 
-        devShells.default = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; };
+        devShells.default = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; inherit craneLib; };
 
         ## For easy use in https://github.com/cachix/pre-commit-hooks.nix
         lib.pre-commit-hook = {
