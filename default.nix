@@ -52,6 +52,10 @@ let
   craneLibWasm = craneLib.overrideToolchain rustWithWasmTarget;
 in
 {
+  passtru = {
+    inherit craneLibWasm;
+  };
+
   clippy = craneLib.cargoClippy (commonArgs
     // {
     inherit cargoArtifacts;

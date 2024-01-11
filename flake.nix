@@ -59,7 +59,10 @@
           pre-commit-hook = builtins.deepSeq self.lib.${system}.pre-commit-hook pkgs.hello;
         };
 
-        devShells.default = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; inherit craneLib; };
+        devShells = {
+          default = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; inherit craneLib; };
+          wasm = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; craneLib = code.passtru.craneLibWasm; };
+        };
 
         ## For easy use in https://github.com/cachix/pre-commit-hooks.nix
         lib.pre-commit-hook = {
