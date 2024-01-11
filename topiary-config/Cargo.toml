@@ -11,3 +11,22 @@ repository.workspace = true
 documentation.workspace = true
 readme.workspace = true
 license.workspace = true
+
+[dependencies]
+clap = { workspace = true, features = ["derive", "env", "wrap_help"] }
+directories = { workspace = true }
+indoc = { workspace = true }
+itertools = { workspace = true }
+log = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+toml = { workspace = true }
+
+tree-sitter-facade = { workspace = true }
+tree-sitter-json = { workspace = true }
+tree-sitter-rust = { workspace = true }
+tree-sitter-toml = { workspace = true }
+tree-sitter-bash = { workspace = true }
+tree-sitter-nickel = { workspace = true }
+tree-sitter-query = { workspace = true }
+tree-sitter-ocaml = { workspace = true }
+tree-sitter-ocamllex = { workspace = true }

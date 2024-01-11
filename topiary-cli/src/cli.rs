@@ -6,8 +6,9 @@ use std::{io::stdout, path::PathBuf};
 
 use log::LevelFilter;
 
+use topiary_config::collate::CollationMode;
+
 use crate::{
-    configuration::collate::CollationMode,
     error::{CLIResult, TopiaryError},
     visualisation,
 };

@@ -29,7 +29,6 @@ path = "src/main.rs"
 async-scoped = { workspace = true }
 clap = { workspace = true, features = ["derive", "env", "wrap_help"] }
 clap_complete = { workspace = true }
-directories = { workspace = true }
 env_logger = { workspace = true }
 futures = { workspace = true }
 indoc = { workspace = true }
@@ -40,6 +39,7 @@ tempfile = { workspace = true }
 tokio = { workspace = true, features = ["fs", "rt-multi-thread", "sync", "macros"] }
 toml = { workspace = true }
 topiary = { path = "../topiary" }
+topiary-config = { path = "../topiary-config" }
 topiary-queries = { path = "../topiary-queries" }
 tree-sitter-facade = { workspace = true }
 

@@ -3,6 +3,7 @@
 //! Additional configuration has to be provided by the user of the library.
 
 pub mod collate;
+pub mod error;
 pub mod serde;
 mod source;
 
@@ -15,8 +16,8 @@ use indoc::formatdoc;
 use itertools::Itertools;
 
 use crate::{
-    configuration::{collate::CollationMode, serde::Serialisation, source::Source},
-    error::{CLIResult, TopiaryError},
+    error::{TopiaryConfigError, TopiaryConfigResult},
+    {collate::CollationMode, serde::Serialisation, source::Source},
 };
 
 use self::serde::Language;
@@ -29,14 +30,11 @@ pub struct Configuration {
 
 impl Configuration {
     /// Consume the configuration from the usual sources, collated as specified
-    pub fn fetch(file: &Option<PathBuf>, collation: &CollationMode) -> CLIResult<Self> {
+    pub fn fetch(file: &Option<PathBuf>, collation: &CollationMode) -> TopiaryConfigResult<Self> {
         // If we have an explicit file, fail if it doesn't exist
         if let Some(path) = file {
             if !path.exists() {
-                return Err(TopiaryError::Bin(
-                    format!("Configuration file not found: {}", path.to_string_lossy()),
-                    None,
-                ));
+                return Err(TopiaryConfigError::FileNotFound(path.to_path_buf()));
             }
         }
 
@@ -45,7 +43,7 @@ impl Configuration {
         let annotations = annotate(&sources, collation);
         let configuration = configuration_toml(&sources, collation)?
             .try_into()
-            .map_err(TopiaryError::from)?;
+            .map_err(Into::<TopiaryConfigError>::into)?;
 
         Ok(Self {
             annotations,
@@ -54,7 +52,7 @@ impl Configuration {
     }
 
     /// Gets a language configuration from the entire configuration.
-    pub fn get_language<T>(&self, name: T) -> CLIResult<&Language>
+    pub fn get_language<T>(&self, name: T) -> TopiaryConfigResult<&Language>
     where
         T: AsRef<str> + fmt::Display,
     {
@@ -66,7 +64,7 @@ impl Configuration {
     /// # Errors
     ///
     /// If the file extension is not supported, a `FormatterError` will be returned.
-    pub fn detect<P: AsRef<Path>>(&self, path: P) -> CLIResult<&Language> {
+    pub fn detect<P: AsRef<Path>>(&self, path: P) -> TopiaryConfigResult<&Language> {
         self.configuration.detect(path)
     }
 }
@@ -110,7 +108,10 @@ fn annotate(sources: &[Source], collation: &CollationMode) -> String {
 }
 
 /// Consume configuration and collate as specified
-fn configuration_toml(sources: &[Source], collation: &CollationMode) -> CLIResult<toml::Value> {
+fn configuration_toml(
+    sources: &[Source],
+    collation: &CollationMode,
+) -> TopiaryConfigResult<toml::Value> {
     match collation {
         CollationMode::Override => {
             // It's safe to unwrap here, as `sources` is guaranteed to contain at least one element
@@ -118,7 +119,7 @@ fn configuration_toml(sources: &[Source], collation: &CollationMode) -> CLIResul
                 .last()
                 .unwrap()
                 .try_into()
-                .map_err(TopiaryError::from)
+                .map_err(Into::<TopiaryConfigError>::into)
         }
 
         // CollationMode::Merge and CollationMode::Revise

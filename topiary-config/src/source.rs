@@ -4,7 +4,7 @@ use std::{env::current_dir, fmt, path::PathBuf};
 
 use directories::ProjectDirs;
 
-use crate::{configuration::serde::Serialisation, error::TopiaryError};
+use crate::{error::TopiaryConfigError, serde::Serialisation};
 
 /// Sources of TOML configuration
 #[derive(Debug)]
@@ -84,7 +84,7 @@ impl From<Option<PathBuf>> for Source {
 }
 
 impl TryFrom<&Source> for toml::Value {
-    type Error = TopiaryError;
+    type Error = TopiaryConfigError;
 
     fn try_from(source: &Source) -> Result<Self, Self::Error> {
         match source {
@@ -92,13 +92,10 @@ impl TryFrom<&Source> for toml::Value {
 
             Source::File(file) => {
                 let config = std::fs::read_to_string(file)?;
-                toml::from_str(&config).map_err(TopiaryError::from)
+                toml::from_str(&config).map_err(TopiaryConfigError::from)
             }
 
-            Source::Missing => Err(TopiaryError::Bin(
-                "Could not parse missing configuration".into(),
-                None,
-            )),
+            Source::Missing => Err(TopiaryConfigError::Missing),
         }
     }
 }

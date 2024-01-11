@@ -2,13 +2,13 @@
 
 use std::{
     collections::{HashMap, HashSet},
-    fmt, io,
+    fmt,
     path::{Path, PathBuf},
 };
 
 use serde::{Deserialize, Serialize};
 
-use crate::error::{CLIError, CLIResult, TopiaryError};
+use crate::error::{TopiaryConfigError, TopiaryConfigResult};
 
 // TODO Should `Language` be in crate::language?...
 
@@ -32,7 +32,8 @@ pub struct Language {
 
 // TODO I don't think we're going to need this here...but maybe
 impl Language {
-    pub fn find_query_file(&self) -> CLIResult<PathBuf> {
+    #[cfg(not(wasm))]
+    pub fn find_query_file(&self) -> TopiaryConfigResult<PathBuf> {
         let basename = PathBuf::from(match self.name.as_str() {
             "bash" => "bash",
             "json" => "json",
@@ -42,12 +43,7 @@ impl Language {
             "rust" => "rust",
             "toml" => "toml",
             "tree_sitter_query" => "tree-sitter-query",
-            name => {
-                return Err(TopiaryError::Bin(
-                    String::from("Topiary does not know about the provided language, and thus cannot find the related query file"),
-                    Some(CLIError::UnsupportedLanguage(name.to_string())),
-                ))
-            }
+            name => return Err(TopiaryConfigError::UnknownLanguage(name.to_string())),
         })
         .with_extension("scm");
 
@@ -64,15 +60,10 @@ impl Language {
             .flatten()
             .map(|path| path.join(&basename))
             .find(|path| path.exists())
-            .ok_or_else(|| {
-                TopiaryError::Bin(
-                    "Language query file could not be found".into(),
-                    Some(CLIError::IOError(io::Error::from(io::ErrorKind::NotFound))),
-                )
-            })
+            .ok_or_else(|| TopiaryConfigError::QueryFileNotFound(basename))
     }
 
-    pub fn grammar(&self) -> CLIResult<tree_sitter_facade::Language> {
+    pub fn grammar(&self) -> TopiaryConfigResult<tree_sitter_facade::Language> {
         Ok(match self.name.as_str() {
             "bash" => tree_sitter_bash::language(),
             "json" => tree_sitter_json::language(),
@@ -83,18 +74,13 @@ impl Language {
             "rust" => tree_sitter_rust::language(),
             "toml" => tree_sitter_toml::language(),
             "tree_sitter_query" => tree_sitter_query::language(),
-            name => {
-                return Err(TopiaryError::Bin(
-                    format!("Could not find grammar for language {name}"),
-                    Some(CLIError::UnsupportedLanguage(name.to_string())),
-                ))
-            }
+            name => return Err(TopiaryConfigError::UnknownLanguage(name.to_string())),
         }
         .into())
     }
 }
 
-/// The configuration of the Topiary CLI.
+/// The configuration of the Topiary.
 ///
 /// Contains information on how to format every language the user is interested in, modulo what is
 /// supported. It can be provided by the user of the library, or alternatively, Topiary ships with
@@ -125,17 +111,14 @@ impl Serialisation {
     ///
     /// If the provided language name cannot be found in the `Serialisation`, this
     /// function returns a `TopiaryError`
-    pub fn get_language<T>(&self, name: T) -> CLIResult<&Language>
+    pub fn get_language<T>(&self, name: T) -> TopiaryConfigResult<&Language>
     where
         T: AsRef<str> + fmt::Display,
     {
         self.language
             .iter()
             .find(|language| language.name == name.as_ref())
-            .ok_or(TopiaryError::Bin(
-                format!("Unsupported language: \"{name}\""),
-                Some(CLIError::UnsupportedLanguage(name.to_string())),
-            ))
+            .ok_or(TopiaryConfigError::UnknownLanguage(name.to_string()))
     }
 
     /// Default built-in languages.toml, parsed to a deserialised value.
@@ -146,7 +129,7 @@ impl Serialisation {
     /// `Serialisation` doesn't work well, because that forces every configuration file to define
     /// every part of the configuration.)
     pub fn default_toml() -> toml::Value {
-        let default_config = include_str!("../../../languages.toml");
+        let default_config = include_str!("../../languages.toml");
 
         // We assume that the shipped built-in TOML is valid, so `.expect` is fine
         toml::from_str(default_config)
@@ -158,7 +141,7 @@ impl Serialisation {
     /// # Errors
     ///
     /// If the file extension is not supported, a `FormatterError` will be returned.
-    pub fn detect<P: AsRef<Path>>(&self, path: P) -> CLIResult<&Language> {
+    pub fn detect<P: AsRef<Path>>(&self, path: P) -> TopiaryConfigResult<&Language> {
         let pb = &path.as_ref().to_path_buf();
         if let Some(extension) = pb.extension().map(|ext| ext.to_string_lossy()) {
             for lang in &self.language {
@@ -166,18 +149,9 @@ impl Serialisation {
                     return Ok(lang);
                 }
             }
-            return Err(TopiaryError::Bin(
-                "".to_owned(),
-                Some(CLIError::LanguageDetection(
-                    pb.clone(),
-                    Some(extension.to_string()),
-                )),
-            ));
+            return Err(TopiaryConfigError::UnknownExtension(extension.to_string()));
         }
-        Err(TopiaryError::Bin(
-            "".to_owned(),
-            Some(CLIError::LanguageDetection(pb.clone(), None)),
-        ))
+        Err(TopiaryConfigError::NoExtension(pb.clone()))
     }
 }
 
@@ -190,10 +164,10 @@ impl Default for Serialisation {
 /// Convert deserialised TOML values into `Serialisation` values
 // TODO Is this necessary, any more?
 impl TryFrom<toml::Value> for Serialisation {
-    type Error = TopiaryError;
+    type Error = TopiaryConfigError;
 
-    fn try_from(toml: toml::Value) -> CLIResult<Self> {
-        toml.try_into().map_err(TopiaryError::from)
+    fn try_from(toml: toml::Value) -> TopiaryConfigResult<Self> {
+        toml.try_into().map_err(TopiaryConfigError::from)
     }
 }
 

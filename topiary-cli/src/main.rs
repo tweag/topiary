@@ -32,7 +32,7 @@ async fn main() -> ExitCode {
 async fn run() -> CLIResult<()> {
     let args = cli::get_args()?;
 
-    let config = Configuration::fetch(
+    let config = topiary_config::Configuration::fetch(
         &args.global.configuration,
         // The collation value is always set, so we can safely unwrap
         args.global.configuration_collation.as_ref().unwrap(),

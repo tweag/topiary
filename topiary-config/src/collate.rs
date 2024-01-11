@@ -110,7 +110,7 @@ fn collate_toml(base: toml::Value, graft: toml::Value, merge_depth: usize) -> to
 #[cfg(test)]
 mod test_config_collation {
     use super::CollationMode;
-    use crate::configuration::serde::Serialisation;
+    use crate::serde::Serialisation;
 
     // NOTE PartialEq for toml::Value is (understandably) order sensitive over array elements, so
     // we deserialse to `topiary::Configuration` for equality testing. This also has the effect of
