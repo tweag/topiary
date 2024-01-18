@@ -1310,6 +1310,7 @@ dependencies = [
  "tree-sitter-query",
  "tree-sitter-rust",
  "tree-sitter-toml",
+ "web-tree-sitter-sys",
 ]
 
 [[package]]

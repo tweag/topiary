@@ -16,6 +16,7 @@ pub enum TopiaryConfigError {
     #[cfg(not(wasm))]
     IoError(io::Error),
     Missing,
+    TreeSitterFacade(tree_sitter_facade::LanguageError),
 }
 
 impl fmt::Display for TopiaryConfigError {
@@ -30,6 +31,7 @@ impl fmt::Display for TopiaryConfigError {
             TopiaryConfigError::QueryFileNotFound(path) => write!(f, "We could not find the query file: \"{}\" anywhere. If you use the TOPIARY_LANGUAGE_DIR environment variable, make sure it set set correctly.", path.to_string_lossy()),
             TopiaryConfigError::IoError(error) => write!(f, "We encountered an io error: {error}"),
             TopiaryConfigError::Missing => write!(f, "A configuration file is missing. If you passed a configuration file, make sure it exists."),
+            TopiaryConfigError::TreeSitterFacade(_) => write!(f, "We could not load the grammar for the given language"),
         }
     }
 }
@@ -43,6 +45,12 @@ impl From<toml::de::Error> for TopiaryConfigError {
 impl From<io::Error> for TopiaryConfigError {
     fn from(e: io::Error) -> Self {
         Self::IoError(e)
+    }
+}
+
+impl From<tree_sitter_facade::LanguageError> for TopiaryConfigError {
+    fn from(e: tree_sitter_facade::LanguageError) -> Self {
+        Self::TreeSitterFacade(e)
     }
 }
 

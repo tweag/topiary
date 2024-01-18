@@ -63,6 +63,7 @@ impl Language {
             .ok_or_else(|| TopiaryConfigError::QueryFileNotFound(basename))
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn grammar(&self) -> TopiaryConfigResult<tree_sitter_facade::Language> {
         Ok(match self.name.as_str() {
             "bash" => tree_sitter_bash::language(),
@@ -76,6 +77,32 @@ impl Language {
             "tree_sitter_query" => tree_sitter_query::language(),
             name => return Err(TopiaryConfigError::UnknownLanguage(name.to_string())),
         }
+        .into())
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    pub async fn grammar(&self) -> TopiaryConfigResult<tree_sitter_facade::Language> {
+        let language_name = match self.name.as_str() {
+            "bash" => "bash",
+            "json" => "json",
+            "nickel" => "nickel",
+            "ocaml" => "ocaml",
+            "ocaml_interface" => "ocaml_interface",
+            "ocamllex" => "ocamllex",
+            "rust" => "rust",
+            "toml" => "toml",
+            "tree_sitter_query" => "query",
+            name => return Err(TopiaryConfigError::UnknownLanguage(name.to_string())),
+        };
+
+        Ok(web_tree_sitter::Language::load_path(&format!(
+            "/playground/scripts/tree-sitter-{language_name}.wasm"
+        ))
+        .await
+        .map_err(|e| {
+            let error: tree_sitter_facade::LanguageError = e.into();
+            error
+        })?
         .into())
     }
 }
