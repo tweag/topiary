@@ -19,7 +19,7 @@ fn to_js_string(path: PathBuf) -> String {
 
 fn main() {
     println!("cargo:rerun-if-changed=../queries/");
-    println!("cargo:rerun-if-changed=../topiary/tests/samples/input/");
+    println!("cargo:rerun-if-changed=../topiary-cli/tests/samples/input/");
 
     // Export test samples and queries as JS files
     let language_dir = current_dir().unwrap().join("../queries/");
@@ -54,30 +54,20 @@ fn main() {
     let mut input_map: HashMap<String, String> = HashMap::new();
     for path in input_files {
         let path = path.unwrap().path();
-        if let Some(ext) = path.extension().map(|ext| ext.to_string_lossy()) {
-            if !Configuration::parse_default_configuration()
-                .unwrap()
-                .known_extensions()
-                .contains(&*ext)
-            {
-                continue;
-            }
 
-            let prefix: String = path.file_stem().unwrap().to_string_lossy().to_string();
-            let content = to_js_string(path);
-            input_map.insert(prefix, content);
-        }
+        let prefix: String = path.file_stem().unwrap().to_string_lossy().to_string();
+        let content = to_js_string(path);
+        input_map.insert(prefix, content);
     }
 
     let mut buffer = String::new();
 
     for (name, input) in input_map.into_iter().sorted() {
         if let Some(query) = language_map.get(&name) {
-            let supported = SupportedLanguage::is_supported(&name);
+            // let supported = SupportedLanguage::is_supported(&name);
 
             buffer.push_str(&format!(
                 r#"  "{name}": {{
-    supported: `{supported}`,
     query: `{query}`,
     input: `{input}`,
   }},

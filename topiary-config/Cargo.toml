@@ -13,7 +13,6 @@ readme.workspace = true
 license.workspace = true
 
 [dependencies]
-clap = { workspace = true, features = ["derive", "env", "wrap_help"] }
 directories = { workspace = true }
 indoc = { workspace = true }
 itertools = { workspace = true }

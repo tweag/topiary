@@ -1,25 +1,18 @@
-#[cfg(target_arch = "wasm32")]
 use std::sync::Mutex;
-#[cfg(target_arch = "wasm32")]
 use topiary::{formatter, Configuration, FormatterResult, Language, Operation, TopiaryQuery};
-#[cfg(target_arch = "wasm32")]
 use tree_sitter_facade::TreeSitter;
-#[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
-#[cfg(target_arch = "wasm32")]
 struct QueryState {
     language: Language,
     grammar: tree_sitter_facade::Language,
     query: TopiaryQuery,
 }
 
-#[cfg(target_arch = "wasm32")]
 /// The query state is stored in a static variable, so the playground can reuse
 /// it across multiple runs as long as it doesn't change.
 static QUERY_STATE: Mutex<Option<QueryState>> = Mutex::new(None);
 
-#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen(js_name = topiaryInit)]
 pub async fn topiary_init() -> Result<(), JsError> {
     cfg_if::cfg_if! {
@@ -31,7 +24,6 @@ pub async fn topiary_init() -> Result<(), JsError> {
     TreeSitter::init().await
 }
 
-#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen(js_name = queryInit)]
 pub async fn query_init(query_content: String, language_name: String) -> Result<(), JsError> {
     let language_normalized = language_name.replace('-', "_");
@@ -51,7 +43,6 @@ pub async fn query_init(query_content: String, language_name: String) -> Result<
     Ok(())
 }
 
-#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub async fn format(
     input: &str,
@@ -63,7 +54,6 @@ pub async fn format(
         .map_err(|e| format_error(&e))
 }
 
-#[cfg(target_arch = "wasm32")]
 async fn format_inner(
     input: &str,
     check_idempotence: bool,
@@ -78,9 +68,7 @@ async fn format_inner(
             formatter(
                 &mut input.as_bytes(),
                 &mut output,
-                &query_state.query,
                 &query_state.language,
-                &query_state.grammar,
                 Operation::Format {
                     skip_idempotence: !check_idempotence,
                     tolerate_parsing_errors,
@@ -96,7 +84,6 @@ async fn format_inner(
     }
 }
 
-#[cfg(target_arch = "wasm32")]
 fn format_error(e: &dyn std::error::Error) -> JsError {
     let mut message: String = format!("{e}");
     let mut inner: &dyn std::error::Error = e;

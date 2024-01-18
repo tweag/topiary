@@ -25,11 +25,12 @@ let
         "Cargo.toml"
         "languages.toml"
         "queries"
-        "topiary"
-        "topiary-queries"
-        "topiary-cli"
-        "topiary-playground"
         "tests"
+        "topiary"
+        "topiary-cli"
+        "topiary-config"
+        "topiary-playground"
+        "topiary-queries"
       ];
     };
 
