@@ -48,7 +48,7 @@ fn main() {
 
     let input_dir = current_dir()
         .unwrap()
-        .join("../topiary/tests/samples/input/");
+        .join("../topiary-cli/tests/samples/input/");
     let input_files = fs::read_dir(input_dir).unwrap();
 
     let mut input_map: HashMap<String, String> = HashMap::new();

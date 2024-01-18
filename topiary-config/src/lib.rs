@@ -79,11 +79,17 @@ impl fmt::Display for Configuration {
 impl Default for Configuration {
     /// Return the built-in configuration
     // This is particularly useful for testing
-    // FIXME This *was* useful for testing, when it was part of the library. In the CLI, it may be
-    // redundant...
     fn default() -> Self {
         // We assume that the built-in configuration is valid, so it's safe to unwrap
-        Configuration::fetch(&None, &CollationMode::Merge).unwrap()
+        let configuration = configuration_toml(&[Source::Builtin], &CollationMode::Merge)
+            .unwrap()
+            .try_into()
+            .unwrap();
+
+        Self {
+            annotations: "".to_owned(),
+            configuration,
+        }
     }
 }
 

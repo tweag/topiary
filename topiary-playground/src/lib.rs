@@ -1,12 +1,11 @@
 use std::sync::Mutex;
-use topiary::{formatter, Configuration, FormatterResult, Language, Operation, TopiaryQuery};
+use topiary::{formatter, FormatterResult, Language, Operation, TopiaryQuery};
+use topiary_config::Configuration;
 use tree_sitter_facade::TreeSitter;
 use wasm_bindgen::prelude::*;
 
 struct QueryState {
     language: Language,
-    grammar: tree_sitter_facade::Language,
-    query: TopiaryQuery,
 }
 
 /// The query state is stored in a static variable, so the playground can reuse
@@ -27,18 +26,19 @@ pub async fn topiary_init() -> Result<(), JsError> {
 #[wasm_bindgen(js_name = queryInit)]
 pub async fn query_init(query_content: String, language_name: String) -> Result<(), JsError> {
     let language_normalized = language_name.replace('-', "_");
-    let configuration = Configuration::parse_default_configuration()?;
+    let configuration = Configuration::default();
     let language = configuration.get_language(language_normalized)?.clone();
-    let grammar = language.grammar_wasm().await?;
+    let grammar = language.grammar().await?;
     let query = TopiaryQuery::new(&grammar, &query_content)?;
-
     let mut guard = QUERY_STATE.lock().unwrap();
-
-    *guard = Some(QueryState {
-        language,
-        grammar,
+    let language = Language {
+        name: language.name,
         query,
-    });
+        grammar: grammar.clone(),
+        indent: language.indent,
+    };
+
+    *guard = Some(QueryState { language });
 
     Ok(())
 }
