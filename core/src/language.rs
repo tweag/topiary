@@ -144,8 +144,8 @@ impl TryFrom<&Language> for PathBuf {
         let potentials: [Option<Self>; 4] = [
             std::env::var("TOPIARY_LANGUAGE_DIR").map(Self::from).ok(),
             option_env!("TOPIARY_LANGUAGE_DIR").map(Self::from),
-            Some(Self::from("./queries")),
-            Some(Self::from("../queries")),
+            Some(Self::from("./queries/queries")),
+            Some(Self::from("../queries/queries")),
         ];
 
         potentials

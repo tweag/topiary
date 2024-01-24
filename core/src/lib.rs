@@ -161,12 +161,12 @@ pub enum Operation {
 /// # tokio_test::block_on(async {
 /// use std::fs::File;
 /// use std::io::{BufReader, Read};
-/// use topiary::{formatter, Configuration, FormatterError, TopiaryQuery, Operation};
+/// use topiary_core::{formatter, Configuration, FormatterError, TopiaryQuery, Operation};
 ///
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
 /// let mut output = Vec::new();
-/// let mut query_file = BufReader::new(File::open("../queries/json.scm").expect("query file"));
+/// let mut query_file = BufReader::new(File::open("../queries/queries/json.scm").expect("query file"));
 /// let mut query_content = String::new();
 /// query_file.read_to_string(&mut query_content).expect("read query file");
 ///
@@ -365,7 +365,7 @@ mod tests {
         let expected = "{ \"one\": {\"bar\"   \"baz\"}, \"two\": \"bar\" }\n";
 
         let mut output = Vec::new();
-        let query_content = fs::read_to_string("../queries/json.scm").unwrap();
+        let query_content = fs::read_to_string("../queries/queries/json.scm").unwrap();
         let configuration = Configuration::parse_default_configuration().unwrap();
         let language = configuration.get_language("json").unwrap();
         let grammar = language.grammar().await.unwrap();

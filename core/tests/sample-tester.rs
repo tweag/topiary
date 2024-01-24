@@ -5,7 +5,7 @@ use std::path::Path;
 use log::info;
 use test_log::test;
 
-use topiary::{
+use topiary_core::{
     apply_query, formatter, test_utils::pretty_assert_eq, Configuration, FormatterError, Language,
     Operation, TopiaryQuery,
 };
@@ -70,7 +70,7 @@ async fn input_output_tester() {
 #[test(tokio::test)]
 async fn formatted_query_tester() {
     let config = Configuration::parse_default_configuration().unwrap();
-    let language_dir = fs::read_dir("../queries").unwrap();
+    let language_dir = fs::read_dir("../queries/queries").unwrap();
 
     for file in language_dir {
         let file = file.unwrap();

@@ -2,12 +2,12 @@ use criterion::async_executor::FuturesExecutor;
 use criterion::{criterion_group, criterion_main, Criterion};
 use std::fs;
 use std::io;
-use topiary::{formatter, Operation};
-use topiary::{Configuration, TopiaryQuery};
+use topiary_core::{formatter, Operation};
+use topiary_core::{Configuration, TopiaryQuery};
 
 async fn format() {
     let input = fs::read_to_string("tests/samples/input/ocaml.ml").unwrap();
-    let query_content = fs::read_to_string("../queries/ocaml.scm").unwrap();
+    let query_content = fs::read_to_string("../queries/queries/ocaml.scm").unwrap();
     let configuration = Configuration::parse_default_configuration().unwrap();
     let language = configuration.get_language("ocaml").unwrap();
     let grammar = language.grammar().await.unwrap();
