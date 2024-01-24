@@ -184,20 +184,15 @@ pub fn get_args() -> CLIResult<Cli> {
     let mut args = Cli::parse();
 
     // This is the earliest point that we can initialise the logger, from the --verbose flags,
-    // before any fallible operations have started.
-    //
-    // Be more strict with logs coming with the library; prefer to display less of them.
-    let (global_filter_level, library_filter_level) = match args.global.verbose {
-        0 => (LevelFilter::Error, LevelFilter::Error),
-        1 => (LevelFilter::Warn, LevelFilter::Warn),
-        2 => (LevelFilter::Info, LevelFilter::Warn),
-        3 => (LevelFilter::Debug, LevelFilter::Warn),
-        _ => (LevelFilter::Trace, LevelFilter::Trace),
-    };
-
+    // before any fallible operations have started
     env_logger::Builder::new()
-        .filter_level(global_filter_level)
-        .filter_module("topiary", library_filter_level)
+        .filter_level(match args.global.verbose {
+            0 => LevelFilter::Error,
+            1 => LevelFilter::Warn,
+            2 => LevelFilter::Info,
+            3 => LevelFilter::Debug,
+            _ => LevelFilter::Trace,
+        })
         .init();
 
     // NOTE We do not check that input files are actual files (with Path::is_file), because that
