@@ -26,11 +26,10 @@ let
         "Cargo.lock"
         "Cargo.toml"
         "languages.toml"
+        "core"
         "queries"
-        "topiary"
-        "topiary-queries"
-        "topiary-cli"
-        "topiary-playground"
+        "cli"
+        "playground"
         "tests"
       ];
     };
@@ -79,10 +78,10 @@ in
     cargoTestCommand = "cargo bench --profile release";
   });
 
-  topiary-lib = craneLib.buildPackage (commonArgs
+  topiary-core = craneLib.buildPackage (commonArgs
     // {
     inherit cargoArtifacts;
-    pname = "topiary-lib";
+    pname = "topiary-core";
     cargoExtraArgs = "-p topiary-core";
   });
 
@@ -92,7 +91,7 @@ in
     pname = "topiary";
     cargoExtraArgs = "-p topiary-cli";
     postInstall = ''
-      install -Dm444 queries/* -t $out/share/queries
+      install -Dm444 queries/queries/* -t $out/share/queries
     '';
 
     # Set TOPIARY_LANGUAGE_DIR to the Nix store
@@ -111,7 +110,7 @@ in
     pname = "topiary-queries";
     cargoExtraArgs = "-p topiary-queries";
     postInstall = ''
-      install -Dm444 queries/* -t $out/share/queries
+      install -Dm444 queries/queries/* -t $out/share/queries
     '';
   });
 

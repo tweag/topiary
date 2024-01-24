@@ -1,7 +1,7 @@
 #[cfg(target_arch = "wasm32")]
 use std::sync::Mutex;
 #[cfg(target_arch = "wasm32")]
-use topiary::{formatter, Configuration, FormatterResult, Language, Operation, TopiaryQuery};
+use topiary_core::{formatter, Configuration, FormatterResult, Language, Operation, TopiaryQuery};
 #[cfg(target_arch = "wasm32")]
 use tree_sitter_facade::TreeSitter;
 #[cfg(target_arch = "wasm32")]
@@ -89,7 +89,7 @@ async fn format_inner(
 
             Ok(String::from_utf8(output)?)
         }
-        None => Err(topiary::FormatterError::Internal(
+        None => Err(topiary_core::FormatterError::Internal(
             "The query has not been initialized.".into(),
             None,
         )),
