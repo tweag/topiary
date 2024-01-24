@@ -83,7 +83,7 @@ in
     // {
     inherit cargoArtifacts;
     pname = "topiary-lib";
-    cargoExtraArgs = "-p topiary";
+    cargoExtraArgs = "-p topiary-core";
   });
 
   topiary-cli = craneLib.buildPackage (commonArgs

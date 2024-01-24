@@ -1341,7 +1341,7 @@ suggested way to work:
 
    ```
    RUST_LOG=debug \
-   cargo test -p topiary \
+   cargo test -p topiary-core \
               input_output_tester \
               -- --nocapture
    ```
