@@ -1,5 +1,5 @@
 use clap::ValueEnum;
-use topiary::Visualisation;
+use topiary_core::Visualisation;
 
 /// Visualisation output formats for Tree-sitter parse trees
 // NOTE While redundant, we cannot implement clap::ValueEnum for topiary::Visualisation without

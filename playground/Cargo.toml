@@ -24,11 +24,11 @@ crate-type = ["cdylib"]
 
 [dependencies]
 cfg-if = { workspace = true }
-topiary = { path = "../topiary" }
+topiary-core = { path = "../core" }
 tree-sitter-facade = { workspace = true }
 wasm-bindgen = { workspace = true }
 wasm-bindgen-futures = { workspace = true }
 
 [build-dependencies]
 itertools = { workspace = true }
-topiary = { path = "../topiary" }
+topiary-core = { path = "../core" }

@@ -5,7 +5,7 @@ use clap_complete::{generate, shells::Shell};
 use std::{io::stdout, path::PathBuf};
 
 use log::LevelFilter;
-use topiary::SupportedLanguage;
+use topiary_core::SupportedLanguage;
 
 use crate::{
     configuration,

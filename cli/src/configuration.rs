@@ -3,7 +3,7 @@ use directories::ProjectDirs;
 use indoc::formatdoc;
 use itertools::Itertools;
 use std::{env::current_dir, fmt, path::PathBuf};
-use topiary::{default_configuration_toml, Configuration};
+use topiary_core::{default_configuration_toml, Configuration};
 
 use crate::error::{CLIResult, TopiaryError};
 

@@ -5,7 +5,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::{env::current_dir, fs};
 
-use topiary::{Configuration, SupportedLanguage};
+use topiary_core::{Configuration, SupportedLanguage};
 
 fn to_js_string(path: PathBuf) -> String {
     fs::read_to_string(path)
@@ -21,7 +21,7 @@ fn to_js_string(path: PathBuf) -> String {
 
 fn main() {
     println!("cargo:rerun-if-changed=../queries/");
-    println!("cargo:rerun-if-changed=../topiary/tests/samples/input/");
+    println!("cargo:rerun-if-changed=../core/tests/samples/input/");
 
     // Export test samples and queries as JS files
     let language_dir = current_dir().unwrap().join("../queries/");
@@ -48,9 +48,7 @@ fn main() {
         }
     }
 
-    let input_dir = current_dir()
-        .unwrap()
-        .join("../topiary/tests/samples/input/");
+    let input_dir = current_dir().unwrap().join("../core/tests/samples/input/");
     let input_files = fs::read_dir(input_dir).unwrap();
 
     let mut input_map: HashMap<String, String> = HashMap::new();
