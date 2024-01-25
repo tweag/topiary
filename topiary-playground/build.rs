@@ -64,8 +64,6 @@ fn main() {
 
     for (name, input) in input_map.into_iter().sorted() {
         if let Some(query) = language_map.get(&name) {
-            // let supported = SupportedLanguage::is_supported(&name);
-
             buffer.push_str(&format!(
                 r#"  "{name}": {{
     query: `{query}`,

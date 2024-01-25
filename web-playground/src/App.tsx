@@ -56,8 +56,7 @@ function App() {
         let languageItems: ReactElement[] = [];
 
         for (let l in languages) {
-            let displayName = languages[l].supported === "true" ? l : l + " (experimental)";
-            languageItems.push(<option key={l} value={l}>{displayName}</option>)
+            languageItems.push(<option key={l} value={l}>{l}</option>)
         }
 
         setLanguageOptions(languageItems);
