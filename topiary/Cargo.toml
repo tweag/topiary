@@ -35,6 +35,7 @@ env_logger = { workspace = true }
 test-log = { workspace = true }
 tokio-test = { workspace = true }
 tree-sitter-json.workspace = true
+tree-sitter-ocaml.workspace = true
 
 [[bench]]
 name = "benchmark"

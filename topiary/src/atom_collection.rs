@@ -630,7 +630,7 @@ impl AtomCollection {
             {
                 opened_scopes
                     .entry(scope_id)
-                    .or_insert_with(Vec::new)
+                    .or_default()
                     .push((*line_start, Vec::new()));
             } else if let Atom::ScopeEnd(ScopeInformation {
                 line_number: line_end,

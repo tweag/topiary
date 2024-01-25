@@ -36,7 +36,7 @@ pub async fn query_init(query_content: String, language_name: String) -> Result<
     let language = Language {
         name: language.name,
         query,
-        grammar: grammar.clone(),
+        grammar,
         indent: language.indent,
     };
 

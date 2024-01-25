@@ -266,9 +266,7 @@ mod native {
 
     impl<'a> PartialOrd for Node<'a> {
         fn partial_cmp(&self, that: &Node<'a>) -> Option<std::cmp::Ordering> {
-            let this = self.id();
-            let that = that.id();
-            this.partial_cmp(&that)
+            Some(self.cmp(that))
         }
     }
 
@@ -345,21 +343,14 @@ mod wasm {
         ) -> impl Iterator<Item = Node<'tree>> + 'a {
             cursor.reset(self.clone());
             cursor.goto_first_child();
-            let mut done = false;
             std::iter::from_fn(move || {
-                while !done {
-                    while cursor.field_id() != Some(field_id) {
-                        if !cursor.goto_next_sibling() {
-                            return None;
-                        }
-                    }
-                    let result = cursor.node();
+                while cursor.field_id() != Some(field_id) {
                     if !cursor.goto_next_sibling() {
-                        done = true;
+                        return None;
                     }
-                    return Some(result);
                 }
-                None
+                let result = cursor.node();
+                Some(result)
             })
         }
 
@@ -370,21 +361,14 @@ mod wasm {
         ) -> impl Iterator<Item = Node<'tree>> + 'a {
             cursor.reset(self.clone());
             cursor.goto_first_child();
-            let mut done = false;
             std::iter::from_fn(move || {
-                while !done {
-                    while cursor.field_name() != Some(field_name.into()) {
-                        if !cursor.goto_next_sibling() {
-                            return None;
-                        }
-                    }
-                    let result = cursor.node();
+                while cursor.field_name() != Some(field_name.into()) {
                     if !cursor.goto_next_sibling() {
-                        done = true;
+                        return None;
                     }
-                    return Some(result);
                 }
-                None
+                let result = cursor.node();
+                Some(result)
             })
         }
 

@@ -1262,6 +1262,7 @@ dependencies = [
  "topiary-tree-sitter-facade",
  "topiary-web-tree-sitter-sys",
  "tree-sitter-json",
+ "tree-sitter-ocaml",
 ]
 
 [[package]]

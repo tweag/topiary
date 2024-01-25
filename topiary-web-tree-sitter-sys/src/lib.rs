@@ -1,5 +1,3 @@
-#![allow(clippy::unused_unit)]
-
 // FIXME: Double check we construct object properties in order.
 
 use core::cell::RefCell;
@@ -77,7 +75,7 @@ impl TreeSitter {
 
         let scope = &web_sys::window().unwrap_throw();
 
-        let tree_sitter = Reflect::get(&scope, &"TreeSitter".into()).and_then(|property| {
+        let tree_sitter = Reflect::get(scope, &"TreeSitter".into()).and_then(|property| {
             if property.is_undefined() {
                 let message = "window.TreeSitter is not defined; load the tree-sitter javascript module first";
                 Err(JsError::new(message).into())
@@ -374,9 +372,7 @@ impl PartialEq for Point {
 
 impl PartialOrd for Point {
     fn partial_cmp(&self, that: &Point) -> Option<std::cmp::Ordering> {
-        let this = self.spread();
-        let that = that.spread();
-        this.partial_cmp(&that)
+        Some(self.cmp(that))
     }
 }
 
@@ -652,9 +648,7 @@ impl PartialEq<Range> for Range {
 
 impl PartialOrd<Range> for Range {
     fn partial_cmp(&self, that: &Self) -> Option<std::cmp::Ordering> {
-        let this = self.spread();
-        let that = that.spread();
-        this.partial_cmp(&that)
+        Some(self.cmp(that))
     }
 }
 

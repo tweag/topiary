@@ -51,7 +51,7 @@ mod native {
         }
 
         #[inline]
-        pub fn disable_pattern(&mut self, index: usize) -> () {
+        pub fn disable_pattern(&mut self, index: usize) {
             self.inner.disable_pattern(index)
         }
 
