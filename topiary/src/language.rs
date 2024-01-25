@@ -14,7 +14,7 @@ pub struct Language {
     /// present. The topiary engine does not include any formatting queries.
     pub query: TopiaryQuery,
     /// The tree-sitter Language. Topiary will use this Language for parsing.
-    pub grammar: tree_sitter_facade::Language,
+    pub grammar: topiary_tree_sitter_facade::Language,
     /// The indentation string used for that particular language. Defaults to "  "
     /// if not provided. Any string can be provided, but in most instances will be
     /// some whitespace: "  ", "    ", or "\t".

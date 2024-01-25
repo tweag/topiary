@@ -1,0 +1,23 @@
+[package]
+name = "topiary-tree-sitter-facade"
+authors = ["<herringtondarkholme@users.noreply.github.com>"]
+license = "Apache-2.0 WITH LLVM-exception"
+version.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+readme.workspace = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tree-sitter.workspace = true
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+js-sys.workspace = true
+wasm-bindgen = { workspace = true, features = ["strict-macro"] }
+web-sys.workspace = true
+topiary-web-tree-sitter-sys.workspace = true
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+wasm-bindgen-futures.workspace = true
+wasm-bindgen-test.workspace = true

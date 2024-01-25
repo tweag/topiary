@@ -31,6 +31,8 @@ let
         "topiary-config"
         "topiary-playground"
         "topiary-queries"
+        "topiary-tree-sitter-facade"
+        "topiary-web-tree-sitter-sys"
       ];
     };
 

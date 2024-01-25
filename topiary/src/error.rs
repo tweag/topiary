@@ -33,7 +33,7 @@ pub enum FormatterError {
 
     /// There was an error in the query file. If this happened using our
     /// provided query files, it is a bug. Please log an issue.
-    Query(String, Option<tree_sitter_facade::QueryError>),
+    Query(String, Option<topiary_tree_sitter_facade::QueryError>),
 
     /// I/O-related errors
     Io(IoError),
@@ -175,8 +175,8 @@ impl From<serde_json::Error> for FormatterError {
     }
 }
 
-impl From<tree_sitter_facade::LanguageError> for FormatterError {
-    fn from(e: tree_sitter_facade::LanguageError) -> Self {
+impl From<topiary_tree_sitter_facade::LanguageError> for FormatterError {
+    fn from(e: topiary_tree_sitter_facade::LanguageError) -> Self {
         Self::Internal(
             "Error while loading language grammar".into(),
             Some(Box::new(e)),
@@ -184,8 +184,8 @@ impl From<tree_sitter_facade::LanguageError> for FormatterError {
     }
 }
 
-impl From<tree_sitter_facade::ParserError> for FormatterError {
-    fn from(e: tree_sitter_facade::ParserError) -> Self {
+impl From<topiary_tree_sitter_facade::ParserError> for FormatterError {
+    fn from(e: topiary_tree_sitter_facade::ParserError) -> Self {
         Self::Internal("Error while parsing".into(), Some(Box::new(e)))
     }
 }

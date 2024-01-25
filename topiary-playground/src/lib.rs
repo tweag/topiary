@@ -1,7 +1,7 @@
 use std::sync::Mutex;
 use topiary::{formatter, FormatterResult, Language, Operation, TopiaryQuery};
 use topiary_config::Configuration;
-use tree_sitter_facade::TreeSitter;
+use topiary_tree_sitter_facade::TreeSitter;
 use wasm_bindgen::prelude::*;
 
 struct QueryState {

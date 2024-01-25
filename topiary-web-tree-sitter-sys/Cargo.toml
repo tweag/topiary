@@ -1,0 +1,20 @@
+[package]
+name = "topiary-web-tree-sitter-sys"
+authors = ["<silvanshade@users.noreply.github.com>"]
+license = "Apache-2.0 WITH LLVM-exception"
+version.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+readme.workspace = true
+
+[features]
+default = ["web-sys" ]
+node = []
+
+[dependencies]
+js-sys.workspace = true
+wasm-bindgen = { workspace = true, features = ["strict-macro"] }
+wasm-bindgen-futures.workspace = true
+web-sys = { optional = true, workspace = true, features = ["Window"] }

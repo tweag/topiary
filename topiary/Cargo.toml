@@ -19,7 +19,7 @@ pretty_assertions = { workspace = true }
 prettydiff = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-tree-sitter-facade = { workspace = true }
+topiary-tree-sitter-facade = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tokio = { workspace = true }
@@ -27,13 +27,14 @@ tokio = { workspace = true }
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 futures = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt"] }
-web-tree-sitter = { workspace = true, features = ["web"] }
+topiary-web-tree-sitter-sys.workspace = true
 
 [dev-dependencies]
 criterion = { workspace = true, features = ["async_futures"] }
 env_logger = { workspace = true }
 test-log = { workspace = true }
 tokio-test = { workspace = true }
+tree-sitter-json.workspace = true
 
 [[bench]]
 name = "benchmark"

@@ -5,7 +5,7 @@ use std::{
     ops::Deref,
 };
 
-use tree_sitter_facade::Node;
+use topiary_tree_sitter_facade::Node;
 
 use crate::{
     tree_sitter::NodeExt, Atom, FormatterError, FormatterResult, ScopeCondition, ScopeInformation,

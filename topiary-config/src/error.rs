@@ -16,7 +16,7 @@ pub enum TopiaryConfigError {
     #[cfg(not(wasm))]
     IoError(io::Error),
     Missing,
-    TreeSitterFacade(tree_sitter_facade::LanguageError),
+    TreeSitterFacade(topiary_tree_sitter_facade::LanguageError),
 }
 
 impl fmt::Display for TopiaryConfigError {
@@ -48,8 +48,8 @@ impl From<io::Error> for TopiaryConfigError {
     }
 }
 
-impl From<tree_sitter_facade::LanguageError> for TopiaryConfigError {
-    fn from(e: tree_sitter_facade::LanguageError) -> Self {
+impl From<topiary_tree_sitter_facade::LanguageError> for TopiaryConfigError {
+    fn from(e: topiary_tree_sitter_facade::LanguageError) -> Self {
         Self::TreeSitterFacade(e)
     }
 }

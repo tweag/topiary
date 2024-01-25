@@ -299,6 +299,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "acbf1af155f9b9ef647e42cdc158db4b64a1b61f743629225fde6f3e0be2a7c7"
 
 [[package]]
+name = "console_error_panic_hook"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a06aeb73f470f66dcdbf7223caeebb85984942f22f1adb2a088cf9668146bbbc"
+dependencies = [
+ "cfg-if",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "criterion"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -992,6 +1002,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "scoped-tls"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1cf6437eb19a8f4a6cc0f7dca544973b0b78843adbfeb3683d1a94a0024a294"
+
+[[package]]
 name = "serde"
 version = "1.0.195"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1243,8 +1259,9 @@ dependencies = [
  "test-log",
  "tokio",
  "tokio-test",
- "tree-sitter-facade",
- "web-tree-sitter-sys",
+ "topiary-tree-sitter-facade",
+ "topiary-web-tree-sitter-sys",
+ "tree-sitter-json",
 ]
 
 [[package]]
@@ -1268,8 +1285,8 @@ dependencies = [
  "topiary",
  "topiary-config",
  "topiary-queries",
+ "topiary-tree-sitter-facade",
  "tree-sitter-bash",
- "tree-sitter-facade",
  "tree-sitter-json",
  "tree-sitter-nickel",
  "tree-sitter-ocaml",
@@ -1289,8 +1306,9 @@ dependencies = [
  "log",
  "serde",
  "toml",
+ "topiary-tree-sitter-facade",
+ "topiary-web-tree-sitter-sys",
  "tree-sitter-bash",
- "tree-sitter-facade",
  "tree-sitter-json",
  "tree-sitter-nickel",
  "tree-sitter-ocaml",
@@ -1298,7 +1316,6 @@ dependencies = [
  "tree-sitter-query",
  "tree-sitter-rust",
  "tree-sitter-toml",
- "web-tree-sitter-sys",
 ]
 
 [[package]]
@@ -1308,7 +1325,7 @@ dependencies = [
  "itertools 0.11.0",
  "topiary",
  "topiary-config",
- "tree-sitter-facade",
+ "topiary-tree-sitter-facade",
  "wasm-bindgen",
  "wasm-bindgen-futures",
 ]
@@ -1316,6 +1333,29 @@ dependencies = [
 [[package]]
 name = "topiary-queries"
 version = "0.3.0"
+
+[[package]]
+name = "topiary-tree-sitter-facade"
+version = "0.3.0"
+dependencies = [
+ "js-sys",
+ "topiary-web-tree-sitter-sys",
+ "tree-sitter",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "topiary-web-tree-sitter-sys"
+version = "0.3.0"
+dependencies = [
+ "js-sys",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
 
 [[package]]
 name = "tree-sitter"
@@ -1334,18 +1374,6 @@ source = "git+https://github.com/tree-sitter/tree-sitter-bash?rev=1b0321ee85701d
 dependencies = [
  "cc",
  "tree-sitter",
-]
-
-[[package]]
-name = "tree-sitter-facade"
-version = "0.9.3"
-source = "git+https://github.com/tweag/tree-sitter-facade#1b290e795e700a57d8bd303f98a9715ab1c4f598"
-dependencies = [
- "js-sys",
- "tree-sitter",
- "wasm-bindgen",
- "web-sys",
- "web-tree-sitter-sys",
 ]
 
 [[package]]
@@ -1521,6 +1549,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4d91413b1c31d7539ba5ef2451af3f0b833a005eb27a631cec32bc0635a8602b"
 
 [[package]]
+name = "wasm-bindgen-test"
+version = "0.3.40"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "139bd73305d50e1c1c4333210c0db43d989395b64a237bd35c10ef3832a7f70c"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "scoped-tls",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test-macro",
+]
+
+[[package]]
+name = "wasm-bindgen-test-macro"
+version = "0.3.40"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "70072aebfe5da66d2716002c729a14e4aec4da0e23cc2ea66323dac541c93928"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "web-sys"
 version = "0.3.67"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1528,17 +1581,6 @@ checksum = "58cd2333b6e0be7a39605f0e255892fd7418a682d8da8fe042fe25128794d2ed"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "web-tree-sitter-sys"
-version = "1.3.0"
-source = "git+https://github.com/ErinvanderVeen/web-tree-sitter-sys.git?branch=wasm-bindgen-minor-version#c5629fe4cd48296811157b82f808f58e98ec7bd1"
-dependencies = [
- "js-sys",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
 ]
 
 [[package]]

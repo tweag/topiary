@@ -13,22 +13,20 @@ readme.workspace = true
 license.workspace = true
 
 [dependencies]
-directories = { workspace = true }
-indoc = { workspace = true }
-itertools = { workspace = true }
-log = { workspace = true }
+directories.workspace = true
+indoc.workspace = true
+itertools.workspace = true
+log.workspace = true
 serde = { workspace = true, features = ["derive"] }
-toml = { workspace = true }
+toml.workspace = true
 
-tree-sitter-facade = { workspace = true }
-tree-sitter-json = { workspace = true }
-tree-sitter-rust = { workspace = true }
-tree-sitter-toml = { workspace = true }
-tree-sitter-bash = { workspace = true }
-tree-sitter-nickel = { workspace = true }
-tree-sitter-query = { workspace = true }
-tree-sitter-ocaml = { workspace = true }
-tree-sitter-ocamllex = { workspace = true }
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-web-tree-sitter = { workspace = true, features = ["web"] }
+topiary-tree-sitter-facade.workspace = true
+topiary-web-tree-sitter-sys.workspace = true
+tree-sitter-json.workspace = true
+tree-sitter-rust.workspace = true
+tree-sitter-toml.workspace = true
+tree-sitter-bash.workspace = true
+tree-sitter-nickel.workspace = true
+tree-sitter-query.workspace = true
+tree-sitter-ocaml.workspace = true
+tree-sitter-ocamllex.workspace = true
