@@ -1221,7 +1221,6 @@ dependencies = [
 name = "topiary"
 version = "0.3.0"
 dependencies = [
- "clap",
  "criterion",
  "env_logger",
  "futures",
@@ -1229,22 +1228,12 @@ dependencies = [
  "log",
  "pretty_assertions",
  "prettydiff",
- "regex",
  "serde",
  "serde_json",
  "test-log",
  "tokio",
  "tokio-test",
- "tree-sitter-bash",
  "tree-sitter-facade",
- "tree-sitter-json",
- "tree-sitter-nickel",
- "tree-sitter-ocaml",
- "tree-sitter-ocamllex",
- "tree-sitter-query",
- "tree-sitter-rust",
- "tree-sitter-toml",
- "unescape",
  "web-tree-sitter-sys",
 ]
 
@@ -1412,12 +1401,6 @@ dependencies = [
  "cc",
  "tree-sitter",
 ]
-
-[[package]]
-name = "unescape"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ccb97dac3243214f8d8507998906ca3e2e0b900bf9bf4870477f125b82e68f6e"
 
 [[package]]
 name = "unicode-ident"
