@@ -1,11 +1,9 @@
 //! Configuration collation functionality
 
-use crate::error::TopiaryConfigError;
-
 /// Collation mode for configuration values
 /// NOTE The enum variants are in "natural" order, rather than
 /// sorted lexicographically, for the sake of the help text
-// #[cfg_attr(not(target_family = "wasm"), derive(ValueEnum))]
+#[cfg_attr(not(target_family = "wasm"), derive(clap::ValueEnum))]
 #[derive(Clone, Debug)]
 pub enum CollationMode {
     /// When multiple sources of configuration are available, matching items are updated from the
@@ -19,19 +17,6 @@ pub enum CollationMode {
     /// When multiple sources of configuration are available, the highest priority source is taken.
     /// All values from lower priority sources are discarded.
     Override,
-}
-
-impl std::str::FromStr for CollationMode {
-    type Err = TopiaryConfigError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "merge" => Ok(Self::Merge),
-            "revise" => Ok(Self::Revise),
-            "override" => Ok(Self::Override),
-            _ => Err(TopiaryConfigError::CollationParsingError(s.to_owned())),
-        }
-    }
 }
 
 impl CollationMode {

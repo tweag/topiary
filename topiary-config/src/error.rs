@@ -6,7 +6,6 @@ pub type TopiaryConfigResult<T> = result::Result<T, TopiaryConfigError>;
 pub enum TopiaryConfigError {
     FileNotFound(path::PathBuf),
     ParsingError(toml::de::Error),
-    CollationParsingError(String),
     #[cfg(not(wasm))]
     UnknownLanguage(String),
     UnknownExtension(String),
@@ -24,7 +23,6 @@ impl fmt::Display for TopiaryConfigError {
         match self {
             TopiaryConfigError::FileNotFound(path) => write!(f, "We tried to find your configuration file at {}, but failed to do so. Make sure the file exists.", path.to_string_lossy()),
             TopiaryConfigError::ParsingError(error) => write!(f, "We could not parse the specified configuration file. Our toml parser produced the following error: {error}"),
-            TopiaryConfigError::CollationParsingError(arg) => write!(f, "We tried to parse the provided collation mode \"{arg}\", but were unable to do so"),
             TopiaryConfigError::UnknownLanguage(lang) => write!(f, "You were looking for language \"{lang}\", but we do not know that language."),
             TopiaryConfigError::UnknownExtension(ext) => write!(f, "You tried to format a file with extension: \"{ext}\", but we do not know that extension. Make sure the extension is in your configuration file!"),
             TopiaryConfigError::NoExtension(path) => write!(f, "You tried to format {} without specifying a language, but we cannot automatically detect the language because we can't find the filetype extension.", path.to_string_lossy()),

@@ -30,3 +30,6 @@ tree-sitter-nickel.workspace = true
 tree-sitter-query.workspace = true
 tree-sitter-ocaml.workspace = true
 tree-sitter-ocamllex.workspace = true
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+clap.workspace = true

@@ -1301,6 +1301,7 @@ dependencies = [
 name = "topiary-config"
 version = "0.3.0"
 dependencies = [
+ "clap",
  "directories",
  "indoc",
  "itertools 0.11.0",
