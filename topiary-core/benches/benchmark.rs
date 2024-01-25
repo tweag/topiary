@@ -7,7 +7,7 @@ use topiary_core::{Configuration, TopiaryQuery};
 
 async fn format() {
     let input = fs::read_to_string("tests/samples/input/ocaml.ml").unwrap();
-    let query_content = fs::read_to_string("../queries/queries/ocaml.scm").unwrap();
+    let query_content = fs::read_to_string("../topiary-queries/queries/ocaml.scm").unwrap();
     let configuration = Configuration::parse_default_configuration().unwrap();
     let language = configuration.get_language("ocaml").unwrap();
     let grammar = language.grammar().await.unwrap();

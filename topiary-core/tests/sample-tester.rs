@@ -70,7 +70,7 @@ async fn input_output_tester() {
 #[test(tokio::test)]
 async fn formatted_query_tester() {
     let config = Configuration::parse_default_configuration().unwrap();
-    let language_dir = fs::read_dir("../queries/queries").unwrap();
+    let language_dir = fs::read_dir("../topiary-queries/queries").unwrap();
 
     for file in language_dir {
         let file = file.unwrap();

@@ -20,11 +20,11 @@ fn to_js_string(path: PathBuf) -> String {
 }
 
 fn main() {
-    println!("cargo:rerun-if-changed=../queries/queries/");
-    println!("cargo:rerun-if-changed=../core/tests/samples/input/");
+    println!("cargo:rerun-if-changed=../topiary-queries/queries/");
+    println!("cargo:rerun-if-changed=../topiary-core/tests/samples/input/");
 
     // Export test samples and queries as JS files
-    let language_dir = current_dir().unwrap().join("../queries/queries/");
+    let language_dir = current_dir().unwrap().join("../topiary-queries/queries/");
     let language_files = fs::read_dir(language_dir).unwrap();
 
     let mut language_map: HashMap<String, String> = HashMap::new();
@@ -48,7 +48,7 @@ fn main() {
         }
     }
 
-    let input_dir = current_dir().unwrap().join("../core/tests/samples/input/");
+    let input_dir = current_dir().unwrap().join("../topiary-core/tests/samples/input/");
     let input_files = fs::read_dir(input_dir).unwrap();
 
     let mut input_map: HashMap<String, String> = HashMap::new();
