@@ -23,7 +23,6 @@ license.workspace = true
 crate-type = ["cdylib"]
 
 [dependencies]
-cfg-if = { workspace = true }
 topiary = { path = "../topiary" }
 topiary-config = { path = "../topiary-config" }
 tree-sitter-facade = { workspace = true }

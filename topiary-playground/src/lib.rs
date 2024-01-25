@@ -13,13 +13,15 @@ struct QueryState {
 static QUERY_STATE: Mutex<Option<QueryState>> = Mutex::new(None);
 
 #[wasm_bindgen(js_name = topiaryInit)]
+#[cfg(not(feature = "console_error_panic_hook"))]
 pub async fn topiary_init() -> Result<(), JsError> {
-    cfg_if::cfg_if! {
-        if #[cfg(feature = "console_error_panic_hook")] {
-            std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-        }
-    }
+    TreeSitter::init().await
+}
 
+#[wasm_bindgen(js_name = topiaryInit)]
+#[cfg(feature = "console_error_panic_hook")]
+pub async fn topiary_init() -> Result<(), JsError> {
+    std::panic::set_hook(Box::new(console_error_panic_hook::hook));
     TreeSitter::init().await
 }
 
