@@ -20,7 +20,9 @@ mod native {
                 .iter()
                 .map(|s| match s {
                     tree_sitter::QueryPredicateArg::String(s) => s.to_string(),
-                    _ => unimplemented!("Only string predicate arguments are currently implemented."),
+                    _ => {
+                        unimplemented!("Only string predicate arguments are currently implemented.")
+                    }
                 })
                 .collect();
 
@@ -41,14 +43,11 @@ mod native {
         }
     }
 
-    impl<'query> std::panic::RefUnwindSafe for QueryPredicate<'query> {
-    }
+    impl<'query> std::panic::RefUnwindSafe for QueryPredicate<'query> {}
 
-    impl<'query> Unpin for QueryPredicate<'query> {
-    }
+    impl<'query> Unpin for QueryPredicate<'query> {}
 
-    impl<'query> std::panic::UnwindSafe for QueryPredicate<'query> {
-    }
+    impl<'query> std::panic::UnwindSafe for QueryPredicate<'query> {}
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -77,7 +76,8 @@ mod wasm {
                 .iter()
                 .cloned()
                 .map(|value| {
-                    let arg = value.unchecked_into::<topiary_web_tree_sitter_sys::QueryPredicateArg>();
+                    let arg =
+                        value.unchecked_into::<topiary_web_tree_sitter_sys::QueryPredicateArg>();
                     arg.value().as_string().unwrap()
                 })
                 .collect();
@@ -99,14 +99,11 @@ mod wasm {
         }
     }
 
-    impl std::panic::RefUnwindSafe for QueryPredicate {
-    }
+    impl std::panic::RefUnwindSafe for QueryPredicate {}
 
-    impl Unpin for QueryPredicate {
-    }
+    impl Unpin for QueryPredicate {}
 
-    impl std::panic::UnwindSafe for QueryPredicate {
-    }
+    impl std::panic::UnwindSafe for QueryPredicate {}
 }
 
 #[cfg(target_arch = "wasm32")]

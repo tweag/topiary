@@ -68,20 +68,15 @@ mod native {
         }
     }
 
-    impl std::panic::RefUnwindSafe for Language {
-    }
+    impl std::panic::RefUnwindSafe for Language {}
 
-    unsafe impl Send for Language {
-    }
+    unsafe impl Send for Language {}
 
-    unsafe impl Sync for Language {
-    }
+    unsafe impl Sync for Language {}
 
-    impl Unpin for Language {
-    }
+    impl Unpin for Language {}
 
-    impl std::panic::UnwindSafe for Language {
-    }
+    impl std::panic::UnwindSafe for Language {}
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -158,20 +153,15 @@ mod wasm {
         }
     }
 
-    impl std::panic::RefUnwindSafe for Language {
-    }
+    impl std::panic::RefUnwindSafe for Language {}
 
-    unsafe impl Send for Language {
-    }
+    unsafe impl Send for Language {}
 
-    unsafe impl Sync for Language {
-    }
+    unsafe impl Sync for Language {}
 
-    impl Unpin for Language {
-    }
+    impl Unpin for Language {}
 
-    impl std::panic::UnwindSafe for Language {
-    }
+    impl std::panic::UnwindSafe for Language {}
 }
 
 #[cfg(target_arch = "wasm32")]

@@ -70,20 +70,15 @@ mod native {
         }
     }
 
-    impl std::panic::RefUnwindSafe for Range {
-    }
+    impl std::panic::RefUnwindSafe for Range {}
 
-    unsafe impl Send for Range {
-    }
+    unsafe impl Send for Range {}
 
-    unsafe impl Sync for Range {
-    }
+    unsafe impl Sync for Range {}
 
-    impl Unpin for Range {
-    }
+    impl Unpin for Range {}
 
-    impl std::panic::UnwindSafe for Range {
-    }
+    impl std::panic::UnwindSafe for Range {}
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -103,7 +98,8 @@ mod wasm {
         pub fn new(start_byte: u32, end_byte: u32, start_point: &Point, end_point: &Point) -> Self {
             let start_point = &start_point.inner;
             let end_point = &end_point.inner;
-            topiary_web_tree_sitter_sys::Range::new(start_point, end_point, start_byte, end_byte).into()
+            topiary_web_tree_sitter_sys::Range::new(start_point, end_point, start_byte, end_byte)
+                .into()
         }
 
         #[inline]
@@ -152,20 +148,15 @@ mod wasm {
         }
     }
 
-    impl std::panic::RefUnwindSafe for Range {
-    }
+    impl std::panic::RefUnwindSafe for Range {}
 
-    unsafe impl Send for Range {
-    }
+    unsafe impl Send for Range {}
 
-    unsafe impl Sync for Range {
-    }
+    unsafe impl Sync for Range {}
 
-    impl Unpin for Range {
-    }
+    impl Unpin for Range {}
 
-    impl std::panic::UnwindSafe for Range {
-    }
+    impl std::panic::UnwindSafe for Range {}
 }
 
 #[cfg(target_arch = "wasm32")]

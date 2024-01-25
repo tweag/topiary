@@ -17,8 +17,7 @@ mod native {
         }
     }
 
-    impl std::error::Error for IncludedRangesError {
-    }
+    impl std::error::Error for IncludedRangesError {}
 
     impl From<tree_sitter::IncludedRangesError> for IncludedRangesError {
         #[inline]
@@ -27,11 +26,9 @@ mod native {
         }
     }
 
-    unsafe impl Send for IncludedRangesError {
-    }
+    unsafe impl Send for IncludedRangesError {}
 
-    unsafe impl Sync for IncludedRangesError {
-    }
+    unsafe impl Sync for IncludedRangesError {}
 
     #[derive(Eq, PartialEq)]
     pub struct QueryError {
@@ -50,8 +47,7 @@ mod native {
         }
     }
 
-    impl std::error::Error for QueryError {
-    }
+    impl std::error::Error for QueryError {}
 
     impl From<tree_sitter::QueryError> for QueryError {
         #[inline]
@@ -60,11 +56,9 @@ mod native {
         }
     }
 
-    unsafe impl Send for QueryError {
-    }
+    unsafe impl Send for QueryError {}
 
-    unsafe impl Sync for QueryError {
-    }
+    unsafe impl Sync for QueryError {}
 
     #[derive(Eq, PartialEq)]
     pub struct LanguageError {
@@ -83,8 +77,7 @@ mod native {
         }
     }
 
-    impl std::error::Error for LanguageError {
-    }
+    impl std::error::Error for LanguageError {}
 
     impl From<tree_sitter::LanguageError> for LanguageError {
         #[inline]
@@ -93,11 +86,9 @@ mod native {
         }
     }
 
-    unsafe impl Send for LanguageError {
-    }
+    unsafe impl Send for LanguageError {}
 
-    unsafe impl Sync for LanguageError {
-    }
+    unsafe impl Sync for LanguageError {}
 
     #[derive(Eq, PartialEq)]
     pub struct ParserError {
@@ -116,14 +107,11 @@ mod native {
         }
     }
 
-    impl std::error::Error for ParserError {
-    }
+    impl std::error::Error for ParserError {}
 
-    unsafe impl Send for ParserError {
-    }
+    unsafe impl Send for ParserError {}
 
-    unsafe impl Sync for ParserError {
-    }
+    unsafe impl Sync for ParserError {}
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -136,11 +124,9 @@ mod wasm {
         pub(crate) inner: js_sys::Error,
     }
 
-    unsafe impl Send for IncludedRangesError {
-    }
+    unsafe impl Send for IncludedRangesError {}
 
-    unsafe impl Sync for IncludedRangesError {
-    }
+    unsafe impl Sync for IncludedRangesError {}
 
     impl std::fmt::Debug for IncludedRangesError {
         fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -154,8 +140,7 @@ mod wasm {
         }
     }
 
-    impl std::error::Error for IncludedRangesError {
-    }
+    impl std::error::Error for IncludedRangesError {}
 
     impl From<js_sys::Error> for IncludedRangesError {
         #[inline]
@@ -169,11 +154,9 @@ mod wasm {
         pub(crate) inner: topiary_web_tree_sitter_sys::LanguageError,
     }
 
-    unsafe impl Send for LanguageError {
-    }
+    unsafe impl Send for LanguageError {}
 
-    unsafe impl Sync for LanguageError {
-    }
+    unsafe impl Sync for LanguageError {}
 
     impl std::fmt::Debug for LanguageError {
         fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -187,8 +170,7 @@ mod wasm {
         }
     }
 
-    impl std::error::Error for LanguageError {
-    }
+    impl std::error::Error for LanguageError {}
 
     impl From<topiary_web_tree_sitter_sys::LanguageError> for LanguageError {
         #[inline]
@@ -202,11 +184,9 @@ mod wasm {
         pub(crate) inner: topiary_web_tree_sitter_sys::ParserError,
     }
 
-    unsafe impl Send for ParserError {
-    }
+    unsafe impl Send for ParserError {}
 
-    unsafe impl Sync for ParserError {
-    }
+    unsafe impl Sync for ParserError {}
 
     impl std::fmt::Debug for ParserError {
         fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -220,8 +200,7 @@ mod wasm {
         }
     }
 
-    impl std::error::Error for ParserError {
-    }
+    impl std::error::Error for ParserError {}
 
     impl From<topiary_web_tree_sitter_sys::ParserError> for ParserError {
         #[inline]
@@ -235,11 +214,9 @@ mod wasm {
         pub(crate) inner: topiary_web_tree_sitter_sys::QueryError,
     }
 
-    unsafe impl Send for QueryError {
-    }
+    unsafe impl Send for QueryError {}
 
-    unsafe impl Sync for QueryError {
-    }
+    unsafe impl Sync for QueryError {}
 
     impl std::fmt::Debug for QueryError {
         fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -253,8 +230,7 @@ mod wasm {
         }
     }
 
-    impl std::error::Error for QueryError {
-    }
+    impl std::error::Error for QueryError {}
 
     impl From<topiary_web_tree_sitter_sys::QueryError> for QueryError {
         #[inline]

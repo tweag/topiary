@@ -1,8 +1,8 @@
 #[cfg(not(target_arch = "wasm32"))]
 mod native {
     use crate::{
-        error::QueryError, language::Language, node::Node, query_cursor::QueryCursor, query_match::QueryMatch,
-        query_predicate::QueryPredicate,
+        error::QueryError, language::Language, node::Node, query_cursor::QueryCursor,
+        query_match::QueryMatch, query_predicate::QueryPredicate,
     };
 
     pub struct Query {
@@ -23,7 +23,10 @@ mod native {
             source: &'a [u8],
             cursor: &'a mut QueryCursor,
         ) -> impl Iterator<Item = QueryMatch<'a>> + 'a {
-            cursor.inner.matches(&self.inner, node.inner, source).map(Into::into)
+            cursor
+                .inner
+                .matches(&self.inner, node.inner, source)
+                .map(Into::into)
         }
 
         #[inline]
@@ -35,7 +38,11 @@ mod native {
         #[inline]
         pub fn general_predicates(&self, index: u32) -> Vec<QueryPredicate> {
             let index = index as usize;
-            self.inner.general_predicates(index).iter().map(Into::into).collect()
+            self.inner
+                .general_predicates(index)
+                .iter()
+                .map(Into::into)
+                .collect()
         }
 
         #[inline]
@@ -67,20 +74,15 @@ mod native {
         }
     }
 
-    impl std::panic::RefUnwindSafe for Query {
-    }
+    impl std::panic::RefUnwindSafe for Query {}
 
-    unsafe impl Send for Query {
-    }
+    unsafe impl Send for Query {}
 
-    unsafe impl Sync for Query {
-    }
+    unsafe impl Sync for Query {}
 
-    impl Unpin for Query {
-    }
+    impl Unpin for Query {}
 
-    impl std::panic::UnwindSafe for Query {
-    }
+    impl std::panic::UnwindSafe for Query {}
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -89,8 +91,8 @@ pub use native::*;
 #[cfg(target_arch = "wasm32")]
 mod wasm {
     use crate::{
-        error::QueryError, language::Language, node::Node, query_cursor::QueryCursor, query_match::QueryMatch,
-        query_predicate::QueryPredicate,
+        error::QueryError, language::Language, node::Node, query_cursor::QueryCursor,
+        query_match::QueryMatch, query_predicate::QueryPredicate,
     };
     use wasm_bindgen::JsCast;
 
@@ -117,13 +119,15 @@ mod wasm {
                 .into_vec()
                 .into_iter()
                 .map(|value| {
-                    value.unchecked_into::<topiary_web_tree_sitter_sys::QueryMatch>().into()
+                    value
+                        .unchecked_into::<topiary_web_tree_sitter_sys::QueryMatch>()
+                        .into()
                 })
         }
 
         #[inline]
         pub fn capture_names(&self) -> Vec<String> {
-            // The Wasm code does not use this when looking up 
+            // The Wasm code does not use this when looking up
             // QueryCapture::name, the way the native code needs to.
             vec![]
         }
@@ -136,7 +140,9 @@ mod wasm {
                 .into_vec()
                 .into_iter()
                 .map(|value| {
-                    value.unchecked_into::<topiary_web_tree_sitter_sys::QueryPredicate>().into()
+                    value
+                        .unchecked_into::<topiary_web_tree_sitter_sys::QueryPredicate>()
+                        .into()
                 })
                 .collect();
 
@@ -164,20 +170,15 @@ mod wasm {
         }
     }
 
-    impl std::panic::RefUnwindSafe for Query {
-    }
+    impl std::panic::RefUnwindSafe for Query {}
 
-    unsafe impl Send for Query {
-    }
+    unsafe impl Send for Query {}
 
-    unsafe impl Sync for Query {
-    }
+    unsafe impl Sync for Query {}
 
-    impl Unpin for Query {
-    }
+    impl Unpin for Query {}
 
-    impl std::panic::UnwindSafe for Query {
-    }
+    impl std::panic::UnwindSafe for Query {}
 }
 
 #[cfg(target_arch = "wasm32")]

@@ -41,7 +41,11 @@ mod native {
         }
 
         #[inline]
-        pub fn parse(&mut self, text: impl AsRef<[u8]>, old_tree: Option<&Tree>) -> Result<Option<Tree>, ParserError> {
+        pub fn parse(
+            &mut self,
+            text: impl AsRef<[u8]>,
+            old_tree: Option<&Tree>,
+        ) -> Result<Option<Tree>, ParserError> {
             let old_tree = old_tree.map(|tree| &tree.inner);
             Ok(self.inner.parse(text, old_tree).map(Into::into))
         }
@@ -65,9 +69,13 @@ mod native {
         where
             T: AsRef<[u16]>,
         {
-            let mut callback = |offset, inner| callback(u32::try_from(offset).unwrap(), Point { inner });
+            let mut callback =
+                |offset, inner| callback(u32::try_from(offset).unwrap(), Point { inner });
             let old_tree = old_tree.map(|tree| &tree.inner);
-            Ok(self.inner.parse_utf16_with(&mut callback, old_tree).map(Into::into))
+            Ok(self
+                .inner
+                .parse_utf16_with(&mut callback, old_tree)
+                .map(Into::into))
         }
 
         #[inline]
@@ -79,9 +87,13 @@ mod native {
         where
             T: AsRef<[u8]>,
         {
-            let mut callback = |offset, inner| callback(u32::try_from(offset).unwrap(), Point { inner });
+            let mut callback =
+                |offset, inner| callback(u32::try_from(offset).unwrap(), Point { inner });
             let old_tree = old_tree.map(|tree| &tree.inner);
-            Ok(self.inner.parse_with(&mut callback, old_tree).map(Into::into))
+            Ok(self
+                .inner
+                .parse_with(&mut callback, old_tree)
+                .map(Into::into))
         }
 
         #[cfg(unix)]
@@ -141,17 +153,13 @@ mod native {
         }
     }
 
-    impl std::panic::RefUnwindSafe for Parser {
-    }
+    impl std::panic::RefUnwindSafe for Parser {}
 
-    unsafe impl Send for Parser {
-    }
+    unsafe impl Send for Parser {}
 
-    impl Unpin for Parser {
-    }
+    impl Unpin for Parser {}
 
-    impl std::panic::UnwindSafe for Parser {
-    }
+    impl std::panic::UnwindSafe for Parser {}
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -175,8 +183,7 @@ mod wasm {
         options: topiary_web_tree_sitter_sys::ParseOptions,
     }
 
-    unsafe impl Send for Parser {
-    }
+    unsafe impl Send for Parser {}
 
     impl Parser {
         #[inline]
@@ -214,7 +221,11 @@ mod wasm {
         }
 
         #[inline]
-        pub fn parse(&mut self, text: impl AsRef<[u8]>, old_tree: Option<&Tree>) -> Result<Option<Tree>, ParserError> {
+        pub fn parse(
+            &mut self,
+            text: impl AsRef<[u8]>,
+            old_tree: Option<&Tree>,
+        ) -> Result<Option<Tree>, ParserError> {
             let text = text.as_ref();
             let text = unsafe { std::str::from_utf8_unchecked(text) };
             let text = &text.into();
@@ -256,14 +267,22 @@ mod wasm {
         where
             T: AsRef<[u8]>,
         {
-            let closure = Closure::wrap(Box::new(move |start_index, start_point: Option<_>, end_index| {
-                let start_point = start_point.map(Into::into);
-                let result = callback(start_index, start_point, end_index);
-                let result = result.as_ref();
-                let result = unsafe { std::str::from_utf8_unchecked(result) };
-                Some(result.into())
-            })
-                as Box<dyn FnMut(u32, Option<topiary_web_tree_sitter_sys::Point>, Option<u32>) -> Option<JsString>>);
+            let closure = Closure::wrap(Box::new(
+                move |start_index, start_point: Option<_>, end_index| {
+                    let start_point = start_point.map(Into::into);
+                    let result = callback(start_index, start_point, end_index);
+                    let result = result.as_ref();
+                    let result = unsafe { std::str::from_utf8_unchecked(result) };
+                    Some(result.into())
+                },
+            )
+                as Box<
+                    dyn FnMut(
+                        u32,
+                        Option<topiary_web_tree_sitter_sys::Point>,
+                        Option<u32>,
+                    ) -> Option<JsString>,
+                >);
             let input = closure.as_ref().unchecked_ref();
             let old_tree = old_tree.map(|tree| &tree.inner);
             let options = Some(&self.options);
@@ -289,7 +308,10 @@ mod wasm {
         #[inline]
         pub fn set_included_ranges(&mut self, ranges: &[Range]) -> Result<(), IncludedRangesError> {
             // FIXME: check `ranges[i].end_byte <= ranges[i + 1].start_byte` or throw
-            let ranges = ranges.iter().map(|range| &range.inner).collect::<js_sys::Array>();
+            let ranges = ranges
+                .iter()
+                .map(|range| &range.inner)
+                .collect::<js_sys::Array>();
             let options = topiary_web_tree_sitter_sys::ParseOptions::new(Some(&ranges));
             self.options = options;
             Ok(())
@@ -344,14 +366,11 @@ mod wasm {
         }
     }
 
-    impl std::panic::RefUnwindSafe for Parser {
-    }
+    impl std::panic::RefUnwindSafe for Parser {}
 
-    impl Unpin for Parser {
-    }
+    impl Unpin for Parser {}
 
-    impl std::panic::UnwindSafe for Parser {
-    }
+    impl std::panic::UnwindSafe for Parser {}
 }
 
 #[cfg(target_arch = "wasm32")]

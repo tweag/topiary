@@ -1,6 +1,9 @@
 #[cfg(not(target_arch = "wasm32"))]
 mod native {
-    use crate::{input_edit::InputEdit, language::Language, node::Node, range::Range, tree_cursor::TreeCursor};
+    use crate::{
+        input_edit::InputEdit, language::Language, node::Node, range::Range,
+        tree_cursor::TreeCursor,
+    };
 
     #[derive(Clone)]
     pub struct Tree {
@@ -13,7 +16,9 @@ mod native {
         }
 
         pub fn changed_ranges(&self, other: &Tree) -> impl ExactSizeIterator<Item = Range> {
-            self.inner.changed_ranges(&other.inner).map(|inner| Range { inner })
+            self.inner
+                .changed_ranges(&other.inner)
+                .map(|inner| Range { inner })
         }
 
         pub fn language(&self) -> Language {
@@ -42,20 +47,15 @@ mod native {
         }
     }
 
-    impl std::panic::RefUnwindSafe for Tree {
-    }
+    impl std::panic::RefUnwindSafe for Tree {}
 
-    unsafe impl Send for Tree {
-    }
+    unsafe impl Send for Tree {}
 
-    unsafe impl Sync for Tree {
-    }
+    unsafe impl Sync for Tree {}
 
-    impl Unpin for Tree {
-    }
+    impl Unpin for Tree {}
 
-    impl std::panic::UnwindSafe for Tree {
-    }
+    impl std::panic::UnwindSafe for Tree {}
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -63,7 +63,10 @@ pub use native::*;
 
 #[cfg(target_arch = "wasm32")]
 mod wasm {
-    use crate::{input_edit::InputEdit, language::Language, node::Node, range::Range, tree_cursor::TreeCursor};
+    use crate::{
+        input_edit::InputEdit, language::Language, node::Node, range::Range,
+        tree_cursor::TreeCursor,
+    };
     use wasm_bindgen::JsCast;
 
     pub struct Tree {
@@ -97,7 +100,11 @@ mod wasm {
                 .get_changed_ranges(&other.inner)
                 .into_vec()
                 .into_iter()
-                .map(|value| value.unchecked_into::<topiary_web_tree_sitter_sys::Range>().into())
+                .map(|value| {
+                    value
+                        .unchecked_into::<topiary_web_tree_sitter_sys::Range>()
+                        .into()
+                })
         }
 
         pub fn language(&self) -> Language {
@@ -138,20 +145,15 @@ mod wasm {
         }
     }
 
-    impl std::panic::RefUnwindSafe for Tree {
-    }
+    impl std::panic::RefUnwindSafe for Tree {}
 
-    unsafe impl Send for Tree {
-    }
+    unsafe impl Send for Tree {}
 
-    unsafe impl Sync for Tree {
-    }
+    unsafe impl Sync for Tree {}
 
-    impl Unpin for Tree {
-    }
+    impl Unpin for Tree {}
 
-    impl std::panic::UnwindSafe for Tree {
-    }
+    impl std::panic::UnwindSafe for Tree {}
 }
 
 #[cfg(target_arch = "wasm32")]

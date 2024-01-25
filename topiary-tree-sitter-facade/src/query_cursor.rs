@@ -25,14 +25,11 @@ mod native {
         }
     }
 
-    impl std::panic::RefUnwindSafe for QueryCursor {
-    }
+    impl std::panic::RefUnwindSafe for QueryCursor {}
 
-    impl Unpin for QueryCursor {
-    }
+    impl Unpin for QueryCursor {}
 
-    impl std::panic::UnwindSafe for QueryCursor {
-    }
+    impl std::panic::UnwindSafe for QueryCursor {}
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -56,14 +53,11 @@ mod wasm {
         }
     }
 
-    impl std::panic::RefUnwindSafe for QueryCursor {
-    }
+    impl std::panic::RefUnwindSafe for QueryCursor {}
 
-    impl Unpin for QueryCursor {
-    }
+    impl Unpin for QueryCursor {}
 
-    impl std::panic::UnwindSafe for QueryCursor {
-    }
+    impl std::panic::UnwindSafe for QueryCursor {}
 }
 
 #[cfg(target_arch = "wasm32")]

@@ -53,20 +53,15 @@ mod native {
         }
     }
 
-    impl std::panic::RefUnwindSafe for Point {
-    }
+    impl std::panic::RefUnwindSafe for Point {}
 
-    unsafe impl Send for Point {
-    }
+    unsafe impl Send for Point {}
 
-    unsafe impl Sync for Point {
-    }
+    unsafe impl Sync for Point {}
 
-    impl Unpin for Point {
-    }
+    impl Unpin for Point {}
 
-    impl std::panic::UnwindSafe for Point {
-    }
+    impl std::panic::UnwindSafe for Point {}
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -123,20 +118,15 @@ mod wasm {
         }
     }
 
-    impl std::panic::RefUnwindSafe for Point {
-    }
+    impl std::panic::RefUnwindSafe for Point {}
 
-    unsafe impl Send for Point {
-    }
+    unsafe impl Send for Point {}
 
-    unsafe impl Sync for Point {
-    }
+    unsafe impl Sync for Point {}
 
-    impl Unpin for Point {
-    }
+    impl Unpin for Point {}
 
-    impl std::panic::UnwindSafe for Point {
-    }
+    impl std::panic::UnwindSafe for Point {}
 }
 
 #[cfg(target_arch = "wasm32")]
