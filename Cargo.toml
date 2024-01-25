@@ -70,7 +70,7 @@ tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-quer
 tree-sitter-rust = { git = "https://github.com/tree-sitter/tree-sitter-rust.git" }
 tree-sitter-toml = { git = "https://github.com/tree-sitter/tree-sitter-toml.git" }
 unescape = "0.1"
-wasm-bindgen = "0.2"
+wasm-bindgen = "=0.2.84"
 wasm-bindgen-futures = "0.4"
 wasm-bindgen-test = "0.3"
 web-sys = "0.3"
