@@ -1,4 +1,4 @@
-//! Configuration for Topiary can be sourced from either that which is built-in, for from disk.
+//! Configuration for Topiary can be sourced from either that which is built-in, or from disk.
 
 use std::{env::current_dir, fmt, path::PathBuf};
 

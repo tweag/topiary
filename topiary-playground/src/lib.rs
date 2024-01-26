@@ -1,4 +1,4 @@
-/// We create a privdte module for all the wasm code, and then export every symbol in that module.
+/// We create a private module for all the wasm code, and then export every symbol in that module.
 /// This prevents us from having to declare the `target_arch` for every symbol.
 
 #[cfg(target_arch = "wasm32")]
