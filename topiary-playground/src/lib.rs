@@ -7,8 +7,8 @@ pub use wasm_mod::*;
 #[cfg(target_arch = "wasm32")]
 mod wasm_mod {
     use std::sync::Mutex;
-    use topiary::{formatter, FormatterResult, Language, Operation, TopiaryQuery};
     use topiary_config::Configuration;
+    use topiary_core::{formatter, FormatterResult, Language, Operation, TopiaryQuery};
     use topiary_tree_sitter_facade::TreeSitter;
     use wasm_bindgen::prelude::*;
 
@@ -87,7 +87,7 @@ mod wasm_mod {
 
                 Ok(String::from_utf8(output)?)
             }
-            None => Err(topiary::FormatterError::Internal(
+            None => Err(topiary_core::FormatterError::Internal(
                 "The query has not been initialized.".into(),
                 None,
             )),

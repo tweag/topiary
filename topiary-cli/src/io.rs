@@ -7,8 +7,8 @@ use std::{
 };
 
 use tempfile::NamedTempFile;
-use topiary_core::{Language, TopiaryQuery};
 use topiary_config::Configuration;
+use topiary_core::{Language, TopiaryQuery};
 
 use crate::{
     cli::{AtLeastOneInput, ExactlyOneInput, FromStdin},

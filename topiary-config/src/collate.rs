@@ -112,8 +112,9 @@ mod test_config_collation {
     use crate::serde::Serialisation;
 
     // NOTE PartialEq for toml::Value is (understandably) order sensitive over array elements, so
-    // we deserialse to `topiary::Configuration` for equality testing. This also has the effect of
-    // side-stepping potential duplication, from concatenation, when using `CollationMode::Merge`.
+    // we deserialse to `topiary_config::Configuration` for equality testing. This also has the
+    // effect of side-stepping potential duplication, from concatenation, when using
+    // `CollationMode::Merge`.
 
     static BASE: &str = r#"
         [[language]]
