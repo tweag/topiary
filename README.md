@@ -233,9 +233,7 @@ Options:
           Do not check that formatting twice gives the same output
 
   -l, --language <LANGUAGE>
-          Topiary supported language (for formatting stdin)
-
-          [possible values: json, nickel, ocaml, ocaml-interface, ocamllex, toml]
+          Topiary language identifier (for formatting stdin)
 
   -q, --query <QUERY>
           Topiary query file override (when formatting stdin)
@@ -301,9 +299,7 @@ Options:
           - json: JSON serialisation
 
   -l, --language <LANGUAGE>
-          Topiary supported language (for formatting stdin)
-
-          [possible values: json, nickel, ocaml, ocaml-interface, ocamllex, toml]
+          Topiary language identifier (for formatting stdin)
 
   -q, --query <QUERY>
           Topiary query file override (when formatting stdin)

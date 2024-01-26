@@ -1,5 +1,6 @@
-use std::{error, fmt, io, process::ExitCode, result};
+use std::{error, fmt, io, path::PathBuf, process::ExitCode, result};
 use topiary_core::FormatterError;
+use topiary_config::error::TopiaryConfigError;
 
 /// A convenience wrapper around `std::result::Result<T, TopiaryError>`.
 pub type CLIResult<T> = result::Result<T, TopiaryError>;
@@ -11,6 +12,7 @@ pub type CLIResult<T> = result::Result<T, TopiaryError>;
 pub enum TopiaryError {
     Lib(FormatterError),
     Bin(String, Option<CLIError>),
+    Config(topiary_config::error::TopiaryConfigError),
 }
 
 /// A subtype of `TopiaryError::Bin`
@@ -20,6 +22,10 @@ pub enum CLIError {
     Generic(Box<dyn error::Error>),
     Multiple,
     UnsupportedLanguage(String),
+
+    /// Could not detect the input language from the (filename,
+    /// Option<extension>)
+    LanguageDetection(PathBuf, Option<String>),
 }
 
 /// # Safety
@@ -38,8 +44,9 @@ unsafe impl Sync for TopiaryError {}
 impl fmt::Display for TopiaryError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Lib(error) => write!(f, "{error}"),
-            Self::Bin(message, _) => write!(f, "{message}"),
+            TopiaryError::Lib(error) => write!(f, "{error}"),
+            TopiaryError::Bin(message, _) => write!(f, "{message}"),
+            TopiaryError::Config(e) => write!(f, "{e}"),
         }
     }
 }
@@ -47,12 +54,14 @@ impl fmt::Display for TopiaryError {
 impl error::Error for TopiaryError {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self {
-            Self::Lib(error) => error.source(),
-            Self::Bin(_, Some(CLIError::IOError(error))) => Some(error),
-            Self::Bin(_, Some(CLIError::Generic(error))) => error.source(),
-            Self::Bin(_, Some(CLIError::Multiple)) => None,
-            Self::Bin(_, Some(CLIError::UnsupportedLanguage(_))) => None,
-            Self::Bin(_, None) => None,
+            TopiaryError::Lib(error) => error.source(),
+            TopiaryError::Bin(_, Some(CLIError::IOError(error))) => Some(error),
+            TopiaryError::Bin(_, Some(CLIError::Generic(error))) => error.source(),
+            TopiaryError::Bin(_, Some(CLIError::Multiple)) => None,
+            TopiaryError::Bin(_, Some(CLIError::UnsupportedLanguage(_))) => None,
+            TopiaryError::Bin(_, Some(CLIError::LanguageDetection(_, _))) => None,
+            TopiaryError::Bin(_, None) => None,
+            TopiaryError::Config(error) => error.source(),
         }
     }
 }
@@ -69,8 +78,7 @@ impl From<TopiaryError> for ExitCode {
             // Idempotency errors: Exit 7
             TopiaryError::Lib(FormatterError::Idempotence) => 7,
 
-            // Language detection errors: Exit 6
-            TopiaryError::Lib(FormatterError::LanguageDetection(_, _)) => 6,
+            // Exit 6 no longer exists and is now reserved for compatibility reasons
 
             // Parsing errors: Exit 5
             TopiaryError::Lib(FormatterError::Parsing { .. }) => 5,
@@ -96,6 +104,12 @@ impl From<TopiaryError> for ExitCode {
 impl From<FormatterError> for TopiaryError {
     fn from(e: FormatterError) -> Self {
         Self::Lib(e)
+    }
+}
+
+impl From<TopiaryConfigError> for TopiaryError {
+    fn from(e: TopiaryConfigError) -> Self {
+        Self::Config(e)
     }
 }
 
@@ -142,15 +156,6 @@ impl From<toml::de::Error> for TopiaryError {
         TopiaryError::Bin(
             "Could not parse configuration".into(),
             Some(CLIError::Generic(Box::new(e))),
-        )
-    }
-}
-
-impl From<serde_toml_merge::Error> for TopiaryError {
-    fn from(e: serde_toml_merge::Error) -> Self {
-        TopiaryError::Bin(
-            format!("Could not collate configuration from {}", e.path),
-            None,
         )
     }
 }

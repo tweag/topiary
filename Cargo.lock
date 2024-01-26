@@ -299,6 +299,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "acbf1af155f9b9ef647e42cdc158db4b64a1b61f743629225fde6f3e0be2a7c7"
 
 [[package]]
+name = "console_error_panic_hook"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a06aeb73f470f66dcdbf7223caeebb85984942f22f1adb2a088cf9668146bbbc"
+dependencies = [
+ "cfg-if",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "criterion"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -762,18 +772,18 @@ dependencies = [
 
 [[package]]
 name = "pin-project"
-version = "1.1.3"
+version = "1.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fda4ed1c6c173e3fc7a83629421152e01d7b1f9b7f65fb301e490e8cfc656422"
+checksum = "0302c4a0442c456bd56f841aee5c3bfd17967563f6fadc9ceb9f9c23cf3807e0"
 dependencies = [
  "pin-project-internal",
 ]
 
 [[package]]
 name = "pin-project-internal"
-version = "1.1.3"
+version = "1.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4359fd9c9171ec6e8c62926d6faaf553a8dc3f64e1507e76da7911b4f6a04405"
+checksum = "266c042b60c9c76b8d53061e52b2e0d1116abc57cefc8c5cd671619a56ac3690"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -942,9 +952,9 @@ dependencies = [
 
 [[package]]
 name = "regex-automata"
-version = "0.4.4"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b7fa1134405e2ec9353fd416b17f8dacd46c473d7d3fd1cf202706a14eb792a"
+checksum = "5bb987efffd3c6d0d8f5f89510bb458559eab11e4f869acb20bf845e016259cd"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -992,21 +1002,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "scoped-tls"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1cf6437eb19a8f4a6cc0f7dca544973b0b78843adbfeb3683d1a94a0024a294"
+
+[[package]]
 name = "serde"
 version = "1.0.195"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "63261df402c67811e9ac6def069e4786148c4563f4b50fd4bf30aa370d626b02"
 dependencies = [
  "serde_derive",
-]
-
-[[package]]
-name = "serde-toml-merge"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af5ae5f42c16d60b098ae5d4afd75c1d3b6512e6ca5d0b9b916e2ced30df264c"
-dependencies = [
- "toml",
 ]
 
 [[package]]
@@ -1255,21 +1262,44 @@ dependencies = [
  "async-scoped",
  "clap",
  "clap_complete",
- "directories",
  "env_logger",
  "futures",
  "indoc",
  "itertools 0.11.0",
  "log",
  "predicates",
- "serde-toml-merge",
+ "serde",
  "tempfile",
  "tokio",
  "toml",
+ "topiary-config",
  "topiary-core",
  "topiary-queries",
+ "topiary-tree-sitter-facade",
  "tree-sitter-bash",
- "tree-sitter-facade",
+ "tree-sitter-json",
+ "tree-sitter-nickel",
+ "tree-sitter-ocaml",
+ "tree-sitter-ocamllex",
+ "tree-sitter-query",
+ "tree-sitter-rust",
+ "tree-sitter-toml",
+]
+
+[[package]]
+name = "topiary-config"
+version = "0.3.0"
+dependencies = [
+ "clap",
+ "directories",
+ "indoc",
+ "itertools 0.11.0",
+ "log",
+ "serde",
+ "toml",
+ "topiary-tree-sitter-facade",
+ "topiary-web-tree-sitter-sys",
+ "tree-sitter-bash",
  "tree-sitter-json",
  "tree-sitter-nickel",
  "tree-sitter-ocaml",
@@ -1283,7 +1313,6 @@ dependencies = [
 name = "topiary-core"
 version = "0.3.0"
 dependencies = [
- "clap",
  "criterion",
  "env_logger",
  "futures",
@@ -1291,34 +1320,25 @@ dependencies = [
  "log",
  "pretty_assertions",
  "prettydiff",
- "regex",
  "serde",
  "serde_json",
  "test-log",
  "tokio",
  "tokio-test",
- "toml",
- "tree-sitter-bash",
- "tree-sitter-facade",
+ "topiary-tree-sitter-facade",
+ "topiary-web-tree-sitter-sys",
  "tree-sitter-json",
- "tree-sitter-nickel",
  "tree-sitter-ocaml",
- "tree-sitter-ocamllex",
- "tree-sitter-query",
- "tree-sitter-rust",
- "tree-sitter-toml",
- "unescape",
- "web-tree-sitter-sys",
 ]
 
 [[package]]
 name = "topiary-playground"
 version = "0.3.0"
 dependencies = [
- "cfg-if",
  "itertools 0.11.0",
+ "topiary-config",
  "topiary-core",
- "tree-sitter-facade",
+ "topiary-tree-sitter-facade",
  "wasm-bindgen",
  "wasm-bindgen-futures",
 ]
@@ -1326,6 +1346,29 @@ dependencies = [
 [[package]]
 name = "topiary-queries"
 version = "0.3.0"
+
+[[package]]
+name = "topiary-tree-sitter-facade"
+version = "0.3.0"
+dependencies = [
+ "js-sys",
+ "topiary-web-tree-sitter-sys",
+ "tree-sitter",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "topiary-web-tree-sitter-sys"
+version = "0.3.0"
+dependencies = [
+ "js-sys",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
 
 [[package]]
 name = "tree-sitter"
@@ -1347,18 +1390,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tree-sitter-facade"
-version = "0.9.3"
-source = "git+https://github.com/tweag/tree-sitter-facade#1b290e795e700a57d8bd303f98a9715ab1c4f598"
-dependencies = [
- "js-sys",
- "tree-sitter",
- "wasm-bindgen",
- "web-sys",
- "web-tree-sitter-sys",
-]
-
-[[package]]
 name = "tree-sitter-json"
 version = "0.20.1"
 source = "git+https://github.com/tree-sitter/tree-sitter-json.git#3fef30de8aee74600f25ec2e319b62a1a870d51e"
@@ -1369,8 +1400,8 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter-nickel"
-version = "0.0.1"
-source = "git+https://github.com/nickel-lang/tree-sitter-nickel?rev=b1a4718601ebd29a62bf3a7fd1069a99ccf48093#b1a4718601ebd29a62bf3a7fd1069a99ccf48093"
+version = "0.1.0"
+source = "git+https://github.com/nickel-lang/tree-sitter-nickel?rev=091b5dcc7d138901bcc162da9409c0bb626c0d27#091b5dcc7d138901bcc162da9409c0bb626c0d27"
 dependencies = [
  "cc",
  "tree-sitter",
@@ -1420,12 +1451,6 @@ dependencies = [
  "cc",
  "tree-sitter",
 ]
-
-[[package]]
-name = "unescape"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ccb97dac3243214f8d8507998906ca3e2e0b900bf9bf4870477f125b82e68f6e"
 
 [[package]]
 name = "unicode-ident"
@@ -1537,6 +1562,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0046fef7e28c3804e5e38bfa31ea2a0f73905319b677e57ebe37e49358989b5d"
 
 [[package]]
+name = "wasm-bindgen-test"
+version = "0.3.34"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6db36fc0f9fb209e88fb3642590ae0205bb5a56216dabd963ba15879fe53a30b"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "scoped-tls",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test-macro",
+]
+
+[[package]]
+name = "wasm-bindgen-test-macro"
+version = "0.3.34"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0734759ae6b3b1717d661fe4f016efcfb9828f5edb4520c18eaee05af3b43be9"
+dependencies = [
+ "proc-macro2",
+ "quote",
+]
+
+[[package]]
 name = "web-sys"
 version = "0.3.61"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1544,17 +1593,6 @@ checksum = "e33b99f4b23ba3eec1a53ac264e35a755f00e966e0065077d6027c0f575b0b97"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "web-tree-sitter-sys"
-version = "1.3.0"
-source = "git+https://github.com/tweag/web-tree-sitter-sys#9e9755b9ab59055092de4717ba0bafe6483f4e5c"
-dependencies = [
- "js-sys",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
 ]
 
 [[package]]

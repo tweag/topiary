@@ -7,12 +7,12 @@ use std::{
 };
 
 use tempfile::NamedTempFile;
-use topiary_core::{Configuration, Language, SupportedLanguage, TopiaryQuery};
+use topiary_core::{Language, TopiaryQuery};
+use topiary_config::Configuration;
 
 use crate::{
     cli::{AtLeastOneInput, ExactlyOneInput, FromStdin},
     error::{CLIError, CLIResult, TopiaryError},
-    language::LanguageDefinition,
 };
 
 #[derive(Debug, Clone, Hash)]
@@ -55,7 +55,7 @@ impl Display for QuerySource {
 /// These are captured by the CLI parser, with `cli::AtLeastOneInput` and `cli::ExactlyOneInput`.
 /// We use this struct to normalise the interface for downstream (using `From` implementations).
 pub enum InputFrom {
-    Stdin(SupportedLanguage, Option<QuerySource>),
+    Stdin(String, Option<QuerySource>),
     Files(Vec<PathBuf>),
 }
 
@@ -111,24 +111,25 @@ impl fmt::Display for InputSource {
 #[derive(Debug)]
 pub struct InputFile<'cfg> {
     source: InputSource,
-    language: &'cfg Language,
+    language: &'cfg topiary_config::serde::Language,
     query: QuerySource,
 }
 
 impl<'cfg> InputFile<'cfg> {
     /// Convert our `InputFile` into language definition values that Topiary can consume
-    pub async fn to_language_definition(&self) -> CLIResult<LanguageDefinition> {
-        let grammar = self.language.grammar().await?;
+    pub async fn to_language(&self) -> CLIResult<Language> {
+        let grammar = self.language().grammar()?;
         let contents = match &self.query {
             QuerySource::Path(query) => tokio::fs::read_to_string(query).await?,
             QuerySource::BuiltIn(contents) => contents.to_owned(),
         };
         let query = TopiaryQuery::new(&grammar, &contents)?;
 
-        Ok(LanguageDefinition {
+        Ok(Language {
+            name: self.language.name.clone(),
             query,
-            language: self.language.clone(),
             grammar,
+            indent: self.language().indent.clone(),
         })
     }
 
@@ -138,7 +139,7 @@ impl<'cfg> InputFile<'cfg> {
     }
 
     /// Expose language for input
-    pub fn language(&self) -> &Language {
+    pub fn language(&self) -> &topiary_config::serde::Language {
         self.language
     }
 
@@ -174,14 +175,14 @@ impl<'cfg, 'i> Inputs<'cfg> {
         &'i T: Into<InputFrom>,
     {
         let inputs = match inputs.into() {
-            InputFrom::Stdin(language, query) => {
+            InputFrom::Stdin(language_name, query) => {
                 vec![(|| {
-                    let language = language.to_language(config);
-                    let query = match query {
+                    let language = config.get_language(&language_name)?;
+                    let query_source: QuerySource = match query {
                         // The user specified a query file
                         Some(p) => p,
                         // The user did not specify a file, try the default locations
-                        None => match language.query_file() {
+                        None => match language.find_query_file() {
                             Ok(p) => p.into(),
                             // For some reason, Topiary could not find any
                             // matching file in a default location. As a final attempt, use try to the the
@@ -189,7 +190,7 @@ impl<'cfg, 'i> Inputs<'cfg> {
                             // fail to find anything, because the builtin error might be unexpected.
                             Err(e) => {
                                 log::warn!("No query files found in any of the expected locations. Falling back to compile-time included files.");
-                                to_query(language).map_err(|_| e)?
+                                to_query(&language_name).map_err(|_| e)?
                             }
                         },
                     };
@@ -197,7 +198,7 @@ impl<'cfg, 'i> Inputs<'cfg> {
                     Ok(InputFile {
                         source: InputSource::Stdin,
                         language,
-                        query,
+                        query: query_source,
                     })
                 })()]
             }
@@ -205,8 +206,8 @@ impl<'cfg, 'i> Inputs<'cfg> {
             InputFrom::Files(files) => files
                 .into_iter()
                 .map(|path| {
-                    let language = Language::detect(&path, config)?;
-                    let query = language.query_file()?.into();
+                    let language = config.detect(&path)?;
+                    let query = language.find_query_file()?.into();
 
                     Ok(InputFile {
                         source: InputSource::Disk(path, None),
@@ -317,8 +318,11 @@ impl<'cfg> TryFrom<&InputFile<'cfg>> for OutputFile {
     }
 }
 
-fn to_query(language: &Language) -> CLIResult<QuerySource> {
-    match language.name.as_str() {
+fn to_query<T>(name: T) -> CLIResult<QuerySource>
+where
+    T: AsRef<str> + fmt::Display,
+{
+    match name.as_ref() {
         "bash" => Ok(topiary_queries::bash().into()),
         "json" => Ok(topiary_queries::json().into()),
         "nickel" => Ok(topiary_queries::nickel().into()),

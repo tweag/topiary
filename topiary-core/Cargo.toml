@@ -13,41 +13,26 @@ readme.workspace = true
 license.workspace = true
 
 [dependencies]
-# For now we just load the tree-sitter language parsers statically.
-# Eventually we will want to dynamically load them, like Helix does.
-clap = { workspace = true, features = ["derive"] }
 itertools = { workspace = true }
 log = { workspace = true }
 pretty_assertions = { workspace = true }
 prettydiff = { workspace = true }
-regex = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-toml = { workspace = true }
-tree-sitter-facade = { workspace = true }
-unescape = { workspace = true }
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-tokio = { workspace = true }
-tree-sitter-json = { workspace = true }
-tree-sitter-rust = { workspace = true }
-tree-sitter-toml = { workspace = true }
-tree-sitter-bash = { workspace = true }
-tree-sitter-nickel = { workspace = true }
-tree-sitter-query = { workspace = true }
-tree-sitter-ocaml = { workspace = true }
-tree-sitter-ocamllex = { workspace = true }
+topiary-tree-sitter-facade = { workspace = true }
+tokio-test = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 futures = { workspace = true }
-tokio = { workspace = true, features = ["macros", "rt"] }
-web-tree-sitter = { workspace = true, features = ["web"] }
+topiary-web-tree-sitter-sys.workspace = true
 
 [dev-dependencies]
 criterion = { workspace = true, features = ["async_futures"] }
 env_logger = { workspace = true }
 test-log = { workspace = true }
-tokio-test = { workspace = true }
+tree-sitter-json.workspace = true
+tree-sitter-ocaml.workspace = true
 
 [[bench]]
 name = "benchmark"

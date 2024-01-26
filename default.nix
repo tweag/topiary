@@ -4,7 +4,7 @@
 , crane
 , rust-overlay
 , nix-filter
-,
+, craneLib
 }:
 let
   wasmRustVersion = "1.70.0";
@@ -13,8 +13,6 @@ let
   rustWithWasmTarget = pkgs.rust-bin.stable.${wasmRustVersion}.default.override {
     targets = [ wasmTarget ];
   };
-
-  craneLib = crane.mkLib pkgs;
 
   commonArgs = {
     pname = "topiary";
@@ -26,11 +24,14 @@ let
         "Cargo.lock"
         "Cargo.toml"
         "languages.toml"
-        "topiary-core"
-        "topiary-queries"
-        "topiary-cli"
-        "topiary-playground"
         "tests"
+        "topiary-core"
+        "topiary-cli"
+        "topiary-config"
+        "topiary-playground"
+        "topiary-queries"
+        "topiary-tree-sitter-facade"
+        "topiary-web-tree-sitter-sys"
       ];
     };
 
@@ -53,6 +54,10 @@ let
   craneLibWasm = craneLib.overrideToolchain rustWithWasmTarget;
 in
 {
+  passtru = {
+    inherit craneLibWasm;
+  };
+
   clippy = craneLib.cargoClippy (commonArgs
     // {
     inherit cargoArtifacts;

@@ -28,8 +28,8 @@ describe('test all grammars with puppeteer', () => {
 
     it('can format', async () => {
         const rootDir = path.join(__dirname, "../../");
-        const inputDir = path.join(rootDir, "topiary-core/tests/samples/input/");
-        const expectedDir = path.join(rootDir, "topiary-core/tests/samples/expected/");
+        const inputDir = path.join(rootDir, "topiary-cli/tests/samples/input/");
+        const expectedDir = path.join(rootDir, "topiary-cli/tests/samples/expected/");
         const queryDir = path.join(rootDir, "topiary-queries/queries/");
 
         for (let inputFileName of await fs.promises.readdir(inputDir)) {

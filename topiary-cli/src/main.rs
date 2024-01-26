@@ -1,5 +1,4 @@
 mod cli;
-mod configuration;
 mod error;
 mod io;
 mod language;
@@ -33,7 +32,7 @@ async fn main() -> ExitCode {
 async fn run() -> CLIResult<()> {
     let args = cli::get_args()?;
 
-    let (annotations, config) = configuration::fetch(
+    let config = topiary_config::Configuration::fetch(
         &args.global.configuration,
         // The collation value is always set, so we can safely unwrap
         args.global.configuration_collation.as_ref().unwrap(),
@@ -54,13 +53,13 @@ async fn run() -> CLIResult<()> {
                     scope.spawn(async {
                         let result: CLIResult<()> = match input {
                             Ok(input) => {
-                                let lang_def = cache.fetch(&input).await?;
+                                let language = cache.fetch(&input).await?;
                                 let output = OutputFile::try_from(&input)?;
 
                                 log::info!(
                                     "Formatting {}, as {} using {}, to {}",
                                     input.source(),
-                                    input.language(),
+                                    input.language().name,
                                     input.query(),
                                     output
                                 );
@@ -71,9 +70,7 @@ async fn run() -> CLIResult<()> {
                                 formatter(
                                     &mut buf_input,
                                     &mut buf_output,
-                                    &lang_def.query,
-                                    &lang_def.language,
-                                    &lang_def.grammar,
+                                    &language,
                                     Operation::Format {
                                         skip_idempotence,
                                         tolerate_parsing_errors,
@@ -123,12 +120,12 @@ async fn run() -> CLIResult<()> {
 
             // We don't need a `LanguageDefinitionCache` when there's only one input,
             // which saves us the thread-safety overhead
-            let lang_def = input.to_language_definition().await?;
+            let language = input.to_language().await?;
 
             log::info!(
                 "Visualising {}, as {}, to {}",
                 input.source(),
-                input.language(),
+                input.language().name,
                 output
             );
 
@@ -138,9 +135,7 @@ async fn run() -> CLIResult<()> {
             formatter(
                 &mut buf_input,
                 &mut buf_output,
-                &lang_def.query,
-                &lang_def.language,
-                &lang_def.grammar,
+                &language,
                 Operation::Visualise {
                     output_format: format.into(),
                 },
@@ -148,8 +143,8 @@ async fn run() -> CLIResult<()> {
         }
 
         Commands::Config => {
-            // Output collated configuration gtas TOML, with annotations about how we got there
-            print!("{annotations}\n{config}");
+            // Output collated configuration as TOML, with annotations about how we got there
+            print!("{config}");
         }
 
         Commands::Completion { shell } => {

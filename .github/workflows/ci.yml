@@ -28,6 +28,7 @@ jobs:
           key: node_modules-${{ hashFiles('**/package-lock.json')}}
 
       - name: Clippy, test, and benchmark
+        if: matrix.os == 'ubuntu-latest'
         run: export GC_DONT_GC=1; nix -L flake check
 
       - name: Build and test executable
@@ -101,4 +102,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4

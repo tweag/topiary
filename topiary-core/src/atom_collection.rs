@@ -5,7 +5,7 @@ use std::{
     ops::Deref,
 };
 
-use tree_sitter_facade::Node;
+use topiary_tree_sitter_facade::Node;
 
 use crate::{
     tree_sitter::NodeExt, Atom, FormatterError, FormatterResult, ScopeCondition, ScopeInformation,
@@ -630,7 +630,7 @@ impl AtomCollection {
             {
                 opened_scopes
                     .entry(scope_id)
-                    .or_insert_with(Vec::new)
+                    .or_default()
                     .push((*line_start, Vec::new()));
             } else if let Atom::ScopeEnd(ScopeInformation {
                 line_number: line_end,
