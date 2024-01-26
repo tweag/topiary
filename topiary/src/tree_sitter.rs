@@ -1,7 +1,7 @@
 use std::{collections::HashSet, fmt::Display};
 
 use serde::Serialize;
-use tree_sitter_facade::{
+use topiary_tree_sitter_facade::{
     Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryPredicate, Tree,
 };
 
@@ -36,6 +36,7 @@ impl Display for Position {
 /// Topiary often needs both the tree-sitter `Query` and the original content
 /// beloging to the file from which the query was parsed. This struct is a simple
 /// convenience wrapper that combines the `Query` with its original string.
+#[derive(Debug)]
 pub struct TopiaryQuery {
     pub query: Query,
     pub query_content: String,
@@ -50,7 +51,7 @@ impl TopiaryQuery {
     /// This function will return an error if tree-sitter failed to parse the
     /// query file.
     pub fn new(
-        grammar: &tree_sitter_facade::Language,
+        grammar: &topiary_tree_sitter_facade::Language,
         query_content: &str,
     ) -> FormatterResult<TopiaryQuery> {
         let query = Query::new(grammar, query_content)
@@ -173,7 +174,7 @@ impl<'a> Display for LocalQueryMatch<'a> {
 pub fn apply_query(
     input_content: &str,
     query: &TopiaryQuery,
-    grammar: &tree_sitter_facade::Language,
+    grammar: &topiary_tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
     should_check_input_exhaustivity: bool,
 ) -> FormatterResult<AtomCollection> {
@@ -257,9 +258,9 @@ pub fn apply_query(
 // or the last error if all grammars fail.
 pub fn parse<'a>(
     content: &str,
-    grammar: &'a tree_sitter_facade::Language,
+    grammar: &'a topiary_tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
-) -> FormatterResult<(Tree, &'a tree_sitter_facade::Language)> {
+) -> FormatterResult<(Tree, &'a topiary_tree_sitter_facade::Language)> {
     let mut parser = Parser::new()?;
     parser.set_language(grammar).map_err(|_| {
         FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
@@ -434,7 +435,7 @@ fn check_predicates(predicates: &QueryPredicates) -> FormatterResult<()> {
 fn check_input_exhaustivity(
     ref_match_count: usize,
     original_query: &TopiaryQuery,
-    grammar: &tree_sitter_facade::Language,
+    grammar: &topiary_tree_sitter_facade::Language,
     root: &Node,
     source: &[u8],
 ) -> FormatterResult<()> {
@@ -476,7 +477,7 @@ fn check_input_exhaustivity(
 fn check_input_exhaustivity(
     _ref_match_count: usize,
     _original_query: &TopiaryQuery,
-    _grammar: &tree_sitter_facade::Language,
+    _grammar: &topiary_tree_sitter_facade::Language,
     _root: &Node,
     _source: &[u8],
 ) -> FormatterResult<()> {

@@ -1,7 +1,7 @@
 //! This module defines all errors that might be propagated out of the library,
 //! including all of the trait implementations one might expect for Errors.
 
-use std::{error::Error, fmt, io, ops::Deref, path::PathBuf, str, string};
+use std::{error::Error, fmt, io, ops::Deref, str, string};
 
 /// The various errors the formatter may return.
 #[derive(Debug)]
@@ -33,17 +33,10 @@ pub enum FormatterError {
 
     /// There was an error in the query file. If this happened using our
     /// provided query files, it is a bug. Please log an issue.
-    Query(String, Option<tree_sitter_facade::QueryError>),
-
-    /// Could not detect the input language from the (filename,
-    /// Option<extension>)
-    LanguageDetection(PathBuf, Option<String>),
+    Query(String, Option<topiary_tree_sitter_facade::QueryError>),
 
     /// I/O-related errors
     Io(IoError),
-
-    /// The configuration file or command line mentions an unsupported language
-    UnsupportedLanguage(String),
 }
 
 /// A subtype of `FormatterError::Io`
@@ -88,22 +81,6 @@ impl fmt::Display for FormatterError {
                 write!(f, "Parsing error between line {start_line}, column {start_column} and line {end_line}, column {end_column}")
             }
 
-            Self::LanguageDetection(filename, extension) => {
-                let file: String = match filename.to_str().unwrap() {
-                    "-" => "from standard input".into(),
-                    _ => format!("of file '{}'", filename.to_string_lossy()),
-                };
-
-                match extension {
-                    Some(extension) => write!(f,
-                        "Cannot detect language {file} due to unknown extension '.{extension}'. Try specifying language explicitly, or updating your configuration.",
-                    ),
-                    None => write!(f,
-                        "Cannot detect language {file}. Try specifying language explicitly."
-                    ),
-                }
-            }
-
             Self::PatternDoesNotMatch(pattern_content) => {
                 write!(
                     f,
@@ -116,10 +93,6 @@ impl fmt::Display for FormatterError {
             | Self::Io(IoError::Filesystem(message, _) | IoError::Generic(message, _)) => {
                 write!(f, "{message}")
             }
-
-            Self::UnsupportedLanguage(language) => {
-                write!(f, "The following language is not supported: {language}")
-            }
         }
     }
 }
@@ -130,9 +103,7 @@ impl Error for FormatterError {
             Self::Idempotence
             | Self::Parsing { .. }
             | Self::PatternDoesNotMatch(_)
-            | Self::LanguageDetection(_, _)
-            | Self::Io(IoError::Generic(_, None))
-            | Self::UnsupportedLanguage(_) => None,
+            | Self::Io(IoError::Generic(_, None)) => None,
             Self::Internal(_, source) => source.as_ref().map(Deref::deref),
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::Io(IoError::Filesystem(_, source)) => Some(source),
@@ -204,8 +175,8 @@ impl From<serde_json::Error> for FormatterError {
     }
 }
 
-impl From<tree_sitter_facade::LanguageError> for FormatterError {
-    fn from(e: tree_sitter_facade::LanguageError) -> Self {
+impl From<topiary_tree_sitter_facade::LanguageError> for FormatterError {
+    fn from(e: topiary_tree_sitter_facade::LanguageError) -> Self {
         Self::Internal(
             "Error while loading language grammar".into(),
             Some(Box::new(e)),
@@ -213,17 +184,8 @@ impl From<tree_sitter_facade::LanguageError> for FormatterError {
     }
 }
 
-impl From<tree_sitter_facade::ParserError> for FormatterError {
-    fn from(e: tree_sitter_facade::ParserError) -> Self {
+impl From<topiary_tree_sitter_facade::ParserError> for FormatterError {
+    fn from(e: topiary_tree_sitter_facade::ParserError) -> Self {
         Self::Internal("Error while parsing".into(), Some(Box::new(e)))
-    }
-}
-
-impl From<toml::de::Error> for FormatterError {
-    fn from(e: toml::de::Error) -> Self {
-        Self::Internal(
-            "Error while parsing the internal configuration file".to_owned(),
-            Some(Box::new(e)),
-        )
     }
 }

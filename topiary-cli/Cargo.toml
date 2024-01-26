@@ -29,19 +29,19 @@ path = "src/main.rs"
 async-scoped = { workspace = true }
 clap = { workspace = true, features = ["derive", "env", "wrap_help"] }
 clap_complete = { workspace = true }
-directories = { workspace = true }
 env_logger = { workspace = true }
 futures = { workspace = true }
 indoc = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
-serde-toml-merge = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
 tempfile = { workspace = true }
 tokio = { workspace = true, features = ["fs", "rt-multi-thread", "sync", "macros"] }
 toml = { workspace = true }
 topiary = { path = "../topiary" }
+topiary-config = { path = "../topiary-config" }
 topiary-queries = { path = "../topiary-queries" }
-tree-sitter-facade = { workspace = true }
+topiary-tree-sitter-facade = { workspace = true }
 
 tree-sitter-json = { workspace = true }
 tree-sitter-rust = { workspace = true }
