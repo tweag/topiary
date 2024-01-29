@@ -1,5 +1,5 @@
 [package]
-name = "topiary"
+name = "topiary-core"
 description = "Formats input source code in a style defined for that language."
 categories = ["development-tools", "text-processing"]
 keywords = ["code-formatter", "formatter", "text", "tree-sitter"]

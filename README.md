@@ -127,7 +127,7 @@ Topiary's language query files (`.scm`) are located**. By default, you should
 set it to `<local path of the topiary repository>/queries`, for example:
 
 ```sh
-export TOPIARY_LANGUAGE_DIR=/home/me/tools/topiary/queries
+export TOPIARY_LANGUAGE_DIR=/home/me/tools/topiary/topiary-queries/queries
 topiary fmt ./projects/helloworld/hello.ml
 ```
 
@@ -1324,9 +1324,9 @@ containing the matched nodes are is single-line (resp. multi-line).
 In order to work productively on query files, the following is one
 suggested way to work:
 
-1. Add a sample file to `topiary/tests/samples/input`.
+1. Add a sample file to `topiary-cli/tests/samples/input`.
 
-2. Copy the same file to `topiary/tests/samples/expected`, and make any changes
+2. Copy the same file to `topiary-cli/tests/samples/expected`, and make any changes
    to how you want the output to be formatted.
 
 3. If this is a new language, add its Tree-sitter grammar, extend
@@ -1337,7 +1337,7 @@ suggested way to work:
 
    ```
    RUST_LOG=debug \
-   cargo test -p topiary \
+   cargo test -p topiary-cli \
               input_output_tester \
               -- --nocapture
    ```

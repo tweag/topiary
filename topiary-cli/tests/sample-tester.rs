@@ -1,7 +1,7 @@
 use assert_cmd::Command;
 use std::fs;
 use std::path::Path;
-use topiary::test_utils::pretty_assert_eq;
+use topiary_core::test_utils::pretty_assert_eq;
 
 use tempfile::TempDir;
 
@@ -27,7 +27,7 @@ fn input_output_tester() {
         // Run topiary on the input file in the temp dir
         let mut topiary = Command::cargo_bin("topiary").unwrap();
         topiary
-            // .env("TOPIARY_LANGUAGE_DIR", "../queries/")
+            .env("TOPIARY_LANGUAGE_DIR", "../topiary-queries/queries/")
             .arg("fmt")
             .arg(&input_file)
             .assert()
@@ -44,7 +44,7 @@ fn input_output_tester() {
 // Test that our query files are properly formatted
 #[test]
 fn formatted_query_tester() {
-    let language_dir = fs::read_dir("../queries").unwrap();
+    let language_dir = fs::read_dir("../topiary-queries/queries").unwrap();
 
     for file in language_dir {
         let file = file.unwrap();
@@ -62,7 +62,7 @@ fn formatted_query_tester() {
         // Run topiary on the input file in the temp dir
         let mut topiary = Command::cargo_bin("topiary").unwrap();
         topiary
-            // .env("TOPIARY_LANGUAGE_DIR", "../queries/")
+            .env("TOPIARY_LANGUAGE_DIR", "../topiary-queries/queries/")
             .arg("fmt")
             .arg(&input_file)
             .assert()

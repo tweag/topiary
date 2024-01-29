@@ -1222,9 +1222,9 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.7.8"
+version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd79e69d3b627db300ff956027cc6c3798cef26d22526befdfcd12feeb6d2257"
+checksum = "a1a195ec8c9da26928f773888e0742ca3ca1040c6cd859c919c9f59c1954ab35"
 dependencies = [
  "serde",
  "serde_spanned",
@@ -1243,37 +1243,15 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.19.15"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b5bb770da30e5cbfde35a2d7b9b8a2c4b8ef89548a7a6aeab5c9a576e3e7421"
+checksum = "d34d383cd00a163b4a5b85053df514d45bc330f6de7737edfe0a93311d1eaa03"
 dependencies = [
  "indexmap",
  "serde",
  "serde_spanned",
  "toml_datetime",
  "winnow",
-]
-
-[[package]]
-name = "topiary"
-version = "0.3.0"
-dependencies = [
- "criterion",
- "env_logger",
- "futures",
- "itertools 0.11.0",
- "log",
- "pretty_assertions",
- "prettydiff",
- "serde",
- "serde_json",
- "test-log",
- "tokio",
- "tokio-test",
- "topiary-tree-sitter-facade",
- "topiary-web-tree-sitter-sys",
- "tree-sitter-json",
- "tree-sitter-ocaml",
 ]
 
 [[package]]
@@ -1294,8 +1272,8 @@ dependencies = [
  "tempfile",
  "tokio",
  "toml",
- "topiary",
  "topiary-config",
+ "topiary-core",
  "topiary-queries",
  "topiary-tree-sitter-facade",
  "tree-sitter-bash",
@@ -1332,12 +1310,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "topiary-core"
+version = "0.3.0"
+dependencies = [
+ "criterion",
+ "env_logger",
+ "futures",
+ "itertools 0.11.0",
+ "log",
+ "pretty_assertions",
+ "prettydiff",
+ "serde",
+ "serde_json",
+ "test-log",
+ "tokio",
+ "tokio-test",
+ "topiary-tree-sitter-facade",
+ "topiary-web-tree-sitter-sys",
+ "tree-sitter-json",
+ "tree-sitter-ocaml",
+]
+
+[[package]]
 name = "topiary-playground"
 version = "0.3.0"
 dependencies = [
  "itertools 0.11.0",
- "topiary",
  "topiary-config",
+ "topiary-core",
  "topiary-tree-sitter-facade",
  "wasm-bindgen",
  "wasm-bindgen-futures",

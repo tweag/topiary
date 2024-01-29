@@ -159,14 +159,14 @@ pub enum Operation {
 /// # tokio_test::block_on(async {
 /// use std::fs::File;
 /// use std::io::{BufReader, Read};
-/// use topiary::{formatter, Language, FormatterError, TopiaryQuery, Operation};
+/// use topiary_core::{formatter, Language, FormatterError, TopiaryQuery, Operation};
 ///
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
 /// let mut output = Vec::new();
 /// let json = tree_sitter_json::language();
 ///
-/// let mut query_file = BufReader::new(File::open("../queries/json.scm").expect("query file"));
+/// let mut query_file = BufReader::new(File::open("../topiary-queries/queries/json.scm").expect("query file"));
 /// let mut query_content = String::new();
 /// query_file.read_to_string(&mut query_content).expect("read query file");
 ///

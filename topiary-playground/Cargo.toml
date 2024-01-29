@@ -23,7 +23,7 @@ license.workspace = true
 crate-type = ["cdylib"]
 
 [dependencies]
-topiary = { path = "../topiary" }
+topiary-core = { path = "../topiary-core" }
 topiary-config = { path = "../topiary-config" }
 topiary-tree-sitter-facade.workspace = true
 wasm-bindgen.workspace = true
@@ -31,4 +31,4 @@ wasm-bindgen-futures.workspace = true
 
 [build-dependencies]
 itertools.workspace = true
-topiary = { path = "../topiary" }
+topiary-core = { path = "../topiary-core" }

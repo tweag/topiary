@@ -30,7 +30,7 @@ describe('test all grammars with puppeteer', () => {
         const rootDir = path.join(__dirname, "../../");
         const inputDir = path.join(rootDir, "topiary-cli/tests/samples/input/");
         const expectedDir = path.join(rootDir, "topiary-cli/tests/samples/expected/");
-        const queryDir = path.join(rootDir, "queries/");
+        const queryDir = path.join(rootDir, "topiary-queries/queries/");
 
         for (let inputFileName of await fs.promises.readdir(inputDir)) {
             let parts = inputFileName.split(".");

@@ -9,8 +9,8 @@ readme = "README.md"
 license = "MIT"
 
 [workspace]
-members = ["topiary", "topiary-cli", "topiary-queries", "topiary-playground", "topiary-config", "topiary-web-tree-sitter-sys", "topiary-tree-sitter-facade"]
-default-members = [ "topiary", "topiary-cli" ]
+members = ["topiary-core", "topiary-cli", "topiary-queries", "topiary-playground", "topiary-config", "topiary-web-tree-sitter-sys", "topiary-tree-sitter-facade"]
+default-members = [ "topiary-core", "topiary-cli" ]
 exclude = ["samples"]
 resolver = "2"
 
@@ -59,7 +59,7 @@ tempfile = "3.5"
 test-log = "0.2"
 tokio = "1.32"
 tokio-test = "0.4"
-toml = "0.7"
+toml = "0.8"
 tree-sitter = "0.20"
 tree-sitter-bash = { git = "https://github.com/tree-sitter/tree-sitter-bash", rev = "1b0321ee85701d5036c334a6f04761cdc672e64c" }
 tree-sitter-json = { git = "https://github.com/tree-sitter/tree-sitter-json.git" }

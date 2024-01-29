@@ -1,9 +1,9 @@
 use clap::ValueEnum;
-use topiary::Visualisation;
+use topiary_core::Visualisation;
 
 /// Visualisation output formats for Tree-sitter parse trees
-// NOTE While redundant, we cannot implement clap::ValueEnum for topiary::Visualisation without
-// breaking the orphan rules. So we have to maintain a local copy for the sake of the CLI.
+// NOTE While redundant, we cannot implement clap::ValueEnum for topiary_core::Visualisation
+// without breaking the orphan rules. So we have to maintain a local copy for the sake of the CLI.
 #[derive(Clone, Debug, ValueEnum)]
 pub enum Format {
     /// GraphViz DOT serialisation

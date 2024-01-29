@@ -1,9 +1,10 @@
-use topiary::{formatter, Configuration, Operation, TopiaryQuery};
+use topiary_core::{formatter, Configuration, Operation, TopiaryQuery};
 
 #[tokio::main]
 async fn main() {
     let mut input =
-        "{\"name\":\"John Doe\",\"age\":43,\n\"phones\":[\"+44 1234567\",\"+44 2345678\"]}".as_bytes();
+        "{\"name\":\"John Doe\",\"age\":43,\n\"phones\":[\"+44 1234567\",\"+44 2345678\"]}"
+            .as_bytes();
 
     let mut output = Vec::new();
     let query = TopiaryQuery::json();
