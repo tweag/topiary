@@ -55,7 +55,10 @@
 (
   "," @append_spaced_softline
   .
-  (comment)? @do_nothing
+  [
+    (comment)
+    "]"
+  ]? @do_nothing
 )
 
 ; remove trailing comma from last element of single line array
@@ -72,9 +75,9 @@
 ; Indent arrays. They will only be indented inmulti-line blocks.
 
 (array
-  "[" @append_spaced_softline @append_indent_start
+  "[" @append_empty_softline @append_indent_start
 )
 
 (array
-  "]" @prepend_spaced_softline @prepend_indent_end
+  "]" @prepend_empty_softline @prepend_indent_end
 )
