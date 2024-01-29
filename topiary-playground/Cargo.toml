@@ -3,12 +3,12 @@ name = "topiary-playground"
 description = "The WebAssembly code that runs at https://topiary.tweag.io/playground"
 categories = ["development-tools", "text-processing", "webassembly"]
 keywords = [
-    "code-formatter",
-    "formatter",
-    "text",
-    "tree-sitter",
-    "wasm",
-    "webassembly",
+  "code-formatter",
+  "formatter",
+  "text",
+  "tree-sitter",
+  "wasm",
+  "webassembly",
 ]
 version.workspace = true
 edition.workspace = true

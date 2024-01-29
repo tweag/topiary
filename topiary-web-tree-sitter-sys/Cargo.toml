@@ -10,7 +10,7 @@ documentation.workspace = true
 readme.workspace = true
 
 [features]
-default = ["web-sys" ]
+default = ["web-sys"]
 node = []
 
 [dependencies]
