@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 # For now we just load the tree-sitter language parsers statically.
 # Eventually we will want to dynamically load them, like Helix does.
-clap = { version = "3.2", features = [ "derive" ] }
+clap = { version = "3.2", features = ["derive"] }
 env_logger = "0.9"
 itertools = "0.10"
 log = "0.4"
@@ -43,7 +43,7 @@ dob = 1979-05-27T07:32:00-08:00 # First class dates
 
 [database]
 server = "192.168.1.1"
-ports = [ 8001, 8001, 8002 ]
+ports = [8001, 8001, 8002]
 connection_max = 5000
 enabled = true
 
@@ -59,7 +59,7 @@ ip = "10.0.0.2"
 dc = "eqdc10"
 
 [clients]
-data = [ [ "gamma", "delta" ], [ 1, 2 ] ]
+data = [["gamma", "delta"], [1, 2]]
 
 # Line breaks are OK when inside arrays
 hosts = [
@@ -70,7 +70,7 @@ hosts = [
 ]
 
 ["zip"]
-cve = [ "CVE-2018-13410", "CVE-2018-1340" ] # garbage CVEs
+cve = ["CVE-2018-13410", "CVE-2018-1340"] # garbage CVEs
 comment = "this cve is only valid with attacker-controlled flags to zip"
 
 ["unzip"]
@@ -78,12 +78,12 @@ cve = [
   "CVE-2018-13410",
   "CVE-2018-1340",
 ]
-cve = [ "CVE-2018-13410", "foo", "CVE-2018-1340" ]
+cve = ["CVE-2018-13410", "foo", "CVE-2018-1340"]
 
 comment = "this cve is only valid with attacker-controlled flags to zip"
 
 ["inline.comments"]
-singleline_remove_trailing_comma = [ "foo", "bar", "baz" ]
+singleline_remove_trailing_comma = ["foo", "bar", "baz"]
 multiline_with_comments = [
   "bar",
   "blee",
