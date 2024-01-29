@@ -1160,3 +1160,21 @@ module Make:
 let _ =
   match foo with
   | Bar ["baz"] -> qux
+
+(* #659 handling of the `;;` separator *)
+
+let bonjour () = "Bonjour"
+
+;;
+
+print_string (bonjour ());
+print_string ", "
+
+;;
+
+let topiary _x = "Topiary"
+
+;;
+
+print_string (topiary 27);
+print_endline "!"
