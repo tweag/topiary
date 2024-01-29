@@ -10,7 +10,7 @@ license = "MIT"
 
 [workspace]
 members = ["topiary-core", "topiary-cli", "topiary-queries", "topiary-playground", "topiary-config", "topiary-web-tree-sitter-sys", "topiary-tree-sitter-facade"]
-default-members = [ "topiary-core", "topiary-cli" ]
+default-members = ["topiary-core", "topiary-cli"]
 exclude = ["samples"]
 resolver = "2"
 
@@ -39,7 +39,7 @@ targets = ["x86_64-unknown-linux-gnu", "x86_64-apple-darwin", "x86_64-pc-windows
 [workspace.dependencies]
 assert_cmd = "2.0"
 async-scoped = { version = "0.7.1", features = ["use-tokio"] }
-clap = { version = "4.3", features = [ "env" ] }
+clap = { version = "4.3", features = ["env"] }
 clap_derive = "4.3"
 clap_complete = "4.4"
 criterion = "0.5"
