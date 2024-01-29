@@ -61,6 +61,14 @@
   (value_specification)
 ] @allow_blank_line_before
 
+; The `;;` top-level operator should be alone on its line,
+; possibly separated by blank lines above and below.
+(
+  ";;" @allow_blank_line_before @prepend_hardline @append_hardline
+  .
+  _ @allow_blank_line_before
+)
+
 ; In a definition including several mutually recursive functions,
 ; one can skip a line before each of them.
 (value_definition
