@@ -29,15 +29,15 @@ jobs:
             ~/.cache/puppeteer
           key: frontend_${{ matrix.os }}_${{ hashFiles('**/package-lock.json') }}
 
-    # - name: Clippy, test, and benchmark
-    #   if: matrix.os == 'ubuntu-latest'
-    #   run: export GC_DONT_GC=1; nix -L flake check
+      - name: Clippy, test, and benchmark
+        if: matrix.os == 'ubuntu-latest'
+        run: export GC_DONT_GC=1; nix -L flake check
 
-    # - name: Build and test executable
-    #   run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- fmt -l json'
+      - name: Build and test executable
+        run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- fmt -l json'
 
-    # - name: Verify that usage in README.md matches CLI output
-    #   run: ./verify-documented-usage.sh
+      - name: Verify that usage in README.md matches CLI output
+        run: ./verify-documented-usage.sh
 
       - name: Build web playground Wasm app
         if: success() && matrix.os == 'ubuntu-latest'
