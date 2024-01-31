@@ -32,6 +32,7 @@ let
         "topiary-queries"
         "topiary-tree-sitter-facade"
         "topiary-web-tree-sitter-sys"
+        "examples"
       ];
     };
 
@@ -81,6 +82,12 @@ in
     // {
     inherit cargoArtifacts;
     cargoTestCommand = "cargo bench --profile release";
+  });
+
+  client-app = craneLib.buildPackage (commonArgs // {
+    inherit cargoArtifacts;
+    pname = "client-app";
+    cargoExtraArgs = "-p client-app";
   });
 
   topiary-core = craneLib.buildPackage (commonArgs

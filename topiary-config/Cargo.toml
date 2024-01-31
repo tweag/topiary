@@ -32,4 +32,4 @@ tree-sitter-ocaml.workspace = true
 tree-sitter-ocamllex.workspace = true
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
-clap.workspace = true
+clap = { workspace = true, features = ["derive"] }

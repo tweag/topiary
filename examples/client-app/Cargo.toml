@@ -1,0 +1,10 @@
+[package]
+name = "client-app"
+version.workspace = true
+edition = "2021"
+
+[dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+topiary-core.path = "../../topiary-core"
+topiary-config.path = "../../topiary-config"
+topiary-queries = { path = "../../topiary-queries", features = ["json"] }
