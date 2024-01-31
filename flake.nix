@@ -45,7 +45,7 @@
       in
       {
         packages = with code; {
-          inherit topiary-playground topiary-queries;
+          inherit topiary-playground topiary-queries client-app;
           default = topiary-cli;
         };
 
