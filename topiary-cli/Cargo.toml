@@ -43,15 +43,16 @@ topiary-config = { path = "../topiary-config" }
 topiary-queries = { path = "../topiary-queries" }
 topiary-tree-sitter-facade = { workspace = true }
 
-tree-sitter-json = { workspace = true }
-tree-sitter-css = { workspace = true }
-tree-sitter-rust = { workspace = true }
-tree-sitter-toml = { workspace = true }
 tree-sitter-bash = { workspace = true }
+tree-sitter-css = { workspace = true }
+tree-sitter-json = { workspace = true }
 tree-sitter-nickel = { workspace = true }
-tree-sitter-query = { workspace = true }
 tree-sitter-ocaml = { workspace = true }
 tree-sitter-ocamllex = { workspace = true }
+tree-sitter-pact = { workspace = true }
+tree-sitter-query = { workspace = true }
+tree-sitter-rust = { workspace = true }
+tree-sitter-toml = { workspace = true }
 
 [dev-dependencies]
 assert_cmd = { workspace = true }
