@@ -22,10 +22,12 @@ jobs:
           authToken: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
       - name: Set up frontend cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
-          path: '**/node_modules'
-          key: node_modules-${{ hashFiles('**/package-lock.json')}}
+          path: |
+            **/node_modules
+            ~/.cache/puppeteer
+          key: frontend_${{ matrix.os }}_${{ hashFiles('**/package-lock.json') }}
 
       - name: Clippy, test, and benchmark
         if: matrix.os == 'ubuntu-latest'

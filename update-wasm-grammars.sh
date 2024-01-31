@@ -75,6 +75,18 @@ ocamllex() {
   echo -e "${GREEN}Ocamllex: Done${NC}"
 }
 
+bash() {
+  echo -e "${BLUE}Bash: Fetching${NC}"
+  git clone --depth=1 https://github.com/tree-sitter/tree-sitter-bash.git "${WORKDIR}/tree-sitter-bash" &> /dev/null
+  REV=$(ref_for_language "bash")
+  pushd "${WORKDIR}/tree-sitter-bash" &> /dev/null
+    git checkout "$REV" &> /dev/null
+  popd &> /dev/null
+  echo -e "${ORANGE}Bash: Building${NC}"
+  tree-sitter build-wasm "${WORKDIR}/tree-sitter-bash"
+  echo -e "${GREEN}Bash: Done${NC}"
+}
+
 rust() {
   echo -e "${BLUE}Rust: Fetching${NC}"
   git clone --depth=1 https://github.com/tree-sitter/tree-sitter-rust.git "${WORKDIR}/tree-sitter-rust" &> /dev/null
@@ -86,7 +98,6 @@ rust() {
   tree-sitter build-wasm "${WORKDIR}/tree-sitter-rust"
   echo -e "${GREEN}Rust: Done${NC}"
 }
-
 
 toml() {
   echo -e "${BLUE}TOML: Fetching${NC}"
@@ -112,6 +123,6 @@ tree-sitter-query() {
   echo -e "${GREEN}Query: Done${NC}"
 }
 
-(trap 'kill 0' SIGINT; json & nickel & ocaml & ocamllex & rust & toml & tree-sitter-query & wait)
+(trap 'kill 0' SIGINT; json & nickel & ocaml & ocamllex & bash & rust & toml & tree-sitter-query & wait)
 
 echo -e "${GREEN}Done! All grammars have been updated${NC}"
