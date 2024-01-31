@@ -22,15 +22,16 @@ toml.workspace = true
 
 topiary-tree-sitter-facade.workspace = true
 topiary-web-tree-sitter-sys.workspace = true
-tree-sitter-json.workspace = true
-tree-sitter-rust.workspace = true
-tree-sitter-toml.workspace = true
 tree-sitter-bash.workspace = true
 tree-sitter-css.workspace = true
+tree-sitter-json.workspace = true
 tree-sitter-nickel.workspace = true
-tree-sitter-query.workspace = true
 tree-sitter-ocaml.workspace = true
 tree-sitter-ocamllex.workspace = true
+tree-sitter-pact.workspace = true
+tree-sitter-query.workspace = true
+tree-sitter-rust.workspace = true
+tree-sitter-toml.workspace = true
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
 clap = { workspace = true, features = ["derive"] }
