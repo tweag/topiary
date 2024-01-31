@@ -1294,6 +1294,7 @@ dependencies = [
  "tree-sitter-nickel",
  "tree-sitter-ocaml",
  "tree-sitter-ocamllex",
+ "tree-sitter-pact",
  "tree-sitter-query",
  "tree-sitter-rust",
  "tree-sitter-toml",
@@ -1433,6 +1434,15 @@ dependencies = [
 name = "tree-sitter-ocamllex"
 version = "0.20.2"
 source = "git+https://github.com/314eter/tree-sitter-ocamllex.git#4b9898ccbf198602bb0dec9cd67cc1d2c0a4fad2"
+dependencies = [
+ "cc",
+ "tree-sitter",
+]
+
+[[package]]
+name = "tree-sitter-pact"
+version = "0.0.1"
+source = "git+https://github.com/salamaashoush/tree-sitter-pact#0de096c3a9c06537037953bcae5ad453c9967b7d"
 dependencies = [
  "cc",
  "tree-sitter",
