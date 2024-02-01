@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#shellcheck shell=bash
 
 # "Quick-and-Dirty" Topiary Playground
 
@@ -27,11 +26,30 @@ fail() {
   exit 1
 }
 
-get_sample_input() {
+get-default-query() {
+  local language="$1"
+  local query
+
+  case "${language}" in
+    "ocaml_interface")
+      query=ocaml
+      ;;
+
+    *)
+      # NOTE Query files use dashes, instead of underscores
+      query="${language//_/-}"
+      ;;
+  esac
+
+  printf "topiary-queries/queries/%s.scm" "${query}"
+}
+
+get-sample-input() {
   local language="$1"
 
   # Only return the first result, presuming there is one
-  find topiary-core/tests/samples/input -name "${language}.*" \
+  # NOTE Sample files use dashes, instead of underscores
+  find topiary-cli/tests/samples/input -name "${language//_/-}.*" \
   | head -1
 }
 
@@ -41,6 +59,12 @@ format() {
   local input="$3"
   local skip_idempotence="${4-1}"
 
+  local -a cargo_args=(
+    --quiet
+    --no-default-features
+    --features "${language}"
+  )
+
   local -a topiary_args=(
     --language "${language}"
     --query "${query}"
@@ -48,7 +72,7 @@ format() {
 
   (( skip_idempotence )) && topiary_args+=(--skip-idempotence)
 
-  cargo run --quiet -- fmt "${topiary_args[@]}" < "${input}"
+  cargo run "${cargo_args[@]}" -- fmt "${topiary_args[@]}" < "${input}"
 }
 
 idempotency() {
@@ -73,8 +97,8 @@ main() {
   case $# in
     1)
       language="$1"
-      query="queries/${language}.scm"
-      input="$(get_sample_input "${language}")"
+      query="$(get-default-query "${language}")"
+      input="$(get-sample-input "${language}")"
       ;;
 
     2)
@@ -82,9 +106,9 @@ main() {
 
       if [[ "$2" =~ \.scm$ ]]; then
         query="$2"
-        input="$(get_sample_input "${language}")"
+        input="$(get-sample-input "${language}")"
       else
-        query="queries/${language}.scm"
+        query="$(get-default-query "${language}")"
         input="$2"
       fi
       ;;
@@ -99,8 +123,6 @@ main() {
       fail "Invalid command line arguments"
       ;;
   esac
-
-  local language="$1"
 
   [[ -e "${query}" ]] || fail "Couldn't find language query file '${query}'"
   [[ -e "${input}" ]] || fail "Couldn't find input source file '${input}'"
