@@ -73,7 +73,7 @@ main() {
   case $# in
     1)
       language="$1"
-      query="queries/${language}.scm"
+      query="topiary-queries/queries/${language}.scm"
       input="$(get_sample_input "${language}")"
       ;;
 
@@ -84,7 +84,7 @@ main() {
         query="$2"
         input="$(get_sample_input "${language}")"
       else
-        query="queries/${language}.scm"
+        query="topiary-queries/queries/${language}.scm"
         input="$2"
       fi
       ;;
