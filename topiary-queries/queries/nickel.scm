@@ -287,8 +287,9 @@
 )
 
 (
-  (#scope_id! "annotated_assignment")
-  "=" @prepend_spaced_scoped_softline
+  (annot)
+  .
+  "=" @prepend_spaced_softline
 )
 
 ; Break a multi-line polymorphic type annotation after the type
