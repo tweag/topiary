@@ -249,15 +249,6 @@
 
 ;; Annotations
 
-; We want the equals sign to be aligned with the annotations, if they
-; coexist, so create a scope that covers them both.
-(
-  (#scope_id! "annotated_assignment")
-  (annot) @prepend_begin_scope
-  .
-  "=" @append_end_scope
-)
-
 ; Start an indentation block from the start of the annotations to the
 ; end of the enclosing node
 (_
@@ -287,8 +278,9 @@
 )
 
 (
-  (#scope_id! "annotated_assignment")
-  "=" @prepend_spaced_scoped_softline
+  (annot)
+  .
+  "=" @prepend_spaced_softline
 )
 
 ; Break a multi-line polymorphic type annotation after the type

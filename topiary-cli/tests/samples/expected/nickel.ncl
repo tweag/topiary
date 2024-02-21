@@ -1,5 +1,11 @@
 {
   regression_tests = [
+    # Issue 680
+    {
+      config
+        | { labels = { a = "a" } }
+        = {}
+    },
     {
       a = [
         b
