@@ -622,9 +622,7 @@ mod wasm {
 
     impl<'a> PartialOrd for Node<'a> {
         fn partial_cmp(&self, that: &Node<'a>) -> Option<std::cmp::Ordering> {
-            let this = self.id();
-            let that = that.id();
-            this.partial_cmp(&that)
+            Some(self.cmp(that))
         }
     }
 
