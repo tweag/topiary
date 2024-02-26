@@ -1439,7 +1439,7 @@ dependencies = [
 [[package]]
 name = "tree-sitter-pact"
 version = "0.0.1"
-source = "git+https://github.com/salamaashoush/tree-sitter-pact#0de096c3a9c06537037953bcae5ad453c9967b7d"
+source = "git+https://github.com/kadena-community/tree-sitter-pact#db06841cfad508165f5028c4ecdc160bdef8cee5"
 dependencies = [
  "cc",
  "tree-sitter",
