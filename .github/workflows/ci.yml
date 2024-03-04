@@ -40,7 +40,7 @@ jobs:
         run: nix build .#client-app
 
       - name: Verify that usage in README.md matches CLI output
-        run: ./verify-documented-usage.sh
+        run: nix run .#verify-documented-usage
 
       - name: Build web playground Wasm app
         if: success() && matrix.os == 'ubuntu-latest'
