@@ -156,7 +156,7 @@ impl Serialisation {
     /// `Serialisation` doesn't work well, because that forces every configuration file to define
     /// every part of the configuration.)
     pub fn default_toml() -> toml::Value {
-        let default_config = include_str!("../../languages.toml");
+        let default_config = include_str!("../languages.toml");
 
         // We assume that the shipped built-in TOML is valid, so `.expect` is fine
         toml::from_str(default_config)
