@@ -146,6 +146,18 @@
   (ident) @prepend_space
 )
 
+; Insert a space between the enum tag and the argument of an enum variant
+(enum_variant
+  (enum_tag) @append_space
+)
+
+; Insert a space between the enum tag and the argument of an enum variant
+; pattern
+(pattern
+  (enum_tag) @append_space
+  (pattern_fun)
+)
+
 ;; Comments
 
 (comment) @prepend_input_softline @append_hardline
@@ -165,13 +177,20 @@
 ; * Match statements                  match { ... }
 ; * Multi-line and symbolic strings   m%"..."% / xxx-s%"..."%
 ;
-; These should remain in-line.
+; These should remain in-line. Note that this is true for the right-hand side of
+; record patterns as well, but patterns aren't terms, so they aren't subject to
+; the general multi-line behavior to begin with. In other words, the right-hand
+; side of field patterns behave as the exceptions mentioned above, but we don't
+; need any special query to do so.
 
 (_
   (#scope_id! "bound_rhs")
   "=" @prepend_begin_scope
   .
-  (term) @append_end_scope
+  [
+    (term)
+    (pattern)
+  ] @append_end_scope
 )
 
 (_
@@ -304,7 +323,7 @@
 )
 
 (fun_expr
-  (pattern) @append_space
+  (pattern_fun) @append_space
 )
 
 ; The applicative operator is a space, but in a multi-line context, we'd
@@ -331,9 +350,20 @@
 
 ;; Conditionals
 
+; Define a separate scope for the body of a match case. As we have a separate
+; scope for the right-hand side of an "=" (i.e. for bound expressions), we want
+; a separate scope for the right-hand side of "=>".
+(match_case
+  (#scope_id! "case_body")
+  (pattern)
+  "=>" @prepend_begin_scope
+  (term) @append_end_scope
+)
+
 ; Flow multi-line match cases into an indented block after the =>
 (match_case
-  "=>" @append_spaced_softline @append_indent_start
+  (#scope_id! "case_body")
+  "=>" @append_spaced_scoped_softline @append_indent_start
 ) @append_indent_end
 
 ; if...then...else expressions can either be single or multi-line. In a
@@ -375,7 +405,7 @@
 
 ; We don't want to add spaces/new lines in empty records, so the
 ; following query only matches if a named node exists within the record
-; NOTE This rule also applies to (match) and (destruct) patterns
+; NOTE This rule also applies to patterns
 (_
   (#scope_id! "container")
   .

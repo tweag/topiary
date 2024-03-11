@@ -71,7 +71,21 @@
       2,
       # Comment
       3
-    ]
+    ],
+
+    # Patterns formatting
+    match {
+      {
+          x = y,
+        z = { foo, bar, baz },
+        i = { a,
+          b | String
+          | String,
+          c = 'Food z,
+        }
+      } => null,
+      _ => null,
+    }
   ],
 
   # Nickel standard library as of af0d5ee
@@ -1297,8 +1311,7 @@
         |> match {
           'String => %enum_from_str% value,
           'Enum => value,
-          _ =>
-            contract.blame_with_message "expected either a string or an enum tag" label,
+          _ => contract.blame_with_message "expected either a string or an enum tag" label,
         },
   },
 
