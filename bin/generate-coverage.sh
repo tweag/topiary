@@ -1,16 +1,21 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i bash --pure --packages cacert grcov rustup
+#!/usr/bin/env bash
 #shellcheck shell=bash
 
 set -eu
 
 # Create temporary working directory
-readonly WORKING_DIR="$(mktemp --directory)"
+WORKING_DIR="$(mktemp --directory)"
+readonly WORKING_DIR
+
 trap 'rm -rf "${WORKING_DIR}"' EXIT
 
 # Setup subdirectories for rustup and the profile data
-export RUSTUP_HOME="${WORKING_DIR}/rustup"
-readonly PROFRAW_DIR="${WORKING_DIR}/profraw"
+RUSTUP_HOME="${WORKING_DIR}/rustup"
+export RUSTUP_HOME
+
+PROFRAW_DIR="${WORKING_DIR}/profraw"
+readonly PROFRAW_DIR
+
 mkdir --parents "${RUSTUP_HOME}" "${PROFRAW_DIR}"
 
 # Install Rust toolchain and necessary components
@@ -24,7 +29,8 @@ LLVM_PROFILE_FILE="${PROFRAW_DIR}/cargo-test-%p-%m.profraw" \
 cargo test
 
 # Render HTML coverage report
-readonly REPORT_DIR="target/coverage/html"
+REPORT_DIR="target/coverage/html"
+readonly REPORT_DIR
 mkdir --parents "${REPORT_DIR}"
 grcov --branch \
       --output-type html \
