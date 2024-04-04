@@ -1,12 +1,12 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i bash --packages inotify-tools
+#!/usr/bin/env bash
 #shellcheck shell=bash
 
 # "Quick-and-Dirty" Topiary Playground
 
 set -euo pipefail
 
-readonly PROGNAME="$(basename "$0")"
+PROGNAME="$(basename "$0")"
+readonly PROGNAME
 
 fail() {
   local error="$*"

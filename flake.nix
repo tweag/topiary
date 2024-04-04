@@ -41,16 +41,29 @@
 
         craneLib = crane.mkLib pkgs;
 
-        code = pkgs.callPackage ./default.nix { inherit advisory-db crane rust-overlay nix-filter craneLib; };
+        topiaryPkgs = pkgs.callPackage ./default.nix { inherit advisory-db crane rust-overlay nix-filter craneLib; };
+        binPkgs = pkgs.callPackage ./bin/default.nix { };
       in
       {
-        packages = with code; {
-          inherit topiary-playground topiary-queries client-app;
-          default = topiary-cli;
+        packages = {
+          inherit (topiaryPkgs)
+            topiary-playground
+            topiary-queries
+            client-app;
+
+          inherit (binPkgs)
+            # FIXME: Broken
+            # generate-coverage
+            playground
+            update-wasm-app
+            update-wasm-grammars
+            verify-documented-usage;
+
+          default = topiaryPkgs.topiary-cli;
         };
 
         checks = {
-          inherit (code) clippy clippy-wasm fmt topiary-core topiary-cli topiary-playground audit benchmark;
+          inherit (topiaryPkgs) clippy clippy-wasm fmt topiary-core topiary-cli topiary-playground audit benchmark;
 
           ## Check that the `lib.pre-commit-hook` output builds/evaluates
           ## correctly. `deepSeq e1 e2` evaluates `e1` strictly in depth before
@@ -60,8 +73,8 @@
         };
 
         devShells = {
-          default = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; inherit craneLib; };
-          wasm = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; craneLib = code.passtru.craneLibWasm; };
+          default = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; inherit craneLib; inherit binPkgs; };
+          wasm = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; craneLib = topiaryPkgs.passtru.craneLibWasm; inherit binPkgs; };
         };
 
         ## For easy use in https://github.com/cachix/pre-commit-hooks.nix
@@ -69,7 +82,7 @@
           enable = true;
           name = "topiary";
           description = "A general code formatter based on tree-sitter.";
-          entry = "${code.topiary-cli}/bin/topiary fmt";
+          entry = "${topiaryPkgs.topiary-cli}/bin/topiary fmt";
           types = [ "text" ];
         };
       }
