@@ -34,9 +34,23 @@
     flake-utils.lib.eachDefaultSystem (
       system:
       let
+        wasm-bindgen-cli-overlay = final: prev:
+          let
+            cargoLock = builtins.fromTOML (builtins.readFile ./Cargo.lock);
+            wasmBindgenCargoVersions = builtins.map ({ version, ... }: version) (builtins.filter ({ name, ... }: name == "wasm-bindgen") cargoLock.package);
+            wasmBindgenVersion = assert builtins.length wasmBindgenCargoVersions == 1; builtins.elemAt wasmBindgenCargoVersions 0;
+          in
+          {
+            wasm-bindgen-cli = prev.wasm-bindgen-cli.override {
+              version = wasmBindgenVersion;
+              hash = "sha256-f/RK6s12ItqKJWJlA2WtOXtwX4Y0qa8bq/JHlLTAS3c=";
+              cargoHash = "sha256-3vxVI0BhNz/9m59b+P2YEIrwGwlp7K3pyPKt4VqQuHE=";
+            };
+          };
+
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [ rust-overlay.overlays.default ];
+          overlays = [ rust-overlay.overlays.default wasm-bindgen-cli-overlay ];
         };
 
         craneLib = crane.mkLib pkgs;
