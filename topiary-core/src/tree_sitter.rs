@@ -62,6 +62,32 @@ impl TopiaryQuery {
             query_content: query_content.to_owned(),
         })
     }
+
+    /// Calculates the provided position of the Pattern in the query source file
+    /// from the byte offset of the pattern in the query.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn pattern_position(&self, pattern_index: usize) -> Position {
+        let byte_offset = self.query.start_byte_for_pattern(pattern_index);
+        let (row, column) =
+            self.query_content[..byte_offset]
+                .chars()
+                .fold((0, 0), |(row, column), c| {
+                    if c == '\n' {
+                        (row + 1, 0)
+                    } else {
+                        (row, column + 1)
+                    }
+                });
+        Position {
+            row: row + 1,
+            column: column + 1,
+        }
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    pub fn pattern_position(&self, _pattern_index: usize) -> Position {
+        unimplemented!()
+    }
 }
 
 impl From<Point> for Position {
@@ -220,7 +246,13 @@ pub fn apply_query(
     // the end, but we don't know if we get a line_comment capture or not.
 
     for m in matches {
-        log::debug!("Processing match: {m}");
+        // Convert the byte offset given the source to a row, col pair
+        // NOTE: Only performed if logging is enabled to avoid unnecessary computation
+        if log::log_enabled!(log::Level::Info) {
+            let pos = query.pattern_position(m.pattern_index as usize);
+
+            log::info!("Processing match: {m} at location {pos}");
+        }
 
         let mut predicates = QueryPredicates::default();
 
