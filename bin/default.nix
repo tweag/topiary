@@ -1,16 +1,18 @@
 { pkgs, writeShellApplication }:
 {
-  generate-coverage = writeShellApplication {
-    name = "generate-coverage";
+  # FIXME: Broken
+  # TODO: Don't use rustup to install these components but just use Nix
+  # generate-coverage = writeShellApplication {
+  #   name = "generate-coverage";
 
-    runtimeInputs = with pkgs; [
-      cacert
-      grcov
-      rustup
-    ];
+  #   runtimeInputs = with pkgs; [
+  #     cacert
+  #     grcov
+  #     rustup
+  #   ];
 
-    text = builtins.readFile ./generate-coverage.sh;
-  };
+  #   text = builtins.readFile ./generate-coverage.sh;
+  # };
 
   playground = writeShellApplication {
     name = "playground";

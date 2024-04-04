@@ -13,7 +13,8 @@ craneLib.devShell {
     rust-analyzer
 
     # Our own scripts
-    generate-coverage
+    # FIXME: Broken
+    # generate-coverage
     playground
     update-wasm-app
     update-wasm-grammars

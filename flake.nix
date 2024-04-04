@@ -46,8 +46,18 @@
       in
       {
         packages = {
-          inherit (topiaryPkgs) topiary-playground topiary-queries client-app;
-          inherit (binPkgs) generate-coverage playground update-wasm-app update-wasm-grammars verify-documented-usage;
+          inherit (topiaryPkgs)
+            topiary-playground
+            topiary-queries
+            client-app;
+
+          inherit (binPkgs)
+            # FIXME: Broken
+            # generate-coverage
+            playground
+            update-wasm-app
+            update-wasm-grammars
+            verify-documented-usage;
 
           default = topiaryPkgs.topiary-cli;
         };
