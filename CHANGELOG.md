@@ -44,6 +44,9 @@ This name should be decided amongst the team before the release.
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.3.0...HEAD)
 
+### Added
+- [#697](https://github.com/tweag/topiary/pull/697) Setting the log level to INFO now outputs the pattern locations in a (row, column) way.
+
 ## v0.3.0 - Dreamy Dracaena - 2023-09-22
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.2.3...v0.3.0)
