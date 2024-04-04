@@ -23,8 +23,7 @@ pub enum CLIError {
     Multiple,
     UnsupportedLanguage(String),
 
-    /// Could not detect the input language from the (filename,
-    /// Option<extension>)
+    /// Could not detect the input language from the `(filename, Option<extension>)`
     LanguageDetection(PathBuf, Option<String>),
 }
 
