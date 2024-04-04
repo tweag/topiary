@@ -236,6 +236,16 @@ pub fn apply_query(
 
     log::debug!("List of atoms before formatting: {atoms:?}");
 
+    // Memoization of the pattern positions
+    let mut pattern_positions: Vec<Option<Position>> = Vec::new();
+
+    // The web bindings for tree-sitter do not have support for pattern_count, so instead we will resize as needed
+    // Only reallocate if we are actually going to use the vec
+    #[cfg(not(target_arch = "wasm32"))]
+    if log::log_enabled!(log::Level::Info) {
+        pattern_positions.resize(query.query.pattern_count(), None);
+    }
+
     // If there are more than one capture per match, it generally means that we
     // want to use the last capture. For example
     // (
@@ -244,12 +254,21 @@ pub fn apply_query(
     // )
     // means we want to append a hardline at
     // the end, but we don't know if we get a line_comment capture or not.
-
     for m in matches {
-        // Convert the byte offset given the source to a row, col pair
-        // NOTE: Only performed if logging is enabled to avoid unnecessary computation
+        // NOTE: Only performed if logging is enabled to avoid unnecessary computation of Position
         if log::log_enabled!(log::Level::Info) {
-            let pos = query.pattern_position(m.pattern_index as usize);
+            #[cfg(target_arch = "wasm32")]
+            // Resize the pattern_positions vector if we need to store more positions
+            if m.pattern_index as usize >= pattern_positions.len() {
+                pattern_positions.resize(m.pattern_index as usize + 1, None);
+            }
+
+            // Fetch from pattern_positions, otherwise insert
+            let pos = pattern_positions[m.pattern_index as usize].unwrap_or_else(|| {
+                let pos = query.pattern_position(m.pattern_index as usize);
+                pattern_positions[m.pattern_index as usize] = Some(pos);
+                pos
+            });
 
             log::info!("Processing match: {m} at location {pos}");
         }
