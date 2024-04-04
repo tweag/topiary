@@ -77,11 +77,11 @@ tree-sitter = "=0.20.10"
 tree-sitter-bash = { git = "https://github.com/tree-sitter/tree-sitter-bash", rev = "1b0321ee85701d5036c334a6f04761cdc672e64c" }
 tree-sitter-json = { git = "https://github.com/tree-sitter/tree-sitter-json.git", rev = "3b129203f4b72d532f58e72c5310c0a7db3b8e6d" }
 tree-sitter-nickel = { git = "https://github.com/nickel-lang/tree-sitter-nickel", rev = "58baf89db8fdae54a84bcf22c80ff10ee3f929ed" }
-tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml.git" }
-tree-sitter-ocamllex = { git = "https://github.com/314eter/tree-sitter-ocamllex.git" }
-tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-query" }
+tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml.git", rev = "9965d208337d88bbf1a38ad0b0fe49e5f5ec9677" }
+tree-sitter-ocamllex = { git = "https://github.com/314eter/tree-sitter-ocamllex.git", rev = "4b9898ccbf198602bb0dec9cd67cc1d2c0a4fad2"}
+tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-query", rev = "a0ccc351e5e868ec1f8135e97aa3b53c663cf2df" }
 tree-sitter-rust = { git = "https://github.com/tree-sitter/tree-sitter-rust.git", rev = "e0e8b6de6e4aa354749c794f5f36a906dcccda74"}
-tree-sitter-toml = { git = "https://github.com/tree-sitter/tree-sitter-toml.git" }
+tree-sitter-toml = { git = "https://github.com/tree-sitter/tree-sitter-toml.git", rev = "342d9be207c2dba869b9967124c679b5e6fd0ebe" }
 unescape = "0.1"
 wasm-bindgen = "=0.2.91"
 wasm-bindgen-futures = "0.4"
