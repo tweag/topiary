@@ -44,6 +44,7 @@ topiary-queries = { path = "../topiary-queries" }
 topiary-tree-sitter-facade = { workspace = true }
 
 tree-sitter-json = { workspace = true }
+tree-sitter-css = { workspace = true }
 tree-sitter-rust = { workspace = true }
 tree-sitter-toml = { workspace = true }
 tree-sitter-bash = { workspace = true }

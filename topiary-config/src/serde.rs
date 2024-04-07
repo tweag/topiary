@@ -36,6 +36,7 @@ impl Language {
     pub fn find_query_file(&self) -> TopiaryConfigResult<PathBuf> {
         let basename = PathBuf::from(match self.name.as_str() {
             "bash" => "bash",
+            "css" => "css",
             "json" => "json",
             "nickel" => "nickel",
             "ocaml" | "ocaml_interface" => "ocaml",
@@ -67,6 +68,7 @@ impl Language {
     pub fn grammar(&self) -> TopiaryConfigResult<topiary_tree_sitter_facade::Language> {
         Ok(match self.name.as_str() {
             "bash" => tree_sitter_bash::language(),
+            "css" => tree_sitter_css::language(),
             "json" => tree_sitter_json::language(),
             "nickel" => tree_sitter_nickel::language(),
             "ocaml" => tree_sitter_ocaml::language_ocaml(),
@@ -84,6 +86,7 @@ impl Language {
     pub async fn grammar(&self) -> TopiaryConfigResult<topiary_tree_sitter_facade::Language> {
         let language_name = match self.name.as_str() {
             "bash" => "bash",
+            "css" => "css",
             "json" => "json",
             "nickel" => "nickel",
             "ocaml" => "ocaml",

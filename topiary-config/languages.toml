@@ -3,6 +3,10 @@ name = "bash"
 extensions = ["sh", "bash"]
 
 [[language]]
+name = "css"
+extensions = ["css"]
+
+[[language]]
 name = "json"
 extensions = ["json", "avsc", "geojson", "gltf", "har", "ice", "JSON-tmLanguage", "jsonl", "mcmeta", "tfstate", "tfstate.backup", "topojson", "webapp", "webmanifest"]
 

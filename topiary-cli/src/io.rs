@@ -324,6 +324,7 @@ where
 {
     match name.as_ref() {
         "bash" => Ok(topiary_queries::bash().into()),
+        "css" => Ok(topiary_queries::css().into()),
         "json" => Ok(topiary_queries::json().into()),
         "nickel" => Ok(topiary_queries::nickel().into()),
         "ocaml" => Ok(topiary_queries::ocaml().into()),
