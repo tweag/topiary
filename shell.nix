@@ -4,20 +4,26 @@
 , checks ? { }
 , craneLib
 , binPkgs
+, optionals ? true
 }:
-craneLib.devShell {
-  inherit checks;
+craneLib.devShell
+  (
+    {
+      inherit checks;
+    }
+      //
+    (if optionals then {
+      packages = with pkgs; with binPkgs; [
+        cargo-flamegraph
+        rust-analyzer
 
-  packages = with pkgs; with binPkgs; [
-    cargo-flamegraph
-    rust-analyzer
-
-    # Our own scripts
-    # FIXME: Broken
-    # generate-coverage
-    playground
-    update-wasm-app
-    update-wasm-grammars
-    verify-documented-usage
-  ];
-}
+        # Our own scripts
+        # FIXME: Broken
+        # generate-coverage
+        playground
+        update-wasm-app
+        update-wasm-grammars
+        verify-documented-usage
+      ];
+    } else { })
+  )
