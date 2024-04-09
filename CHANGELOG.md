@@ -46,6 +46,7 @@ This name should be decided amongst the team before the release.
 
 ### Added
 - [#697](https://github.com/tweag/topiary/pull/697) Setting the log level to INFO now outputs the pattern locations in a (row, column) way.
+- [#699](https://github.com/tweag/topiary/pull/699) Added support for CSS, thanks to @lavigneer
 
 ## v0.3.0 - Dreamy Dracaena - 2023-09-22
 
