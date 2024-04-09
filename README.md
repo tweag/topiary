@@ -104,6 +104,7 @@ specifying the path to their query files.
 * [Rust]
 * [Bash]
 * [Tree Sitter Queries][tree-sitter-query]
+* [CSS]
 
 ## Getting Started
 
@@ -1477,6 +1478,7 @@ of choice open in another.
 [badge-release-link]: https://github.com/tweag/topiary/releases/latest
 [bash]: https://www.gnu.org/software/bash
 [contributing]: CONTRIBUTING.md
+[css]: https://en.wikipedia.org/wiki/CSS
 [difftastic]: https://difftastic.wilfred.me.uk
 [format-all]: https://melpa.org/#/format-all
 [gofmt-slides]: https://go.dev/talks/2015/gofmt-en.slide#1

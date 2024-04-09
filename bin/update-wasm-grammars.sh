@@ -123,6 +123,19 @@ tree-sitter-query() {
   echo -e "${GREEN}Query: Done${NC}"
 }
 
-(trap 'kill 0' SIGINT; json & nickel & ocaml & ocamllex & bash & rust & toml & tree-sitter-query & wait)
+css() {
+  echo -e "${BLUE}CSS: Fetching${NC}"
+  git clone --depth=1 https://github.com/tree-sitter/tree-sitter-css.git "${WORKDIR}/tree-sitter-css" &> /dev/null
+  REV=$(ref_for_language "css")
+  pushd "${WORKDIR}/tree-sitter-css" &> /dev/null
+    git checkout "$REV" &> /dev/null
+  popd &> /dev/null
+  echo -e "${ORANGE}CSS: Building${NC}"
+  tree-sitter build-wasm "${WORKDIR}/tree-sitter-css"
+  echo -e "${GREEN}CSS: Done${NC}"
+}
+
+
+(trap 'kill 0' SIGINT; json & nickel & ocaml & ocamllex & bash & rust & toml & tree-sitter-query & css & wait)
 
 echo -e "${GREEN}Done! All grammars have been updated${NC}"
