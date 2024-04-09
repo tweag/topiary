@@ -2,12 +2,12 @@
 ;; not be formatted, but taken as is. We use the leaf capture name to inform the
 ;; tool of this.
 [
-(integer_value)
-(plain_value)
-(string_value)
-(color_value)
-(float_value)
-(grid_value)
+  (integer_value)
+  (plain_value)
+  (string_value)
+  (color_value)
+  (float_value)
+  (grid_value)
 ] @leaf
 
 ; Append space after colons
@@ -145,4 +145,3 @@
     ["," ")"]* @do_nothing
   )
 )
-
