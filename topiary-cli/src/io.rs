@@ -111,7 +111,7 @@ impl fmt::Display for InputSource {
 #[derive(Debug)]
 pub struct InputFile<'cfg> {
     source: InputSource,
-    language: &'cfg topiary_config::serde::Language,
+    language: &'cfg topiary_config::language::Language,
     query: QuerySource,
 }
 
@@ -139,7 +139,7 @@ impl<'cfg> InputFile<'cfg> {
     }
 
     /// Expose language for input
-    pub fn language(&self) -> &topiary_config::serde::Language {
+    pub fn language(&self) -> &topiary_config::language::Language {
         self.language
     }
 

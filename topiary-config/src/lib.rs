@@ -1,36 +1,47 @@
 //! Topiary can be configured using the `Configuration` struct.
-//! A basic configuration, written in TOML, is included at build time and parsed at runtime.
+//! A basic configuration, written in Nickel, is included at build time and parsed at runtime.
 //! Additional configuration has to be provided by the user of the library.
-
-pub mod collate;
 pub mod error;
-pub mod serde;
-mod source;
+pub mod language;
+pub mod source;
 
 use std::{
+    collections::HashMap,
     fmt,
+    io::Cursor,
     path::{Path, PathBuf},
 };
 
-use indoc::formatdoc;
-use itertools::Itertools;
+use language::Language;
+use nickel_lang_core::{eval::cache::CacheImpl, program::Program};
+use serde::Deserialize;
 
 use crate::{
     error::{TopiaryConfigError, TopiaryConfigResult},
-    {collate::CollationMode, serde::Serialisation, source::Source},
+    source::Source,
 };
 
-use self::serde::Language;
-
-/// Annotated configuration of the Topiary CLI
+/// The configuration of the Topiary.
+///
+/// Contains information on how to format every language the user is interested in, modulo what is
+/// supported. It can be provided by the user of the library, or alternatively, Topiary ships with
+/// default configuration that can be accessed using `Configuration::default`.
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct Configuration {
-    annotations: String,
-    configuration: Serialisation,
+    language: Vec<Language>,
 }
 
 impl Configuration {
-    /// Consume the configuration from the usual sources, collated as specified
-    pub fn fetch(file: &Option<PathBuf>, collation: &CollationMode) -> TopiaryConfigResult<Self> {
+    /// Consume the configuration from the usual sources.
+    /// Which sources exactly can be read in the documentation of `Source`.
+    ///
+    /// # Errors
+    ///
+    /// If the configuration file does not exist, this function will return a `TopiaryConfigError`
+    /// with the path that was not found.
+    /// If the configuration file exists, but cannot be parsed, this function will return a
+    /// `TopiaryConfigError` with the error that occurred.
+    pub fn fetch(file: &Option<PathBuf>) -> TopiaryConfigResult<Self> {
         // If we have an explicit file, fail if it doesn't exist
         if let Some(path) = file {
             if !path.exists() {
@@ -38,25 +49,27 @@ impl Configuration {
             }
         }
 
-        let sources = Source::fetch(file);
+        // Otherwise, gather a list of all the files we want to look for
+        let sources: Vec<Source> = Source::fetch(file);
 
-        let annotations = annotate(&sources, collation);
-        let configuration = configuration_toml(&sources, collation)?
-            .try_into()
-            .map_err(Into::<TopiaryConfigError>::into)?;
-
-        Ok(Self {
-            annotations,
-            configuration,
-        })
+        // And ask nickel to parse and merge them
+        Self::parse_and_merge(&sources)
     }
 
     /// Gets a language configuration from the entire configuration.
+    ///
+    /// # Errors
+    ///
+    /// If the provided language name cannot be found in the `Configuration`, this
+    /// function returns a `TopiaryConfigError`
     pub fn get_language<T>(&self, name: T) -> TopiaryConfigResult<&Language>
     where
         T: AsRef<str> + fmt::Display,
     {
-        self.configuration.get_language(name)
+        self.language
+            .iter()
+            .find(|language| language.name == name.as_ref())
+            .ok_or(TopiaryConfigError::UnknownLanguage(name.to_string()))
     }
 
     /// Convenience alias to detect the Language from a Path-like value's extension.
@@ -65,14 +78,36 @@ impl Configuration {
     ///
     /// If the file extension is not supported, a `FormatterError` will be returned.
     pub fn detect<P: AsRef<Path>>(&self, path: P) -> TopiaryConfigResult<&Language> {
-        self.configuration.detect(path)
+        let pb = &path.as_ref().to_path_buf();
+        if let Some(extension) = pb.extension().map(|ext| ext.to_string_lossy()) {
+            for lang in &self.language {
+                if lang.extensions.contains::<String>(&extension.to_string()) {
+                    return Ok(lang);
+                }
+            }
+            return Err(TopiaryConfigError::UnknownExtension(extension.to_string()));
+        }
+        Err(TopiaryConfigError::NoExtension(pb.clone()))
     }
-}
 
-impl fmt::Display for Configuration {
-    /// Pretty-print configuration as TOML, with annotations
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}\n{}", self.annotations, self.configuration)
+    fn parse_and_merge(_sources: &[Source]) -> TopiaryConfigResult<Self> {
+        // TODO: Actually use the sources, for now ignore and just return builtin
+        let nickel_expr = Source::Builtin.read()?;
+
+        let mut program = Program::<CacheImpl>::new_from_source(
+            Cursor::new(nickel_expr.to_string()),
+            "config",
+            std::io::stderr(),
+        )
+        .expect("TODO: Handle errors");
+
+        let term = program.eval_full_for_export().expect("TODO: Handle Errors");
+
+        let languages = Vec::deserialize(term).expect("TODO: Handle Errors");
+
+        Ok(Self {
+            language: languages,
+        })
     }
 }
 
@@ -81,61 +116,28 @@ impl Default for Configuration {
     // This is particularly useful for testing
     fn default() -> Self {
         // We assume that the built-in configuration is valid, so it's safe to unwrap
-        let configuration = configuration_toml(&[Source::Builtin], &CollationMode::Merge)
-            .unwrap()
-            .try_into()
-            .unwrap();
-
-        Self {
-            annotations: "".to_owned(),
-            configuration,
-        }
+        Self::parse_and_merge(&[Source::Builtin]).unwrap()
     }
 }
 
-/// Return annotations for the configuration in the form of TOML comments
-/// (useful for human-readable output)
-fn annotate(sources: &[Source], collation: &CollationMode) -> String {
-    formatdoc!(
-        "
-        # Configuration collated from the following sources,
-        # in priority order (lowest to highest):
-        #
-        {}
-        #
-        # Collation mode: {collation:?}
-        ",
-        sources
-            .iter()
-            .enumerate()
-            .map(|(i, source)| format!("# {}. {source}", i + 1))
-            .join("\n")
-    )
+/// Convert `Serialisation` values into `HashMap`s, keyed on `Language::name`
+impl From<&Configuration> for HashMap<String, Language> {
+    fn from(config: &Configuration) -> Self {
+        HashMap::from_iter(
+            config
+                .language
+                .iter()
+                .map(|language| (language.name.clone(), language.clone())),
+        )
+    }
 }
 
-/// Consume configuration and collate as specified
-fn configuration_toml(
-    sources: &[Source],
-    collation: &CollationMode,
-) -> TopiaryConfigResult<toml::Value> {
-    match collation {
-        CollationMode::Override => {
-            // It's safe to unwrap here, as `sources` is guaranteed to contain at least one element
-            sources
-                .last()
-                .unwrap()
-                .try_into()
-                .map_err(Into::<TopiaryConfigError>::into)
-        }
+// Order-invariant equality; required for unit testing
+impl PartialEq for Configuration {
+    fn eq(&self, other: &Self) -> bool {
+        let lhs: HashMap<String, Language> = self.into();
+        let rhs: HashMap<String, Language> = other.into();
 
-        // CollationMode::Merge and CollationMode::Revise
-        _ => {
-            // It's safe to unwrap here, as `sources` is guaranteed to contain at least one element
-            sources
-                .iter()
-                .map(|source| source.try_into())
-                .reduce(|config, toml| Ok(collation.collate_toml(config?, toml?)))
-                .unwrap()
-        }
+        lhs == rhs
     }
 }
