@@ -6,8 +6,6 @@ use std::{io::stdout, path::PathBuf};
 
 use log::LevelFilter;
 
-use topiary_config::collate::CollationMode;
-
 use crate::{
     error::{CLIResult, TopiaryError},
     visualisation,
@@ -41,17 +39,6 @@ pub struct GlobalArgs {
         hide_env_values = true
     )]
     pub configuration: Option<PathBuf>,
-
-    /// Configuration collation mode
-    #[arg(
-        long,
-        default_value = "merge",
-        display_order = 101,
-        env = "TOPIARY_CONFIG_COLLATION",
-        global = true,
-        hide_env_values = true
-    )]
-    pub configuration_collation: Option<CollationMode>,
 
     /// Logging verbosity (increased per occurrence)
     #[arg(
