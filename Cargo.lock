@@ -1062,9 +1062,7 @@ checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
 
 [[package]]
 name = "nickel-lang-core"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c439924f4aa0c8eb60e7ff7bb0edfdf77893e4033ca7c8124c8fa4a6433c2946"
+version = "0.7.0"
 dependencies = [
  "clap",
  "codespan",

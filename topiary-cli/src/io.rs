@@ -129,7 +129,7 @@ impl<'cfg> InputFile<'cfg> {
             name: self.language.name.clone(),
             query,
             grammar,
-            indent: self.language().indent.clone(),
+            indent: self.language().config.indent.clone(),
         })
     }
 

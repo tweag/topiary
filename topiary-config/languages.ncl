@@ -1,43 +1,42 @@
-[
-  {
-    name = "bash",
+{
+  "bash" = {
     extensions = ["sh", "bash"],
   },
-  {
-    name = "css",
+
+  "css" = {
     extensions = ["css"],
   },
-  {
-      name = "json",
-      extensions = ["json", "avsc", "geojson", "gltf", "har", "ice", "JSON-tmLanguage", "jsonl", "mcmeta", "tfstate", "tfstate.backup", "topojson", "webapp", "webmanifest"],
+
+  "json" = {
+    extensions = ["json", "avsc", "geojson", "gltf", "har", "ice", "JSON-tmLanguage", "jsonl", "mcmeta", "tfstate", "tfstate.backup", "topojson", "webapp", "webmanifest"],
   },
-  {
-    name = "nickel",
+
+  "nickel" = {
     extensions = ["ncl"],
   },
-  {
-    name = "ocaml",
+
+  "ocaml" = {
     extensions = ["ml"],
   },
-  {
-    name = "ocaml_interface",
+
+  "ocaml_interface" = {
     extensions = ["mli"],
   },
-  {
-    name = "ocamllex",
+
+  "ocamllex" = {
     extensions = ["mll"],
   },
-  {
-    name = "rust",
+
+  "rust" = {
     extensions = ["rs"],
-    indent = "    " # 4 spaces
+    indent = "    ", # 4 spaces
   },
-  {
-    name = "toml",
+
+  "toml" = {
     extensions = ["toml"],
   },
-  {
-    name = "tree_sitter_query",
+
+  "tree_sitter_query" = {
     extensions = ["scm"],
-  }
-]
+  },
+}
