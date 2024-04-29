@@ -150,15 +150,6 @@ where
     }
 }
 
-impl From<toml::de::Error> for TopiaryError {
-    fn from(e: toml::de::Error) -> Self {
-        TopiaryError::Bin(
-            "Could not parse configuration".into(),
-            Some(CLIError::Generic(Box::new(e))),
-        )
-    }
-}
-
 impl From<tokio::task::JoinError> for TopiaryError {
     fn from(e: tokio::task::JoinError) -> Self {
         TopiaryError::Bin(

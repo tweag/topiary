@@ -8,7 +8,6 @@ pub mod source;
 use std::{
     collections::HashMap,
     fmt,
-    io::Cursor,
     path::{Path, PathBuf},
 };
 
@@ -18,6 +17,7 @@ use serde::Deserialize;
 
 use crate::{
     error::{TopiaryConfigError, TopiaryConfigResult},
+    language::LanguageConfiguration,
     source::Source,
 };
 
@@ -26,9 +26,9 @@ use crate::{
 /// Contains information on how to format every language the user is interested in, modulo what is
 /// supported. It can be provided by the user of the library, or alternatively, Topiary ships with
 /// default configuration that can be accessed using `Configuration::default`.
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
+#[derive(Debug)]
 pub struct Configuration {
-    language: Vec<Language>,
+    languages: Vec<Language>,
 }
 
 impl Configuration {
@@ -66,7 +66,7 @@ impl Configuration {
     where
         T: AsRef<str> + fmt::Display,
     {
-        self.language
+        self.languages
             .iter()
             .find(|language| language.name == name.as_ref())
             .ok_or(TopiaryConfigError::UnknownLanguage(name.to_string()))
@@ -80,8 +80,12 @@ impl Configuration {
     pub fn detect<P: AsRef<Path>>(&self, path: P) -> TopiaryConfigResult<&Language> {
         let pb = &path.as_ref().to_path_buf();
         if let Some(extension) = pb.extension().map(|ext| ext.to_string_lossy()) {
-            for lang in &self.language {
-                if lang.extensions.contains::<String>(&extension.to_string()) {
+            for lang in &self.languages {
+                if lang
+                    .config
+                    .extensions
+                    .contains::<String>(&extension.to_string())
+                {
                     return Ok(lang);
                 }
             }
@@ -90,24 +94,57 @@ impl Configuration {
         Err(TopiaryConfigError::NoExtension(pb.clone()))
     }
 
-    fn parse_and_merge(_sources: &[Source]) -> TopiaryConfigResult<Self> {
-        // TODO: Actually use the sources, for now ignore and just return builtin
-        let nickel_expr = Source::Builtin.read()?;
+    fn parse_and_merge(sources: &[Source]) -> TopiaryConfigResult<Self> {
+        eprintln!("sources = {:#?}", sources);
+        let nickel_exprs = sources
+            .iter()
+            .map(|s| match s.read() {
+                Ok(read) => Ok((read, s.to_string())),
+                Err(err) => Err(err),
+            })
+            .collect::<Result<Vec<_>, _>>()?;
 
-        let mut program = Program::<CacheImpl>::new_from_source(
-            Cursor::new(nickel_expr.to_string()),
-            "config",
-            std::io::stderr(),
-        )
-        .expect("TODO: Handle errors");
+        let mut program = Program::<CacheImpl>::new_from_sources(nickel_exprs, std::io::stderr())?;
 
-        let term = program.eval_full_for_export().expect("TODO: Handle Errors");
+        let term = program.eval_full()?;
 
-        let languages = Vec::deserialize(term).expect("TODO: Handle Errors");
+        // let mut nickel_programs = nickel_exprs
+        //     .iter()
+        //     .map(|expr| {
+        //         Program::<CacheImpl>::new_from_source(
+        //             Cursor::new(expr.to_string()),
+        //             "config",
+        //             std::io::stderr(),
+        //         )
+        //     })
+        //     .collect::<Result<Vec<_>, _>>()?;
 
-        Ok(Self {
-            language: languages,
-        })
+        // let terms = nickel_programs
+        //     .iter_mut()
+        //     .map(|p| p.eval_full())
+        //     .collect::<Result<Vec<_>, _>>()?;
+
+        // // Merge all them by reducing them with a make::op2 Merge
+        // let term = terms
+        //     .into_iter()
+        //     .reduce(|acc, f| make::op2(BinaryOp::Merge(Label::default().into()), acc, f))
+        //     .expect("Could not reduce terms");
+
+        // let cache = Cache::new(ErrorTolerance::Tolerant);
+        // let mut vm: VirtualMachine<Cache, CacheImpl> =
+        //     VirtualMachine::new(cache, std::io::stderr());
+        // eprintln!("term = {:#?}", term);
+        // let term = vm.eval_full(term).unwrap();
+
+        // Parse as hashmap
+        let map: HashMap<String, LanguageConfiguration> = HashMap::deserialize(term)?;
+
+        let languages = map
+            .into_iter()
+            .map(|(name, config)| Language { name, config })
+            .collect();
+
+        Ok(Configuration { languages })
     }
 }
 
@@ -125,7 +162,7 @@ impl From<&Configuration> for HashMap<String, Language> {
     fn from(config: &Configuration) -> Self {
         HashMap::from_iter(
             config
-                .language
+                .languages
                 .iter()
                 .map(|language| (language.name.clone(), language.clone())),
         )

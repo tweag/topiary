@@ -50,7 +50,7 @@ impl Source {
             None => None,
             Some(path) => {
                 let candidate = if path.is_dir() {
-                    path.join("languages.toml")
+                    path.join("languages.ncl")
                 } else {
                     path.clone()
                 };
@@ -68,10 +68,12 @@ impl Source {
         }
     }
 
-    pub fn read(&self) -> Result<String, TopiaryConfigError> {
+    pub fn read(&self) -> Result<std::io::Cursor<String>, TopiaryConfigError> {
         match self {
-            Self::Builtin => Ok(self.builtin_nickel()),
-            Self::File(path) => std::fs::read_to_string(path).map_err(TopiaryConfigError::IoError),
+            Self::Builtin => Ok(std::io::Cursor::new(self.builtin_nickel())),
+            Self::File(path) => std::fs::read_to_string(path)
+                .map_err(TopiaryConfigError::IoError)
+                .map(std::io::Cursor::new),
         }
     }
 

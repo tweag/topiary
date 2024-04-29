@@ -14,6 +14,13 @@ pub struct Language {
     /// configuration and to convert to the respective Tree-sitter grammar
     pub name: String,
 
+    /// The configuration of the language, includes all properties that Topiary
+    /// needs to properly format the language
+    pub config: LanguageConfiguration,
+}
+
+#[derive(Debug, serde::Deserialize, PartialEq, serde::Serialize, Clone)]
+pub struct LanguageConfiguration {
     /// A set of the filetype extensions associated with this language. This enables Topiary to
     /// switch to the right language based on the input filename.
     pub extensions: HashSet<String>,
