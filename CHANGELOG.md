@@ -60,6 +60,7 @@ This name should be decided amongst the team before the release.
 - [#686](https://github.com/tweag/topiary/pull/686) Added support for Nickel pattern formatting
 - [#697](https://github.com/tweag/topiary/pull/697) Setting the log level to INFO now outputs the pattern locations in a (row, column) way.
 - [#699](https://github.com/tweag/topiary/pull/699) Added support for CSS, thanks to @lavigneer
+- [#703](https://github.com/tweag/topiary/pull/703) Switched our configuration over to Nickel
 
 ### Fixed
 - [#626](https://github.com/tweag/topiary/pull/626) [#627](https://github.com/tweag/topiary/pull/627) [#628](https://github.com/tweag/topiary/pull/628) [#626](https://github.com/tweag/topiary/pull/648) Various OCaml improvements
