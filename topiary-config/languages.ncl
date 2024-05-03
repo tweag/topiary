@@ -1,42 +1,42 @@
 {
-  "bash" = {
+  bash = {
     extensions = ["sh", "bash"],
   },
 
-  "css" = {
+  css = {
     extensions = ["css"],
   },
 
-  "json" = {
+  json = {
     extensions = ["json", "avsc", "geojson", "gltf", "har", "ice", "JSON-tmLanguage", "jsonl", "mcmeta", "tfstate", "tfstate.backup", "topojson", "webapp", "webmanifest"],
   },
 
-  "nickel" = {
+  nickel = {
     extensions = ["ncl"],
   },
 
-  "ocaml" = {
+  ocaml = {
     extensions = ["ml"],
   },
 
-  "ocaml_interface" = {
+  ocaml_interface = {
     extensions = ["mli"],
   },
 
-  "ocamllex" = {
+  ocamllex = {
     extensions = ["mll"],
   },
 
-  "rust" = {
+  rust = {
     extensions = ["rs"],
     indent = "    ", # 4 spaces
   },
 
-  "toml" = {
+  toml = {
     extensions = ["toml"],
   },
 
-  "tree_sitter_query" = {
+  tree_sitter_query = {
     extensions = ["scm"],
   },
 }
