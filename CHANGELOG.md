@@ -44,6 +44,9 @@ This name should be decided amongst the team before the release.
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.4.0...HEAD)
 
+### Changed
+- [#704](https://github.com/tweag/topiary/pull/704) Refactors our postprocessing code to be more versatile.
+
 ## v0.4.0 - Exquisite Elm - 2024-05-15
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.3.0...v0.4.0)
