@@ -784,69 +784,84 @@ impl AtomCollection {
         log::debug!("List of atoms after post-processing: {:?}", self.atoms);
     }
 
+    /// This function post-processes the atoms in the collection.
+    /// It modifies the collection in-place, removing unnecessary atoms and adjusting the position of others.
     fn post_process_inner(&mut self) {
-        let mut prev: Option<&mut Atom> = None;
-        for next in &mut self.atoms {
-            if let Some(prev) = prev.as_mut() {
-                match prev {
-                    // Discard all spaces following an antispace. We'll fix the
-                    // preceding ones in the next pass.
-                    Atom::Antispace => {
-                        match next {
-                            // Remove any space or antispace that follows an
-                            // antispace by setting it empty.
-                            Atom::Space | Atom::Antispace => {
-                                *next = Atom::Empty;
-                            }
-                            _ => {}
-                        }
-                    }
+        // A mutable reference to the atoms in the collection.
+        let mut remaining = &mut self.atoms[..];
 
-                    // If the last atom is a space/line
-                    Atom::Empty | Atom::Space | Atom::Hardline | Atom::Blankline => {
-                        match next {
-                            // And the next one is also a space/line
-                            Atom::Empty | Atom::Space | Atom::Hardline | Atom::Blankline => {
-                                // Set the non-dominant one to empty.
-                                if is_dominant(next, prev) {
-                                    **prev = Atom::Empty;
-                                } else {
-                                    *next = Atom::Empty;
-                                }
-                            }
+        // The previous atom in the collection. Initialized to the first atom, if it exists.
+        // We a mutable reference to the previous atom so that we can modify it in-place.
+        // This atoms holds the last atom encountered that is not empty.
+        let mut prev: &mut Atom = if let [head, tail @ ..] = remaining {
+            remaining = tail;
+            head
+        } else {
+            return;
+        };
 
-                            // Or an indentation delimiter, then one has to merge/re-order.
-                            Atom::IndentStart | Atom::IndentEnd => {
-                                let old_prev = prev.clone();
-                                **prev = next.clone();
-                                *next = old_prev;
-                            }
-
-                            _ => {}
-                        }
-                    }
-
-                    _ => {}
-                }
+        // Set all leading whitespace atoms to empty.
+        while let Atom::Space | Atom::Antispace | Atom::Hardline | Atom::Blankline = *prev {
+            *prev = Atom::Empty;
+            if let [head, tail @ ..] = remaining {
+                prev = head;
+                remaining = tail;
             } else {
-                // If we're at the beginning of the file and still haven't
-                // reached a non-empty atom, we remove all the spaces and
-                // newlines by setting them empty.
-                match next {
-                    Atom::Empty
-                    | Atom::Space
-                    | Atom::Antispace
-                    | Atom::Hardline
-                    | Atom::Blankline => {
-                        *next = Atom::Empty;
-                    }
-                    _ => {}
-                };
+                return;
             }
+        }
 
-            if *next != Atom::Empty {
-                // Let prev point to the previous non-empty atom.
-                prev = Some(next);
+        // Process the remaining atoms in the collection.
+        while !remaining.is_empty() {
+            match (prev, remaining) {
+                // If an antispace atom is followed by a space or another antispace, remove the following atom.
+                (
+                    moved_prev @ Atom::Antispace,
+                    [head @ (Atom::Space | Atom::Antispace), tail @ ..],
+                ) => {
+                    *head = Atom::Empty;
+
+                    prev = moved_prev;
+                    remaining = tail;
+                }
+                // If two whitespace atoms follow each other, remove the non-dominant one.
+                (
+                    moved_prev @ (Atom::Space | Atom::Hardline | Atom::Blankline),
+                    [head @ (Atom::Space | Atom::Hardline | Atom::Blankline), tail @ ..],
+                ) => {
+                    if head.dominates(moved_prev) {
+                        *moved_prev = Atom::Empty;
+                    } else {
+                        *head = Atom::Empty;
+                    }
+
+                    prev = moved_prev;
+                    remaining = tail;
+                }
+                // If a whitespace atom is followed by an indent atom, swap their positions.
+                (
+                    moved_prev @ (Atom::Space | Atom::Hardline | Atom::Blankline),
+                    moved_remaining @ [Atom::IndentStart | Atom::IndentEnd, ..],
+                ) => {
+                    let old_prev = moved_prev.clone();
+                    let indent = moved_remaining.first_mut().unwrap();
+                    *moved_prev = indent.clone();
+                    *indent = old_prev;
+
+                    prev = moved_prev;
+                    remaining = moved_remaining;
+                }
+                // If the current atom is not empty, update the previous atom.
+                (moved_prev, [head, tail @ ..]) => {
+                    prev = if matches!(head, Atom::Empty) {
+                        moved_prev
+                    } else {
+                        head
+                    };
+                    remaining = tail;
+                }
+                // This case should never be reached because we check that `remaining` is not empty at the start of the loop.
+                (_, []) => unreachable!("remaining cannot be empty"),
             }
         }
     }
@@ -967,18 +982,6 @@ fn collapse_spaces_before_antispace(v: &mut [Atom]) {
         } else {
             antispace_mode = false;
         }
-    }
-}
-
-// This function is only expected to take spaces and newlines as argument.
-// It defines the order Blankline > Hardline > Space > Empty.
-fn is_dominant(next: &Atom, prev: &Atom) -> bool {
-    match next {
-        Atom::Empty => false,
-        Atom::Space => *prev == Atom::Empty,
-        Atom::Hardline => *prev == Atom::Space || *prev == Atom::Empty,
-        Atom::Blankline => *prev != Atom::Blankline,
-        _ => panic!("Unexpected character in is_dominant"),
     }
 }
 
@@ -1140,6 +1143,50 @@ mod test {
                 Atom::Literal("foo".into()),
                 Atom::IndentEnd,
                 Atom::Hardline,
+                Atom::Literal("foo".into()),
+            ]
+        );
+    }
+
+    #[test]
+    fn post_process_hardline_before_hardline() {
+        let mut atom_collection = AtomCollection::new(vec![
+            Atom::Literal("foo".into()),
+            Atom::Hardline,
+            Atom::Hardline,
+            Atom::Literal("foo".into()),
+        ]);
+
+        atom_collection.post_process();
+
+        assert_eq!(
+            atom_collection.atoms,
+            vec![
+                Atom::Literal("foo".into()),
+                Atom::Hardline,
+                Atom::Empty,
+                Atom::Literal("foo".into()),
+            ]
+        );
+    }
+
+    #[test]
+    fn post_process_empty_blank_hard() {
+        let mut atom_collection = AtomCollection::new(vec![
+            Atom::Empty,
+            Atom::Blankline,
+            Atom::Hardline,
+            Atom::Literal("foo".into()),
+        ]);
+
+        atom_collection.post_process();
+
+        assert_eq!(
+            atom_collection.atoms,
+            vec![
+                Atom::Empty,
+                Atom::Blankline,
+                Atom::Empty,
                 Atom::Literal("foo".into()),
             ]
         );

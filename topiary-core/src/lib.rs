@@ -114,6 +114,20 @@ pub enum Atom {
     },
 }
 
+impl Atom {
+    /// This function is only expected to take spaces and newlines as argument.
+    /// It defines the order Blankline > Hardline > Space > Empty.
+    pub(crate) fn dominates(&self, other: &Atom) -> bool {
+        match self {
+            Atom::Empty => false,
+            Atom::Space => matches!(other, Atom::Empty),
+            Atom::Hardline => matches!(other, Atom::Space | Atom::Empty),
+            Atom::Blankline => matches!(other, Atom::Hardline | Atom::Space | Atom::Empty),
+            _ => panic!("Unexpected character in is_dominant"),
+        }
+    }
+}
+
 /// Used in `Atom::ScopedConditional` to apply the containing Atoms only if
 /// the matched node spans a single line or multiple lines
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
