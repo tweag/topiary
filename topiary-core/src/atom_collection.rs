@@ -785,70 +785,81 @@ impl AtomCollection {
     }
 
     fn post_process_inner(&mut self) {
-        let mut prev: Option<&mut Atom> = None;
-        for next in &mut self.atoms {
-            if let Some(prev) = prev.as_mut() {
-                match prev {
-                    // Discard all spaces following an antispace. We'll fix the
-                    // preceding ones in the next pass.
-                    Atom::Antispace => {
-                        match next {
-                            // Remove any space or antispace that follows an
-                            // antispace by setting it empty.
-                            Atom::Space | Atom::Antispace => {
-                                *next = Atom::Empty;
-                            }
-                            _ => {}
-                        }
-                    }
+        let mut remaining = &mut self.atoms[..];
+        // We have to remember the previous Non-Empty atom, so we must remember it instead of just assuming it's the head of the remaining slice
+        let mut prev: &mut Atom = if let [head, tail @ ..] = remaining {
+            remaining = tail;
+            head
+        } else {
+            return;
+        };
 
-                    // If the last atom is a space/line
-                    Atom::Empty | Atom::Space | Atom::Hardline | Atom::Blankline => {
-                        match next {
-                            // And the next one is also a space/line
-                            Atom::Empty | Atom::Space | Atom::Hardline | Atom::Blankline => {
-                                // Set the non-dominant one to empty.
-                                if is_dominant(next, prev) {
-                                    **prev = Atom::Empty;
-                                } else {
-                                    *next = Atom::Empty;
-                                }
-                            }
-
-                            // Or an indentation delimiter, then one has to merge/re-order.
-                            Atom::IndentStart | Atom::IndentEnd => {
-                                let old_prev = prev.clone();
-                                **prev = next.clone();
-                                *next = old_prev;
-                            }
-
-                            _ => {}
-                        }
-                    }
-
-                    _ => {}
-                }
+        // Set all leading whitespace to empty
+        while let Atom::Space | Atom::Antispace | Atom::Hardline | Atom::Blankline = *prev {
+            *prev = Atom::Empty;
+            if let [head, tail @ ..] = remaining {
+                prev = head;
+                remaining = tail;
             } else {
-                // If we're at the beginning of the file and still haven't
-                // reached a non-empty atom, we remove all the spaces and
-                // newlines by setting them empty.
-                match next {
-                    Atom::Empty
-                    | Atom::Space
-                    | Atom::Antispace
-                    | Atom::Hardline
-                    | Atom::Blankline => {
-                        *next = Atom::Empty;
-                    }
-                    _ => {}
-                };
-            }
-
-            if *next != Atom::Empty {
-                // Let prev point to the previous non-empty atom.
-                prev = Some(next);
+                return;
             }
         }
+
+        while !remaining.is_empty() {
+            // println!("prev: {:?}, remaining: {:?}", prev, remaining);
+
+            match (prev, remaining) {
+                // Remove all spaces following an antispace
+                (
+                    moved_prev @ Atom::Antispace,
+                    [head @ (Atom::Space | Atom::Antispace), tail @ ..],
+                ) => {
+                    *head = Atom::Empty;
+
+                    prev = moved_prev;
+                    remaining = tail;
+                }
+                // If two whitespace characters follow eachother, set the non-dominant one to empty
+                (
+                    moved_prev @ (Atom::Space | Atom::Hardline | Atom::Blankline),
+                    [head @ (Atom::Space | Atom::Hardline | Atom::Blankline), tail @ ..],
+                ) => {
+                    if head.dominates(moved_prev) {
+                        *moved_prev = Atom::Empty;
+                    } else {
+                        *head = Atom::Empty;
+                    }
+
+                    // Keep current prev
+                    prev = moved_prev;
+                    remaining = tail;
+                }
+                // If a whispace is followed by an indent atom, move the indent atom one further
+                (
+                    moved_prev @ (Atom::Space | Atom::Hardline | Atom::Blankline),
+                    moved_remaining @ [Atom::IndentStart | Atom::IndentEnd, ..],
+                ) => {
+                    let old_prev = moved_prev.clone();
+                    let indent = moved_remaining.first_mut().unwrap();
+                    *moved_prev = indent.clone();
+                    *indent = old_prev;
+
+                    prev = moved_prev;
+                    remaining = moved_remaining;
+                }
+                (moved_prev, [head, tail @ ..]) => {
+                    prev = if matches!(head, Atom::Empty) {
+                        moved_prev
+                    } else {
+                        head
+                    };
+                    remaining = tail;
+                }
+                (_, []) => unreachable!("remaining cannot be empty"),
+            }
+        }
+
+        // println!("Atoms after: {:#?}", self.atoms);
     }
 
     fn next_id(&mut self) -> usize {
@@ -967,18 +978,6 @@ fn collapse_spaces_before_antispace(v: &mut [Atom]) {
         } else {
             antispace_mode = false;
         }
-    }
-}
-
-// This function is only expected to take spaces and newlines as argument.
-// It defines the order Blankline > Hardline > Space > Empty.
-fn is_dominant(next: &Atom, prev: &Atom) -> bool {
-    match next {
-        Atom::Empty => false,
-        Atom::Space => *prev == Atom::Empty,
-        Atom::Hardline => *prev == Atom::Space || *prev == Atom::Empty,
-        Atom::Blankline => *prev != Atom::Blankline,
-        _ => panic!("Unexpected character in is_dominant"),
     }
 }
 
@@ -1140,6 +1139,50 @@ mod test {
                 Atom::Literal("foo".into()),
                 Atom::IndentEnd,
                 Atom::Hardline,
+                Atom::Literal("foo".into()),
+            ]
+        );
+    }
+
+    #[test]
+    fn post_process_hardline_before_hardline() {
+        let mut atom_collection = AtomCollection::new(vec![
+            Atom::Literal("foo".into()),
+            Atom::Hardline,
+            Atom::Hardline,
+            Atom::Literal("foo".into()),
+        ]);
+
+        atom_collection.post_process();
+
+        assert_eq!(
+            atom_collection.atoms,
+            vec![
+                Atom::Literal("foo".into()),
+                Atom::Hardline,
+                Atom::Empty,
+                Atom::Literal("foo".into()),
+            ]
+        );
+    }
+
+    #[test]
+    fn post_process_empty_blank_hard() {
+        let mut atom_collection = AtomCollection::new(vec![
+            Atom::Empty,
+            Atom::Blankline,
+            Atom::Hardline,
+            Atom::Literal("foo".into()),
+        ]);
+
+        atom_collection.post_process();
+
+        assert_eq!(
+            atom_collection.atoms,
+            vec![
+                Atom::Empty,
+                Atom::Blankline,
+                Atom::Empty,
                 Atom::Literal("foo".into()),
             ]
         );
