@@ -218,7 +218,11 @@ impl AtomCollection {
         match name {
             "allow_blank_line_before" => {
                 if self.blank_lines_before.contains(&node.id()) {
+                    // If there already was a blankline, keep it
                     self.prepend(Atom::Blankline, node, predicates);
+                } else {
+                    // Otherwise, allow the query processing to insert blank lines that we won't remove
+                    self.append(Atom::AllowBlanklineBefore, node, predicates);
                 }
             }
             "append_delimiter" => self.append(

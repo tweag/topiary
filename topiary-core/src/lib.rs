@@ -46,6 +46,10 @@ pub enum Atom {
     /// We don't allow consecutive `Hardline`, but a `Blankline` will render two
     /// newlines to produce a blank line.
     Blankline,
+    /// Sometimes, Topiary needs to be instructed that a blank line is allowed before the current node.
+    /// Previously, this was done in the collection phase, however, we also don't want to remove lines that were added by queries.
+    /// As such, this node informs the post-processing step not to remove any double Hardlines or single Blanklines.
+    AllowBlanklineBefore,
     /// A "no-op" atom that will not produce any output.
     #[default]
     Empty,
