@@ -17,6 +17,11 @@ const TOML_INPUT: &str = r#"   test=    123"#;
 const TOML_EXPECTED: &str = r#"test = 123
 "#;
 
+// The TempDir member of the State is not actually used.
+// However, removing it means that the directory is dropped at the end of the new() function, which causes it to be deleted.
+// This causes the path to the state file to be invalid and breaks the tests.
+// So, we keep the TempDir around so the tests don't break.
+#[allow(dead_code)]
 struct State(TempDir, PathBuf);
 
 impl State {

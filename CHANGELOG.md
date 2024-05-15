@@ -42,11 +42,30 @@ This name should be decided amongst the team before the release.
 
 ## Unreleased
 
-[Full list of changes](https://github.com/tweag/topiary/compare/v0.3.0...HEAD)
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.4.0...HEAD)
+
+## v0.4.0 - Exquisite Elm - 2024-05-15
+
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.3.0...v0.4.0)
 
 ### Added
+- [#589](https://github.com/tweag/topiary/pull/589) Added syntax highlighting to the playground (excluding Nickel)
+- [#686](https://github.com/tweag/topiary/pull/686) Added support for Nickel pattern formatting
 - [#697](https://github.com/tweag/topiary/pull/697) Setting the log level to INFO now outputs the pattern locations in a (row, column) way.
 - [#699](https://github.com/tweag/topiary/pull/699) Added support for CSS, thanks to @lavigneer
+
+### Fixed
+- [#626](https://github.com/tweag/topiary/pull/626) [#627](https://github.com/tweag/topiary/pull/627) [#628](https://github.com/tweag/topiary/pull/628) [#626](https://github.com/tweag/topiary/pull/648) Various OCaml improvements
+- [#673](https://github.com/tweag/topiary/pull/673) Various TOML fixes
+- [#678](https://github.com/tweag/topiary/pull/678) Ensures the client example project builds, and is tested in CI
+- [#677](https://github.com/tweag/topiary/pull/677) Ensures our playground builds consistently in CI
+- [#682](https://github.com/tweag/topiary/pull/682) Removes prepended linebreaks from equal signs in Nickel annotations
+- [#692](https://github.com/tweag/topiary/pull/692) Improves our installation instructions, thanks to @Jasha10
+
+### Changed
+- [#664](https://github.com/tweag/topiary/pull/664) Ensures source positions in the logs are consistent thanks to @evertedsphere
+- [#668](https://github.com/tweag/topiary/pull/668) Updates our Nickel grammar
+- [#672](https://github.com/tweag/topiary/pull/672) Completely refactors our crate layout, preparing for a release on crates.io
 
 ## v0.3.0 - Dreamy Dracaena - 2023-09-22
 

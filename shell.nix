@@ -14,6 +14,7 @@ craneLib.devShell
       //
     (if optionals then {
       packages = with pkgs; with binPkgs; [
+        cargo-dist
         cargo-flamegraph
         rust-analyzer
 

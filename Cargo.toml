@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 authors = ["Tweag"]
 homepage = "https://topiary.tweag.io"
@@ -34,20 +34,17 @@ lto = "thin"
 # Config for 'cargo dist'
 [workspace.metadata.dist]
 # The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
-cargo-dist-version = "0.0.7"
-# The preferred Rust toolchain to use in CI (rustup toolchain syntax)
-rust-toolchain-version = "1.74.0"
-# CI backends to support (see 'cargo dist generate-ci')
+cargo-dist-version = "0.13.2"
+# CI backends to support
 ci = ["github"]
 # The installers to generate for each app
-installers = ["shell", "powershell"]
+installers = ["shell"]
 # Target platforms to build apps for (Rust target-triple syntax)
-targets = [
-  "x86_64-unknown-linux-gnu",
-  "x86_64-apple-darwin",
-  "x86_64-pc-windows-msvc",
-  "aarch64-apple-darwin",
-]
+targets = ["aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]
+# Publish jobs to run in CI
+pr-run-mode = "plan"
+# Whether to install an updater program
+install-updater = false
 
 [workspace.dependencies]
 assert_cmd = "2.0"

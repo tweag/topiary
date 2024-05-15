@@ -7,7 +7,7 @@
 , craneLib
 }:
 let
-  wasmRustVersion = "1.74.0";
+  wasmRustVersion = "1.77.2";
   wasmTarget = "wasm32-unknown-unknown";
 
   rustWithWasmTarget = pkgs.rust-bin.stable.${wasmRustVersion}.default.override {

@@ -39,7 +39,7 @@ extern "C" {
 
 thread_local! {
     // Ensure `web-tree-sitter` is only initialized once
-    static TREE_SITTER_INITIALIZED: RefCell<bool> = RefCell::new(false);
+    static TREE_SITTER_INITIALIZED: RefCell<bool> = const { RefCell::new(false) };
 }
 
 pub struct TreeSitter;
