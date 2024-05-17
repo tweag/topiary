@@ -86,8 +86,8 @@ wasm-bindgen-futures = "0.4"
 wasm-bindgen-test = "0.3"
 web-sys = "0.3"
 
-topiary-web-tree-sitter-sys.path = "./topiary-web-tree-sitter-sys"
-topiary-tree-sitter-facade.path = "./topiary-tree-sitter-facade"
+topiary-web-tree-sitter-sys = { version = "0.4.0", path = "./topiary-web-tree-sitter-sys" }
+topiary-tree-sitter-facade = {version = "0.4.0", path = "./topiary-tree-sitter-facade" }
 
 # tree-sitter-json's dependency on Tree-sitter is looser than ours, so
 # we have to pin its version to maintain API compatibility

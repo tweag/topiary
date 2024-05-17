@@ -8,6 +8,9 @@ homepage.workspace = true
 repository.workspace = true
 documentation.workspace = true
 readme.workspace = true
+description = """
+  Topiary's raw bindings to the tree-sitter-web API
+"""
 
 [features]
 default = ["web-sys"]

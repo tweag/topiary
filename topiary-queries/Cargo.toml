@@ -1,6 +1,5 @@
 [package]
 name = "topiary-queries"
-description = "tree-sitter query files compatible with Topiary"
 categories = ["development-tools", "text-processing"]
 keywords = ["code-formatter", "formatter", "text", "tree-sitter"]
 version.workspace = true
@@ -11,6 +10,9 @@ repository.workspace = true
 documentation.workspace = true
 readme.workspace = true
 license.workspace = true
+description = """
+  tree-sitter query files compatible with Topiary
+"""
 
 [features]
 default = [
