@@ -4,9 +4,10 @@ set -eu
 
 cd web-playground/public/scripts/
 
-WORKDIR="$(mktemp -d)"
+WORKDIR=./tmp/
+mkdir -p $WORKDIR
 readonly WORKDIR
-trap 'echo -e "${BLUE}Cleanup...${NC}"; rm -rf "${WORKDIR}"' EXIT
+trap 'echo -e "${BLUE}Cleanup...${NC}"; rm -rf "${WORKDIR}"; rm a.out.{js,wasm}' EXIT
 
 BLUE="$(tput setaf 4)"
 readonly BLUE
@@ -34,7 +35,7 @@ json() {
     git checkout "$REV" &> /dev/null
   popd &> /dev/null
   echo -e "${ORANGE}JSON: Building${NC}"
-  tree-sitter build-wasm "${WORKDIR}/tree-sitter-json"
+  tree-sitter build --wasm "${WORKDIR}/tree-sitter-json"
   echo -e "${GREEN}JSON: Done${NC}"
 }
 
@@ -46,7 +47,7 @@ nickel() {
     git checkout "$REV" &> /dev/null
   popd &> /dev/null
   echo -e "${ORANGE}Nickel: Building${NC}"
-  tree-sitter build-wasm "${WORKDIR}/tree-sitter-nickel"
+  tree-sitter build --wasm "${WORKDIR}/tree-sitter-nickel"
   echo -e "${GREEN}Nickel: Done${NC}"
 }
 
@@ -58,8 +59,8 @@ ocaml() {
     git checkout "$REV" &> /dev/null
   popd &> /dev/null
   echo -e "${ORANGE}OCaml: Building${NC}"
-  tree-sitter build-wasm "${WORKDIR}/tree-sitter-ocaml/ocaml"
-  tree-sitter build-wasm "${WORKDIR}/tree-sitter-ocaml/interface/"
+  tree-sitter build --wasm "${WORKDIR}/tree-sitter-ocaml/ocaml"
+  tree-sitter build --wasm "${WORKDIR}/tree-sitter-ocaml/interface/"
   echo -e "${GREEN}OCaml: Done${NC}"
 }
 
@@ -71,7 +72,7 @@ ocamllex() {
     git checkout "$REV" &> /dev/null
   popd &> /dev/null
   echo -e "${ORANGE}OCamllex: Building${NC}"
-  tree-sitter build-wasm "${WORKDIR}/tree-sitter-ocamllex"
+  tree-sitter build --wasm "${WORKDIR}/tree-sitter-ocamllex"
   echo -e "${GREEN}Ocamllex: Done${NC}"
 }
 
@@ -83,7 +84,7 @@ bash() {
     git checkout "$REV" &> /dev/null
   popd &> /dev/null
   echo -e "${ORANGE}Bash: Building${NC}"
-  tree-sitter build-wasm "${WORKDIR}/tree-sitter-bash"
+  tree-sitter build --wasm "${WORKDIR}/tree-sitter-bash"
   echo -e "${GREEN}Bash: Done${NC}"
 }
 
@@ -95,7 +96,7 @@ rust() {
     git checkout "$REV" &> /dev/null
   popd &> /dev/null
   echo -e "${ORANGE}Rust: Building${NC}"
-  tree-sitter build-wasm "${WORKDIR}/tree-sitter-rust"
+  tree-sitter build --wasm "${WORKDIR}/tree-sitter-rust"
   echo -e "${GREEN}Rust: Done${NC}"
 }
 
@@ -107,7 +108,7 @@ toml() {
     git checkout "$REV" &> /dev/null
   popd &> /dev/null
   echo -e "${ORANGE}TOML: Building${NC}"
-  tree-sitter build-wasm "${WORKDIR}/tree-sitter-toml"
+  tree-sitter build --wasm "${WORKDIR}/tree-sitter-toml"
   echo -e "${GREEN}TOML: Done${NC}"
 }
 
@@ -119,7 +120,7 @@ tree-sitter-query() {
     git checkout "$REV" &> /dev/null
   popd &> /dev/null
   echo -e "${ORANGE}Query: Building${NC}"
-  tree-sitter build-wasm "${WORKDIR}/tree-sitter-query"
+  tree-sitter build --wasm "${WORKDIR}/tree-sitter-query"
   echo -e "${GREEN}Query: Done${NC}"
 }
 
@@ -131,7 +132,7 @@ css() {
     git checkout "$REV" &> /dev/null
   popd &> /dev/null
   echo -e "${ORANGE}CSS: Building${NC}"
-  tree-sitter build-wasm "${WORKDIR}/tree-sitter-css"
+  tree-sitter build --wasm "${WORKDIR}/tree-sitter-css"
   echo -e "${GREEN}CSS: Done${NC}"
 }
 
