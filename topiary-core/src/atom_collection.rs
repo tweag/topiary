@@ -856,11 +856,9 @@ impl AtomCollection {
         self.counter
     }
 
-    // TODO: first_leaf and last_leaf can probably be simplified.
-
     /// Returns the first leaf node of a given node's subtree.
     ///
-    /// This function recursively traverses the tree from the given node
+    /// This function iteratively traverses the tree from the given node
     /// and returns the first leaf.
     /// A leaf node is a node that either has no children, or is specified in
     /// the `specified_leaf_nodes` HashSet.
@@ -873,27 +871,16 @@ impl AtomCollection {
     ///
     /// A `Cow` enum that wraps a borrowed node.
     fn first_leaf<'tree, 'node: 'tree>(&self, node: &'node Node<'tree>) -> Cow<'node, Node<'tree>> {
-        self.first_leaf_inner(Cow::Borrowed(node))
-    }
-
-    /// Helper function to the `first_leaf` function.
-    /// Recursively calls itself on the first child of the given node
-    /// until it reaches a leaf node.
-    fn first_leaf_inner<'tree, 'node: 'tree>(
-        &self,
-        node: Cow<'node, Node<'tree>>,
-    ) -> Cow<'node, Node<'tree>> {
-        if node.child_count() == 0 || self.specified_leaf_nodes.contains(&node.id()) {
-            node
-        } else {
-            let node = Cow::Owned(node.child(0).unwrap());
-            self.first_leaf_inner(node)
+        let mut node = Cow::Borrowed(node);
+        while node.child_count() != 0 && !self.specified_leaf_nodes.contains(&node.id()) {
+            node = Cow::Owned(node.child(0).unwrap());
         }
+        node
     }
 
     /// Returns the last leaf node of a given node's subtree.
     ///
-    /// This function recursively traverses the tree from the given node
+    /// This function iteratively traverses the tree from the given node
     /// and returns the last leaf.
     /// A leaf node is a node that either has no children, or is specified in
     /// the `specified_leaf_nodes` HashSet.
@@ -906,23 +893,11 @@ impl AtomCollection {
     ///
     /// A `Cow` enum that wraps a borrowed node.
     fn last_leaf<'tree, 'node: 'tree>(&self, node: &'node Node<'tree>) -> Cow<'node, Node<'tree>> {
-        self.last_leaf_inner(Cow::Borrowed(node))
-    }
-
-    /// Helper function to the `last_leaf` function.
-    /// Recursively calls itself on the last child of the given node
-    /// until it reaches a leaf node.
-    fn last_leaf_inner<'tree, 'node: 'tree>(
-        &self,
-        node: Cow<'node, Node<'tree>>,
-    ) -> Cow<'node, Node<'tree>> {
-        let nr_children = node.child_count();
-        if nr_children == 0 || self.specified_leaf_nodes.contains(&node.id()) {
-            node
-        } else {
-            let node = Cow::Owned(node.child(nr_children - 1).unwrap());
-            self.last_leaf_inner(node)
+        let mut node = Cow::Borrowed(node);
+        while node.child_count() != 0 && !self.specified_leaf_nodes.contains(&node.id()) {
+            node = Cow::Owned(node.child(node.child_count() - 1).unwrap());
         }
+        node
     }
 }
 
