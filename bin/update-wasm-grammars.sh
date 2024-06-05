@@ -4,8 +4,7 @@ set -eu
 
 cd web-playground/public/scripts/
 
-# We don't use mktemp because <SOMETHING I CAN'T REMEMBER> doesn't work
-# across disparate filesystems
+# We don't use mktemp because Tree-sitter doesn't work across disparate filesystems
 WORKDIR=./tmp/
 mkdir -p $WORKDIR
 readonly WORKDIR
