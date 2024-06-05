@@ -43,6 +43,7 @@
     "force"
     "optional"
     "priority"
+    "or"
     "|"
     ":"
     "?"
@@ -153,7 +154,7 @@
 
 ; Insert a space between the enum tag and the argument of an enum variant
 ; pattern
-(pattern
+(enum_variant_pattern
   (enum_tag) @append_space
   (pattern_fun)
 )
@@ -348,23 +349,45 @@
   (applicative) @append_indent_start
 ) @append_indent_end
 
-;; Conditionals
+;; Patterns and match branches
 
 ; Define a separate scope for the body of a match case. As we have a separate
 ; scope for the right-hand side of an "=" (i.e. for bound expressions), we want
 ; a separate scope for the right-hand side of "=>".
-(match_case
-  (#scope_id! "case_body")
+(match_branch
+  (#scope_id! "branch_body")
   (pattern)
   "=>" @prepend_begin_scope
   (term) @append_end_scope
 )
 
 ; Flow multi-line match cases into an indented block after the =>
-(match_case
-  (#scope_id! "case_body")
+(match_branch
+  (#scope_id! "branch_body")
   "=>" @append_spaced_scoped_softline @append_indent_start
 ) @append_indent_end
+
+; Add indentation to the condition of pattern guards
+(match_branch
+  (pattern_guard
+    "if" @append_indent_start
+    (term) @append_indent_end
+  )
+)
+
+; Flow each or-branch of an or-pattern on a separate line when they're the
+; top-level construct of the pattern
+(match_branch
+  (pattern
+    (or_pattern
+      (or_pattern_unparens
+        "or" @prepend_spaced_softline
+      )
+    )
+  )
+)
+
+;; Conditionals
 
 ; if...then...else expressions can either be single or multi-line. In a
 ; multi-line context, they will be formatted like so:
@@ -405,7 +428,7 @@
 
 ; We don't want to add spaces/new lines in empty records, so the
 ; following query only matches if a named node exists within the record
-; NOTE This rule also applies to patterns
+; NOTE This rule also applies to record patterns
 (_
   (#scope_id! "container")
   .
@@ -418,6 +441,7 @@
 ; Unlike records, arrays should never have internal spacing, similar to
 ; parentheticals. (This is a conscious choice by the Nickel team; see
 ; Issue #407.)
+; NOTE This rule also applies to array patterns
 (_
   (#scope_id! "container")
   .

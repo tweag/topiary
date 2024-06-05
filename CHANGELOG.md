@@ -44,6 +44,9 @@ This name should be decided amongst the team before the release.
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.4.0...HEAD)
 
+### Added
+- [#705](https://github.com/tweag/topiary/pull/705) Added support for Nickel 1.7 extended pattern formatting
+
 ### Changed
 - [#704](https://github.com/tweag/topiary/pull/704) Refactors our postprocessing code to be more versatile.
 
