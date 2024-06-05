@@ -4,10 +4,12 @@ set -eu
 
 cd web-playground/public/scripts/
 
+# We don't use mktemp because <SOMETHING I CAN'T REMEMBER> doesn't work
+# across disparate filesystems
 WORKDIR=./tmp/
 mkdir -p $WORKDIR
 readonly WORKDIR
-trap 'echo -e "${BLUE}Cleanup...${NC}"; rm -rf "${WORKDIR}"; rm a.out.{js,wasm}' EXIT
+trap 'echo -e "${BLUE}Cleanup...${NC}"; rm -rf "${WORKDIR}" a.out.{js,wasm}' EXIT
 
 BLUE="$(tput setaf 4)"
 readonly BLUE
