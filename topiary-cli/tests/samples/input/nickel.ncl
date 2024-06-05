@@ -85,7 +85,32 @@
         }
       } => null,
       _ => null,
-    }
+    },
+
+    # Extended pattern formatting
+    match {
+        {foo, bar}
+if
+foo == 'Hello &&
+bar == 'Goodbye
+=>
+    "multi"
+    ++ "line"
+    ++ "result",
+
+        {foo, bar}
+if
+foo == 'Hello &&
+bar == 'Goodbye
+=> "single line result",
+
+    {x, y, ..rest} or {x} or
+    {y} => null,
+
+    {foo = [x, _,
+    z, ..rest], bar = [1,
+    2, _]} => null,
+},
   ],
 
   # Nickel standard library as of af0d5ee
