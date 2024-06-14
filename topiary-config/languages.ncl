@@ -1,4 +1,5 @@
 {
+  languages = {
   bash = {
     extensions = ["sh", "bash"],
   },
@@ -8,7 +9,22 @@
   },
 
   json = {
-    extensions = ["json", "avsc", "geojson", "gltf", "har", "ice", "JSON-tmLanguage", "jsonl", "mcmeta", "tfstate", "tfstate.backup", "topojson", "webapp", "webmanifest"],
+    extensions = [
+      "json",
+      "avsc",
+      "geojson",
+      "gltf",
+      "har",
+      "ice",
+      "JSON-tmLanguage",
+      "jsonl",
+      "mcmeta",
+      "tfstate",
+      "tfstate.backup",
+      "topojson",
+      "webapp",
+      "webmanifest"
+    ],
   },
 
   nickel = {
@@ -38,5 +54,6 @@
 
   tree_sitter_query = {
     extensions = ["scm"],
+  },
   },
 }

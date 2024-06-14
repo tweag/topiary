@@ -60,6 +60,7 @@ indoc = "2.0"
 itertools = "0.11"
 js-sys = "0.3"
 log = "0.4"
+nickel-lang-core = { version = "0.8.0", default-features = false }
 predicates = "3.0"
 pretty_assertions = "1.3"
 prettydiff = { version = "0.6.4", default-features = false }
@@ -88,7 +89,6 @@ web-sys = "0.3"
 
 topiary-web-tree-sitter-sys = { version = "0.4.0", path = "./topiary-web-tree-sitter-sys" }
 topiary-tree-sitter-facade = {version = "0.4.0", path = "./topiary-tree-sitter-facade" }
-nickel-lang-core = { path = "../nickel/core", default-features = false, package = "nickel-lang-core" }
 
 # tree-sitter-json's dependency on Tree-sitter is looser than ours, so
 # we have to pin its version to maintain API compatibility

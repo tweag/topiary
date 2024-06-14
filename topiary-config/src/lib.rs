@@ -11,13 +11,12 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use language::Language;
+use language::{Language, LanguageConfiguration};
 use nickel_lang_core::{eval::cache::CacheImpl, program::Program};
 use serde::Deserialize;
 
 use crate::{
     error::{TopiaryConfigError, TopiaryConfigResult},
-    language::LanguageConfiguration,
     source::Source,
 };
 
@@ -29,6 +28,12 @@ use crate::{
 #[derive(Debug)]
 pub struct Configuration {
     languages: Vec<Language>,
+}
+
+/// Internal struct to help with deserialisation
+#[derive(Debug, serde::Deserialize, PartialEq, serde::Serialize, Clone)]
+struct SerdeConfiguration {
+    languages: HashMap<String, LanguageConfiguration>,
 }
 
 impl Configuration {
@@ -95,7 +100,6 @@ impl Configuration {
     }
 
     fn parse_and_merge(sources: &[Source]) -> TopiaryConfigResult<Self> {
-        eprintln!("sources = {:#?}", sources);
         let nickel_exprs = sources
             .iter()
             .map(|s| match s.read() {
@@ -108,43 +112,9 @@ impl Configuration {
 
         let term = program.eval_full()?;
 
-        // let mut nickel_programs = nickel_exprs
-        //     .iter()
-        //     .map(|expr| {
-        //         Program::<CacheImpl>::new_from_source(
-        //             Cursor::new(expr.to_string()),
-        //             "config",
-        //             std::io::stderr(),
-        //         )
-        //     })
-        //     .collect::<Result<Vec<_>, _>>()?;
+        let serde_config = SerdeConfiguration::deserialize(term)?;
 
-        // let terms = nickel_programs
-        //     .iter_mut()
-        //     .map(|p| p.eval_full())
-        //     .collect::<Result<Vec<_>, _>>()?;
-
-        // // Merge all them by reducing them with a make::op2 Merge
-        // let term = terms
-        //     .into_iter()
-        //     .reduce(|acc, f| make::op2(BinaryOp::Merge(Label::default().into()), acc, f))
-        //     .expect("Could not reduce terms");
-
-        // let cache = Cache::new(ErrorTolerance::Tolerant);
-        // let mut vm: VirtualMachine<Cache, CacheImpl> =
-        //     VirtualMachine::new(cache, std::io::stderr());
-        // eprintln!("term = {:#?}", term);
-        // let term = vm.eval_full(term).unwrap();
-
-        // Parse as hashmap
-        let map: HashMap<String, LanguageConfiguration> = HashMap::deserialize(term)?;
-
-        let languages = map
-            .into_iter()
-            .map(|(name, config)| Language { name, config })
-            .collect();
-
-        Ok(Configuration { languages })
+        Ok(serde_config.into())
     }
 }
 
@@ -176,5 +146,17 @@ impl PartialEq for Configuration {
         let rhs: HashMap<String, Language> = other.into();
 
         lhs == rhs
+    }
+}
+
+impl From<SerdeConfiguration> for Configuration {
+    fn from(value: SerdeConfiguration) -> Self {
+        let languages = value
+            .languages
+            .into_iter()
+            .map(|(name, config)| Language::new(name, config))
+            .collect();
+
+        Self { languages }
     }
 }
