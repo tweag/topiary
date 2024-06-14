@@ -31,8 +31,11 @@ pub struct LanguageConfiguration {
     pub indent: Option<String>,
 }
 
-// TODO I don't think we're going to need this here...but maybe
 impl Language {
+    pub fn new(name: String, config: LanguageConfiguration) -> Self {
+        Self { name, config }
+    }
+
     #[cfg(not(wasm))]
     pub fn find_query_file(&self) -> TopiaryConfigResult<PathBuf> {
         let basename = PathBuf::from(match self.name.as_str() {
