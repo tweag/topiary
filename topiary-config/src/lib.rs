@@ -30,7 +30,7 @@ pub struct Configuration {
     languages: Vec<Language>,
 }
 
-/// Internal struct to help with deserialisation
+/// Internal struct to help with deserialisation, converted to the actual Configuration in deserialization
 #[derive(Debug, serde::Deserialize, PartialEq, serde::Serialize, Clone)]
 struct SerdeConfiguration {
     languages: HashMap<String, LanguageConfiguration>,
@@ -100,15 +100,9 @@ impl Configuration {
     }
 
     fn parse_and_merge(sources: &[Source]) -> TopiaryConfigResult<Self> {
-        let nickel_exprs = sources
-            .iter()
-            .map(|s| match s.read() {
-                Ok(read) => Ok((read, s.to_string())),
-                Err(err) => Err(err),
-            })
-            .collect::<Result<Vec<_>, _>>()?;
+        let inputs = sources.iter().map(|s| s.clone().into());
 
-        let mut program = Program::<CacheImpl>::new_from_sources(nickel_exprs, std::io::stderr())?;
+        let mut program = Program::<CacheImpl>::new_from_inputs(inputs, std::io::stderr())?;
 
         let term = program.eval_full()?;
 
