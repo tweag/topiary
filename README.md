@@ -190,33 +190,10 @@ Commands:
   help        Print this message or the help of the given subcommand(s)
 
 Options:
-  -C, --configuration <CONFIGURATION>
-          Configuration file
-
-          [env: TOPIARY_CONFIG_FILE]
-
-      --configuration-collation <CONFIGURATION_COLLATION>
-          Configuration collation mode
-
-          [env: TOPIARY_CONFIG_COLLATION]
-          [default: merge]
-
-          Possible values:
-          - merge:    When multiple sources of configuration are available, matching items are
-            updated from the higher priority source, with collections merged as the union of sets
-          - revise:   When multiple sources of configuration are available, matching items
-            (including collections) are superseded from the higher priority source
-          - override: When multiple sources of configuration are available, the highest priority
-            source is taken. All values from lower priority sources are discarded
-
-  -v, --verbose...
-          Logging verbosity (increased per occurrence)
-
-  -h, --help
-          Print help (see a summary with '-h')
-
-  -V, --version
-          Print version
+  -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
+  -v, --verbose...                     Logging verbosity (increased per occurrence)
+  -h, --help                           Print help
+  -V, --version                        Print version
 ```
 <!-- usage:end:ROOT -->
 
@@ -253,20 +230,6 @@ Options:
           Configuration file
 
           [env: TOPIARY_CONFIG_FILE]
-
-      --configuration-collation <CONFIGURATION_COLLATION>
-          Configuration collation mode
-
-          [env: TOPIARY_CONFIG_COLLATION]
-          [default: merge]
-
-          Possible values:
-          - merge:    When multiple sources of configuration are available, matching items are
-            updated from the higher priority source, with collections merged as the union of sets
-          - revise:   When multiple sources of configuration are available, matching items
-            (including collections) are superseded from the higher priority source
-          - override: When multiple sources of configuration are available, the highest priority
-            source is taken. All values from lower priority sources are discarded
 
   -v, --verbose...
           Logging verbosity (increased per occurrence)
@@ -320,20 +283,6 @@ Options:
 
           [env: TOPIARY_CONFIG_FILE]
 
-      --configuration-collation <CONFIGURATION_COLLATION>
-          Configuration collation mode
-
-          [env: TOPIARY_CONFIG_COLLATION]
-          [default: merge]
-
-          Possible values:
-          - merge:    When multiple sources of configuration are available, matching items are
-            updated from the higher priority source, with collections merged as the union of sets
-          - revise:   When multiple sources of configuration are available, matching items
-            (including collections) are superseded from the higher priority source
-          - override: When multiple sources of configuration are available, the highest priority
-            source is taken. All values from lower priority sources are discarded
-
   -v, --verbose...
           Logging verbosity (increased per occurrence)
 
@@ -360,30 +309,9 @@ Print the current configuration
 Usage: topiary config [OPTIONS]
 
 Options:
-  -C, --configuration <CONFIGURATION>
-          Configuration file
-
-          [env: TOPIARY_CONFIG_FILE]
-
-      --configuration-collation <CONFIGURATION_COLLATION>
-          Configuration collation mode
-
-          [env: TOPIARY_CONFIG_COLLATION]
-          [default: merge]
-
-          Possible values:
-          - merge:    When multiple sources of configuration are available, matching items are
-            updated from the higher priority source, with collections merged as the union of sets
-          - revise:   When multiple sources of configuration are available, matching items
-            (including collections) are superseded from the higher priority source
-          - override: When multiple sources of configuration are available, the highest priority
-            source is taken. All values from lower priority sources are discarded
-
-  -v, --verbose...
-          Logging verbosity (increased per occurrence)
-
-  -h, --help
-          Print help (see a summary with '-h')
+  -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
+  -v, --verbose...                     Logging verbosity (increased per occurrence)
+  -h, --help                           Print help
 ```
 <!-- usage:end:config -->
 
@@ -406,36 +334,13 @@ Generate shell completion script
 Usage: topiary completion [OPTIONS] [SHELL]
 
 Arguments:
-  [SHELL]
-          Shell (omit to detect from the environment)
-
-          [possible values: bash, elvish, fish, powershell, zsh]
+  [SHELL]  Shell (omit to detect from the environment) [possible values: bash, elvish, fish,
+           powershell, zsh]
 
 Options:
-  -C, --configuration <CONFIGURATION>
-          Configuration file
-
-          [env: TOPIARY_CONFIG_FILE]
-
-      --configuration-collation <CONFIGURATION_COLLATION>
-          Configuration collation mode
-
-          [env: TOPIARY_CONFIG_COLLATION]
-          [default: merge]
-
-          Possible values:
-          - merge:    When multiple sources of configuration are available, matching items are
-            updated from the higher priority source, with collections merged as the union of sets
-          - revise:   When multiple sources of configuration are available, matching items
-            (including collections) are superseded from the higher priority source
-          - override: When multiple sources of configuration are available, the highest priority
-            source is taken. All values from lower priority sources are discarded
-
-  -v, --verbose...
-          Logging verbosity (increased per occurrence)
-
-  -h, --help
-          Print help (see a summary with '-h')
+  -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
+  -v, --verbose...                     Logging verbosity (increased per occurrence)
+  -h, --help                           Print help
 ```
 <!-- usage:end:completion -->
 
@@ -537,9 +442,7 @@ Finally, an explicit configuration file may be specified using the
 `TOPIARY_CONFIG_FILE` environment variable). This is intended for
 driving Topiary under very specific use-cases.
 
-The Topiary binary parses these sources in the following order. The
-action taken to coalesce matching items is dependent on the [collation
-mode](#configuration-collation).
+The Topiary binary parses these sources in the following order.
 
 1. The builtin configuration file.
 2. The user configuration file in the OS's configuration directory.
@@ -570,91 +473,6 @@ extensions for that language.
 A final optional field, called `indent`, exists to define the indentation method
 for that language. Topiary defaults to two spaces `"  "` if it cannot find the
 indent field in any configuration file for a specific language.
-
-### Configuration Collation
-
-When parsing configuration from multiple sources, Topiary can collate
-matching configuration items (matched on language name) in various ways.
-The collation mode is set by the `--configuration-collation` command
-line argument (or the `TOPIARY_CONFIG_COLLATION` environment variable).
-
-The different modes are best explained by example. Consider the
-following two configurations, in priority order from lowest to highest
-(comments have been added for illustrative purposes):
-
-```toml
-# Lowest priority configuration
-
-[[language]]
-name = "example"
-extensions = ["eg"]
-
-[[language]]
-name = "demo"
-extensions = ["demo"]
-```
-
-```toml
-# Highest priority configuration
-
-[[language]]
-name = "example"
-extensions = ["example"]
-indent = "    "
-```
-
-#### Merge Mode (Default)
-
-Matching items are updated from the higher priority source, with
-collections merged as the union of sets.
-
-```toml
-# For the "example" language:
-# * The collated extensions is the union of the source extensions
-# * The indentation is taken from the highest priority source
-[[language]]
-name = "example"
-extensions = ["eg", "example"]
-indent = "    "
-
-# The "demo" language is unchanged
-[[language]]
-name = "demo"
-extensions = ["demo"]
-```
-
-#### Revise Mode
-
-Matching items (including collections) are superseded from the higher
-priority source.
-
-```toml
-# The "example" language's values are taken from the highest priority source
-[[language]]
-name = "example"
-extensions = ["example"]
-indent = "    "
-
-# The "demo" language is unchanged
-[[language]]
-name = "demo"
-extensions = ["demo"]
-```
-
-#### Override Mode
-
-The highest priority source is taken. All values from lower priority
-sources are discarded.
-
-```toml
-# The "example" language's values are taken from the highest priority source
-[[language]]
-name = "example"
-extensions = ["example"]
-indent = "    "
-
-# The "demo" language does not exist in the highest priority source, so is omitted
-```
 
 ## Design
 
