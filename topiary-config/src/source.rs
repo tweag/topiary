@@ -1,16 +1,28 @@
 //! Configuration for Topiary can be sourced from either that which is built-in, or from disk.
 
-use std::{env::current_dir, fmt, path::PathBuf};
+use std::{env::current_dir, ffi::OsString, fmt, io::Cursor, path::PathBuf};
 
 use directories::ProjectDirs;
 
 use crate::error::TopiaryConfigError;
 
 /// Sources of TOML configuration
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Source {
     Builtin,
     File(PathBuf),
+}
+
+impl From<Source> for nickel_lang_core::program::Input<Cursor<String>, OsString> {
+    fn from(source: Source) -> Self {
+        match source {
+            Source::Builtin => Self::Source(
+                Cursor::new(source.builtin_nickel()),
+                "builtin configuration".into(),
+            ),
+            Source::File(path) => Self::Path(path.into()),
+        }
+    }
 }
 
 impl Source {
