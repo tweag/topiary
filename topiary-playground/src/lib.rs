@@ -45,7 +45,7 @@ mod wasm_mod {
             name: language.name,
             query,
             grammar,
-            indent: language.indent,
+            indent: language.config.indent,
         };
 
         *guard = Some(QueryState { language });

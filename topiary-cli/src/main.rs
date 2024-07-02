@@ -32,11 +32,7 @@ async fn main() -> ExitCode {
 async fn run() -> CLIResult<()> {
     let args = cli::get_args()?;
 
-    let config = topiary_config::Configuration::fetch(
-        &args.global.configuration,
-        // The collation value is always set, so we can safely unwrap
-        args.global.configuration_collation.as_ref().unwrap(),
-    )?;
+    let config = topiary_config::Configuration::fetch(&args.global.configuration)?;
 
     // Delegate by subcommand
     match args.command {
@@ -143,8 +139,8 @@ async fn run() -> CLIResult<()> {
         }
 
         Commands::Config => {
-            // Output collated configuration as TOML, with annotations about how we got there
-            print!("{config}");
+            // Output collated configuration as debug
+            print!("{:#?}", config);
         }
 
         Commands::Completion { shell } => {
