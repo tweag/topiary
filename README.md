@@ -89,22 +89,31 @@ These formatting styles cover their target language and fulfil Topiary's
 stated design goals. They are exposed, in Topiary, through a command
 line flag.
 
+* [JSON]
+* [Nickel]
 * [OCaml] (both implementations and interfaces)
 * [OCamllex]
-* [Nickel]
-* [JSON]
 * [TOML]
+* [Tree Sitter Queries][tree-sitter-query]
+
+#### Contributed
+
+These languages' formatting styles have been generously provided by
+external contributors. They are built in, by default, so are exposed
+through a command line flag, per the supported languages above.
+
+* [CSS] by @lavigneer
 
 #### Experimental
 
 These languages' formatting styles are subject to change and/or not yet
-considered production-ready. They can be accessed in Topiary by
-specifying the path to their query files.
+considered production-ready. They are not built by default and are gated
+behind a feature flag (either `experimental`, for all of them, or by
+their individual name). Once included, they can be accessed in Topiary
+by specifying the path to their query files.
 
-* [Rust]
 * [Bash]
-* [Tree Sitter Queries][tree-sitter-query]
-* [CSS]
+* [Rust]
 
 ## Getting Started
 
