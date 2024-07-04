@@ -24,7 +24,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 topiary-core = { path = "../topiary-core" }
-topiary-config = { path = "../topiary-config" }
+topiary-config = { path = "../topiary-config", features = ["default", "experimental"] }
 topiary-tree-sitter-facade.workspace = true
 wasm-bindgen.workspace = true
 wasm-bindgen-futures.workspace = true

@@ -36,6 +36,28 @@ tree-sitter-ocamllex = { workspace = true, optional = true }
 clap = { workspace = true, features = ["derive"] }
 
 [features]
+default = [
+  "contributed",
+  "json",
+  "nickel",
+  "ocaml",
+  "ocaml_interface",
+  "ocamllex",
+  "toml",
+  "tree_sitter_query"
+]
+
+# Included by default
+contributed = [
+  "css"
+]
+
+# Excluded by default
+experimental = [
+  "bash",
+  "rust",
+]
+
 bash = ["dep:tree-sitter-bash"]
 css = ["dep:tree-sitter-css"]
 json = ["dep:tree-sitter-json"]
