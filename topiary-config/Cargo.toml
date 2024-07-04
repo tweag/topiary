@@ -22,15 +22,27 @@ toml.workspace = true
 
 topiary-tree-sitter-facade.workspace = true
 topiary-web-tree-sitter-sys.workspace = true
-tree-sitter-json.workspace = true
-tree-sitter-rust.workspace = true
-tree-sitter-toml.workspace = true
-tree-sitter-bash.workspace = true
-tree-sitter-css.workspace = true
-tree-sitter-nickel.workspace = true
-tree-sitter-query.workspace = true
-tree-sitter-ocaml.workspace = true
-tree-sitter-ocamllex.workspace = true
+tree-sitter-json = { workspace = true, optional = true }
+tree-sitter-rust = { workspace = true, optional = true }
+tree-sitter-toml = { workspace = true, optional = true }
+tree-sitter-bash = { workspace = true, optional = true }
+tree-sitter-css = { workspace = true, optional = true }
+tree-sitter-nickel = { workspace = true, optional = true }
+tree-sitter-query = { workspace = true, optional = true }
+tree-sitter-ocaml = { workspace = true, optional = true }
+tree-sitter-ocamllex = { workspace = true, optional = true }
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
 clap = { workspace = true, features = ["derive"] }
+
+[features]
+bash = ["dep:tree-sitter-bash"]
+css = ["dep:tree-sitter-css"]
+json = ["dep:tree-sitter-json"]
+nickel = ["dep:tree-sitter-nickel"]
+ocaml = ["dep:tree-sitter-ocaml"]
+ocaml_interface = ["dep:tree-sitter-ocaml"]
+ocamllex = ["dep:tree-sitter-ocamllex"]
+rust = ["dep:tree-sitter-rust"]
+toml = ["dep:tree-sitter-toml"]
+tree_sitter_query = ["dep:tree-sitter-query"]

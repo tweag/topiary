@@ -15,18 +15,6 @@ description = """
 """
 
 [features]
-default = [
-  "bash",
-  "css",
-  "json",
-  "nickel",
-  "ocaml",
-  "ocaml_interface",
-  "ocamllex",
-  "rust",
-  "toml",
-  "tree_sitter_query",
-]
 bash = []
 css = []
 json = []
