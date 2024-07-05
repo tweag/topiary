@@ -323,16 +323,36 @@ where
     T: AsRef<str> + fmt::Display,
 {
     match name.as_ref() {
+        #[cfg(feature = "bash")]
         "bash" => Ok(topiary_queries::bash().into()),
+
+        #[cfg(feature = "css")]
         "css" => Ok(topiary_queries::css().into()),
+
+        #[cfg(feature = "json")]
         "json" => Ok(topiary_queries::json().into()),
+
+        #[cfg(feature = "nickel")]
         "nickel" => Ok(topiary_queries::nickel().into()),
+
+        #[cfg(feature = "ocaml")]
         "ocaml" => Ok(topiary_queries::ocaml().into()),
+
+        #[cfg(feature = "ocaml_interface")]
         "ocaml_interface" => Ok(topiary_queries::ocaml_interface().into()),
+
+        #[cfg(feature = "ocamllex")]
         "ocamllex" => Ok(topiary_queries::ocamllex().into()),
+
+        #[cfg(feature = "rust")]
         "rust" => Ok(topiary_queries::rust().into()),
+
+        #[cfg(feature = "toml")]
         "toml" => Ok(topiary_queries::toml().into()),
+
+        #[cfg(feature = "tree_sitter_query")]
         "tree_sitter_query" => Ok(topiary_queries::tree_sitter_query().into()),
+
         name => Err(TopiaryError::Bin(
             format!("The specified language is unsupported: {}", name),
             Some(CLIError::UnsupportedLanguage(name.to_string())),

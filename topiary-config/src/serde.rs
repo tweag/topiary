@@ -35,15 +35,36 @@ impl Language {
     #[cfg(not(wasm))]
     pub fn find_query_file(&self) -> TopiaryConfigResult<PathBuf> {
         let basename = PathBuf::from(match self.name.as_str() {
+            #[cfg(feature = "bash")]
             "bash" => "bash",
+
+            #[cfg(feature = "css")]
             "css" => "css",
+
+            #[cfg(feature = "json")]
             "json" => "json",
+
+            #[cfg(feature = "nickel")]
             "nickel" => "nickel",
-            "ocaml" | "ocaml_interface" => "ocaml",
+
+            #[cfg(feature = "ocaml")]
+            "ocaml" => "ocaml",
+
+            #[cfg(feature = "ocaml_interface")]
+            "ocaml_interface" => "ocaml",
+
+            #[cfg(feature = "ocamllex")]
             "ocamllex" => "ocamllex",
+
+            #[cfg(feature = "rust")]
             "rust" => "rust",
+
+            #[cfg(feature = "toml")]
             "toml" => "toml",
+
+            #[cfg(feature = "tree_sitter_query")]
             "tree_sitter_query" => "tree-sitter-query",
+
             name => return Err(TopiaryConfigError::UnknownLanguage(name.to_string())),
         })
         .with_extension("scm");
@@ -67,16 +88,36 @@ impl Language {
     #[cfg(not(target_arch = "wasm32"))]
     pub fn grammar(&self) -> TopiaryConfigResult<topiary_tree_sitter_facade::Language> {
         Ok(match self.name.as_str() {
+            #[cfg(feature = "bash")]
             "bash" => tree_sitter_bash::language(),
+
+            #[cfg(feature = "css")]
             "css" => tree_sitter_css::language(),
+
+            #[cfg(feature = "json")]
             "json" => tree_sitter_json::language(),
+
+            #[cfg(feature = "nickel")]
             "nickel" => tree_sitter_nickel::language(),
+
+            #[cfg(feature = "ocaml")]
             "ocaml" => tree_sitter_ocaml::language_ocaml(),
+
+            #[cfg(feature = "ocaml_interface")]
             "ocaml_interface" => tree_sitter_ocaml::language_ocaml_interface(),
+
+            #[cfg(feature = "ocamllex")]
             "ocamllex" => tree_sitter_ocamllex::language(),
+
+            #[cfg(feature = "rust")]
             "rust" => tree_sitter_rust::language(),
+
+            #[cfg(feature = "toml")]
             "toml" => tree_sitter_toml::language(),
+
+            #[cfg(feature = "tree_sitter_query")]
             "tree_sitter_query" => tree_sitter_query::language(),
+
             name => return Err(TopiaryConfigError::UnknownLanguage(name.to_string())),
         }
         .into())
@@ -85,16 +126,36 @@ impl Language {
     #[cfg(target_arch = "wasm32")]
     pub async fn grammar(&self) -> TopiaryConfigResult<topiary_tree_sitter_facade::Language> {
         let language_name = match self.name.as_str() {
+            #[cfg(feature = "bash")]
             "bash" => "bash",
+
+            #[cfg(feature = "css")]
             "css" => "css",
+
+            #[cfg(feature = "json")]
             "json" => "json",
+
+            #[cfg(feature = "nickel")]
             "nickel" => "nickel",
+
+            #[cfg(feature = "ocaml")]
             "ocaml" => "ocaml",
+
+            #[cfg(feature = "ocaml_interface")]
             "ocaml_interface" => "ocaml_interface",
+
+            #[cfg(feature = "ocamllex")]
             "ocamllex" => "ocamllex",
+
+            #[cfg(feature = "rust")]
             "rust" => "rust",
+
+            #[cfg(feature = "toml")]
             "toml" => "toml",
+
+            #[cfg(feature = "tree_sitter_query")]
             "tree_sitter_query" => "query",
+
             name => return Err(TopiaryConfigError::UnknownLanguage(name.to_string())),
         };
 

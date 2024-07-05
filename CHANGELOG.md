@@ -49,6 +49,7 @@ This name should be decided amongst the team before the release.
 
 ### Changed
 - [#704](https://github.com/tweag/topiary/pull/704) Refactors our postprocessing code to be more versatile.
+- [#711](https://github.com/tweag/topiary/pull/711) Feature gate all grammars, with supported and contributed languages built by default.
 
 ## v0.4.0 - Exquisite Elm - 2024-05-15
 

@@ -45,6 +45,7 @@ impl State {
 }
 
 #[test]
+#[cfg(feature = "json")]
 fn test_fmt_stdin() {
     let mut topiary = Command::cargo_bin("topiary").unwrap();
 
@@ -60,6 +61,7 @@ fn test_fmt_stdin() {
 }
 
 #[test]
+#[cfg(feature = "json")]
 fn test_fmt_stdin_query() {
     let mut topiary = Command::cargo_bin("topiary").unwrap();
 
@@ -77,6 +79,7 @@ fn test_fmt_stdin_query() {
 }
 
 #[test]
+#[cfg(all(feature = "json", feature = "toml"))]
 fn test_fmt_files() {
     let json = State::new(JSON_INPUT, "json");
     let toml = State::new(TOML_INPUT, "toml");
@@ -96,6 +99,7 @@ fn test_fmt_files() {
 }
 
 #[test]
+#[cfg(feature = "json")]
 fn test_fmt_dir() {
     let json = State::new(JSON_INPUT, "json");
 
@@ -112,6 +116,7 @@ fn test_fmt_dir() {
 }
 
 #[test]
+#[cfg(feature = "json")]
 fn test_fmt_invalid() {
     let mut topiary = Command::cargo_bin("topiary").unwrap();
 
@@ -136,6 +141,7 @@ fn test_fmt_invalid() {
 }
 
 #[test]
+#[cfg(feature = "json")]
 fn test_vis() {
     let mut topiary = Command::cargo_bin("topiary").unwrap();
 
@@ -154,6 +160,7 @@ fn test_vis() {
 }
 
 #[test]
+#[cfg(feature = "json")]
 fn test_vis_invalid() {
     let mut topiary = Command::cargo_bin("topiary").unwrap();
 
