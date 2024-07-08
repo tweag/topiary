@@ -137,7 +137,18 @@ css() {
   echo -e "${GREEN}CSS: Done${NC}"
 }
 
+pact() {
+  echo -e "${BLUE}Pact: Fetching${NC}"
+  git clone https://github.com/kadena-community/tree-sitter-pact.git "${WORKDIR}/tree-sitter-pact" &> /dev/null
+  REV=$(ref_for_language "pact")
+  pushd "${WORKDIR}/tree-sitter-pact" &> /dev/null
+    git checkout "$REV" &> /dev/null
+  popd &> /dev/null
+  echo -e "${ORANGE}Pact: Building${NC}"
+  tree-sitter build --wasm "${WORKDIR}/tree-sitter-pact"
+  echo -e "${GREEN}Pact: Done${NC}"
+}
 
-(trap 'kill 0' SIGINT; json & nickel & ocaml & ocamllex & bash & rust & toml & tree-sitter-query & css & wait)
+(trap 'kill 0' SIGINT; json & nickel & ocaml & ocamllex & bash & rust & toml & tree-sitter-query & css & pact & wait)
 
 echo -e "${GREEN}Done! All grammars have been updated${NC}"
