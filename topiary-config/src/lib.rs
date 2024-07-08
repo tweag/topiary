@@ -104,7 +104,7 @@ impl Configuration {
 
         let mut program = Program::<CacheImpl>::new_from_inputs(inputs, std::io::stderr())?;
 
-        let term = program.eval_full()?;
+        let term = program.eval_full_for_export()?;
 
         let serde_config = SerdeConfiguration::deserialize(term)?;
 
@@ -116,8 +116,21 @@ impl Default for Configuration {
     /// Return the built-in configuration
     // This is particularly useful for testing
     fn default() -> Self {
-        // We assume that the built-in configuration is valid, so it's safe to unwrap
-        Self::parse_and_merge(&[Source::Builtin]).unwrap()
+        let mut program = Program::<CacheImpl>::new_from_source(
+            Source::Builtin
+                .read()
+                .expect("Evaluating the builtin configuration should be safe"),
+            "builtin",
+            std::io::empty(),
+        )
+        .expect("Evaluating the builtin configuration should be safe");
+        let term = program
+            .eval_full_for_export()
+            .expect("Evaluating the builtin configuration should be safe");
+        let serde_config = SerdeConfiguration::deserialize(term)
+            .expect("Evaluating the builtin configuration should be safe");
+
+        serde_config.into()
     }
 }
 

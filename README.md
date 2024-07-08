@@ -315,9 +315,6 @@ Options:
 ```
 <!-- usage:end:config -->
 
-Please refer to the [Configuration](#configuration-1) section below to
-understand the different sources of configuration and collation modes.
-
 Note: `cfg` is a recognised alias of the `config` subcommand.
 
 #### Shell Completion
@@ -410,14 +407,15 @@ It will output the following formatted code:
 
 ## Configuration
 
-Topiary is configured using `languages.toml` files. There are up to four
-sources where Topiary checks for such a file.
+Topiary is configured using `languages.ncl` files. The `.ncl` extension relates
+to [Nickel](https://nickel-lang.org/), a configuration language created by
+Tweag. There are up to four sources where Topiary checks for such a file.
 
 ### Configuration Sources
 
-At build time the [languages.toml](./languages.toml) in the root of
+At build time the [languages.ncl](./languages.ncl) in the root of
 this repository is embedded into Topiary. This file is parsed at
-runtime. The purpose of this `languages.toml` file is to provide sane
+runtime. The purpose of this `languages.ncl` file is to provide sane
 defaults for users of Topiary (both the library and the binary).
 
 The next two are read by the Topiary binary at runtime and allow the user to
@@ -426,15 +424,15 @@ can thus be found in the configuration directory of the OS:
 
 | OS      | Typical Configuration Path                                        |
 | :------ | :---------------------------------------------------------------- |
-| Unix    | `/home/alice/.config/topiary/languages.toml`                      |
-| Windows | `C:\Users\Alice\AppData\Roaming\Topiary\config\languages.toml`    |
-| macOS   | `/Users/Alice/Library/Application Support/Topiary/languages.toml` |
+| Unix    | `/home/alice/.config/topiary/languages.ncl`                      |
+| Windows | `C:\Users\Alice\AppData\Roaming\Topiary\config\languages.ncl`    |
+| macOS   | `/Users/Alice/Library/Application Support/Topiary/languages.ncl` |
 
 This file is not automatically created by Topiary.
 
 The next source is intended to be a project-specific settings file for
 Topiary. When running Topiary in some directory, it will ascend the file
-tree until it finds a `.topiary` directory. It will then read any `languages.toml`
+tree until it finds a `.topiary` directory. It will then read any `languages.ncl`
 file present in that directory.
 
 Finally, an explicit configuration file may be specified using the

@@ -16,10 +16,7 @@ pub enum Source {
 impl From<Source> for nickel_lang_core::program::Input<Cursor<String>, OsString> {
     fn from(source: Source) -> Self {
         match source {
-            Source::Builtin => Self::Source(
-                Cursor::new(source.builtin_nickel()),
-                "builtin configuration".into(),
-            ),
+            Source::Builtin => Self::Source(Cursor::new(source.builtin_nickel()), "builtin".into()),
             Source::File(path) => Self::Path(path.into()),
         }
     }
@@ -29,8 +26,8 @@ impl Source {
     /// Return the valid sources of configuration, in priority order (lowest to highest):
     ///
     /// 1. Built-in configuration (per `Self::builtin_nickel()`)
-    /// 2. `~/.config/topiary/languages.toml` (or equivalent)
-    /// 3. `.topiary/languages.toml` (or equivalent)
+    /// 2. `~/.config/topiary/languages.ncl` (or equivalent)
+    /// 3. `.topiary/languages.ncl` (or equivalent)
     /// 4. `file`, passed as a CLI argument/environment variable
     pub fn fetch(file: &Option<PathBuf>) -> Vec<Self> {
         let candidates = [
@@ -53,8 +50,8 @@ impl Source {
 
     /// Attempts to find a configuration file, given a `path` parameter. If `path` is `None`, then
     /// the function returns `None`.
-    /// Otherwise, if the path is a rectory, then it attempts to find a `languages.toml` file
-    /// within that directory. If the file exists, then it returns `Some(path.join("languages.toml"))`.
+    /// Otherwise, if the path is a rectory, then it attempts to find a `languages.ncl` file
+    /// within that directory. If the file exists, then it returns `Some(path.join("languages.ncl"))`.
     /// If the file does not exist, then it logs a warning and returns `None`. If the path is a file,
     /// then it returns `Some(path)`.
     fn find(path: &Option<PathBuf>) -> Option<PathBuf> {
