@@ -449,19 +449,17 @@ The Topiary binary parses these sources in the following order.
 
 ### Configuration Options
 
-The configuration file contains a list of languages, each language configuration
-headed by ``[[language]]``. For instance, the one for Nickel is defined as such:
+The configuration file contains a record of languages. For instance, the one for
+Nickel is defined as such:
 
-```toml
-[[language]]
-name = "nickel"
-extensions = ["ncl"]
+```nickel
+nickel = {
+  extensions = ["ncl"],
+},
 ```
 
 The `name` field is used by Topiary to associate the language entry with the
 query file and Tree-sitter grammar. This value should be written in lowercase.
-The `name` field is mandatory for every ``[[language]]`` block in every
-configuration file.
 
 The list of extensions is mandatory for every language, but does not necessarily
 need to exist in every configuration file. It is sufficient if, for every
