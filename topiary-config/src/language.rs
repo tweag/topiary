@@ -10,6 +10,8 @@ use std::path::PathBuf;
 use std::process::Command;
 use tempfile::tempdir;
 
+const BUILD_TARGET: &str = env!("BUILD_TARGET");
+
 /// Language definitions, as far as the CLI and configuration are concerned, contain everything
 /// needed to configure formatting for that language.
 #[derive(Debug, serde::Deserialize, PartialEq, serde::Serialize, Clone)]
@@ -188,8 +190,8 @@ impl Language {
 
         let mut config = cc::Build::new();
         config.cpp(true).opt_level(3).cargo_metadata(false);
-        config.target("x86_64-linux-gnu");
-        config.host("x86_64-linux-gnu");
+        config.target(BUILD_TARGET);
+        config.host(BUILD_TARGET);
 
         let compiler = config.get_compiler();
         let mut command = Command::new(compiler.path());
