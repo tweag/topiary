@@ -3,8 +3,12 @@
 
 use crate::error::TopiaryConfigError;
 use crate::error::TopiaryConfigResult;
+use git2::Oid;
+use git2::Repository;
 use std::collections::HashSet;
 use std::path::PathBuf;
+use std::process::Command;
+use tempfile::tempdir;
 
 /// Language definitions, as far as the CLI and configuration are concerned, contain everything
 /// needed to configure formatting for that language.
@@ -29,6 +33,19 @@ pub struct LanguageConfiguration {
     /// string can be provided, but in most instances it will be some whitespace (e.g., "    ",
     /// "\t", etc.)
     pub indent: Option<String>,
+
+    /// The tree-sitter source of the language, contains all that is needed to pull and compile the tree-sitter grammar
+    pub grammar: GrammarSource,
+}
+
+#[derive(Debug, serde::Deserialize, PartialEq, serde::Serialize, Clone)]
+pub struct GrammarSource {
+    /// The URL of the git repository that contains the tree-sitter grammar.
+    pub git: String,
+    /// The revision of the git repository to use.
+    pub rev: String,
+    /// The sub-directory within the repository where the grammar is located. Defaults to the root of the repository
+    pub subdir: Option<String>,
 }
 
 impl Language {
@@ -38,40 +55,7 @@ impl Language {
 
     #[cfg(not(wasm))]
     pub fn find_query_file(&self) -> TopiaryConfigResult<PathBuf> {
-        let basename = PathBuf::from(match self.name.as_str() {
-            #[cfg(feature = "bash")]
-            "bash" => "bash",
-
-            #[cfg(feature = "css")]
-            "css" => "css",
-
-            #[cfg(feature = "json")]
-            "json" => "json",
-
-            #[cfg(feature = "nickel")]
-            "nickel" => "nickel",
-
-            #[cfg(feature = "ocaml")]
-            "ocaml" => "ocaml",
-
-            #[cfg(feature = "ocaml_interface")]
-            "ocaml_interface" => "ocaml",
-
-            #[cfg(feature = "ocamllex")]
-            "ocamllex" => "ocamllex",
-
-            #[cfg(feature = "rust")]
-            "rust" => "rust",
-
-            #[cfg(feature = "toml")]
-            "toml" => "toml",
-
-            #[cfg(feature = "tree_sitter_query")]
-            "tree_sitter_query" => "tree-sitter-query",
-
-            name => return Err(TopiaryConfigError::UnknownLanguage(name.to_string())),
-        })
-        .with_extension("scm");
+        let basename = PathBuf::from(self.name.as_str()).with_extension("scm");
 
         #[rustfmt::skip]
         let potentials: [Option<PathBuf>; 4] = [
@@ -90,41 +74,32 @@ impl Language {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
+    // NOTE: Much of the following code is heavily inspired by the `helix-loader` crate with license MPL-2.0.
+    // To be safe, assume any and all of the following code is MLP-2.0 and copyrighted to the Helix project.
     pub fn grammar(&self) -> TopiaryConfigResult<topiary_tree_sitter_facade::Language> {
-        Ok(match self.name.as_str() {
-            #[cfg(feature = "bash")]
-            "bash" => tree_sitter_bash::language(),
+        let mut library_path = crate::project_dirs().cache_dir().to_path_buf();
 
-            #[cfg(feature = "css")]
-            "css" => tree_sitter_css::language(),
+        library_path.push(self.config.grammar.rev.clone());
+        // TODO: MacOS/Windows?
+        library_path.set_extension("o");
 
-            #[cfg(feature = "json")]
-            "json" => tree_sitter_json::language(),
-
-            #[cfg(feature = "nickel")]
-            "nickel" => tree_sitter_nickel::language(),
-
-            #[cfg(feature = "ocaml")]
-            "ocaml" => tree_sitter_ocaml::language_ocaml(),
-
-            #[cfg(feature = "ocaml_interface")]
-            "ocaml_interface" => tree_sitter_ocaml::language_ocaml_interface(),
-
-            #[cfg(feature = "ocamllex")]
-            "ocamllex" => tree_sitter_ocamllex::language(),
-
-            #[cfg(feature = "rust")]
-            "rust" => tree_sitter_rust::language(),
-
-            #[cfg(feature = "toml")]
-            "toml" => tree_sitter_toml::language(),
-
-            #[cfg(feature = "tree_sitter_query")]
-            "tree_sitter_query" => tree_sitter_query::language(),
-
-            name => return Err(TopiaryConfigError::UnknownLanguage(name.to_string())),
+        if !library_path.is_file() {
+            self.fetch_and_compile(library_path.clone())?;
         }
-        .into())
+
+        use libloading::{Library, Symbol};
+
+        // TODO: Don't unwrap
+        let library = unsafe { Library::new(&library_path) }.unwrap();
+        let language_fn_name = format!("tree_sitter_{}", self.name.replace('-', "_"));
+
+        let language = unsafe {
+            let language_fn: Symbol<unsafe extern "C" fn() -> tree_sitter::Language> =
+                library.get(language_fn_name.as_bytes()).unwrap();
+            language_fn()
+        };
+        std::mem::forget(library);
+        Ok(topiary_tree_sitter_facade::Language::from(language))
     }
 
     #[cfg(target_arch = "wasm32")]
@@ -172,5 +147,113 @@ impl Language {
             error
         })?
         .into())
+    }
+
+    fn fetch_and_compile(&self, library_path: PathBuf) -> TopiaryConfigResult<()> {
+        // TODO: Don't unwrap
+        let tmp_dir = tempdir().unwrap();
+
+        let repo = Repository::clone(&self.config.grammar.git, &tmp_dir).unwrap();
+        repo.set_head_detached(Oid::from_str(&self.config.grammar.rev).unwrap())
+            .unwrap();
+
+        let path = match self.config.grammar.subdir.clone() {
+            Some(subdir) => tmp_dir.path().join(subdir),
+            None => tmp_dir.path().to_owned(),
+        }
+        .join("src");
+
+        self.build_tree_sitter_library(&path, library_path)
+    }
+
+    fn build_tree_sitter_library(
+        &self,
+        src_path: &PathBuf,
+        target_path: PathBuf,
+    ) -> Result<(), TopiaryConfigError> {
+        let header_path = src_path;
+        let parser_path = src_path.join("parser.c");
+        let mut scanner_path = src_path.join("scanner.c");
+
+        let scanner_path = if scanner_path.exists() {
+            Some(scanner_path)
+        } else {
+            scanner_path.set_extension("cc");
+            if scanner_path.exists() {
+                Some(scanner_path)
+            } else {
+                None
+            }
+        };
+
+        let mut config = cc::Build::new();
+        config.cpp(true).opt_level(3).cargo_metadata(false);
+        config.target("x86_64-linux-gnu");
+        config.host("x86_64-linux-gnu");
+
+        let compiler = config.get_compiler();
+        let mut command = Command::new(compiler.path());
+        command.current_dir(src_path);
+        for (key, value) in compiler.env() {
+            command.env(key, value);
+        }
+
+        command.args(compiler.args());
+
+        command
+            .arg("-shared")
+            .arg("-fPIC")
+            .arg("-fno-exceptions")
+            .arg("-I")
+            .arg(header_path)
+            .arg("-o")
+            .arg(&target_path);
+
+        if let Some(scanner_path) = scanner_path.as_ref() {
+            if scanner_path.extension() == Some("c".as_ref()) {
+                command.arg("-xc").arg("-std=c11").arg(scanner_path);
+            } else {
+                let mut cpp_command = Command::new(compiler.path());
+                cpp_command.current_dir(src_path);
+                for (key, value) in compiler.env() {
+                    cpp_command.env(key, value);
+                }
+                cpp_command.args(compiler.args());
+                let object_file =
+                    target_path.with_file_name(format!("{}_scanner.o", &self.config.grammar.rev));
+                cpp_command
+                    .arg("-fPIC")
+                    .arg("-fno-exceptions")
+                    .arg("-I")
+                    .arg(header_path)
+                    .arg("-o")
+                    .arg(&object_file)
+                    .arg("-std=c++14")
+                    .arg("-c")
+                    .arg(scanner_path);
+                let output = cpp_command.output().unwrap();
+                if !output.status.success() {
+                    eprintln!("{:#?}, {:#?}", output.stdout, output.stderr);
+                    todo!("Return error");
+                }
+
+                command.arg(&object_file);
+            }
+        }
+
+        command.arg("-xc").arg("-std=c11").arg(parser_path);
+        command.arg("-Wl,-z,relro,-z,now");
+        let output = command.output().unwrap();
+
+        if !output.status.success() {
+            eprintln!(
+                "{:#?}, {:#?}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr),
+            );
+            todo!("Return error");
+        }
+
+        Ok(())
     }
 }

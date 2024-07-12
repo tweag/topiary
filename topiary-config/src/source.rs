@@ -2,8 +2,6 @@
 
 use std::{env::current_dir, ffi::OsString, fmt, io::Cursor, path::PathBuf};
 
-use directories::ProjectDirs;
-
 use crate::error::TopiaryConfigError;
 
 /// Sources of TOML configuration
@@ -107,10 +105,7 @@ impl fmt::Display for Source {
 
 /// Find the OS-specific configuration directory
 fn find_os_configuration_dir_config() -> PathBuf {
-    ProjectDirs::from("", "", "topiary")
-        .expect("Could not access the OS's Home directory")
-        .config_dir()
-        .to_path_buf()
+    crate::project_dirs().config_dir().to_path_buf()
 }
 
 /// Ascend the directory hierarchy, starting from the current working directory, in search of the

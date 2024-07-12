@@ -18,6 +18,9 @@ craneLib.devShell
         cargo-flamegraph
         rust-analyzer
 
+        pkg-config
+        openssl.dev
+
         # Our own scripts
         # FIXME: Broken
         # generate-coverage
