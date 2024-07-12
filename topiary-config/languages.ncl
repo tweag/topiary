@@ -52,6 +52,7 @@
       grammar = {
         git = "https://github.com/tree-sitter/tree-sitter-ocaml.git",
         rev = "9965d208337d88bbf1a38ad0b0fe49e5f5ec9677",
+        subdir = "grammars/ocaml",
       },
     },
 
@@ -60,6 +61,7 @@
       grammar = {
         git = "https://github.com/tree-sitter/tree-sitter-ocaml.git",
         rev = "9965d208337d88bbf1a38ad0b0fe49e5f5ec9677",
+        subdir = "grammars/interface",
       },
     },
 
