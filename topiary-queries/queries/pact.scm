@@ -1,5 +1,42 @@
+;; Spacing
+
 ; All named nodes can be interleaved by empty lines
 (_) @allow_blank_line_before
+
+; TODO Horizonal spacing around nodes
+[
+  (boolean)
+  (reference)
+  (string)
+  (symbol)
+  (list)
+  (object)
+] @append_space @prepend_space
+
+; TODO Vertical spacing around nodes
+[
+  (interface)
+  (module)
+  (use)
+  (s_expression)
+  (namespace)
+] @append_hardline
+
+; Remove spaces following opening/preceding closing parens
+(
+  "(" @append_antispace
+  ")" @prepend_antispace
+)
+
+(
+  "[" @append_antispace
+  "]" @prepend_antispace
+)
+
+(
+  "{" @append_antispace
+  "}" @prepend_antispace
+)
 
 ;; Comments
 (comment) @prepend_space @append_hardline
@@ -59,7 +96,43 @@
   )
 )
 
+;; Special forms
 
+; NOTE Here we stick with Lisp-style formatting over multiple lines.
+; That is, something like:
+; Lisp-style, when multilined. That is, something like:
+;
+;   (foo bar
+;      (quux xyzzy))
+
+(s_expression
+  (reference) @append_spaced_softline @append_indent_start
+  ")" @prepend_indent_end
+)
+
+(cond
+  "cond" @append_spaced_softline @append_indent_start
+  ")" @prepend_indent_end
+)
+
+(let_binding
+  [
+    "let"
+    "let*"
+  ] @append_spaced_softline @append_indent_start
+  ")" @prepend_indent_end
+)
+
+(use
+  "use" @append_space
+  (reference) @append_spaced_softline @append_indent_start
+  ")" @prepend_indent_end
+)
+
+; Always force namespaces onto a single line
+(namespace
+  "namespace" @append_space
+)
 
 ;; ; TODO
 ;; [
