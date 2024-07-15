@@ -477,7 +477,7 @@ already present in the builtin configuration, Topiary will display a Nickel erro
 To understand why, one can read the [Nickel documentation on Merging](https://nickel-lang.org/user-manual/merging).
 The short answer is that a priority must be defined. The builtin configuration
 has everything defined with priority 0. Any priority above that will replace
-any other priority. To override the entire bash configuration, use the following
+any other priority. For example, to override the entire Bash configuration, use the following
 Nickel file.
 
 ```nickel
