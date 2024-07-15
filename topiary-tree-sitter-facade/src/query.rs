@@ -12,7 +12,7 @@ mod native {
     impl Query {
         #[inline]
         pub fn new(language: &Language, source: &str) -> Result<Self, QueryError> {
-            let inner = tree_sitter::Query::new(language.inner, source)?;
+            let inner = tree_sitter::Query::new(&language.inner, source)?;
             Ok(Self { inner })
         }
 
@@ -30,9 +30,8 @@ mod native {
         }
 
         #[inline]
-        pub fn capture_names(&self) -> Vec<String> {
-            let names: Vec<_> = self.inner.capture_names().to_vec();
-            names
+        pub fn capture_names(&self) -> &[&str] {
+            self.inner.capture_names()
         }
 
         #[inline]
