@@ -38,6 +38,13 @@
   "}" @prepend_antispace
 )
 
+; Remove spaces before type annotations
+(
+  ":" @prepend_antispace @append_antispace
+  .
+  (type_identifier)
+)
+
 ;; Comments
 (comment) @prepend_space @append_hardline
 
@@ -103,6 +110,17 @@
   "@doc" @append_space
 )
 
+; Force doc nodes to start with "@doc"
+; TODO Is this desirable? I think it makes the code clearer, but it's a
+; bit of a hack...
+(doc
+  "@doc"? @do_nothing
+  .
+  (_) @prepend_delimiter
+
+  (#delimiter! "@doc ")
+)
+
 ; NOTE The list-like structure here uses Algol-style formatting
 (model
   "@model" @append_space
@@ -124,6 +142,15 @@
 (meta
   "@" @append_antispace
 )
+
+; Metadata forms always start on their own line
+[
+  (doc)
+  (model)
+  (managed)
+  (event)
+  (meta)
+] @prepend_hardline
 
 ;; Top-level forms
 
@@ -171,6 +198,57 @@
     "let"
     "let*"
   ] @append_spaced_softline @append_indent_start
+  ")" @prepend_indent_end
+)
+
+; TODO The def* forms are all quite similar. Maybe there's scope for
+; refactoring here...
+
+(deftable
+  "deftable" @append_space
+
+  ; Zero spacing: <ATOM>:{<ATOM>}
+  ":" @prepend_antispace @append_antispace
+)
+
+; Put any table metadata on a new, indented line
+(deftable
+  [
+    (doc)
+    (model)
+    (managed)
+    (event)
+    (meta)
+  ] @prepend_indent_start
+
+  ")" @prepend_indent_end
+)
+
+; NOTE The defcap grammar contains an ambiguity. If, after the parameter
+; list, follows a plain string, then it's ambiguous whether this is a
+; docstring or just a literal. Tree-sitter takes it to be the latter.
+(defcap
+  "defcap" @append_space
+  (parameter_list) @prepend_space @append_spaced_softline @append_indent_start
+  ")" @prepend_indent_end
+)
+
+(defconst
+  "defconst" @append_space
+)
+
+; Put any constant metadata on a new, indented line
+(defconst
+  (_) @append_indent_start
+  .
+  [
+    (doc)
+    (model)
+    (managed)
+    (event)
+    (meta)
+  ]
+
   ")" @prepend_indent_end
 )
 
