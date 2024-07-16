@@ -96,19 +96,70 @@
   )
 )
 
-;; Special forms
+;; Metadata forms
+
+; Always force doc nodes onto a single line
+(doc
+  "@doc" @append_space
+)
+
+; NOTE The list-like structure here uses Algol-style formatting
+(model
+  "@model" @append_space
+  "[" @append_spaced_softline @append_indent_start
+  "]" @prepend_spaced_softline @prepend_indent_end
+)
+
+(managed
+  "@managed" @append_spaced_softline @append_indent_start
+) @append_indent_end
+
+; Always force event nodes onto a single line
+(event
+  "@event" @append_space
+)
+
+; Always force meta nodes onto a single line, with no spacing between
+; the @-sigil and its atom
+(meta
+  "@" @append_antispace
+)
+
+;; Top-level forms
 
 ; NOTE Here we stick with Lisp-style formatting over multiple lines.
 ; That is, something like:
-; Lisp-style, when multilined. That is, something like:
 ;
 ;   (foo bar
 ;      (quux xyzzy))
+
+(module
+  "module" @append_space
+  (module_identifier) @append_space
+  (module_governance) @append_spaced_softline @append_indent_start
+  ")" @prepend_indent_end
+)
+
+(use
+  "use" @append_space
+  (reference) @append_spaced_softline @append_indent_start
+  (string)? @append_spaced_softline
+  ")" @prepend_indent_end
+)
 
 (s_expression
   (reference) @append_spaced_softline @append_indent_start
   ")" @prepend_indent_end
 )
+
+; Always force namespaces onto a single line
+(namespace
+  "namespace" @append_space
+)
+
+;; Sub-level forms
+
+; NOTE Again, Lisp-style unless mentioned otherwise.
 
 (cond
   "cond" @append_spaced_softline @append_indent_start
@@ -121,17 +172,6 @@
     "let*"
   ] @append_spaced_softline @append_indent_start
   ")" @prepend_indent_end
-)
-
-(use
-  "use" @append_space
-  (reference) @append_spaced_softline @append_indent_start
-  ")" @prepend_indent_end
-)
-
-; Always force namespaces onto a single line
-(namespace
-  "namespace" @append_space
 )
 
 ;; ; TODO
