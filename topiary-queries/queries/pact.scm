@@ -1,3 +1,6 @@
+; FIXME There is a rule that is causing an idempotency issue, somewhere,
+; that results in a parse error
+
 ;; Spacing
 
 ; All named nodes can be interleaved by empty lines
@@ -143,6 +146,10 @@
   "@" @append_antispace
 )
 
+; FIXME Forcing these on to their own line doesn't seem to push the
+; parent into multiline mode, so sibling nodes preserve their
+; single-line-ness (if any)
+
 ; Metadata forms always start on their own line
 [
   (doc)
@@ -233,6 +240,13 @@
   ")" @prepend_indent_end
 )
 
+; NOTE defun has the same structure as defcap, so should be kept in parity
+(defun
+  "defun" @append_space
+  (parameter_list) @prepend_space @append_spaced_softline @append_indent_start
+  ")" @prepend_indent_end
+)
+
 (defconst
   "defconst" @append_space
 )
@@ -250,6 +264,27 @@
   ]
 
   ")" @prepend_indent_end
+)
+
+(defschema
+  "defschema" @append_space
+  .
+  (_) @append_spaced_softline @append_indent_start
+  ")" @prepend_indent_end
+)
+
+(defschema
+  (schema_property) @prepend_spaced_softline
+)
+
+(bless
+  "bless" @append_spaced_softline @append_indent_start
+  ")" @prepend_indent_end
+)
+
+; Always force implements onto a single line
+(implements
+  "implements" @append_space
 )
 
 ;; ; TODO
