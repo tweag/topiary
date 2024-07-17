@@ -61,6 +61,9 @@ fn input_output_tester() {
     #[cfg(feature = "ocamllex")]
     io_test("ocamllex.mll");
 
+    #[cfg(feature = "pact")]
+    io_test("pact.pact");
+
     #[cfg(feature = "rust")]
     io_test("rust.rs");
 

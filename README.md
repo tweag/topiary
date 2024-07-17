@@ -114,6 +114,7 @@ by their individual name). Once included, they can be accessed in
 Topiary in the usual way.
 
 * [Bash]
+* [Pact]
 * [Rust]
 
 ## Getting Started
@@ -1502,6 +1503,7 @@ of choice open in another.
 [ocamllex]: https://v2.ocaml.org/manual/lexyacc.html
 [ocp-indent]: https://www.typerex.org/ocp-indent.html
 [ormolu]: https://github.com/tweag/ormolu
+[pact]: https://www.kadena.io/pact
 [prettier]: https://prettier.io/
 [rust]: https://www.rust-lang.org
 [rustfmt]: https://rust-lang.github.io/rustfmt

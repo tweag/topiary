@@ -43,15 +43,16 @@ topiary-config = { path = "../topiary-config" }
 topiary-queries = { path = "../topiary-queries" }
 topiary-tree-sitter-facade = { workspace = true }
 
-tree-sitter-json = { workspace = true, optional = true }
-tree-sitter-css = { workspace = true, optional = true }
-tree-sitter-rust = { workspace = true, optional = true }
-tree-sitter-toml = { workspace = true, optional = true }
 tree-sitter-bash = { workspace = true, optional = true }
+tree-sitter-css = { workspace = true, optional = true }
+tree-sitter-json = { workspace = true, optional = true }
 tree-sitter-nickel = { workspace = true, optional = true }
-tree-sitter-query = { workspace = true, optional = true }
 tree-sitter-ocaml = { workspace = true, optional = true }
 tree-sitter-ocamllex = { workspace = true, optional = true }
+tree-sitter-pact = { workspace = true, optional = true }
+tree-sitter-query = { workspace = true, optional = true }
+tree-sitter-rust = { workspace = true, optional = true }
+tree-sitter-toml = { workspace = true, optional = true }
 
 [dev-dependencies]
 assert_cmd = { workspace = true }
@@ -77,7 +78,8 @@ contributed = [
 # Excluded by default
 experimental = [
   "bash",
-  "rust",
+  "pact",
+  "rust"
 ]
 
 bash = ["dep:tree-sitter-bash", "topiary-config/bash", "topiary-queries/bash"]
@@ -87,6 +89,7 @@ nickel = ["dep:tree-sitter-nickel", "topiary-config/nickel", "topiary-queries/ni
 ocaml = ["dep:tree-sitter-ocaml", "topiary-config/ocaml", "topiary-queries/ocaml"]
 ocaml_interface = ["dep:tree-sitter-ocaml", "topiary-config/ocaml_interface", "topiary-queries/ocaml_interface"]
 ocamllex = ["dep:tree-sitter-ocamllex", "topiary-config/ocamllex", "topiary-queries/ocamllex"]
+pact = ["dep:tree-sitter-pact", "topiary-config/pact", "topiary-queries/pact"]
 rust = ["dep:tree-sitter-rust", "topiary-config/rust", "topiary-queries/rust"]
 toml = ["dep:tree-sitter-toml", "topiary-config/toml", "topiary-queries/toml"]
 tree_sitter_query = ["dep:tree-sitter-query", "topiary-config/tree_sitter_query", "topiary-queries/tree_sitter_query"]

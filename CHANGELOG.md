@@ -46,6 +46,7 @@ This name should be decided amongst the team before the release.
 
 ### Added
 - [#705](https://github.com/tweag/topiary/pull/705) Added support for Nickel 1.7 extended pattern formatting
+- [#713](https://github.com/tweag/topiary/pull/713) Added experimental support for Pact, the smart contract language on the Kadena blockchain.
 
 ### Changed
 - [#704](https://github.com/tweag/topiary/pull/704) Refactors our postprocessing code to be more versatile.
