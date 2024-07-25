@@ -31,7 +31,6 @@ clap = { workspace = true, features = ["derive", "env", "wrap_help"] }
 clap_complete = { workspace = true }
 env_logger = { workspace = true }
 futures = { workspace = true }
-indoc = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
 serde = { workspace = true, features = ["derive"] }

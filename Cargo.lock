@@ -1870,7 +1870,6 @@ dependencies = [
  "clap_complete",
  "env_logger 0.10.2",
  "futures",
- "indoc",
  "itertools 0.11.0",
  "log",
  "predicates",
@@ -1899,7 +1898,6 @@ version = "0.4.1"
 dependencies = [
  "clap",
  "directories",
- "indoc",
  "itertools 0.11.0",
  "log",
  "nickel-lang-core",

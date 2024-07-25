@@ -14,7 +14,6 @@ license.workspace = true
 
 [dependencies]
 directories.workspace = true
-indoc.workspace = true
 itertools.workspace = true
 log.workspace = true
 nickel-lang-core.workspace = true
