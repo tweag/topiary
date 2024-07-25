@@ -1,15 +1,10 @@
 {
   languages = {
-    bash = {
-      extensions = ["sh", "bash"],
-    },
+    bash.extensions = ["sh", "bash"],
 
-    css = {
-      extensions = ["css"],
-    },
+    css.extensions = ["css"],
 
-    json = {
-      extensions = [
+    json.extensions = [
         "json",
         "avsc",
         "geojson",
@@ -25,35 +20,22 @@
         "webapp",
         "webmanifest"
       ],
-    },
 
-    nickel = {
-      extensions = ["ncl"],
-    },
+    nickel.extensions = ["ncl"],
 
-    ocaml = {
-      extensions = ["ml"],
-    },
+    ocaml.extensions = ["ml"],
 
-    ocaml_interface = {
-      extensions = ["mli"],
-    },
+    ocaml_interface.extensions = ["mli"],
 
-    ocamllex = {
-      extensions = ["mll"],
-    },
+    ocamllex.extensions = ["mll"],
 
     rust = {
       extensions = ["rs"],
       indent = "    ", # 4 spaces
     },
 
-    toml = {
-      extensions = ["toml"],
-    },
+    toml.extensions = ["toml"],
 
-    tree_sitter_query = {
-      extensions = ["scm"],
-    },
+    tree_sitter_query.extensions = ["scm"],
   },
 }
