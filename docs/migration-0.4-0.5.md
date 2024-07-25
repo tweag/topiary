@@ -19,13 +19,13 @@ indent = "    " # 4 spaces
 ## After
 ```nickel
 {
-  "bash" = {
-    extensions = ["sh", "bash"],
-  },
+  languages = {
+    bash.extensions = ["sh", "bash"],
 
-  "rust" = {
-    extensions = ["rs"],
-    indent = "    ", # 4 spaces
+    rust = {
+      extensions = ["rs"],
+      indent = "    ", # 4 spaces
+    },
   },
 }
 ```
