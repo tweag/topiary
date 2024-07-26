@@ -1,42 +1,93 @@
 //! Configuration for Topiary can be sourced from either that which is built-in, or from disk.
 
-use std::{env::current_dir, fmt, path::PathBuf};
+use std::{env::current_dir, ffi::OsString, fmt, io::Cursor, path::PathBuf};
 
 use directories::ProjectDirs;
 
-use crate::{error::TopiaryConfigError, serde::Serialisation};
+use crate::error::TopiaryConfigError;
 
 /// Sources of TOML configuration
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Source {
     Builtin,
     File(PathBuf),
+}
 
-    // This is a sentinel element for files that don't exist
-    Missing,
+impl From<Source> for nickel_lang_core::program::Input<Cursor<String>, OsString> {
+    fn from(source: Source) -> Self {
+        match source {
+            Source::Builtin => Self::Source(Cursor::new(source.builtin_nickel()), "builtin".into()),
+            Source::File(path) => Self::Path(path.into()),
+        }
+    }
 }
 
 impl Source {
     /// Return the valid sources of configuration, in priority order (lowest to highest):
     ///
-    /// 1. Built-in configuration (per `Serialisation::default_toml()`)
-    /// 2. `~/.config/topiary/languages.toml` (or equivalent)
-    /// 3. `.topiary/languages.toml` (or equivalent)
+    /// 1. Built-in configuration (per `Self::builtin_nickel()`)
+    /// 2. `~/.config/topiary/languages.ncl` (or equivalent)
+    /// 3. `.topiary/languages.ncl` (or equivalent)
     /// 4. `file`, passed as a CLI argument/environment variable
     pub fn fetch(file: &Option<PathBuf>) -> Vec<Self> {
-        [
-            Self::Builtin,
-            Some(find_os_configuration_dir()).into(),
-            find_workspace_configuration_dir().into(),
-            file.clone().into(),
-        ]
-        .into_iter()
-        .filter(Source::is_valid)
-        .collect()
+        let candidates = [
+            Some(find_os_configuration_dir_config()),
+            find_workspace_configuration_dir_config(),
+            file.clone(),
+        ];
+
+        // We always include the built-in configuration, as a fallback
+        let mut res: Vec<Self> = vec![Self::Builtin];
+
+        for candiate in candidates {
+            if let Some(path) = Self::find(&candiate) {
+                res.push(Self::File(path));
+            }
+        }
+
+        res
     }
 
-    fn is_valid(&self) -> bool {
-        !matches!(self, Self::Missing)
+    /// Attempts to find a configuration file, given a `path` parameter. If `path` is `None`, then
+    /// the function returns `None`.
+    /// Otherwise, if the path is a rectory, then it attempts to find a `languages.ncl` file
+    /// within that directory. If the file exists, then it returns `Some(path.join("languages.ncl"))`.
+    /// If the file does not exist, then it logs a warning and returns `None`. If the path is a file,
+    /// then it returns `Some(path)`.
+    fn find(path: &Option<PathBuf>) -> Option<PathBuf> {
+        match path {
+            None => None,
+            Some(path) => {
+                let candidate = if path.is_dir() {
+                    path.join("languages.ncl")
+                } else {
+                    path.clone()
+                };
+
+                if candidate.exists() {
+                    Some(candidate)
+                } else {
+                    log::warn!(
+                        "Could not find configuration file: {}. Are you sure it exists?",
+                        candidate.to_string_lossy()
+                    );
+                    None
+                }
+            }
+        }
+    }
+
+    pub fn read(&self) -> Result<std::io::Cursor<String>, TopiaryConfigError> {
+        match self {
+            Self::Builtin => Ok(std::io::Cursor::new(self.builtin_nickel())),
+            Self::File(path) => std::fs::read_to_string(path)
+                .map_err(TopiaryConfigError::IoError)
+                .map(std::io::Cursor::new),
+        }
+    }
+
+    fn builtin_nickel(&self) -> String {
+        include_str!("../languages.ncl").to_string()
     }
 }
 
@@ -50,58 +101,12 @@ impl fmt::Display for Source {
                 // is safe to unwrap. (All bets are off, if called from elsewhere.)
                 write!(f, "{}", path.canonicalize().unwrap().to_string_lossy())
             }
-
-            Self::Missing => write!(f, "Missing configuration"),
-        }
-    }
-}
-
-impl From<Option<PathBuf>> for Source {
-    fn from(path: Option<PathBuf>) -> Self {
-        match path {
-            None => Source::Missing,
-
-            Some(path) => {
-                let candidate = if path.is_dir() {
-                    path.join("languages.toml")
-                } else {
-                    path
-                };
-
-                if candidate.exists() {
-                    Source::File(candidate)
-                } else {
-                    log::warn!(
-                        "Could not find configuration file: {}",
-                        candidate.to_string_lossy()
-                    );
-
-                    Source::Missing
-                }
-            }
-        }
-    }
-}
-
-impl TryFrom<&Source> for toml::Value {
-    type Error = TopiaryConfigError;
-
-    fn try_from(source: &Source) -> Result<Self, Self::Error> {
-        match source {
-            Source::Builtin => Ok(Serialisation::default_toml()),
-
-            Source::File(file) => {
-                let config = std::fs::read_to_string(file)?;
-                toml::from_str(&config).map_err(TopiaryConfigError::from)
-            }
-
-            Source::Missing => Err(TopiaryConfigError::Missing),
         }
     }
 }
 
 /// Find the OS-specific configuration directory
-fn find_os_configuration_dir() -> PathBuf {
+fn find_os_configuration_dir_config() -> PathBuf {
     ProjectDirs::from("", "", "topiary")
         .expect("Could not access the OS's Home directory")
         .config_dir()
@@ -110,7 +115,7 @@ fn find_os_configuration_dir() -> PathBuf {
 
 /// Ascend the directory hierarchy, starting from the current working directory, in search of the
 /// nearest `.topiary` configuration directory
-fn find_workspace_configuration_dir() -> Option<PathBuf> {
+fn find_workspace_configuration_dir_config() -> Option<PathBuf> {
     current_dir()
         .expect("Could not get current working directory")
         .ancestors()

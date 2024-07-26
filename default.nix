@@ -23,7 +23,7 @@ let
         "benches"
         "Cargo.lock"
         "Cargo.toml"
-        "languages.toml"
+        "languages.ncl"
         "tests"
         "topiary-core"
         "topiary-cli"

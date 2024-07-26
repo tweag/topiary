@@ -190,33 +190,10 @@ Commands:
   help        Print this message or the help of the given subcommand(s)
 
 Options:
-  -C, --configuration <CONFIGURATION>
-          Configuration file
-
-          [env: TOPIARY_CONFIG_FILE]
-
-      --configuration-collation <CONFIGURATION_COLLATION>
-          Configuration collation mode
-
-          [env: TOPIARY_CONFIG_COLLATION]
-          [default: merge]
-
-          Possible values:
-          - merge:    When multiple sources of configuration are available, matching items are
-            updated from the higher priority source, with collections merged as the union of sets
-          - revise:   When multiple sources of configuration are available, matching items
-            (including collections) are superseded from the higher priority source
-          - override: When multiple sources of configuration are available, the highest priority
-            source is taken. All values from lower priority sources are discarded
-
-  -v, --verbose...
-          Logging verbosity (increased per occurrence)
-
-  -h, --help
-          Print help (see a summary with '-h')
-
-  -V, --version
-          Print version
+  -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
+  -v, --verbose...                     Logging verbosity (increased per occurrence)
+  -h, --help                           Print help
+  -V, --version                        Print version
 ```
 <!-- usage:end:ROOT -->
 
@@ -253,20 +230,6 @@ Options:
           Configuration file
 
           [env: TOPIARY_CONFIG_FILE]
-
-      --configuration-collation <CONFIGURATION_COLLATION>
-          Configuration collation mode
-
-          [env: TOPIARY_CONFIG_COLLATION]
-          [default: merge]
-
-          Possible values:
-          - merge:    When multiple sources of configuration are available, matching items are
-            updated from the higher priority source, with collections merged as the union of sets
-          - revise:   When multiple sources of configuration are available, matching items
-            (including collections) are superseded from the higher priority source
-          - override: When multiple sources of configuration are available, the highest priority
-            source is taken. All values from lower priority sources are discarded
 
   -v, --verbose...
           Logging verbosity (increased per occurrence)
@@ -320,20 +283,6 @@ Options:
 
           [env: TOPIARY_CONFIG_FILE]
 
-      --configuration-collation <CONFIGURATION_COLLATION>
-          Configuration collation mode
-
-          [env: TOPIARY_CONFIG_COLLATION]
-          [default: merge]
-
-          Possible values:
-          - merge:    When multiple sources of configuration are available, matching items are
-            updated from the higher priority source, with collections merged as the union of sets
-          - revise:   When multiple sources of configuration are available, matching items
-            (including collections) are superseded from the higher priority source
-          - override: When multiple sources of configuration are available, the highest priority
-            source is taken. All values from lower priority sources are discarded
-
   -v, --verbose...
           Logging verbosity (increased per occurrence)
 
@@ -360,35 +309,11 @@ Print the current configuration
 Usage: topiary config [OPTIONS]
 
 Options:
-  -C, --configuration <CONFIGURATION>
-          Configuration file
-
-          [env: TOPIARY_CONFIG_FILE]
-
-      --configuration-collation <CONFIGURATION_COLLATION>
-          Configuration collation mode
-
-          [env: TOPIARY_CONFIG_COLLATION]
-          [default: merge]
-
-          Possible values:
-          - merge:    When multiple sources of configuration are available, matching items are
-            updated from the higher priority source, with collections merged as the union of sets
-          - revise:   When multiple sources of configuration are available, matching items
-            (including collections) are superseded from the higher priority source
-          - override: When multiple sources of configuration are available, the highest priority
-            source is taken. All values from lower priority sources are discarded
-
-  -v, --verbose...
-          Logging verbosity (increased per occurrence)
-
-  -h, --help
-          Print help (see a summary with '-h')
+  -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
+  -v, --verbose...                     Logging verbosity (increased per occurrence)
+  -h, --help                           Print help
 ```
 <!-- usage:end:config -->
-
-Please refer to the [Configuration](#configuration-1) section below to
-understand the different sources of configuration and collation modes.
 
 Note: `cfg` is a recognised alias of the `config` subcommand.
 
@@ -406,36 +331,13 @@ Generate shell completion script
 Usage: topiary completion [OPTIONS] [SHELL]
 
 Arguments:
-  [SHELL]
-          Shell (omit to detect from the environment)
-
-          [possible values: bash, elvish, fish, powershell, zsh]
+  [SHELL]  Shell (omit to detect from the environment) [possible values: bash, elvish, fish,
+           powershell, zsh]
 
 Options:
-  -C, --configuration <CONFIGURATION>
-          Configuration file
-
-          [env: TOPIARY_CONFIG_FILE]
-
-      --configuration-collation <CONFIGURATION_COLLATION>
-          Configuration collation mode
-
-          [env: TOPIARY_CONFIG_COLLATION]
-          [default: merge]
-
-          Possible values:
-          - merge:    When multiple sources of configuration are available, matching items are
-            updated from the higher priority source, with collections merged as the union of sets
-          - revise:   When multiple sources of configuration are available, matching items
-            (including collections) are superseded from the higher priority source
-          - override: When multiple sources of configuration are available, the highest priority
-            source is taken. All values from lower priority sources are discarded
-
-  -v, --verbose...
-          Logging verbosity (increased per occurrence)
-
-  -h, --help
-          Print help (see a summary with '-h')
+  -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
+  -v, --verbose...                     Logging verbosity (increased per occurrence)
+  -h, --help                           Print help
 ```
 <!-- usage:end:completion -->
 
@@ -505,14 +407,15 @@ It will output the following formatted code:
 
 ## Configuration
 
-Topiary is configured using `languages.toml` files. There are up to four
-sources where Topiary checks for such a file.
+Topiary is configured using `languages.ncl` files. The `.ncl` extension relates
+to [Nickel](https://nickel-lang.org/), a configuration language created by
+Tweag. There are up to four sources where Topiary checks for such a file.
 
 ### Configuration Sources
 
-At build time the [languages.toml](./languages.toml) in the root of
+At build time the [languages.ncl](./languages.ncl) in the root of
 this repository is embedded into Topiary. This file is parsed at
-runtime. The purpose of this `languages.toml` file is to provide sane
+runtime. The purpose of this `languages.ncl` file is to provide sane
 defaults for users of Topiary (both the library and the binary).
 
 The next two are read by the Topiary binary at runtime and allow the user to
@@ -521,15 +424,15 @@ can thus be found in the configuration directory of the OS:
 
 | OS      | Typical Configuration Path                                        |
 | :------ | :---------------------------------------------------------------- |
-| Unix    | `/home/alice/.config/topiary/languages.toml`                      |
-| Windows | `C:\Users\Alice\AppData\Roaming\Topiary\config\languages.toml`    |
-| macOS   | `/Users/Alice/Library/Application Support/Topiary/languages.toml` |
+| Unix    | `/home/alice/.config/topiary/languages.ncl`                      |
+| Windows | `C:\Users\Alice\AppData\Roaming\Topiary\config\languages.ncl`    |
+| macOS   | `/Users/Alice/Library/Application Support/Topiary/languages.ncl` |
 
 This file is not automatically created by Topiary.
 
 The next source is intended to be a project-specific settings file for
 Topiary. When running Topiary in some directory, it will ascend the file
-tree until it finds a `.topiary` directory. It will then read any `languages.toml`
+tree until it finds a `.topiary` directory. It will then read any `languages.ncl`
 file present in that directory.
 
 Finally, an explicit configuration file may be specified using the
@@ -537,9 +440,7 @@ Finally, an explicit configuration file may be specified using the
 `TOPIARY_CONFIG_FILE` environment variable). This is intended for
 driving Topiary under very specific use-cases.
 
-The Topiary binary parses these sources in the following order. The
-action taken to coalesce matching items is dependent on the [collation
-mode](#configuration-collation).
+The Topiary binary parses these sources in the following order.
 
 1. The builtin configuration file.
 2. The user configuration file in the OS's configuration directory.
@@ -548,19 +449,17 @@ mode](#configuration-collation).
 
 ### Configuration Options
 
-The configuration file contains a list of languages, each language configuration
-headed by ``[[language]]``. For instance, the one for Nickel is defined as such:
+The configuration file contains a record of languages. For instance, the one for
+Nickel is defined as such:
 
-```toml
-[[language]]
-name = "nickel"
-extensions = ["ncl"]
+```nickel
+nickel = {
+  extensions = ["ncl"],
+},
 ```
 
 The `name` field is used by Topiary to associate the language entry with the
 query file and Tree-sitter grammar. This value should be written in lowercase.
-The `name` field is mandatory for every ``[[language]]`` block in every
-configuration file.
 
 The list of extensions is mandatory for every language, but does not necessarily
 need to exist in every configuration file. It is sufficient if, for every
@@ -571,89 +470,36 @@ A final optional field, called `indent`, exists to define the indentation method
 for that language. Topiary defaults to two spaces `"  "` if it cannot find the
 indent field in any configuration file for a specific language.
 
-### Configuration Collation
+### Overriding
+If one of the sources listed above attempts to define a language configuration
+already present in the builtin configuration, Topiary will display a Nickel error.
 
-When parsing configuration from multiple sources, Topiary can collate
-matching configuration items (matched on language name) in various ways.
-The collation mode is set by the `--configuration-collation` command
-line argument (or the `TOPIARY_CONFIG_COLLATION` environment variable).
+To understand why, one can read the [Nickel documentation on Merging](https://nickel-lang.org/user-manual/merging).
+The short answer is that a priority must be defined. The builtin configuration
+has everything defined with priority 0. Any priority above that will replace
+any other priority. For example, to override the entire Bash configuration, use the following
+Nickel file.
 
-The different modes are best explained by example. Consider the
-following two configurations, in priority order from lowest to highest
-(comments have been added for illustrative purposes):
-
-```toml
-# Lowest priority configuration
-
-[[language]]
-name = "example"
-extensions = ["eg"]
-
-[[language]]
-name = "demo"
-extensions = ["demo"]
+```nickel
+{
+  languages = {
+    bash | priority 1 = {
+      extensions = [ "sh" ],
+      indent = "    ",
+    },
+  },
+}
 ```
 
-```toml
-# Highest priority configuration
-
-[[language]]
-name = "example"
-extensions = ["example"]
-indent = "    "
-```
-
-#### Merge Mode (Default)
-
-Matching items are updated from the higher priority source, with
-collections merged as the union of sets.
-
-```toml
-# For the "example" language:
-# * The collated extensions is the union of the source extensions
-# * The indentation is taken from the highest priority source
-[[language]]
-name = "example"
-extensions = ["eg", "example"]
-indent = "    "
-
-# The "demo" language is unchanged
-[[language]]
-name = "demo"
-extensions = ["demo"]
-```
-
-#### Revise Mode
-
-Matching items (including collections) are superseded from the higher
-priority source.
-
-```toml
-# The "example" language's values are taken from the highest priority source
-[[language]]
-name = "example"
-extensions = ["example"]
-indent = "    "
-
-# The "demo" language is unchanged
-[[language]]
-name = "demo"
-extensions = ["demo"]
-```
-
-#### Override Mode
-
-The highest priority source is taken. All values from lower priority
-sources are discarded.
-
-```toml
-# The "example" language's values are taken from the highest priority source
-[[language]]
-name = "example"
-extensions = ["example"]
-indent = "    "
-
-# The "demo" language does not exist in the highest priority source, so is omitted
+To override only the indentation, use the following Nickel file:
+```nickel
+{
+  languages = {
+    bash = {
+      indent | priority 1 = "    ",
+    },
+  },
+}
 ```
 
 ## Design
