@@ -42,6 +42,11 @@ pub struct LanguageConfiguration {
 
 #[derive(Debug, serde::Deserialize, PartialEq, serde::Serialize, Clone)]
 pub struct GrammarSource {
+    /// If symbol of the language in the compiled grammar. Usually this is
+    /// `tree_sitter_<LANGUAGE_NAME>`, but in rare cases it differs. For
+    /// instance our "tree-sitter-query" language, where the symbol is:
+    /// `tree_sitter_query` instead of `tree_sitter_tree_sitter_query`.
+    pub symbol: Option<String>,
     /// The URL of the git repository that contains the tree-sitter grammar.
     pub git: String,
     /// The revision of the git repository to use.
@@ -80,10 +85,21 @@ impl Language {
     // To be safe, assume any and all of the following code is MLP-2.0 and copyrighted to the Helix project.
     pub fn grammar(&self) -> TopiaryConfigResult<topiary_tree_sitter_facade::Language> {
         let mut library_path = crate::project_dirs().cache_dir().to_path_buf();
+        if !library_path.exists() {
+            // TODO: Don't unwrap
+            std::fs::create_dir(&library_path).unwrap();
+        }
+
+        library_path.push(self.name.clone());
+
+        if !library_path.exists() {
+            // TODO: Don't unwrap
+            std::fs::create_dir(&library_path).unwrap();
+        }
 
         library_path.push(self.config.grammar.rev.clone());
         // TODO: MacOS/Windows?
-        library_path.set_extension("o");
+        library_path.set_extension("so");
 
         if !library_path.is_file() {
             self.fetch_and_compile(library_path.clone())?;
@@ -93,7 +109,11 @@ impl Language {
 
         // TODO: Don't unwrap
         let library = unsafe { Library::new(&library_path) }.unwrap();
-        let language_fn_name = format!("tree_sitter_{}", self.name.replace('-', "_"));
+        let language_fn_name = if let Some(symbol_name) = self.config.grammar.symbol.clone() {
+            symbol_name
+        } else {
+            format!("tree_sitter_{}", self.name.replace('-', "_"))
+        };
 
         let language = unsafe {
             let language_fn: Symbol<unsafe extern "C" fn() -> tree_sitter::Language> =

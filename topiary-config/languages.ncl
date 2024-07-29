@@ -93,6 +93,7 @@
     tree_sitter_query = {
       extensions = ["scm"],
       grammar = {
+        symbol = "tree_sitter_query",
         git = "https://github.com/nvim-treesitter/tree-sitter-query",
         rev = "a0ccc351e5e868ec1f8135e97aa3b53c663cf2df",
       },
