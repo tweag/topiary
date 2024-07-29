@@ -2106,7 +2106,7 @@ dependencies = [
  "toml 0.8.14",
  "topiary-tree-sitter-facade",
  "topiary-web-tree-sitter-sys",
- "tree-sitter 0.22.6",
+ "tree-sitter",
 ]
 
 [[package]]
@@ -2153,7 +2153,7 @@ version = "0.4.2"
 dependencies = [
  "js-sys",
  "topiary-web-tree-sitter-sys",
- "tree-sitter 0.22.6",
+ "tree-sitter",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
@@ -2220,16 +2220,6 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter"
-version = "0.20.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e747b1f9b7b931ed39a548c1fae149101497de3c1fc8d9e18c62c1a66c683d3d"
-dependencies = [
- "cc",
- "regex",
-]
-
-[[package]]
-name = "tree-sitter"
 version = "0.22.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df7cc499ceadd4dcdf7ec6d4cbc34ece92c3fa07821e287aedecd4416c516dca"
@@ -2244,16 +2234,16 @@ version = "0.21.0"
 source = "git+https://github.com/tree-sitter/tree-sitter-json.git?rev=94f5c527b2965465956c2000ed6134dd24daf2a7#94f5c527b2965465956c2000ed6134dd24daf2a7"
 dependencies = [
  "cc",
- "tree-sitter 0.22.6",
+ "tree-sitter",
 ]
 
 [[package]]
 name = "tree-sitter-ocaml"
-version = "0.20.4"
-source = "git+https://github.com/tree-sitter/tree-sitter-ocaml.git?rev=9965d208337d88bbf1a38ad0b0fe49e5f5ec9677#9965d208337d88bbf1a38ad0b0fe49e5f5ec9677"
+version = "0.22.0"
+source = "git+https://github.com/tree-sitter/tree-sitter-ocaml.git?rev=036226e5edb410aec004cc7ac0f4b2014dd04a0e#036226e5edb410aec004cc7ac0f4b2014dd04a0e"
 dependencies = [
  "cc",
- "tree-sitter 0.20.10",
+ "tree-sitter",
 ]
 
 [[package]]

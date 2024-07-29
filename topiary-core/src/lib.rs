@@ -186,7 +186,7 @@ pub enum Operation {
 ///
 /// let language: Language = Language {
 ///     name: "json".to_owned(),
-///     query: TopiaryQuery::new(&json.into(), &query_content).unwrap(),
+///     query: TopiaryQuery::new(&json.clone().into(), &query_content).unwrap(),
 ///     grammar: json.into(),
 ///     indent: None,
 /// };
