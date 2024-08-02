@@ -167,3 +167,8 @@ impl From<SerdeConfiguration> for Configuration {
         Self { languages }
     }
 }
+
+pub(crate) fn project_dirs() -> directories::ProjectDirs {
+    directories::ProjectDirs::from("", "", "topiary")
+        .expect("Could not access the OS's Home directory")
+}

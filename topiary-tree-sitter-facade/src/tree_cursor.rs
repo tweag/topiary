@@ -10,7 +10,7 @@ mod native {
 
     impl<'a> TreeCursor<'a> {
         #[inline]
-        pub fn field_id(&self) -> Option<u16> {
+        pub fn field_id(&self) -> Option<std::num::NonZeroU16> {
             self.inner.field_id()
         }
 

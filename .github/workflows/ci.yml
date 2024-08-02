@@ -36,6 +36,9 @@ jobs:
       - name: Build and test executable
         run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- fmt -l json'
 
+      - name: Build the topiary-cli and test those tests that cannot be performed in Nix
+        run: nix develop --command bash -c "cargo test -p topiary-cli"
+
       - name: Build client-app example
         run: nix build .#client-app
 

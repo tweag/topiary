@@ -15,9 +15,9 @@ mod native {
         }
 
         #[inline]
-        pub fn name<'s>(&self, capture_names: &'s [String]) -> Cow<'s, str> {
+        pub fn name<'s>(&self, capture_names: &'s [&str]) -> Cow<'s, str> {
             let index: usize = self.inner.index as usize;
-            Cow::Borrowed(capture_names[index].as_str())
+            Cow::Borrowed(capture_names[index])
         }
     }
 

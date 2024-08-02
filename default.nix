@@ -40,9 +40,18 @@ let
       [
         binaryen
         wasm-bindgen-cli
+        pkg-config
       ]
       ++ lib.optionals stdenv.isDarwin [
         libiconv
+      ];
+
+    buildInputs = with pkgs;
+      [
+        openssl.dev
+      ]
+      ++ lib.optionals stdenv.isDarwin [
+        darwin.apple_sdk.frameworks.Security
       ];
   };
 
@@ -102,6 +111,7 @@ in
     inherit cargoArtifacts;
     pname = "topiary";
     cargoExtraArgs = "-p topiary-cli";
+    cargoTestExtraArgs = "--no-default-features";
     postInstall = ''
       install -Dm444 topiary-queries/queries/* -t $out/share/queries
     '';

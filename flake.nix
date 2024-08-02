@@ -61,6 +61,7 @@
       {
         packages = {
           inherit (topiaryPkgs)
+            topiary-cli
             topiary-playground
             topiary-queries
             client-app;

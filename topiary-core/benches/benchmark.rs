@@ -14,7 +14,7 @@ async fn format() {
 
     let language: Language = Language {
         name: "ocaml".to_owned(),
-        query: TopiaryQuery::new(&ocaml.into(), &query_content).unwrap(),
+        query: TopiaryQuery::new(&ocaml.clone().into(), &query_content).unwrap(),
         grammar: ocaml.into(),
         indent: None,
     };

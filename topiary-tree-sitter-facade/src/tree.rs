@@ -1,7 +1,7 @@
 #[cfg(not(target_arch = "wasm32"))]
 mod native {
     use crate::{
-        input_edit::InputEdit, language::Language, node::Node, range::Range,
+        input_edit::InputEdit, language::LanguageRef, node::Node, range::Range,
         tree_cursor::TreeCursor,
     };
 
@@ -21,8 +21,8 @@ mod native {
                 .map(|inner| Range { inner })
         }
 
-        pub fn language(&self) -> Language {
-            self.inner.language().into()
+        pub fn language(&self) -> LanguageRef<'_> {
+            Into::into(self.inner.language())
         }
 
         pub fn root_node(&self) -> Node<'_> {

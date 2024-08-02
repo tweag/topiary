@@ -1,7 +1,7 @@
 #[cfg(not(target_arch = "wasm32"))]
 mod native {
     use crate::{
-        input_edit::InputEdit, language::Language, point::Point, range::Range,
+        input_edit::InputEdit, language::LanguageRef, point::Point, range::Range,
         tree_cursor::TreeCursor,
     };
     use std::{borrow::Cow, convert::TryFrom};
@@ -51,7 +51,7 @@ mod native {
         #[inline]
         pub fn children_by_field_id<'a>(
             &self,
-            field_id: u16,
+            field_id: std::num::NonZeroU16,
             cursor: &'a mut TreeCursor<'tree>,
         ) -> impl Iterator<Item = Node<'tree>> + 'a {
             self.inner
@@ -145,7 +145,7 @@ mod native {
         }
 
         #[inline]
-        pub fn language(&self) -> Language {
+        pub fn language(&self) -> LanguageRef<'_> {
             self.inner.language().into()
         }
 

@@ -186,7 +186,7 @@ pub enum Operation {
 ///
 /// let language: Language = Language {
 ///     name: "json".to_owned(),
-///     query: TopiaryQuery::new(&json.into(), &query_content).unwrap(),
+///     query: TopiaryQuery::new(&json.clone().into(), &query_content).unwrap(),
 ///     grammar: json.into(),
 ///     indent: None,
 /// };
@@ -343,7 +343,7 @@ mod tests {
         let mut input = r#"{"foo":{"bar"}}"#.as_bytes();
         let mut output = Vec::new();
         let query_content = "(#language! json)";
-        let grammar = tree_sitter_json::language().into();
+        let grammar = topiary_tree_sitter_facade::Language::from(tree_sitter_json::language());
         let language = Language {
             name: "json".to_owned(),
             query: TopiaryQuery::new(&grammar, query_content).unwrap(),

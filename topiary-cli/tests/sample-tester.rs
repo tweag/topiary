@@ -5,7 +5,7 @@ use topiary_core::test_utils::pretty_assert_eq;
 
 use tempfile::TempDir;
 
-fn io_test(file: &str) -> () {
+fn io_test(file: &str) {
     let input = PathBuf::from(format!("tests/samples/input/{file}"));
     let expected = PathBuf::from(format!("tests/samples/expected/{file}"));
 
