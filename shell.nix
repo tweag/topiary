@@ -24,10 +24,12 @@ craneLib.devShell
         # Our own scripts
         # FIXME: Broken
         # generate-coverage
-        playground
         update-wasm-app
         update-wasm-grammars
         verify-documented-usage
+      ]
+      ++ pkgs.lib.optionals (!stdenv.isDarwin) [
+        playground
       ];
     } else { })
   )

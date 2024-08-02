@@ -98,7 +98,7 @@ impl Language {
         }
 
         library_path.push(self.config.grammar.rev.clone());
-        // TODO: MacOS/Windows?
+        // TODO: Windows?
         library_path.set_extension("so");
 
         if !library_path.is_file() {
@@ -264,7 +264,14 @@ impl Language {
         }
 
         command.arg("-xc").arg("-std=c11").arg(parser_path);
-        command.arg("-Wl,-z,relro,-z,now");
+
+        if cfg!(all(
+            unix,
+            not(any(target_os = "macos", target_os = "illumos"))
+        )) {
+            command.arg("-Wl,-z,relro,-z,now");
+        }
+
         let output = command.output().unwrap();
 
         if !output.status.success() {
@@ -273,7 +280,7 @@ impl Language {
                 String::from_utf8_lossy(&output.stdout),
                 String::from_utf8_lossy(&output.stderr),
             );
-            todo!("Return error");
+            todo!("{}", String::from_utf8_lossy(&output.stderr));
         }
 
         Ok(())
