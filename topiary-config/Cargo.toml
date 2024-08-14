@@ -13,11 +13,8 @@ readme.workspace = true
 license.workspace = true
 
 [dependencies]
-cc.workspace = true
 directories.workspace = true
-git2.workspace = true
 itertools.workspace = true
-libloading.workspace = true
 log.workspace = true
 nickel-lang-core.workspace = true
 serde = { workspace = true, features = ["derive"] }
@@ -39,6 +36,9 @@ topiary-web-tree-sitter-sys.workspace = true
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
 clap = { workspace = true, features = ["derive"] }
+cc.workspace = true
+git2.workspace = true
+libloading.workspace = true
 
 [features]
 bash = []

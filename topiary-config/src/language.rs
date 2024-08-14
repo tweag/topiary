@@ -3,13 +3,19 @@
 
 use crate::error::TopiaryConfigError;
 use crate::error::TopiaryConfigResult;
-use git2::Oid;
-use git2::Repository;
 use std::collections::HashSet;
 use std::path::PathBuf;
+
+#[cfg(not(target_arch = "wasm32"))]
+use git2::Oid;
+#[cfg(not(target_arch = "wasm32"))]
+use git2::Repository;
+#[cfg(not(target_arch = "wasm32"))]
 use std::process::Command;
+#[cfg(not(target_arch = "wasm32"))]
 use tempfile::tempdir;
 
+#[cfg(not(target_arch = "wasm32"))]
 const BUILD_TARGET: &str = env!("BUILD_TARGET");
 
 /// Language definitions, as far as the CLI and configuration are concerned, contain everything
@@ -171,6 +177,7 @@ impl Language {
         .into())
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn fetch_and_compile(&self, library_path: PathBuf) -> TopiaryConfigResult<()> {
         // TODO: Don't unwrap
         let tmp_dir = tempdir().unwrap();
@@ -188,6 +195,7 @@ impl Language {
         self.build_tree_sitter_library(&path, library_path)
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn build_tree_sitter_library(
         &self,
         src_path: &PathBuf,

@@ -69,7 +69,7 @@ mod wasm {
         }
 
         #[inline]
-        pub fn name(&self, _capture_names: &[String]) -> Cow<str> {
+        pub fn name(&self, _capture_names: &[&str]) -> Cow<str> {
             Cow::Owned(self.inner.name().as_string().unwrap())
         }
     }
