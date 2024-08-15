@@ -132,39 +132,7 @@ impl Language {
 
     #[cfg(target_arch = "wasm32")]
     pub async fn grammar(&self) -> TopiaryConfigResult<topiary_tree_sitter_facade::Language> {
-        let language_name = match self.name.as_str() {
-            #[cfg(feature = "bash")]
-            "bash" => "bash",
-
-            #[cfg(feature = "css")]
-            "css" => "css",
-
-            #[cfg(feature = "json")]
-            "json" => "json",
-
-            #[cfg(feature = "nickel")]
-            "nickel" => "nickel",
-
-            #[cfg(feature = "ocaml")]
-            "ocaml" => "ocaml",
-
-            #[cfg(feature = "ocaml_interface")]
-            "ocaml_interface" => "ocaml_interface",
-
-            #[cfg(feature = "ocamllex")]
-            "ocamllex" => "ocamllex",
-
-            #[cfg(feature = "rust")]
-            "rust" => "rust",
-
-            #[cfg(feature = "toml")]
-            "toml" => "toml",
-
-            #[cfg(feature = "tree_sitter_query")]
-            "tree_sitter_query" => "query",
-
-            name => return Err(TopiaryConfigError::UnknownLanguage(name.to_string())),
-        };
+        let language_name = self.name.as_str();
 
         Ok(topiary_web_tree_sitter_sys::Language::load_path(&format!(
             "/playground/scripts/tree-sitter-{language_name}.wasm"
