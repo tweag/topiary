@@ -134,15 +134,21 @@ impl Language {
     pub async fn grammar(&self) -> TopiaryConfigResult<topiary_tree_sitter_facade::Language> {
         let language_name = self.name.as_str();
 
-        Ok(topiary_web_tree_sitter_sys::Language::load_path(&format!(
-            "/playground/scripts/tree-sitter-{language_name}.wasm"
-        ))
-        .await
-        .map_err(|e| {
-            let error: topiary_tree_sitter_facade::LanguageError = e.into();
-            error
-        })?
-        .into())
+        let grammar_path = if language_name == "tree_sitter_query" {
+            "/playground/scripts/tree-sitter-query.wasm".to_string()
+        } else {
+            format!("/playground/scripts/tree-sitter-{language_name}.wasm")
+        };
+
+        Ok(
+            topiary_web_tree_sitter_sys::Language::load_path(&grammar_path)
+                .await
+                .map_err(|e| {
+                    let error: topiary_tree_sitter_facade::LanguageError = e.into();
+                    error
+                })?
+                .into(),
+        )
     }
 
     #[cfg(not(target_arch = "wasm32"))]
