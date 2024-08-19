@@ -119,7 +119,8 @@ impl Default for Configuration {
         let mut program = Program::<CacheImpl>::new_from_source(
             Source::Builtin
                 .read()
-                .expect("Evaluating the builtin configuration should be safe"),
+                .expect("Evaluating the builtin configuration should be safe")
+                .as_slice(),
             "builtin",
             std::io::empty(),
         )

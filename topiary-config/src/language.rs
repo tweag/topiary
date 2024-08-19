@@ -1,15 +1,17 @@
 //! This module contains the `Language` struct, which represents a language configuration, and
 //! associated methods.
 
+#[cfg(not(target_arch = "wasm32"))]
 use crate::error::TopiaryConfigError;
 use crate::error::TopiaryConfigResult;
 use std::collections::HashSet;
-use std::path::PathBuf;
 
 #[cfg(not(target_arch = "wasm32"))]
 use git2::Oid;
 #[cfg(not(target_arch = "wasm32"))]
 use git2::Repository;
+#[cfg(not(target_arch = "wasm32"))]
+use std::path::PathBuf;
 #[cfg(not(target_arch = "wasm32"))]
 use std::process::Command;
 #[cfg(not(target_arch = "wasm32"))]
@@ -66,7 +68,7 @@ impl Language {
         Self { name, config }
     }
 
-    #[cfg(not(wasm))]
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn find_query_file(&self) -> TopiaryConfigResult<PathBuf> {
         let basename = PathBuf::from(self.name.as_str()).with_extension("scm");
 
@@ -92,15 +94,13 @@ impl Language {
     pub fn grammar(&self) -> TopiaryConfigResult<topiary_tree_sitter_facade::Language> {
         let mut library_path = crate::project_dirs().cache_dir().to_path_buf();
         if !library_path.exists() {
-            // TODO: Don't unwrap
-            std::fs::create_dir(&library_path).unwrap();
+            std::fs::create_dir(&library_path)?;
         }
 
         library_path.push(self.name.clone());
 
         if !library_path.exists() {
-            // TODO: Don't unwrap
-            std::fs::create_dir(&library_path).unwrap();
+            std::fs::create_dir(&library_path)?;
         }
 
         library_path.push(self.config.grammar.rev.clone());
@@ -113,8 +113,7 @@ impl Language {
 
         use libloading::{Library, Symbol};
 
-        // TODO: Don't unwrap
-        let library = unsafe { Library::new(&library_path) }.unwrap();
+        let library = unsafe { Library::new(&library_path) }?;
         let language_fn_name = if let Some(symbol_name) = self.config.grammar.symbol.clone() {
             symbol_name
         } else {
@@ -123,7 +122,7 @@ impl Language {
 
         let language = unsafe {
             let language_fn: Symbol<unsafe extern "C" fn() -> tree_sitter::Language> =
-                library.get(language_fn_name.as_bytes()).unwrap();
+                library.get(language_fn_name.as_bytes())?;
             language_fn()
         };
         std::mem::forget(library);
@@ -153,12 +152,10 @@ impl Language {
 
     #[cfg(not(target_arch = "wasm32"))]
     fn fetch_and_compile(&self, library_path: PathBuf) -> TopiaryConfigResult<()> {
-        // TODO: Don't unwrap
-        let tmp_dir = tempdir().unwrap();
+        let tmp_dir = tempdir()?;
 
-        let repo = Repository::clone(&self.config.grammar.git, &tmp_dir).unwrap();
-        repo.set_head_detached(Oid::from_str(&self.config.grammar.rev).unwrap())
-            .unwrap();
+        let repo = Repository::clone(&self.config.grammar.git, &tmp_dir)?;
+        repo.set_head_detached(Oid::from_str(&self.config.grammar.rev)?)?;
 
         let path = match self.config.grammar.subdir.clone() {
             Some(subdir) => tmp_dir.path().join(subdir),
@@ -235,7 +232,7 @@ impl Language {
                     .arg("-std=c++14")
                     .arg("-c")
                     .arg(scanner_path);
-                let output = cpp_command.output().unwrap();
+                let output = cpp_command.output()?;
                 if !output.status.success() {
                     eprintln!("{:#?}, {:#?}", output.stdout, output.stderr);
                     todo!("Return error");
@@ -254,7 +251,7 @@ impl Language {
             command.arg("-Wl,-z,relro,-z,now");
         }
 
-        let output = command.output().unwrap();
+        let output = command.output()?;
 
         if !output.status.success() {
             eprintln!(

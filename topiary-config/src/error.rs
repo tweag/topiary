@@ -5,18 +5,20 @@ pub type TopiaryConfigResult<T> = result::Result<T, TopiaryConfigError>;
 #[derive(Debug)]
 pub enum TopiaryConfigError {
     FileNotFound(path::PathBuf),
-    #[cfg(not(wasm))]
     UnknownLanguage(String),
     UnknownExtension(String),
     NoExtension(path::PathBuf),
-    #[cfg(not(wasm))]
+    #[cfg(not(target_arch = "wasm32"))]
     QueryFileNotFound(path::PathBuf),
-    #[cfg(not(wasm))]
     IoError(io::Error),
     Missing,
     TreeSitterFacade(topiary_tree_sitter_facade::LanguageError),
     Nickel(nickel_lang_core::error::Error),
     NickelDeserialization(nickel_lang_core::deserialize::RustDeserializationError),
+    #[cfg(not(target_arch = "wasm32"))]
+    LibLoading(libloading::Error),
+    #[cfg(not(target_arch = "wasm32"))]
+    Git(git2::Error),
 }
 
 impl fmt::Display for TopiaryConfigError {
@@ -26,12 +28,17 @@ impl fmt::Display for TopiaryConfigError {
             TopiaryConfigError::UnknownLanguage(lang) => write!(f, "You were looking for language \"{lang}\", but we do not know that language."),
             TopiaryConfigError::UnknownExtension(ext) => write!(f, "You tried to format a file with extension: \"{ext}\", but we do not know that extension. Make sure the extension is in your configuration file!"),
             TopiaryConfigError::NoExtension(path) => write!(f, "You tried to format {} without specifying a language, but we cannot automatically detect the language because we can't find the filetype extension.", path.to_string_lossy()),
+            #[cfg(not(target_arch = "wasm32"))]
             TopiaryConfigError::QueryFileNotFound(path) => write!(f, "We could not find the query file: \"{}\" anywhere. If you use the TOPIARY_LANGUAGE_DIR environment variable, make sure it set set correctly.", path.to_string_lossy()),
             TopiaryConfigError::IoError(error) => write!(f, "We encountered an io error: {error}"),
             TopiaryConfigError::Missing => write!(f, "A configuration file is missing. If you passed a configuration file, make sure it exists."),
             TopiaryConfigError::TreeSitterFacade(_) => write!(f, "We could not load the grammar for the given language"),
             TopiaryConfigError::Nickel(e) => write!(f, "Nickel error: {:?}", e),
             TopiaryConfigError::NickelDeserialization(e) => write!(f, "Nickel error: {:?}", e),
+            #[cfg(not(target_arch = "wasm32"))]
+            TopiaryConfigError::LibLoading(e) => write!(f, "Libloading error: {:?}", e),
+            #[cfg(not(target_arch = "wasm32"))]
+            TopiaryConfigError::Git(e) => write!(f, "Git error: {:?}", e),
         }
     }
 }
@@ -60,10 +67,24 @@ impl From<topiary_tree_sitter_facade::LanguageError> for TopiaryConfigError {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+impl From<libloading::Error> for TopiaryConfigError {
+    fn from(e: libloading::Error) -> Self {
+        Self::LibLoading(e)
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl From<git2::Error> for TopiaryConfigError {
+    fn from(e: git2::Error) -> Self {
+        Self::Git(e)
+    }
+}
+
 impl error::Error for TopiaryConfigError {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self {
-            #[cfg(not(wasm))]
+            #[cfg(not(target_arch = "wasm32"))]
             TopiaryConfigError::IoError(e) => e.source(),
             _ => None,
         }
