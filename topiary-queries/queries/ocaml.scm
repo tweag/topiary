@@ -510,6 +510,7 @@
     (local_open_pattern)
     (labeled_argument)
     (list_pattern)
+    (record_pattern)
     ; start equivalence class
     (extended_module_path)
     (module_path)

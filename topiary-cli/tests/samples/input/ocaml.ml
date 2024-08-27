@@ -1092,6 +1092,11 @@ let _ =
   match foo with
   | Bar ["baz"] -> qux
 
+(* #719: missing space for pattern matching of constructor holding record *)
+let _ =
+  match foo with
+  | Bar { baz } -> qux
+
 (* #659 handling of the `;;` separator *)
 
 let bonjour () = "Bonjour"
