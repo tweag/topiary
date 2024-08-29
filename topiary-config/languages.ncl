@@ -5,21 +5,21 @@
     css.extensions = ["css"],
 
     json.extensions = [
-        "json",
-        "avsc",
-        "geojson",
-        "gltf",
-        "har",
-        "ice",
-        "JSON-tmLanguage",
-        "jsonl",
-        "mcmeta",
-        "tfstate",
-        "tfstate.backup",
-        "topojson",
-        "webapp",
-        "webmanifest"
-      ],
+      "json",
+      "avsc",
+      "geojson",
+      "gltf",
+      "har",
+      "ice",
+      "JSON-tmLanguage",
+      "jsonl",
+      "mcmeta",
+      "tfstate",
+      "tfstate.backup",
+      "topojson",
+      "webapp",
+      "webmanifest"
+    ],
 
     nickel.extensions = ["ncl"],
 
@@ -35,6 +35,8 @@
     },
 
     toml.extensions = ["toml"],
+
+    openscad.extensions = ["scad", "openscad"],
 
     tree_sitter_query.extensions = ["scm"],
   },
