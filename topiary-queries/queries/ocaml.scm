@@ -154,7 +154,7 @@
 )
 
 ; Surround spaces
-; A space is put after, and before (except just after an open parenthesis).
+; A space is put after, except when followed by a PPX "%".
 (
   [
     "and"
@@ -228,16 +228,22 @@
   "%"? @do_nothing
 )
 
-; Those keywords are not expected to come right after an open parenthesis.
+; Prepend a space. Note that these nodes are not expected to come after an open parenthesis,
+; or if they do, we still want a space before.
 [
   "as"
+  (attribute)
   "constraint"
   "do"
   "done"
   "downto"
   "else"
+  (floating_attribute)
   "in"
-  ; Infix operators can come after an open parenthesis, but we want a space before anyway
+  (item_attribute)
+  (module_parameter)
+  "nonrec"
+  "of"
   (pow_operator)
   (mult_operator)
   (add_operator)
@@ -246,14 +252,14 @@
   (and_operator)
   (or_operator)
   (assign_operator)
-  "nonrec"
-  "of"
+  (parameter)
   "rec"
   "then"
   "to"
   "virtual"
   "when"
   "with"
+  "="
   "|"
   "->"
   "<-"
@@ -275,162 +281,6 @@
   (let_operator) @append_space
   .
   ")"* @do_nothing
-)
-
-; For those queries, we should not have multiple queries,
-; however, due to a known bug in tree-sitter queries
-; https://github.com/tree-sitter/tree-sitter/issues/1811
-; using an alternative after the starred parenthesis does not work as intented.
-;
-(
-  "("* @do_nothing
-  .
-  "assert" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  (attribute) @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "begin" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "class" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "exception" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "external" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  (floating_attribute) @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "for" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "include" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "inherit" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "initializer" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  (item_attribute) @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "let" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "method" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "module" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  (module_parameter) @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "mutable" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "new" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "object" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "open" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  (parameter) @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "private" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "sig" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "try" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "type" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "val" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "while" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "*" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "=" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "}" @prepend_space
 )
 
 ; Put a space after commas, except the last one.

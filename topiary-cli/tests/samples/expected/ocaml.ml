@@ -1166,6 +1166,9 @@ let _ =
   match foo with
   | Bar { baz } -> qux
 
+(* #721: unbalanced spacing around parenthesized expressions *)
+let _ = (begin end)
+
 (* #659 handling of the `;;` separator *)
 
 let bonjour () = "Bonjour"
