@@ -184,8 +184,10 @@ impl<'cfg, 'i> Inputs<'cfg> {
                             // The user specified a query file
                             Some(p) => (p, None),
                             // The user did not specify a file, try the default locations
-                            None => match language.find_query_file() {
-                                Ok(p) => (p.into(), None),
+                            None => match language.find_query_files() {
+                                Ok((formatting_query, injection_query)) => {
+                                    (formatting_query.into(), injection_query.map(Into::into))
+                                }
                                 // For some reason, Topiary could not find any
                                 // matching file in a default location. As a final attempt, use try to the the
                                 // builtin ones. Store the error, return that if we
@@ -210,13 +212,13 @@ impl<'cfg, 'i> Inputs<'cfg> {
                 .into_iter()
                 .map(|path| {
                     let language = config.detect(&path)?;
-                    let query = language.find_query_file()?.into();
+                    let (formatting_query, injection_query) = language.find_query_files()?;
 
                     Ok(InputFile {
                         source: InputSource::Disk(path, None),
                         language,
-                        formatting_query: query,
-                        injection_query: None,
+                        formatting_query: formatting_query.into(),
+                        injection_query: injection_query.map(Into::into),
                     })
                 })
                 .collect(),

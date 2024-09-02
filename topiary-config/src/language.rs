@@ -37,8 +37,7 @@ impl Language {
     }
 
     #[cfg(not(wasm))]
-    // TODO: ALSO FIND INJECTION QUERY
-    pub fn find_query_file(&self) -> TopiaryConfigResult<PathBuf> {
+    pub fn find_query_files(&self) -> TopiaryConfigResult<(PathBuf, Option<PathBuf>)> {
         let basename = PathBuf::from(match self.name.as_str() {
             #[cfg(feature = "bash")]
             "bash" => "bash",
@@ -81,12 +80,19 @@ impl Language {
             Some(PathBuf::from("../topiary-queries/queries")),
         ];
 
-        potentials
-            .into_iter()
-            .flatten()
+        let potentials = potentials.into_iter().flatten();
+
+        let formatting_query = potentials
+            .clone()
             .map(|path| path.join(&basename).join("formatting.scm"))
             .find(|path| path.exists())
-            .ok_or_else(|| TopiaryConfigError::QueryFileNotFound(basename))
+            .ok_or_else(|| TopiaryConfigError::QueryFileNotFound(basename.clone()))?;
+
+        let injection_query = potentials
+            .map(|path| path.join(&basename).join("formatting.scm"))
+            .find(|path| path.exists());
+
+        Ok((formatting_query, injection_query))
     }
 
     #[cfg(not(target_arch = "wasm32"))]
