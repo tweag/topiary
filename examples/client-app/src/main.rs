@@ -17,7 +17,7 @@ async fn main() {
     let json = config.get_language("json").unwrap();
 
     // Get default query for JSON
-    let query = topiary_queries::json();
+    let (formatting_query, _) = topiary_queries::json();
 
     // Get grammar for JSON language
     let grammar = json.grammar().unwrap();
@@ -25,7 +25,7 @@ async fn main() {
     // Create Language struct
     let language: Language = Language {
         name: "json".to_owned(),
-        query: TopiaryQueries::new(&grammar, query, None).unwrap(),
+        query: TopiaryQueries::new(&grammar, formatting_query, None).unwrap(),
         grammar,
         indent: None,
     };

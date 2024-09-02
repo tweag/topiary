@@ -179,28 +179,29 @@ impl<'cfg, 'i> Inputs<'cfg> {
             InputFrom::Stdin(language_name, query) => {
                 vec![(|| {
                     let language = config.get_language(&language_name)?;
-                    let query_source: QuerySource = match query {
-                        // The user specified a query file
-                        Some(p) => p,
-                        // The user did not specify a file, try the default locations
-                        None => match language.find_query_file() {
-                            Ok(p) => p.into(),
-                            // For some reason, Topiary could not find any
-                            // matching file in a default location. As a final attempt, use try to the the
-                            // builtin ones. Store the error, return that if we
-                            // fail to find anything, because the builtin error might be unexpected.
-                            Err(e) => {
-                                log::warn!("No query files found in any of the expected locations. Falling back to compile-time included files.");
-                                to_query(&language_name).map_err(|_| e)?
-                            }
-                        },
-                    };
+                    let (formatting_query, injection_query): (QuerySource, Option<QuerySource>) =
+                        match query {
+                            // The user specified a query file
+                            Some(p) => (p, None),
+                            // The user did not specify a file, try the default locations
+                            None => match language.find_query_file() {
+                                Ok(p) => (p.into(), None),
+                                // For some reason, Topiary could not find any
+                                // matching file in a default location. As a final attempt, use try to the the
+                                // builtin ones. Store the error, return that if we
+                                // fail to find anything, because the builtin error might be unexpected.
+                                Err(e) => {
+                                    log::warn!("No query files found in any of the expected locations. Falling back to compile-time included files.");
+                                    to_queries(&language_name).map_err(|_| e)?
+                                }
+                            },
+                        };
 
                     Ok(InputFile {
                         source: InputSource::Stdin,
                         language,
-                        formatting_query: query_source,
-                        injection_query: None,
+                        formatting_query,
+                        injection_query,
                     })
                 })()]
             }
@@ -321,44 +322,50 @@ impl<'cfg> TryFrom<&InputFile<'cfg>> for OutputFile {
     }
 }
 
-fn to_query<T>(name: T) -> CLIResult<QuerySource>
+fn to_queries<T>(name: T) -> CLIResult<(QuerySource, Option<QuerySource>)>
 where
     T: AsRef<str> + fmt::Display,
 {
-    match name.as_ref() {
+    let (formatting_query, injection_query) = match name.as_ref() {
         #[cfg(feature = "bash")]
-        "bash" => Ok(topiary_queries::bash().into()),
+        "bash" => Ok(topiary_queries::bash()),
 
         #[cfg(feature = "css")]
-        "css" => Ok(topiary_queries::css().into()),
+        "css" => Ok(topiary_queries::css()),
 
         #[cfg(feature = "json")]
-        "json" => Ok(topiary_queries::json().into()),
+        "json" => Ok(topiary_queries::json()),
 
         #[cfg(feature = "nickel")]
-        "nickel" => Ok(topiary_queries::nickel().into()),
+        "nickel" => Ok(topiary_queries::nickel()),
 
         #[cfg(feature = "ocaml")]
-        "ocaml" => Ok(topiary_queries::ocaml().into()),
+        "ocaml" => Ok(topiary_queries::ocaml()),
 
         #[cfg(feature = "ocaml_interface")]
-        "ocaml_interface" => Ok(topiary_queries::ocaml_interface().into()),
+        "ocaml_interface" => Ok(topiary_queries::ocaml_interface()),
 
         #[cfg(feature = "ocamllex")]
-        "ocamllex" => Ok(topiary_queries::ocamllex().into()),
+        "ocamllex" => Ok(topiary_queries::ocamllex()),
 
         #[cfg(feature = "rust")]
-        "rust" => Ok(topiary_queries::rust().into()),
+        "rust" => Ok(topiary_queries::rust()),
 
         #[cfg(feature = "toml")]
-        "toml" => Ok(topiary_queries::toml().into()),
+        "toml" => Ok(topiary_queries::toml()),
 
         #[cfg(feature = "tree_sitter_query")]
-        "tree_sitter_query" => Ok(topiary_queries::tree_sitter_query().into()),
+        "tree_sitter_query" => Ok(topiary_queries::tree_sitter_query()),
 
         name => Err(TopiaryError::Bin(
             format!("The specified language is unsupported: {}", name),
             Some(CLIError::UnsupportedLanguage(name.to_string())),
         )),
-    }
+    }?;
+
+    let formatting_query = formatting_query.into();
+
+    let injection_query = injection_query.map(Into::into);
+
+    Ok((formatting_query, injection_query))
 }

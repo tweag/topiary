@@ -37,6 +37,7 @@ impl Language {
     }
 
     #[cfg(not(wasm))]
+    // TODO: ALSO FIND INJECTION QUERY
     pub fn find_query_file(&self) -> TopiaryConfigResult<PathBuf> {
         let basename = PathBuf::from(match self.name.as_str() {
             #[cfg(feature = "bash")]
