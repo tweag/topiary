@@ -120,15 +120,24 @@ impl<'cfg> InputFile<'cfg> {
     /// Convert our `InputFile` into language definition values that Topiary can consume
     pub async fn to_language(&self) -> CLIResult<Language> {
         let grammar = self.language().grammar()?;
-        let contents = match &self.formatting_query {
+        let formatting_contents = match &self.formatting_query {
             QuerySource::Path(query) => tokio::fs::read_to_string(query).await?,
             QuerySource::BuiltIn(contents) => contents.to_owned(),
         };
-        let query = TopiaryQueries::new(&grammar, &contents, None)?;
+        let injection_contents = match &self.injection_query {
+            Some(QuerySource::Path(query)) => Some(tokio::fs::read_to_string(query).await?),
+            Some(QuerySource::BuiltIn(contents)) => Some(contents.to_owned()),
+            None => None,
+        };
+        let query = TopiaryQueries::new(
+            &grammar,
+            &formatting_contents,
+            injection_contents.as_deref(),
+        )?;
 
         Ok(Language {
             name: self.language.name.clone(),
-            query,
+            queries: query,
             grammar,
             indent: self.language().config.indent.clone(),
         })

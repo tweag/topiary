@@ -12,7 +12,7 @@ pub struct Language {
     pub name: String,
     /// The Query Topiary will use to get the formating captures, must be
     /// present. The topiary engine does not include any formatting queries.
-    pub query: TopiaryQueries,
+    pub queries: TopiaryQueries,
     /// The tree-sitter Language. Topiary will use this Language for parsing.
     pub grammar: topiary_tree_sitter_facade::Language,
     /// The indentation string used for that particular language. Defaults to "  "

@@ -19,7 +19,7 @@ use tree_sitter::Position;
 pub use crate::{
     error::{FormatterError, IoError},
     language::Language,
-    tree_sitter::{apply_query, parse, SyntaxNode, TopiaryQueries, Visualisation},
+    tree_sitter::{apply_formatting_query, parse, SyntaxNode, TopiaryQueries, Visualisation},
 };
 
 mod atom_collection;
@@ -262,9 +262,20 @@ pub fn format(
     // All the work related to tree-sitter and the query is done here
     log::info!("Apply Tree-sitter query");
 
+    // TODO: Recursively call format on the nested languages
+    if let Some(_injections) = &language.queries.injections {
+        panic!("Found injection queries");
+    }
+
     let (tree, grammar) = parse(input, &language.grammar, tolerate_parsing_errors)?;
 
-    let mut atoms = tree_sitter::apply_query(input, &language.query, &tree, grammar, false)?;
+    let mut atoms = tree_sitter::apply_formatting_query(
+        input,
+        &language.queries.formatting,
+        &tree,
+        grammar,
+        false,
+    )?;
 
     // Various post-processing of whitespace
     atoms.post_process();
@@ -372,7 +383,7 @@ mod tests {
         let grammar = tree_sitter_json::language().into();
         let language = Language {
             name: "json".to_owned(),
-            query: TopiaryQueries::new(&grammar, query_content, None).unwrap(),
+            queries: TopiaryQueries::new(&grammar, query_content, None).unwrap(),
             grammar,
             indent: None,
         };
@@ -410,7 +421,7 @@ mod tests {
         let grammar = tree_sitter_json::language().into();
         let language = Language {
             name: "json".to_owned(),
-            query: TopiaryQueries::new(&grammar, &query_content, None).unwrap(),
+            queries: TopiaryQueries::new(&grammar, &query_content, None).unwrap(),
             grammar,
             indent: None,
         };

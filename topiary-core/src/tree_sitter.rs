@@ -44,7 +44,7 @@ pub struct TopiaryQuery {
 
 #[derive(Debug)]
 pub struct TopiaryQueries {
-    pub format: TopiaryQuery,
+    pub formatting: TopiaryQuery,
     pub injections: Option<TopiaryQuery>,
 }
 
@@ -101,14 +101,14 @@ impl TopiaryQueries {
         highlight_query_content: &str,
         injection_query_content: Option<&str>,
     ) -> FormatterResult<Self> {
-        let highlight = TopiaryQuery::new(grammar, highlight_query_content)?;
+        let formatting = TopiaryQuery::new(grammar, highlight_query_content)?;
 
         let injections = injection_query_content
             .map(|c| TopiaryQuery::new(grammar, c))
             .transpose()?;
 
         Ok(TopiaryQueries {
-            format: highlight,
+            formatting,
             injections,
         })
     }
@@ -221,9 +221,9 @@ impl<'a> Display for LocalQueryMatch<'a> {
 /// - The input exhaustivity check fails.
 /// - A found predicate could not be parsed or is malformed.
 /// - A unknown capture name was encountered in the query.
-pub fn apply_query(
+pub fn apply_formatting_query(
     input_content: &str,
-    query: &TopiaryQueries,
+    query: &TopiaryQuery,
     tree: &Tree,
     grammar: &topiary_tree_sitter_facade::Language,
     should_check_input_exhaustivity: bool,
@@ -234,9 +234,9 @@ pub fn apply_query(
     // Match queries
     let mut cursor = QueryCursor::new();
     let mut matches: Vec<LocalQueryMatch> = Vec::new();
-    let capture_names = query.format.query.capture_names();
+    let capture_names = query.query.capture_names();
 
-    for query_match in query.format.query.matches(&root, source, &mut cursor) {
+    for query_match in query.query.matches(&root, source, &mut cursor) {
         let local_captures: Vec<QueryCapture> = query_match.captures().collect();
 
         matches.push(LocalQueryMatch {
@@ -266,7 +266,7 @@ pub fn apply_query(
     // Only reallocate if we are actually going to use the vec
     #[cfg(not(target_arch = "wasm32"))]
     if log::log_enabled!(log::Level::Info) {
-        pattern_positions.resize(query.format.query.pattern_count(), None);
+        pattern_positions.resize(query.query.pattern_count(), None);
     }
 
     // If there are more than one capture per match, it generally means that we
@@ -288,7 +288,7 @@ pub fn apply_query(
 
             // Fetch from pattern_positions, otherwise insert
             let pos = pattern_positions[m.pattern_index as usize].unwrap_or_else(|| {
-                let pos = query.format.pattern_position(m.pattern_index as usize);
+                let pos = query.pattern_position(m.pattern_index as usize);
                 pattern_positions[m.pattern_index as usize] = Some(pos);
                 pos
             });
@@ -298,7 +298,7 @@ pub fn apply_query(
 
         let mut predicates = QueryPredicates::default();
 
-        for p in query.format.query.general_predicates(m.pattern_index) {
+        for p in query.query.general_predicates(m.pattern_index) {
             predicates = handle_predicate(&p, &predicates)?;
         }
         check_predicates(&predicates)?;
@@ -551,13 +551,13 @@ fn check_predicates(predicates: &QueryPredicates) -> FormatterResult<()> {
 /// then that pattern originally matched nothing in the input.
 fn check_input_exhaustivity(
     ref_match_count: usize,
-    original_query: &TopiaryQueries,
+    original_query: &TopiaryQuery,
     grammar: &topiary_tree_sitter_facade::Language,
     root: &Node,
     source: &[u8],
 ) -> FormatterResult<()> {
-    let pattern_count = original_query.format.query.pattern_count();
-    let query_content = &original_query.format.query_content;
+    let pattern_count = original_query.query.pattern_count();
+    let query_content = &original_query.query_content;
     // This particular test avoids a SIGSEGV error that occurs when trying
     // to count the matches of an empty query (see #481)
     if pattern_count == 1 {
@@ -593,7 +593,7 @@ fn check_input_exhaustivity(
 #[cfg(target_arch = "wasm32")]
 fn check_input_exhaustivity(
     _ref_match_count: usize,
-    _original_query: &TopiaryQueries,
+    _original_query: &TopiaryQuery,
     _grammar: &topiary_tree_sitter_facade::Language,
     _root: &Node,
     _source: &[u8],
