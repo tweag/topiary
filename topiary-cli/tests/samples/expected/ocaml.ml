@@ -1182,6 +1182,43 @@ let eval_tree ~addr ~source_path (tree : Syn.tree) =
   let jobs = Jobs.get () in
   { main; side; jobs }
 
+(* #660 dangling functions *)
+let foo x = fun y ->
+  zzzzzzzzzz
+
+let () =
+  foo @@ fun y ->
+  zzzzzzzzzz
+
+let () =
+  foo >>= fun y ->
+  zzzzzzzzzz
+
+let () =
+  foo x (fun y ->
+    zzzzzzzzzz
+  )
+
+let foo x = function
+  | y -> zzzzzzzzzz
+  | u -> vvvvvvvv
+
+let () =
+  foo x @@ function
+    | y -> zzzzzzzzzz
+    | u -> vvvvvvvv
+
+let () =
+  foo x >>= function
+    | y -> zzzzzzzzzz
+    | u -> vvvvvvvv
+
+let () =
+  foo x (function
+    | y -> zzzzzzzzzz
+    | u -> vvvvvvvvv
+  )
+
 (* #659 handling of the `;;` separator *)
 
 let bonjour () = "Bonjour"
