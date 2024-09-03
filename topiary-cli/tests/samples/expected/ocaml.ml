@@ -550,7 +550,7 @@ let add_three_lines x =
   res
 
 let add_as_fun_multiline = fun x ->
-    x
+  x
 
 let add_as_fun_one_line = fun x -> x
 
@@ -592,9 +592,9 @@ let is_some_some = function
   | _ -> false
 
 let my_const
-    : type a b. a: a -> b: b -> a
-  = fun ~a ~b ->
-    a
+  : type a b. a: a -> b: b -> a
+= fun ~a ~b ->
+  a
 
 let my_id ~value = value
 
@@ -642,7 +642,7 @@ let _ =
 
 let _ =
   let foo = fun x ->
-      x
+    x
   in
   foo
 
@@ -1015,8 +1015,8 @@ let h =
 (* Indentation of function cases in PPX syntax *)
 let x =
   [%expr function
-    | false -> 0.
-    | true -> 1.
+      | false -> 0.
+      | true -> 1.
   ]
 
 (* New line for structures in module definitions *)
