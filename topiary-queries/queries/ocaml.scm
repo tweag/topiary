@@ -1159,12 +1159,20 @@
 ;   (long_argument_3: int)
 ;   (long_argument_4: int) ->
 ;   ()
+(
+  (concat_operator)? @do_nothing
+  .
+  (fun_expression
+    .
+    "fun" @append_indent_start
+    (_) @append_indent_end
+    .
+  )
+)
 (fun_expression
   .
-  "fun" @append_indent_start @append_indent_start
+  "fun" @append_indent_start
   "->" @prepend_indent_end
-  (_) @append_indent_end
-  .
 )
 (fun_expression
   .
@@ -1328,12 +1336,15 @@
   right: (_) @append_indent_end
 )
 
-; After every concat_operator, we want to place a spaced_softline
+; After concat_operator, we want to place a spaced_softline, except when a function definition follows.
 (infix_expression
   operator: (concat_operator) @append_spaced_softline
+  .
+  (fun_expression)? @do_nothing
 )
 
-; Then, we want to indent the expression after a concat_operator (with the exception of concat_operator chains)
+; Then, we want to indent the expression after a concat_operator
+; (with the exception of concat_operator chains, and function definitions)
 ; Ideally like so:
 ;
 ; let two =
@@ -1345,14 +1356,19 @@
 ; let three =
 ;   raise @@
 ;     Exception
+;
+; let four =
+;   run @@ fun x ->
+;   something horrible onto x
 (_
   ; If our parent expression was also a concat_operator, do not indent (see above).
   (concat_operator)? @do_nothing
   (infix_expression
     operator: (concat_operator) @append_indent_start
-    right: (infix_expression
+    (infix_expression
       operator: (concat_operator)
     )? @do_nothing
+    (fun_expression)? @do_nothing
   ) @append_indent_end
 )
 
