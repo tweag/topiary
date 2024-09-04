@@ -1110,9 +1110,8 @@ let _ =
     baz
 
 let _ =
-  myBlockIntroducingFunction @@
-    fun x ->
-      something horrible onto x
+  myBlockIntroducingFunction @@ fun x ->
+  something horrible onto x
 
 (* #617: multi-line or_pattern in match case *)
 let _ =
@@ -1168,6 +1167,20 @@ let _ =
 
 (* #721: unbalanced spacing around parenthesized expressions *)
 let _ = (begin end)
+
+(* #718: indentations and newlines around final-argument continuations *)
+let eval_tree ~addr ~source_path (tree : Syn.tree) =
+  let fm = { T.empty_frontmatter with addr; source_path } in
+  Frontmatter.run ~init: fm @@ fun () ->
+  Emitted_trees.run ~init: [] @@ fun () ->
+  Jobs.run ~init: [] @@ fun () ->
+  Heap.run ~init: Env.empty @@ fun () ->
+  Lex_env.run ~env: Env.empty @@ fun () ->
+  Dyn_env.run ~env: Env.empty @@ fun () ->
+  let main = eval_tree_inner ~addr tree in
+  let side = Emitted_trees.get () in
+  let jobs = Jobs.get () in
+  { main; side; jobs }
 
 (* #659 handling of the `;;` separator *)
 
