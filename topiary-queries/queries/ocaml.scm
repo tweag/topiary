@@ -1159,6 +1159,9 @@
 ;   (long_argument_3: int)
 ;   (long_argument_4: int) ->
 ;   ()
+;
+; The particular interaction with "concat_operator" comes from
+; https://github.com/tweag/topiary/pull/723
 (
   (concat_operator)? @do_nothing
   .
@@ -1360,6 +1363,9 @@
 ; let four =
 ;   run @@ fun x ->
 ;   something horrible onto x
+;
+; The particular interaction with "fun_expression" comes from
+; https://github.com/tweag/topiary/pull/723
 (_
   ; If our parent expression was also a concat_operator, do not indent (see above).
   (concat_operator)? @do_nothing
