@@ -1096,9 +1096,33 @@
 )
 
 ; Make an indented block where a function/match starts in PPX syntax.
+; The special case about function expressions allows the following to be formatted
+; as such, instead of having a double indentation in the function:
+; let x =
+;   [%expr function
+;     | false -> 0.
+;     | true -> 1.
+;   ]
+;
+; This case has been introduced because of a double indentation in
+; https://github.com/tweag/topiary/pull/724
 (extension
+  .
   "[%" @append_indent_start
-  "]" @prepend_indent_end @prepend_empty_softline
+  (attribute_payload
+    (expression_item
+      [
+        (function_expression)
+        (fun_expression)
+      ]? @do_nothing
+    )?
+  )
+  "]" @prepend_indent_end
+  .
+)
+(extension
+  "]" @prepend_empty_softline
+  .
 )
 
 ; Indent and add softlines in multiline application expressions, such as

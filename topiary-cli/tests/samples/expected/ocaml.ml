@@ -1015,8 +1015,8 @@ let h =
 (* Indentation of function cases in PPX syntax *)
 let x =
   [%expr function
-      | false -> 0.
-      | true -> 1.
+    | false -> 0.
+    | true -> 1.
   ]
 
 (* New line for structures in module definitions *)
