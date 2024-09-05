@@ -79,8 +79,10 @@
 )
 
 ; Don't insert spaces before the following delimiters
+;
 ; NOTE This will destroy the space in a polymorphic record tail. For
 ; example: forall. { x: Number; a } -> {; a}
+;
 ; WARNING We don't include "." as it is very common for it to appear in
 ; string interpolation, for record field access, which will manifest the
 ; bug documented in Issue #395. The remaining delimiters in this
@@ -92,14 +94,61 @@
   ";"
 ] @prepend_antispace
 
-; Don't insert spaces immediately inside parentheses. In a multi-line
-; context, start an indentation block
-; WARNING Using parentheses in string interpolation will manifest the
-; bug documented in Issue #395
+; Parentheses
+;
+; We don't insert spaces immediately after (resp. before) an opening (resp.
+; closing) parenthesis.
+;
+; In a multi-line context, we handle indentation in the same way as for record
+; field definitions. If the content is already a form which will add its own new
+; line and indentation, we don't have to do anything (function definitions,
+; record literals, etc.). Otherwise, say for a long multi-line boolean
+; expression, we do add a new (empty soft)line and indent the content.
+;
+; We always put the closing parenthesis on a new line in a multi-line context,
+; because the last line of the content can end up with an arbitrarily deep
+; indentation. It's better to visually align the opening and closing
+; parentheses, in a way that doesn't depend on what's inside.
 (atom
   .
-  "(" @append_empty_softline @append_indent_start @append_antispace
-  ")" @prepend_antispace @prepend_indent_end @prepend_empty_softline
+  "(" @append_empty_softline @append_indent_start
+  (uni_term
+    .
+    [
+      ; There is scope for factoring these patterns with
+      ; embedded alternations. Keeping them separate is probably more
+      ; efficient to process and certainly easier to read.
+
+      ; Record literals
+      (infix_expr . (applicative . (record_operand . (atom . (uni_record)))))
+
+      ; Array literals
+      (infix_expr . (applicative . (record_operand . (atom . "["))))
+
+      ; Enum literals
+      (infix_expr . (applicative . (record_operand . (atom . (type_atom . "[|")))))
+
+      ; Parentheticals
+      (infix_expr . (applicative . (record_operand . (atom . "("))))
+
+      ; Function declarations
+      (fun_expr)
+
+      ; Match statements
+      (infix_expr . (applicative . (match_expr)))
+
+      ; Multi-line and symbolic strings
+      (infix_expr . (applicative . (record_operand . (atom . (str_chunks)))))
+    ]
+  )? @do_nothing
+  ")" @prepend_indent_end
+  .
+)
+
+(atom
+  .
+  "(" @append_antispace
+  ")" @prepend_antispace @prepend_empty_softline
   .
 )
 
@@ -327,27 +376,69 @@
   (pattern_fun) @append_space
 )
 
-; The applicative operator is a space, but in a multi-line context, we'd
-; like the operands to start on their own line, each indented.
+; Function application (and similar: type applications, enum variants, etc.)
+
+; The applicative operator is a space
+;
+; In in a multi-line context, we'd like the operands to start on their own line,
+; each indented.
+;
+; In the case of unary applications, we always lay out the function application
+; on one line (the argument might still span multiple lines, but the separation
+; between the function and the operand is a space), and we don't add
+; indentation. Doing otherwise would often add unncessary indentation when the
+; argument is e.g. a function, a record or an array literal, etc.
+
+; The multi-line character of an application depends on both the function and
+; each argument, so we crate a scope accordingly.
 (infix_expr
   (#scope_id! "applicative_chain")
   (applicative) @prepend_begin_scope
 ) @append_end_scope
 
+; In the the mutli-ary application case, we add a softline before each argument,
+; and we indent it.
+;
+; Note that this pattern won't match the very last argument of an applicative
+; chain (the last `t2` of the rule), which needs to be handled sperately.
 (
   (#scope_id! "applicative_chain")
   (applicative
-    (applicative) @append_spaced_scoped_softline
-    (comment)? @do_nothing
+    t1: (applicative
+      t1: (applicative)
+      t2: (_) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
+    )
+    t2: (_)
   )
 )
 
-; NOTE Unlike infix chains, applicatives bind to the left. So rather
-; than creating a single indent block for all operands, we have to
-; create one for each operand independently.
+; Missing case of the previous rule to indent the very last argument of a
+; multi-ary application
+(infix_expr
+  (#scope_id! "applicative_chain")
+  (applicative
+    t1: (applicative
+      t1: _
+      t2: _
+    )
+    t2: (_) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
+  )
+)
+
+; This adds a space before any argument of an application.
+;
+; In the multi-ary case, this space seems redundant, but it's not an issue as
+; Topiary will just absorb it in the scoped softline which will still result in
+; a softline.
+;
+; In the unary case, this is adding the required space between the function and
+; its argument. Put differently, this rule handles the unary application case,
+; and albeit it does also match multi-ary applications, it doesn't have any
+; additional effect in that case.
 (applicative
-  (applicative) @append_indent_start
-) @append_indent_end
+  t1: _
+  t2: (_) @prepend_space
+)
 
 ;; Patterns and match branches
 
