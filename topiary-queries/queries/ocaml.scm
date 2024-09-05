@@ -1096,9 +1096,33 @@
 )
 
 ; Make an indented block where a function/match starts in PPX syntax.
+; The special case about function expressions allows the following to be formatted
+; as such, instead of having a double indentation in the function:
+; let x =
+;   [%expr function
+;     | false -> 0.
+;     | true -> 1.
+;   ]
+;
+; This case has been introduced because of a double indentation in
+; https://github.com/tweag/topiary/pull/724
 (extension
+  .
   "[%" @append_indent_start
-  "]" @prepend_indent_end @prepend_empty_softline
+  (attribute_payload
+    (expression_item
+      [
+        (function_expression)
+        (fun_expression)
+      ]? @do_nothing
+    )?
+  )
+  "]" @prepend_indent_end
+  .
+)
+(extension
+  "]" @prepend_empty_softline
+  .
 )
 
 ; Indent and add softlines in multiline application expressions, such as
@@ -1108,16 +1132,43 @@
 ;     long_argument_2
 ;     long_argument_3
 ;     long_argument_4
+;
+; When the last argument is a (parenthesized) function application, end the scope
+; _before_ the application. This allows the following to be formatted as such:
+; let () =
+;   foo bar (fun x ->
+;     something horrible onto x
+;   )
 (application_expression
   .
-  (_) @append_indent_start
-  (_) @append_indent_end
+  (_) @prepend_begin_scope @append_indent_start
+  (#scope_id! "function_application")
+)
+(application_expression
+  (#scope_id! "function_application")
+  (_
+    [
+      (fun_expression)
+      (function_expression)
+    ]? @do_nothing
+  ) @append_end_scope @append_indent_end
   .
 )
 (application_expression
-  (_) @append_spaced_softline
+  (#scope_id! "function_application")
+  (_
+    [
+      (fun_expression)
+      (function_expression)
+    ]
+  ) @prepend_end_scope @prepend_indent_end
+  .
+)
+(application_expression
+  (_) @append_spaced_scoped_softline
   .
   (_)
+  (#scope_id! "function_application")
 )
 
 ; Indent and allow softlines in multiline function definitions, such as
@@ -1129,12 +1180,29 @@
 ;     : int
 ;   =
 ;   42
+;
+; Do not indent if a function expression is being bound:
+; the function itself will add the indentation, as in
+; let horrible = fun x ->
+;   something horrible onto x
 (let_binding
   .
-  (_) @append_indent_start @append_indent_start
-  "=" @prepend_indent_end
-  (_) @append_indent_end
+  (_) @append_indent_start
+  "="
+  (_
+    ; any node that isn't "fun_expression" or "function_expression"
+    .
+    [
+      "fun"
+      "function"
+    ]? @do_nothing
+  ) @append_indent_end
   .
+)
+(let_binding
+  .
+  (_) @append_indent_start
+  "=" @prepend_indent_end
 )
 (let_binding
   .
@@ -1163,7 +1231,10 @@
 ; The particular interaction with "concat_operator" comes from
 ; https://github.com/tweag/topiary/pull/723
 (
-  (concat_operator)? @do_nothing
+  [
+    (concat_operator)
+    (rel_operator)
+  ]? @do_nothing
   .
   (fun_expression
     .
@@ -1192,6 +1263,19 @@
   "->" @prepend_spaced_scoped_softline
   (#scope_id! "fun_expr_before_arrow")
 )
+(
+  [
+    (concat_operator)
+    (rel_operator)
+  ]? @do_nothing
+  .
+  (function_expression
+    .
+    "function" @append_indent_start
+    (_) @append_indent_end
+    .
+  )
+)
 
 ; Indent and allow softlines in tuples and local opens, such as
 ; let _ =
@@ -1200,10 +1284,21 @@
 ;     long_value_2,
 ;     long_value_3
 ;   )
+;
+; When the parenthesized expression contains a function, neither indent
+; nor add a softline after the "(".
 (parenthesized_expression
   .
   "(" @append_empty_softline @append_indent_start
-  ")" @prepend_indent_end @prepend_empty_softline
+  [
+    (fun_expression)
+    (function_expression)
+  ]? @do_nothing
+  ")" @prepend_indent_end
+  .
+)
+(parenthesized_expression
+  ")" @prepend_empty_softline
   .
 )
 (local_open_expression
@@ -1315,6 +1410,8 @@
   (#scope_id! "or_infix_expression")
 )
 
+; When a "rel_operator" (like ">>=") is followed by a function definition,
+; do not add a newline
 (
   (rel_operator)? @do_nothing
   .
@@ -1325,6 +1422,8 @@
 )
 (infix_expression
   (rel_operator) @prepend_spaced_scoped_softline
+  (fun_expression)? @do_nothing
+  (function_expression)? @do_nothing
   (#scope_id! "rel_infix_expression")
 )
 
@@ -1344,6 +1443,7 @@
   operator: (concat_operator) @append_spaced_softline
   .
   (fun_expression)? @do_nothing
+  (function_expression)? @do_nothing
 )
 
 ; Then, we want to indent the expression after a concat_operator
@@ -1367,12 +1467,25 @@
 ; The particular interaction with "fun_expression" comes from
 ; https://github.com/tweag/topiary/pull/723
 (_
-  ; If our parent expression was also a concat_operator, do not indent (see above).
+  ; If the parent expression also was a concat_operator, do not indent (see above).
   (concat_operator)? @do_nothing
   (infix_expression
     operator: (concat_operator) @append_indent_start
     (infix_expression
       operator: (concat_operator)
+    )? @do_nothing
+    (fun_expression)? @do_nothing
+  ) @append_indent_end
+)
+
+; The same holds for rel_operator
+(_
+  ; If the parent expression also was a rel_operator, do not indent (see above).
+  (rel_operator)? @do_nothing
+  (infix_expression
+    operator: (rel_operator) @append_indent_start
+    (infix_expression
+      operator: (rel_operator)
     )? @do_nothing
     (fun_expression)? @do_nothing
   ) @append_indent_end
