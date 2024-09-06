@@ -400,7 +400,7 @@
 ; and we indent it.
 ;
 ; Note that this pattern won't match the very last argument of an applicative
-; chain (the last `t2` of the rule), which needs to be handled sperately.
+; chain (the last `t2` of the rule), which needs to be handled separately.
 (
   (#scope_id! "applicative_chain")
   (applicative
