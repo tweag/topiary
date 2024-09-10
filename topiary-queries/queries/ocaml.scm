@@ -412,6 +412,7 @@
   [
     (constructor_name)
     (fun_expression)
+    (module_name)
     (parenthesized_expression)
     (value_name)
     (value_pattern)
