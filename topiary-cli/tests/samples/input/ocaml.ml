@@ -1151,6 +1151,13 @@ let () =
     | u -> vvvvvvvvv
   )
 
+(* #728 missing space in module function arguments *)
+let foo
+    (bar : int)
+    (module Baz : BAZTYPE)
+  =
+  Baz.foo bar
+
 (* #659 handling of the `;;` separator *)
 
 let bonjour () = "Bonjour"
