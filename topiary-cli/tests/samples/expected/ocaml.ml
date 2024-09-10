@@ -73,7 +73,7 @@ let create n =
   let n = if n < 1 then 1 else n in
   let n = if n > Sys.max_string_length then Sys.max_string_length else n in
   let s = Bytes.create n in
-  { buffer = s; position = 0; length = n; initial_buffer = s }
+  {buffer = s; position = 0; length = n; initial_buffer = s}
 
 let contents b = Bytes.sub_string b.buffer 0 b.position
 let to_bytes b = Bytes.sub b.buffer 0 b.position
@@ -510,7 +510,7 @@ end
 
 module My_types = struct
   type nonrec t = t
-  type my_rec = { my_bool: bool; }
+  type my_rec = {my_bool: bool;}
 end
 
 module type Printer = sig
@@ -576,7 +576,7 @@ let is_prime n =
   !no_divisor
 
 let unbox_rec = function
-  | Some My_types.{ my_bool } -> my_bool
+  | Some My_types.{my_bool} -> my_bool
   | _ -> false
 
 let unbox_bool = function
@@ -682,7 +682,7 @@ type a = int
 and b = float
 
 (* Messing around with quoted strings and curly brackets *)
-type string_record = { my_string: string; }
+type string_record = {my_string: string;}
 let quoted_string =
   {|Hello|}
 and quoted_string_multiline_with_id =
@@ -830,7 +830,7 @@ let x = function
     bar
 
 let _ =
-  foo <- { slug; };
+  foo <- {slug;};
   bar
 
 let _ = 12 [@deprecated "12 is deprecated, use 13 instead"]
@@ -995,7 +995,7 @@ let _ =
 type query = (string * string list) list
 type x = ('any Slug.t -> bool) -> float
 let id (type s) (x : s) : s = x
-type foo = { a: 'a. ('a, mandatory) arg -> 'a; }
+type foo = {a: 'a. ('a, mandatory) arg -> 'a;}
 type foo = (int, int) result
 
 (* types with constraints *)
@@ -1163,14 +1163,14 @@ let _ =
 (* #719: missing space for pattern matching of constructor holding record *)
 let _ =
   match foo with
-  | Bar { baz } -> qux
+  | Bar {baz} -> qux
 
 (* #721: unbalanced spacing around parenthesized expressions *)
 let _ = (begin end)
 
 (* #718: indentations and newlines around final-argument continuations *)
 let eval_tree ~addr ~source_path (tree : Syn.tree) =
-  let fm = { T.empty_frontmatter with addr; source_path } in
+  let fm = {T.empty_frontmatter with addr; source_path} in
   Frontmatter.run ~init: fm @@ fun () ->
   Emitted_trees.run ~init: [] @@ fun () ->
   Jobs.run ~init: [] @@ fun () ->
@@ -1180,7 +1180,7 @@ let eval_tree ~addr ~source_path (tree : Syn.tree) =
   let main = eval_tree_inner ~addr tree in
   let side = Emitted_trees.get () in
   let jobs = Jobs.get () in
-  { main; side; jobs }
+  {main; side; jobs}
 
 (* #660 dangling functions *)
 let foo x = fun y ->
@@ -1225,6 +1225,15 @@ let foo
     (module Baz : BAZTYPE)
   =
   Baz.foo bar
+
+(* #729 Spacing in single-line records *)
+let _ = [a; b; c]
+let _ = [|a; b; c|]
+let _ = {a; b; c}
+type x = [`Foo | `Bar]
+type x = [> `Foo | `Bar]
+type x = [< `Foo | `Bar]
+type x = {a: int; b: int; c: int}
 
 (* #659 handling of the `;;` separator *)
 

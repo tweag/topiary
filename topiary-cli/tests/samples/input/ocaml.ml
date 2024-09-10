@@ -1158,6 +1158,15 @@ let foo
   =
   Baz.foo bar
 
+(* #729 Spacing in single-line records *)
+let _ = [a; b; c]
+let _ = [|a; b; c|]
+let _ = { a; b; c }
+type x = [`Foo | `Bar]
+type x = [> `Foo | `Bar]
+type x = [< `Foo | `Bar]
+type x = { a: int; b: int; c: int }
+
 (* #659 handling of the `;;` separator *)
 
 let bonjour () = "Bonjour"
