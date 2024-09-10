@@ -121,8 +121,7 @@ mod native {
 
         #[inline]
         pub fn set_language(&mut self, language: &Language) -> Result<(), LanguageError> {
-            let language = language.inner;
-            self.inner.set_language(language).map_err(Into::into)
+            self.inner.set_language(&language.inner).map_err(Into::into)
         }
 
         #[inline]

@@ -12,7 +12,7 @@ mod native {
     impl Query {
         #[inline]
         pub fn new(language: &Language, source: &str) -> Result<Self, QueryError> {
-            let inner = tree_sitter::Query::new(language.inner, source)?;
+            let inner = tree_sitter::Query::new(&language.inner, source)?;
             Ok(Self { inner })
         }
 
@@ -30,9 +30,8 @@ mod native {
         }
 
         #[inline]
-        pub fn capture_names(&self) -> Vec<String> {
-            let names: Vec<_> = self.inner.capture_names().to_vec();
-            names
+        pub fn capture_names(&self) -> Vec<&str> {
+            self.inner.capture_names().to_vec()
         }
 
         #[inline]
@@ -126,7 +125,7 @@ mod wasm {
         }
 
         #[inline]
-        pub fn capture_names(&self) -> Vec<String> {
+        pub fn capture_names(&self) -> Vec<&str> {
             // The Wasm code does not use this when looking up
             // QueryCapture::name, the way the native code needs to.
             vec![]

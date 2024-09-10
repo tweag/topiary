@@ -229,7 +229,7 @@ pub fn apply_query(
 
     // Find the ids of all tree-sitter nodes that were identified as a leaf
     // We want to avoid recursing into them in the collect_leafs function.
-    let specified_leaf_nodes: HashSet<usize> = collect_leaf_ids(&matches, &capture_names);
+    let specified_leaf_nodes: HashSet<usize> = collect_leaf_ids(&matches, capture_names.clone());
 
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
     let mut atoms = AtomCollection::collect_leafs(&root, source, specified_leaf_nodes)?;
@@ -283,14 +283,13 @@ pub fn apply_query(
         // If any capture is a do_nothing, then do nothing.
         if m.captures
             .iter()
-            .map(|c| c.name(&capture_names))
-            .any(|name| name == "do_nothing")
+            .any(|c| c.name(capture_names.as_slice()) == "do_nothing")
         {
             continue;
         }
 
         for c in m.captures {
-            let name = c.name(&capture_names);
+            let name = c.name(capture_names.as_slice());
             atoms.resolve_capture(&name, &c.node(), &predicates)?;
         }
     }
@@ -354,12 +353,12 @@ fn check_for_error_nodes(node: &Node) -> FormatterResult<()> {
 ///
 /// This function takes a slice of `LocalQueryMatch` and a slice of capture names,
 /// and returns a `HashSet` of node IDs that are matched by the "leaf" capture name.
-fn collect_leaf_ids(matches: &[LocalQueryMatch], capture_names: &[String]) -> HashSet<usize> {
+fn collect_leaf_ids(matches: &[LocalQueryMatch], capture_names: Vec<&str>) -> HashSet<usize> {
     let mut ids = HashSet::new();
 
     for m in matches {
         for c in &m.captures {
-            if c.name(capture_names) == "leaf" {
+            if c.name(capture_names.as_slice()) == "leaf" {
                 ids.insert(c.node().id());
             }
         }

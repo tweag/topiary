@@ -53,6 +53,7 @@ This name should be decided amongst the team before the release.
 ### Changed
 - [#704](https://github.com/tweag/topiary/pull/704) Refactors our postprocessing code to be more versatile.
 - [#711](https://github.com/tweag/topiary/pull/711) Feature gate all grammars, with supported and contributed languages built by default.
+- [#716](https://github.com/tweag/topiary/pull/716) Dynamicly fetch, compile, and load language grammars. Topiary now no longer ships with statically linked grammars.
 - [#732](https://github.com/tweag/topiary/pull/732) Change how function application and parenthesized expressions are treated in Nickel to reduce the overall noise and indentation
 
 ## v0.4.0 - Exquisite Elm - 2024-05-15
