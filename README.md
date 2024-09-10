@@ -78,10 +78,8 @@ Topiary has been created with the following goals in mind:
 ## Language Support
 <!-- Update this section as necessary on new developments/releases -->
 
-[For now][topiary-issue4], the Tree-sitter grammars for the languages
-that Topiary targets are statically linked. The formatting styles for
-these languages come in two levels of maturity: supported and
-experimental.
+The formatting styles for these languages come in two levels of maturity:
+supported and experimental.
 
 #### Supported
 
@@ -1353,7 +1351,6 @@ of choice open in another.
 [rustfmt]: https://rust-lang.github.io/rustfmt
 [shfmt]: https://github.com/mvdan/sh
 [toml]: https://toml.io
-[topiary-issue4]: https://github.com/tweag/topiary/issues/4
 [topiary-playground]: https://topiary.tweag.io/playground
 [topiary-website]: https://topiary.tweag.io
 [tree-sitter-parsers]: https://tree-sitter.github.io/tree-sitter/#available-parsers
