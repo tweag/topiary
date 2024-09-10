@@ -19,6 +19,8 @@ pub enum TopiaryConfigError {
     LibLoading(libloading::Error),
     #[cfg(not(target_arch = "wasm32"))]
     Git(git2::Error),
+    #[cfg(not(target_arch = "wasm32"))]
+    Compilation(String),
 }
 
 impl fmt::Display for TopiaryConfigError {
@@ -39,6 +41,8 @@ impl fmt::Display for TopiaryConfigError {
             TopiaryConfigError::LibLoading(e) => write!(f, "Libloading error: {:?}", e),
             #[cfg(not(target_arch = "wasm32"))]
             TopiaryConfigError::Git(e) => write!(f, "Git error: {:?}", e),
+            #[cfg(not(target_arch = "wasm32"))]
+            TopiaryConfigError::Compilation(e) => write!(f, "Compilation error: {:?},", e),
         }
     }
 }

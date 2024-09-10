@@ -92,24 +92,34 @@ impl Language {
     // NOTE: Much of the following code is heavily inspired by the `helix-loader` crate with license MPL-2.0.
     // To be safe, assume any and all of the following code is MLP-2.0 and copyrighted to the Helix project.
     pub fn grammar(&self) -> TopiaryConfigResult<topiary_tree_sitter_facade::Language> {
+        // Create cache dir, e.g. `~/.cache/topiary/
         let mut library_path = crate::project_dirs().cache_dir().to_path_buf();
         if !library_path.exists() {
             std::fs::create_dir(&library_path)?;
         }
 
+        // Create the language specific directory. This directory is not
+        // necessary (the rev should be identifying enough), but allows
+        // convenient removing of entire languages.
         library_path.push(self.name.clone());
 
         if !library_path.exists() {
             std::fs::create_dir(&library_path)?;
         }
 
+        // Set the output path as the revision of the grammar
         library_path.push(self.config.grammar.rev.clone());
-        // TODO: Windows?
+
+        // TODO: Windows Support
+        // On both MacOS and Linux, .so is a valid file extension for shared objects.
         library_path.set_extension("so");
 
+        // Ensure the comile exists
         if !library_path.is_file() {
             self.fetch_and_compile(library_path.clone())?;
         }
+
+        assert!(library_path.is_file());
 
         use libloading::{Library, Symbol};
 
@@ -152,21 +162,30 @@ impl Language {
 
     #[cfg(not(target_arch = "wasm32"))]
     fn fetch_and_compile(&self, library_path: PathBuf) -> TopiaryConfigResult<()> {
+        // Create a temporary directory to clone the repository to. We could
+        // cached the repositories, but the additional disk space is probably
+        // not worth the benefits gained by caching. The tempdir is deleted
+        // when dropped
         let tmp_dir = tempdir()?;
 
+        // Clone the repository and checkout the configured revision
         let repo = Repository::clone(&self.config.grammar.git, &tmp_dir)?;
         repo.set_head_detached(Oid::from_str(&self.config.grammar.rev)?)?;
 
         let path = match self.config.grammar.subdir.clone() {
+            // Some grammars are in a subdirectory, go there
             Some(subdir) => tmp_dir.path().join(subdir),
             None => tmp_dir.path().to_owned(),
         }
+        // parser.c and potenial scanners are always in src/
         .join("src");
 
         self.build_tree_sitter_library(&path, library_path)
     }
 
     #[cfg(not(target_arch = "wasm32"))]
+    // NOTE: Much of the following code is heavily inspired by the `helix-loader` crate with license MPL-2.0.
+    // To be safe, assume any and all of the following code is MLP-2.0 and copyrighted to the Helix project.
     fn build_tree_sitter_library(
         &self,
         src_path: &PathBuf,
@@ -234,8 +253,10 @@ impl Language {
                     .arg(scanner_path);
                 let output = cpp_command.output()?;
                 if !output.status.success() {
-                    eprintln!("{:#?}, {:#?}", output.stdout, output.stderr);
-                    todo!("Return error");
+                    return Err(TopiaryConfigError::Compilation(format!(
+                        "{:#?}, {:#?}",
+                        output.stdout, output.stderr
+                    )));
                 }
 
                 command.arg(&object_file);
@@ -254,12 +275,11 @@ impl Language {
         let output = command.output()?;
 
         if !output.status.success() {
-            eprintln!(
+            return Err(TopiaryConfigError::Compilation(format!(
                 "{:#?}, {:#?}",
                 String::from_utf8_lossy(&output.stdout),
                 String::from_utf8_lossy(&output.stderr),
-            );
-            todo!("{}", String::from_utf8_lossy(&output.stderr));
+            )));
         }
 
         Ok(())
