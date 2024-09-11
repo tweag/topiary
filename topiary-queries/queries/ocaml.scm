@@ -214,7 +214,6 @@
     "|"
     "->"
     "<-"
-    "{"
     ":"
     ";"
     "+="
@@ -412,6 +411,7 @@
   [
     (constructor_name)
     (fun_expression)
+    (module_name)
     (parenthesized_expression)
     (value_name)
     (value_pattern)
@@ -447,7 +447,6 @@
     "struct"
     "then"
     "with"
-    "{"
     ";"
   ] @append_spaced_softline
   .
@@ -467,7 +466,6 @@
     "struct"
     "then"
     "with"
-    "{"
     ";"
   ]
   .
@@ -527,11 +525,11 @@
   (item_attribute)
   "*"
   "|"
-  "}"
 ] @prepend_spaced_softline
 
 [
   (match_expression)
+  "}"
 ] @prepend_empty_softline
 
 ; Softline before the first match case
@@ -784,7 +782,7 @@
 )
 
 (record_declaration
-  (field_declaration) @prepend_spaced_softline
+  (field_declaration) @prepend_empty_softline
 )
 
 ; Allow multi-line attributes after field declaratioms, such as:
@@ -835,7 +833,7 @@
 )
 
 (record_expression
-  (field_expression) @prepend_spaced_softline
+  (field_expression) @prepend_empty_softline
 )
 
 (record_expression
@@ -1624,6 +1622,23 @@
   "<-" @append_spaced_softline @append_indent_start
 ) @append_indent_end
 
+; Antispaces for brackets and parentheses
+(
+  [
+    "("
+    "["
+    "[|"
+    "{"
+  ] @append_antispace
+)
+(
+  [
+    ")"
+    "]"
+    "|]"
+    "}"
+  ] @prepend_antispace
+)
 ; Input softlines before and after all comments. This means that the input
 ; decides if a comment should have line breaks before or after. But don't put a
 ; softline directly in front of commas or semicolons.
