@@ -2181,8 +2181,10 @@ module Tx_rollup_commitment : sig
   val check_message_result :
     context ->
     Compact.t ->
-    [`Hash of Tx_rollup_message_result_hash.t
-    | `Result of Tx_rollup_message_result.t] ->
+    [
+      | `Hash of Tx_rollup_message_result_hash.t
+      | `Result of Tx_rollup_message_result.t
+    ] ->
     path: Merkle.path ->
     index: int ->
     context tzresult
@@ -2344,8 +2346,10 @@ module Tx_rollup_errors : sig
       {
         provided: Tx_rollup_message_result_hash.t;
         expected:
-        [`Valid_path of Tx_rollup_commitment.Merkle.h * int
-        | `Hash of Tx_rollup_message_result_hash.t];
+        [
+          | `Valid_path of Tx_rollup_commitment.Merkle.h * int
+          | `Hash of Tx_rollup_message_result_hash.t
+        ];
       }
     | Proof_undecodable
     | Proof_failed_to_reject
@@ -5347,34 +5351,40 @@ end
 
 (** This module re-exports definitions from {!Token}. *)
 module Token : sig
-  type container = [`Contract of Contract.t
-  | `Collected_commitments of Blinded_public_key_hash.t
-  | `Delegate_balance of public_key_hash
-  | `Frozen_deposits of public_key_hash
-  | `Block_fees
-  | `Frozen_bonds of Contract.t * Bond_id.t]
+  type container = [
+    | `Contract of Contract.t
+    | `Collected_commitments of Blinded_public_key_hash.t
+    | `Delegate_balance of public_key_hash
+    | `Frozen_deposits of public_key_hash
+    | `Block_fees
+    | `Frozen_bonds of Contract.t * Bond_id.t
+  ]
 
-  type source = [`Invoice
-  | `Bootstrap
-  | `Initial_commitments
-  | `Revelation_rewards
-  | `Double_signing_evidence_rewards
-  | `Endorsing_rewards
-  | `Baking_rewards
-  | `Baking_bonuses
-  | `Minted
-  | `Liquidity_baking_subsidies
-  | `Tx_rollup_rejection_rewards
-  | `Sc_rollup_refutation_rewards
-  | container]
+  type source = [
+    | `Invoice
+    | `Bootstrap
+    | `Initial_commitments
+    | `Revelation_rewards
+    | `Double_signing_evidence_rewards
+    | `Endorsing_rewards
+    | `Baking_rewards
+    | `Baking_bonuses
+    | `Minted
+    | `Liquidity_baking_subsidies
+    | `Tx_rollup_rejection_rewards
+    | `Sc_rollup_refutation_rewards
+    | container
+  ]
 
-  type sink = [`Storage_fees
-  | `Double_signing_punishments
-  | `Lost_endorsing_rewards of public_key_hash * bool * bool
-  | `Burned
-  | `Tx_rollup_rejection_punishments
-  | `Sc_rollup_refutation_punishments
-  | container]
+  type sink = [
+    | `Storage_fees
+    | `Double_signing_punishments
+    | `Lost_endorsing_rewards of public_key_hash * bool * bool
+    | `Burned
+    | `Tx_rollup_rejection_punishments
+    | `Sc_rollup_refutation_punishments
+    | container
+  ]
 
   val allocated : context -> container -> (context * bool) tzresult Lwt.t
 

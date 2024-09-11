@@ -1184,3 +1184,30 @@ let topiary _x = "Topiary"
 
 print_string (topiary 27);
 print_endline "!"
+
+(* #730 consistency of opening brackets dangling *)
+let foo = [|
+  1;
+  2;
+  3;
+|]
+let foo = [
+  1;
+  2;
+  3;
+]
+let foo = {
+  a = 1;
+  b = 2;
+  c = 3;
+}
+type bar = [
+  | `A
+  | `B
+  | `C
+]
+type bar = {
+  a: int;
+  b: int;
+  c: int;
+}
