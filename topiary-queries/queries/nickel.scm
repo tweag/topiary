@@ -295,6 +295,14 @@
 ;
 ;   let [rec] IDENT = EXPR in EXPR
 ;
+; or
+;
+;   let [rec]
+;     IDENT = EXPR,
+;     IDENT = EXPR,
+;   in
+;   EXPR
+;
 ; The formatting for the bound expression is handled by the above rules,
 ; which also apply to record field values. The "in" should appear on a
 ; new line, if the entire let expression is multi-line. The result
@@ -303,12 +311,41 @@
 ; expression, to avoid long diagonals in a series of let expressions
 ; (which is idiomatic).
 
+; A let block containing multiple bindings. If this is multiline, the first
+; binding should appear on a new line, and the bindings should be indented.
 (let_expr
   (#scope_id! "let_result")
   (let_in_block
+    "let"
+    .
+    ; Prepend before the first binding instead of appending after the "let",
+    ; so that in the case of a "let rec" the line break goes after the "rec".
+    (let_binding) @prepend_spaced_softline @prepend_indent_start
+    (let_binding)
+    "in" @prepend_indent_end @prepend_begin_scope @prepend_spaced_softline
+  )
+  (term) @append_end_scope
+)
+
+; A let with a single binding. The binding should be on the same line as the "let".
+(let_expr
+  (#scope_id! "let_result")
+  (let_in_block
+    "let"
+    .
+    (let_binding)
+    .
     "in" @prepend_begin_scope @prepend_spaced_softline
   )
   (term) @append_end_scope
+)
+
+; When binding multiple values in a let block, allow new lines between the bindings.
+(let_expr
+  (#scope_id! "let_result")
+  (let_in_block
+    ("," @append_spaced_softline)
+  )
 )
 
 (let_expr
