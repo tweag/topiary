@@ -565,6 +565,25 @@
   (#multi_line_only!)
 )
 
+; Same as above, with polymorphic variant type
+(polymorphic_variant_type
+  "["
+  .
+  "|" @delete
+  .
+  (tag_specification)
+  (#single_line_only!)
+)
+(polymorphic_variant_type
+  "["
+  .
+  "|"? @do_nothing
+  .
+  (tag_specification) @prepend_delimiter
+  (#delimiter! "| ") ; sic
+  (#multi_line_only!)
+)
+
 ; Multi-line definitions must have a linebreak after "=" and before "in":
 ;
 ; let a =
