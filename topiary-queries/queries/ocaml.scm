@@ -1683,6 +1683,37 @@
     "}"
   ] @prepend_antispace
 )
+
+; Formatting typed patterns in function arguments, e.g.
+; let foo
+;   (bar :
+;     int ->
+;     string ->
+;     unit
+;   )
+;   ~(baz :
+;     int ->
+;     string ->
+;     unit
+;   )
+;   =
+;   bar baz
+(typed_pattern
+  .
+  "("
+  ":" @append_spaced_softline @append_indent_start
+  ")" @prepend_indent_end @prepend_empty_softline
+  .
+)
+(parameter
+  "~"
+  .
+  "("
+  ":" @append_spaced_softline @append_indent_start
+  ")" @prepend_indent_end @prepend_empty_softline
+  .
+)
+
 ; Input softlines before and after all comments. This means that the input
 ; decides if a comment should have line breaks before or after. But don't put a
 ; softline directly in front of commas or semicolons.
