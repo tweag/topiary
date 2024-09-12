@@ -1210,6 +1210,21 @@ let () =
     | u -> vvvvvvvvv
   )
 
+(* #727 proper formatting of multi-lined typed function argument *)
+let foo
+    (bar :
+      int ->
+      string ->
+      unit
+    )
+    ~(baz :
+      int ->
+      string ->
+      unit
+    )
+  =
+  bar baz
+
 (* #728 missing space in module function arguments *)
 let foo
     (bar : int)
