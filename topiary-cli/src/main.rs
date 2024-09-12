@@ -143,6 +143,10 @@ async fn run() -> CLIResult<()> {
             print!("{:#?}", config);
         }
 
+        Commands::Prefetch => {
+            config.prefetch_languages()?;
+        }
+
         Commands::Completion { shell } => {
             // The CLI parser fails if no shell is provided/detected, so it's safe to unwrap here
             cli::completion(shell.unwrap());

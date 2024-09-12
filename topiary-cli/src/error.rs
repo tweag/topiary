@@ -1,5 +1,5 @@
 use std::{error, fmt, io, path::PathBuf, process::ExitCode, result};
-use topiary_config::error::TopiaryConfigError;
+use topiary_config::error::{TopiaryConfigError, TopiaryConfigFetchingError};
 use topiary_core::FormatterError;
 
 /// A convenience wrapper around `std::result::Result<T, TopiaryError>`.
@@ -109,6 +109,12 @@ impl From<FormatterError> for TopiaryError {
 impl From<TopiaryConfigError> for TopiaryError {
     fn from(e: TopiaryConfigError) -> Self {
         Self::Config(e)
+    }
+}
+
+impl From<TopiaryConfigFetchingError> for TopiaryError {
+    fn from(e: TopiaryConfigFetchingError) -> Self {
+        Self::Config(TopiaryConfigError::Fetching(e))
     }
 }
 

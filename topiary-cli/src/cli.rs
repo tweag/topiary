@@ -140,6 +140,10 @@ pub enum Commands {
     #[command(alias = "cfg", display_order = 3)]
     Config,
 
+    /// Prefetch all languages in the configuration
+    #[command(display_order = 4)]
+    Prefetch,
+
     /// Generate shell completion script
     #[command(display_order = 100)]
     Completion {
@@ -169,6 +173,11 @@ fn traverse_fs(files: &mut Vec<PathBuf>) -> CLIResult<()> {
 /// Parse CLI arguments and normalise them for the caller
 pub fn get_args() -> CLIResult<Cli> {
     let mut args = Cli::parse();
+
+    // When doing prefetching, we should always output at at least verbosity level two
+    if matches!(args.command, Commands::Prefetch) && args.global.verbose < 2 {
+        args.global.verbose = 2;
+    }
 
     // This is the earliest point that we can initialise the logger, from the --verbose flags,
     // before any fallible operations have started

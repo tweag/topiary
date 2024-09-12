@@ -17,6 +17,7 @@ directories.workspace = true
 itertools.workspace = true
 log.workspace = true
 nickel-lang-core.workspace = true
+rayon = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"] }
 tempfile.workspace = true
 toml.workspace = true
@@ -24,15 +25,6 @@ tree-sitter.workspace = true
 
 topiary-tree-sitter-facade.workspace = true
 topiary-web-tree-sitter-sys.workspace = true
-# tree-sitter-json = { workspace = true, optional = true }
-# tree-sitter-rust = { workspace = true, optional = true }
-# tree-sitter-toml = { workspace = true, optional = true }
-# tree-sitter-bash = { workspace = true, optional = true }
-# tree-sitter-css = { workspace = true, optional = true }
-# tree-sitter-nickel = { workspace = true, optional = true }
-# tree-sitter-query = { workspace = true, optional = true }
-# tree-sitter-ocaml = { workspace = true, optional = true }
-# tree-sitter-ocamllex = { workspace = true, optional = true }
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
 clap = { workspace = true, features = ["derive"] }
@@ -41,6 +33,12 @@ git2.workspace = true
 libloading.workspace = true
 
 [features]
+default = [ "parallel" ]
+
+# Enabling the `parallel` feature enables parallel computation where possible.
+# At the moment, this is only in grammar prefetching
+parallel = [ "dep:rayon" ]
+
 bash = []
 css = []
 json = []
