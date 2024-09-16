@@ -92,19 +92,17 @@ impl Language {
     // NOTE: Much of the following code is heavily inspired by the `helix-loader` crate with license MPL-2.0.
     // To be safe, assume any and all of the following code is MLP-2.0 and copyrighted to the Helix project.
     pub fn grammar(&self) -> TopiaryConfigResult<topiary_tree_sitter_facade::Language> {
-        // Create cache dir, e.g. `~/.cache/topiary/
+        // Locate cache dir, e.g. `~/.cache/topiary/
         let mut library_path = crate::project_dirs().cache_dir().to_path_buf();
-        if !library_path.exists() {
-            std::fs::create_dir(&library_path)?;
-        }
 
         // Create the language specific directory. This directory is not
         // necessary (the rev should be identifying enough), but allows
         // convenient removing of entire languages.
         library_path.push(self.name.clone());
 
+        // Ensure path exists
         if !library_path.exists() {
-            std::fs::create_dir(&library_path)?;
+            std::fs::create_dir_all(&library_path)?;
         }
 
         // Set the output path as the revision of the grammar
