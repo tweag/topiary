@@ -48,7 +48,8 @@ This name should be decided amongst the team before the release.
 - [#705](https://github.com/tweag/topiary/pull/705) Added support for Nickel 1.7 extended pattern formatting
 
 ### Fixed
-- [#720](https://github.com/tweag/topiary/pull/720) [#722](https://github.com/tweag/topiary/pull/722) [#723](https://github.com/tweag/topiary/pull/723) [#724](https://github.com/tweag/topiary/pull/724) [#735](https://github.com/tweag/topiary/pull/735) Various OCaml improvements
+- [#720](https://github.com/tweag/topiary/pull/720) [#722](https://github.com/tweag/topiary/pull/722) [#723](https://github.com/tweag/topiary/pull/723) [#724](https://github.com/tweag/topiary/pull/724) [#735](https://github.com/tweag/topiary/pull/735)
+[#738](https://github.com/tweag/topiary/pull/738) Various OCaml improvements
 
 ### Changed
 - [#704](https://github.com/tweag/topiary/pull/704) Refactors our postprocessing code to be more versatile.

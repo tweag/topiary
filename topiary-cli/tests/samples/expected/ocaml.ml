@@ -620,25 +620,22 @@ let large_const =
     ->
     val
 
-let [a; _; _] =
-  [
-    1;
-    2;
-    3
-  ]
+let [a; _; _] = [
+  1;
+  2;
+  3
+]
 
-let [|a; _; _|] =
-  [|
-    1;
-    2;
-    3
-  |]
+let [|a; _; _|] = [|
+  1;
+  2;
+  3
+|]
 
-let _ =
-  (
-    let x = 42 in
-    x
-  )
+let _ = (
+  let x = 42 in
+  x
+)
 
 let _ =
   let foo = fun x ->
@@ -690,10 +687,9 @@ and quoted_string_multiline_with_id =
 World
 {|!|}
 |external}
-let _ =
-  {
-    my_string = quoted_string ^ quoted_string_multiline_with_id
-  }
+let _ = {
+  my_string = quoted_string ^ quoted_string_multiline_with_id
+}
 
 (* Tags in pattern matching *)
 type my_box = [`Foo of int | `Bar of int]
@@ -850,12 +846,11 @@ type t = {
   (** Boolean flags. *)
 }
 
-let _ =
-  {
-    verbose = 0;
-    loggers = "foo";
-    bflags = StrMap.empty
-  }
+let _ = {
+  verbose = 0;
+  loggers = "foo";
+  bflags = StrMap.empty
+}
 
 type t = {
   foo: bool; [@default false]
@@ -896,13 +891,12 @@ type message = {
   payload: bytes;
 }
 
-let _ =
-  {
-    bar = 0.0;
-    foo = True
-      [@some tag]
-      [@some other_tag]
-  }
+let _ = {
+  bar = 0.0;
+  foo = True
+    [@some tag]
+    [@some other_tag]
+}
 
 type controller =
   | C : Slug.t -> controller
@@ -914,22 +908,20 @@ let _ =
 let foo : #x y z = bar
 
 (* Playing with nested structures *)
-let _ =
-  (
-    1,
-    2,
-    3,
-    4
-  )
+let _ = (
+  1,
+  2,
+  3,
+  4
+)
 
-let _ =
-  (
-    1,
-    2,
-    (3, 4),
-    5,
-    6
-  )
+let _ = (
+  1,
+  2,
+  (3, 4),
+  5,
+  6
+)
 
 let x =
   foo
@@ -943,10 +935,9 @@ let x =
   bar;
   bar
 
-let _ =
-  {
-    foo = let bar = baz in bar
-  }
+let _ = {
+  foo = let bar = baz in bar
+}
 
 (* #618: spacing/softlines in local opens *)
 let _ =
@@ -1252,3 +1243,30 @@ let topiary _x = "Topiary"
 
 print_string (topiary 27);
 print_endline "!"
+
+(* #730 consistency of opening brackets dangling *)
+let foo = [|
+  1;
+  2;
+  3;
+|]
+let foo = [
+  1;
+  2;
+  3;
+]
+let foo = {
+  a = 1;
+  b = 2;
+  c = 3;
+}
+type bar = [
+  | `A
+  | `B
+  | `C
+]
+type bar = {
+  a: int;
+  b: int;
+  c: int;
+}

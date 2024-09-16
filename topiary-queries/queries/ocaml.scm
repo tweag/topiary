@@ -565,6 +565,25 @@
   (#multi_line_only!)
 )
 
+; Same as above, with polymorphic variant type
+(polymorphic_variant_type
+  "["
+  .
+  "|" @delete
+  .
+  (tag_specification)
+  (#single_line_only!)
+)
+(polymorphic_variant_type
+  "["
+  .
+  "|"? @do_nothing
+  .
+  (tag_specification) @prepend_delimiter
+  (#delimiter! "| ") ; sic
+  (#multi_line_only!)
+)
+
 ; Multi-line definitions must have a linebreak after "=" and before "in":
 ;
 ; let a =
@@ -596,6 +615,10 @@
   [
     (function_expression)
     (fun_expression)
+    (list_expression)
+    (record_expression)
+    (parenthesized_expression)
+    (array_expression)
   ]* @do_nothing
 )
 
@@ -696,7 +719,6 @@
     (let_expression)
     (object_expression)
     (product_expression)
-    (record_expression)
     (sequence_expression)
     (set_expression)
     (typed_expression)
@@ -1188,13 +1210,28 @@
   (_) @append_indent_start
   "="
   (_
-    ; any node that isn't "fun_expression" or "function_expression"
+    ; any node that doesn't add its own indentation
     .
     [
-      "fun"
-      "function"
+      "fun" ; fun_expression
+      "function" ; function_expression
+      "[" ; list_expression
+      "[|" ; array_expression
+      "{" ; record_expression. Unfortunately this also captures quoted strings
+      "(" ; parenthesized_expression. Unfortunately this also captures unit
     ]? @do_nothing
   ) @append_indent_end
+  .
+)
+; Special case to still indent quoted strings and unit, despite the rule above
+(let_binding
+  .
+  (_) @append_indent_start
+  "="
+  [
+    (quoted_string)
+    (unit)
+  ] @append_indent_end
   .
 )
 (let_binding
@@ -1550,6 +1587,13 @@
 )
 
 (list_pattern
+  .
+  "[" @append_indent_start @append_empty_softline
+  "]" @prepend_indent_end @prepend_empty_softline
+  .
+)
+
+(polymorphic_variant_type
   .
   "[" @append_indent_start @append_empty_softline
   "]" @prepend_indent_end @prepend_empty_softline
