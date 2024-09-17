@@ -318,7 +318,7 @@
 
 ;; Annotations
 
-; Start an indentation block from the start of the annotations to the
+; An annotation changes Start an indentation block from the start of the annotations to the
 ; end of the enclosing node
 (_
   (annot) @prepend_indent_start
@@ -336,20 +336,43 @@
   (#scope_id! "annotations")
   (_) @append_begin_scope
   .
-  (annot) @append_end_scope
+  (annot)
+  .
+  ; We include a potential following `=` sign here, just so that a query below
+  ; can add a spaced softline before it only in multi-line context. The goal is
+  ; to format a packed representation like:
+  ;
+  ; let foo | Number = [
+  ;   1,
+  ;   2,
+  ; ]
+  ; in foo
+  ;
+  ; But format a more "multi-line" version as:
+  ;
+  ; let foo
+  ;   | Number
+  ;   = [
+  ;     1,
+  ;     2,
+  ;    ]
+  ; in foo
+  "="? @append_end_scope
 )
 
-; Put each annotation -- and the equals sign, if it follows annotations
-; -- on a new line, in a multi-line context.
+; Put each annotation on a new line, in a multi-line context.
 (annot
   (#scope_id! "annotations")
   (annot_atom) @prepend_spaced_scoped_softline
 )
 
+; Add a new line before the last annotation and the following equal sign, if any,
+; in a multi-line context.
 (
-  (annot)
+  (#scope_id! "annotations")
+  (annot) @append_spaced_scoped_softline
   .
-  "=" @prepend_spaced_softline
+  "="
 )
 
 ; Break a multi-line polymorphic type annotation after the type
@@ -365,7 +388,7 @@
 (fun_expr
   (#scope_id! "function_definition")
   "=>" @prepend_begin_scope @append_indent_start
-) @append_indent_end @append_end_scope
+) @acoppend_indent_end @append_end_scope
 
 (fun_expr
   (#scope_id! "function_definition")
