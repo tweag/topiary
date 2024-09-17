@@ -338,9 +338,9 @@
   .
   (annot)
   .
-  ; We include a potential following `=` sign here, just so that a query below
-  ; can add a spaced softline before it only in multi-line context. The goal is
-  ; to format a packed representation like:
+  ; We include a potential subsequent `=` here, so that another query below can
+  ; add a scoped softline after the last annotation and a potential following
+  ; `=`. The goal is to format a packed representation like:
   ;
   ; let foo | Number = [
   ;   1,
@@ -348,7 +348,7 @@
   ; ]
   ; in foo
   ;
-  ; But format a more "multi-line" version as:
+  ; But format a multi-line version as:
   ;
   ; let foo
   ;   | Number
