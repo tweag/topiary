@@ -1157,12 +1157,14 @@
 ; _before_ the application. This allows the following to be formatted as such:
 ; let () =
 ;   foo bar (fun x ->
-;     something horrible onto x
-;   )
+;       something horrible onto x
+;     )
 (application_expression
   .
-  (_) @prepend_begin_scope @append_indent_start
+  (_) @append_indent_start @prepend_begin_scope
   (#scope_id! "function_application")
+  (_) @append_indent_end
+  .
 )
 (application_expression
   (#scope_id! "function_application")
@@ -1171,7 +1173,7 @@
       (fun_expression)
       (function_expression)
     ]? @do_nothing
-  ) @append_end_scope @append_indent_end
+  ) @append_end_scope
   .
 )
 (application_expression
@@ -1180,8 +1182,8 @@
     [
       (fun_expression)
       (function_expression)
-    ]
-  ) @prepend_end_scope @prepend_indent_end
+    ] @prepend_end_scope
+  )
   .
 )
 (application_expression
