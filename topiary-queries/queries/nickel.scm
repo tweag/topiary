@@ -318,19 +318,15 @@
 
 ;; Annotations
 
-; Start an indentation block from the start of the annotations to the
-; end of the enclosing node
-(_
-  (annot) @prepend_indent_start
-) @append_indent_end
-
-; Start a scope from the node previous to the annotations.
-; This properly checks if the annotations were intended to be
-; on newlines in such cases as:
+; Start a scope from the node previous to the annotations. This properly checks
+; if the annotations were intended to be on newlines in such cases as:
+;
 ; id
 ;   | a -> a
+;
 ; which, without the annotations scope, would consider the annotations to be a
 ; single line node and format it as such:
+;
 ; id | a -> a
 (
   (#scope_id! "annotations")
@@ -339,17 +335,74 @@
   (annot) @append_end_scope
 )
 
-; Put each annotation -- and the equals sign, if it follows annotations
-; -- on a new line, in a multi-line context.
+; Put each annotation on a new line, in a multi-line context.
 (annot
   (#scope_id! "annotations")
   (annot_atom) @prepend_spaced_scoped_softline
 )
 
+; Add a new line before the last annotation and the following equal sign.
+;
+; [^annotations-followed-by-eq]: Ideally, we would like to only add this new
+; line for multi-line annotations only. That is, we would like to have the
+; following formatting:
+;
+; let foo
+;   | Array Number
+;   | doc "hello"
+;   = [
+;     1,
+;     2,
+;   ]
+; in ...
+;
+; But
+;
+; let foo | Array Number = [
+;   1,
+;   2,
+; ]
+; in ...
+;
+; While adding a scoped line isn't an issue, note that in the examples above,
+; the indentation of what comes after the `=` sign depends on the multi-liness
+; of the annotations (and thus of the multiliness of the "annotations" scope).
+; However, the RHS isn't part of this scope (and we don't want it to be).
+; Unfortunately, this can't be achieved in current Topiary.
+;
+; In the meantime, we always put the `=` sign a new line, whether in single-line
+; or multi-line mode, and always indent the RHS further in presence of
+; annotations. This give the following formatting for the second example:
+;
+; let foo | Array Number
+;   = [
+;     1,
+;     2,
+;   ]
+; in ...
+;
+; which isn't optimal but still acceptable.
 (
+  (annot) @append_spaced_softline
+  .
+  "="
+)
+
+; Indent the annotations with respect to the identifier they annotate.
+(
+  (annot) @prepend_indent_start @append_indent_end
+)
+
+; Indent the RHS of the let-binding in presence of annotations.
+;
+; Ideally, we would like to indent only when annotations are multi-line, but
+; this isn't current possible; see [^annotations-followed-by-eq].
+(_
   (annot)
   .
-  "=" @prepend_spaced_softline
+  "=" @prepend_indent_start
+  .
+  (_) @append_indent_end
 )
 
 ; Break a multi-line polymorphic type annotation after the type
