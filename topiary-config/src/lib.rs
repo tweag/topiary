@@ -15,6 +15,11 @@ use language::{Language, LanguageConfiguration};
 use nickel_lang_core::{eval::cache::CacheImpl, program::Program};
 use serde::Deserialize;
 
+#[cfg(not(target_arch = "wasm32"))]
+use crate::error::TopiaryConfigFetchingError;
+#[cfg(not(target_arch = "wasm32"))]
+use tempfile::tempdir;
+
 use crate::{
     error::{TopiaryConfigError, TopiaryConfigResult},
     source::Source,
@@ -75,6 +80,39 @@ impl Configuration {
             .iter()
             .find(|language| language.name == name.as_ref())
             .ok_or(TopiaryConfigError::UnknownLanguage(name.to_string()))
+    }
+
+    /// Prefetches and builds all known languages.
+    /// This can be beneficial to speed up future startup time.
+    ///
+    /// # Errors
+    ///
+    /// If any Grammar could not be build, a `TopiaryConfigError` is returned.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn prefetch_languages(&self) -> TopiaryConfigResult<()> {
+        let tmp_dir = tempdir()?;
+        let tmp_dir_path = tmp_dir.path().to_owned();
+
+        // When "parallel" is enabled, we use rayon to fetch and compile all found grammars in parallel.
+        #[cfg(feature = "parallel")]
+        {
+            use rayon::prelude::*;
+            self.languages
+                .par_iter()
+                .map(|l| l.fetch_and_compile_with_dir(l.library_path()?, tmp_dir_path.clone()))
+                .collect::<Result<Vec<_>, TopiaryConfigFetchingError>>()?;
+        }
+
+        #[cfg(not(feature = "parallel"))]
+        {
+            self.languages
+                .iter()
+                .map(|l| l.fetch_and_compile_with_dir(l.library_path()?, tmp_dir_path.clone()))
+                .collect::<Result<Vec<_>, TopiaryConfigFetchingError>>()?;
+        }
+
+        tmp_dir.close()?;
+        Ok(())
     }
 
     /// Convenience alias to detect the Language from a Path-like value's extension.

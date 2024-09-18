@@ -1,9 +1,9 @@
 //! This module contains the `Language` struct, which represents a language configuration, and
 //! associated methods.
 
-#[cfg(not(target_arch = "wasm32"))]
-use crate::error::TopiaryConfigError;
 use crate::error::TopiaryConfigResult;
+#[cfg(not(target_arch = "wasm32"))]
+use crate::error::{TopiaryConfigError, TopiaryConfigFetchingError};
 use std::collections::HashSet;
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -14,8 +14,6 @@ use git2::Repository;
 use std::path::PathBuf;
 #[cfg(not(target_arch = "wasm32"))]
 use std::process::Command;
-#[cfg(not(target_arch = "wasm32"))]
-use tempfile::tempdir;
 
 #[cfg(not(target_arch = "wasm32"))]
 const BUILD_TARGET: &str = env!("BUILD_TARGET");
@@ -89,21 +87,11 @@ impl Language {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    // NOTE: Much of the following code is heavily inspired by the `helix-loader` crate with license MPL-2.0.
-    // To be safe, assume any and all of the following code is MLP-2.0 and copyrighted to the Helix project.
-    pub fn grammar(&self) -> TopiaryConfigResult<topiary_tree_sitter_facade::Language> {
-        // Locate cache dir, e.g. `~/.cache/topiary/
+    // Returns the library path, and ensures the parent directories exist.
+    pub fn library_path(&self) -> std::io::Result<PathBuf> {
         let mut library_path = crate::project_dirs().cache_dir().to_path_buf();
-
-        // Create the language specific directory. This directory is not
-        // necessary (the rev should be identifying enough), but allows
-        // convenient removing of entire languages.
         library_path.push(self.name.clone());
-
-        // Ensure path exists
-        if !library_path.exists() {
-            std::fs::create_dir_all(&library_path)?;
-        }
+        std::fs::create_dir_all(&library_path)?;
 
         // Set the output path as the revision of the grammar
         library_path.push(self.config.grammar.rev.clone());
@@ -111,6 +99,17 @@ impl Language {
         // TODO: Windows Support
         // On both MacOS and Linux, .so is a valid file extension for shared objects.
         library_path.set_extension("so");
+
+        Ok(library_path)
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    // NOTE: Much of the following code is heavily inspired by the `helix-loader` crate with license MPL-2.0.
+    // To be safe, assume any and all of the following code is MLP-2.0 and copyrighted to the Helix project.
+    pub fn grammar(
+        &self,
+    ) -> Result<topiary_tree_sitter_facade::Language, TopiaryConfigFetchingError> {
+        let library_path = self.library_path()?;
 
         // Ensure the comile exists
         if !library_path.is_file() {
@@ -159,21 +158,41 @@ impl Language {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    fn fetch_and_compile(&self, library_path: PathBuf) -> TopiaryConfigResult<()> {
+    fn fetch_and_compile(&self, library_path: PathBuf) -> Result<(), TopiaryConfigFetchingError> {
+        log::info!(
+            "{}: Language Grammar not found, attempting to fetch and compile it",
+            self.name
+        );
         // Create a temporary directory to clone the repository to. We could
         // cached the repositories, but the additional disk space is probably
         // not worth the benefits gained by caching. The tempdir is deleted
         // when dropped
-        let tmp_dir = tempdir()?;
+        let tmp_dir = tempfile::tempdir()?;
+
+        self.fetch_and_compile_with_dir(library_path, tmp_dir.into_path())
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn fetch_and_compile_with_dir(
+        &self,
+        library_path: PathBuf,
+        tmp_dir: PathBuf,
+    ) -> Result<(), TopiaryConfigFetchingError> {
+        if library_path.is_file() {
+            return Ok(());
+        }
+        let tmp_dir = tmp_dir.join(self.name.clone());
 
         // Clone the repository and checkout the configured revision
+        log::info!("{}: cloning from {}", self.name, self.config.grammar.git);
         let repo = Repository::clone(&self.config.grammar.git, &tmp_dir)?;
+        log::info!("{}: checking out {}", self.name, self.config.grammar.rev);
         repo.set_head_detached(Oid::from_str(&self.config.grammar.rev)?)?;
 
         let path = match self.config.grammar.subdir.clone() {
             // Some grammars are in a subdirectory, go there
-            Some(subdir) => tmp_dir.path().join(subdir),
-            None => tmp_dir.path().to_owned(),
+            Some(subdir) => tmp_dir.join(subdir),
+            None => tmp_dir,
         }
         // parser.c and potenial scanners are always in src/
         .join("src");
@@ -188,7 +207,8 @@ impl Language {
         &self,
         src_path: &PathBuf,
         target_path: PathBuf,
-    ) -> Result<(), TopiaryConfigError> {
+    ) -> Result<(), TopiaryConfigFetchingError> {
+        log::info!("{}: compiling grammar", self.name);
         let header_path = src_path;
         let parser_path = src_path.join("parser.c");
         let mut scanner_path = src_path.join("scanner.c");
@@ -251,7 +271,7 @@ impl Language {
                     .arg(scanner_path);
                 let output = cpp_command.output()?;
                 if !output.status.success() {
-                    return Err(TopiaryConfigError::Compilation(format!(
+                    return Err(TopiaryConfigFetchingError::Subprocess(format!(
                         "{:#?}, {:#?}",
                         output.stdout, output.stderr
                     )));
@@ -273,13 +293,14 @@ impl Language {
         let output = command.output()?;
 
         if !output.status.success() {
-            return Err(TopiaryConfigError::Compilation(format!(
+            return Err(TopiaryConfigFetchingError::Subprocess(format!(
                 "{:#?}, {:#?}",
                 String::from_utf8_lossy(&output.stdout),
                 String::from_utf8_lossy(&output.stderr),
             )));
         }
 
+        log::info!("{}: succesfully compiled", self.name);
         Ok(())
     }
 }

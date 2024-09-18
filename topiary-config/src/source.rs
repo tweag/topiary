@@ -79,7 +79,7 @@ impl Source {
         match self {
             Self::Builtin => Ok(self.builtin_nickel().into_bytes()),
             Self::File(path) => std::fs::read_to_string(path)
-                .map_err(TopiaryConfigError::IoError)
+                .map_err(TopiaryConfigError::Io)
                 .map(|s| s.into_bytes()),
         }
     }

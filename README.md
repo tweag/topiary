@@ -184,6 +184,7 @@ Commands:
   format      Format inputs
   visualise   Visualise the input's Tree-sitter parse tree
   config      Print the current configuration
+  prefetch    Prefetch all languages in the configuration
   completion  Generate shell completion script
   help        Print this message or the help of the given subcommand(s)
 
@@ -344,6 +345,26 @@ For example, in Bash:
 ```bash
 source <(topiary completion)
 ```
+
+#### Prefetching
+
+Topiary dynamically downloads, builds, and loads the tree-sitter grammars. In
+order to ensure offline availability or speed up startup time, the grammars can
+be prefetched and compiled.
+
+<!-- DO NOT REMOVE THE "usage" COMMENTS -->
+<!-- usage:start:prefetch-->
+```
+Prefetch all languages in the configuration
+
+Usage: topiary prefetch [OPTIONS]
+
+Options:
+  -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
+  -v, --verbose...                     Logging verbosity (increased per occurrence)
+  -h, --help                           Print help
+```
+<!-- usage:end:prefetch -->
 
 #### Logging
 
