@@ -1187,8 +1187,8 @@ let () =
 
 let () =
   foo x (fun y ->
-    zzzzzzzzzz
-  )
+      zzzzzzzzzz
+    )
 
 let foo x = function
   | y -> zzzzzzzzzz
@@ -1206,9 +1206,9 @@ let () =
 
 let () =
   foo x (function
-    | y -> zzzzzzzzzz
-    | u -> vvvvvvvvv
-  )
+      | y -> zzzzzzzzzz
+      | u -> vvvvvvvvv
+    )
 
 (* #727 proper formatting of multi-lined typed function argument *)
 let foo
@@ -1240,6 +1240,17 @@ type x = [`Foo | `Bar]
 type x = [> `Foo | `Bar]
 type x = [< `Foo | `Bar]
 type x = {a: int; b: int; c: int}
+
+(* #726 multi-line calls containing functions *)
+let _ =
+  foo
+    bar
+    (fun baz ->
+      baaaaaaz
+    )
+    (fun qux ->
+      quuuuuux
+    )
 
 (* #659 handling of the `;;` separator *)
 

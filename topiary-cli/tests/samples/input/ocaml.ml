@@ -1182,6 +1182,17 @@ type x = [> `Foo | `Bar]
 type x = [< `Foo | `Bar]
 type x = { a: int; b: int; c: int }
 
+(* #726 multi-line calls containing functions *)
+let _ =
+  foo
+    bar
+    (fun baz ->
+      baaaaaaz
+    )
+    (fun qux ->
+      quuuuuux
+    )
+
 (* #659 handling of the `;;` separator *)
 
 let bonjour () = "Bonjour"
