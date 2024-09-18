@@ -29,6 +29,7 @@ pub enum TopiaryConfigFetchingError {
     Subprocess(String),
     Io(io::Error),
     LibLoading(libloading::Error),
+    GrammarFileNotFound(path::PathBuf),
 }
 
 impl fmt::Display for TopiaryConfigError {
@@ -63,6 +64,11 @@ impl fmt::Display for TopiaryConfigFetchingError {
                 write!(f, "We encountered an io error: {error}")
             }
             TopiaryConfigFetchingError::LibLoading(e) => write!(f, "Libloading error: {:?}", e),
+            TopiaryConfigFetchingError::GrammarFileNotFound(path) => write!(
+                f,
+                "Attempted to load grammar at `{}`, but no file found",
+                path.to_string_lossy()
+            ),
         }
     }
 }
