@@ -41,16 +41,32 @@ pub struct LanguageConfiguration {
     pub indent: Option<String>,
 
     /// The tree-sitter source of the language, contains all that is needed to pull and compile the tree-sitter grammar
-    pub grammar: GrammarSource,
+    pub grammar: Grammar,
 }
 
 #[derive(Debug, serde::Deserialize, PartialEq, serde::Serialize, Clone)]
-pub struct GrammarSource {
+pub struct Grammar {
+    #[cfg(not(target_arch = "wasm32"))]
+    pub source: GrammarSource,
     /// If symbol of the language in the compiled grammar. Usually this is
     /// `tree_sitter_<LANGUAGE_NAME>`, but in rare cases it differs. For
     /// instance our "tree-sitter-query" language, where the symbol is:
     /// `tree_sitter_query` instead of `tree_sitter_tree_sitter_query`.
     pub symbol: Option<String>,
+}
+
+#[derive(Debug, serde::Deserialize, PartialEq, serde::Serialize, Clone)]
+#[cfg(not(target_arch = "wasm32"))]
+pub enum GrammarSource {
+    #[serde(rename = "git")]
+    Git(GitSource),
+    #[serde(rename = "path")]
+    Path(PathBuf),
+}
+
+#[derive(Debug, serde::Deserialize, PartialEq, serde::Serialize, Clone)]
+#[cfg(not(target_arch = "wasm32"))]
+pub struct GitSource {
     /// The URL of the git repository that contains the tree-sitter grammar.
     pub git: String,
     /// The revision of the git repository to use.
@@ -87,18 +103,23 @@ impl Language {
     #[cfg(not(target_arch = "wasm32"))]
     // Returns the library path, and ensures the parent directories exist.
     pub fn library_path(&self) -> std::io::Result<PathBuf> {
-        let mut library_path = crate::project_dirs().cache_dir().to_path_buf();
-        library_path.push(self.name.clone());
-        std::fs::create_dir_all(&library_path)?;
+        match &self.config.grammar.source {
+            GrammarSource::Git(git_source) => {
+                let mut library_path = crate::project_dirs().cache_dir().to_path_buf();
+                library_path.push(self.name.clone());
+                std::fs::create_dir_all(&library_path)?;
 
-        // Set the output path as the revision of the grammar
-        library_path.push(self.config.grammar.rev.clone());
+                // Set the output path as the revision of the grammar
+                library_path.push(git_source.rev.clone());
 
-        // TODO: Windows Support
-        // On both MacOS and Linux, .so is a valid file extension for shared objects.
-        library_path.set_extension("so");
+                // TODO: Windows Support
+                // On both MacOS and Linux, .so is a valid file extension for shared objects.
+                library_path.set_extension("so");
 
-        Ok(library_path)
+                Ok(library_path)
+            }
+            GrammarSource::Path(path) => Ok(path.to_path_buf()),
+        }
     }
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -111,7 +132,16 @@ impl Language {
 
         // Ensure the comile exists
         if !library_path.is_file() {
-            self.fetch_and_compile(library_path.clone())?;
+            match &self.config.grammar.source {
+                GrammarSource::Git(git_source) => {
+                    git_source.fetch_and_compile(&self.name, library_path.clone())?
+                }
+                GrammarSource::Path(_) => {
+                    return Err(TopiaryConfigFetchingError::GrammarFileNotFound(
+                        library_path,
+                    ))
+                }
+            }
         }
 
         assert!(library_path.is_file());
@@ -154,12 +184,18 @@ impl Language {
                 .into(),
         )
     }
+}
 
-    #[cfg(not(target_arch = "wasm32"))]
-    fn fetch_and_compile(&self, library_path: PathBuf) -> Result<(), TopiaryConfigFetchingError> {
+#[cfg(not(target_arch = "wasm32"))]
+impl GitSource {
+    fn fetch_and_compile(
+        &self,
+        name: &str,
+        library_path: PathBuf,
+    ) -> Result<(), TopiaryConfigFetchingError> {
         log::info!(
             "{}: Language Grammar not found, attempting to fetch and compile it",
-            self.name
+            name
         );
         // Create a temporary directory to clone the repository to. We could
         // cached the repositories, but the additional disk space is probably
@@ -167,38 +203,39 @@ impl Language {
         // when dropped
         let tmp_dir = tempfile::tempdir()?;
 
-        self.fetch_and_compile_with_dir(library_path, tmp_dir.into_path())
+        self.fetch_and_compile_with_dir(name, library_path, tmp_dir.into_path())
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
     pub fn fetch_and_compile_with_dir(
         &self,
+        name: &str,
         library_path: PathBuf,
         tmp_dir: PathBuf,
     ) -> Result<(), TopiaryConfigFetchingError> {
         if library_path.is_file() {
             return Ok(());
         }
-        let tmp_dir = tmp_dir.join(self.name.clone());
+        let tmp_dir = tmp_dir.join(name);
 
         // Clone the repository and checkout the configured revision
-        log::info!("{}: cloning from {}", self.name, self.config.grammar.git);
+        log::info!("{}: cloning from {}", name, self.git);
         Command::new("git")
             .arg("clone")
-            .arg(&self.config.grammar.git)
+            .arg(&self.git)
             .arg(&tmp_dir)
             .status()
             .map_err(TopiaryConfigFetchingError::Git)?;
-        log::info!("{}: checking out {}", self.name, self.config.grammar.rev);
+        log::info!("{}: checking out {}", name, self.rev);
         let current_dir = env::current_dir().map_err(TopiaryConfigFetchingError::Io)?;
         env::set_current_dir(&tmp_dir).map_err(TopiaryConfigFetchingError::Io)?;
         Command::new("git")
             .arg("checkout")
-            .arg(&self.config.grammar.rev)
+            .arg(&self.rev)
             .status()
             .map_err(TopiaryConfigFetchingError::Git)?;
         env::set_current_dir(current_dir).map_err(TopiaryConfigFetchingError::Io)?;
-        let path = match self.config.grammar.subdir.clone() {
+
+        let path = match self.subdir.clone() {
             // Some grammars are in a subdirectory, go there
             Some(subdir) => tmp_dir.join(subdir),
             None => tmp_dir,
@@ -206,18 +243,18 @@ impl Language {
         // parser.c and potenial scanners are always in src/
         .join("src");
 
-        self.build_tree_sitter_library(&path, library_path)
+        self.build_tree_sitter_library(name, &path, library_path)
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
     // NOTE: Much of the following code is heavily inspired by the `helix-loader` crate with license MPL-2.0.
     // To be safe, assume any and all of the following code is MLP-2.0 and copyrighted to the Helix project.
     fn build_tree_sitter_library(
         &self,
+        name: &str,
         src_path: &PathBuf,
         target_path: PathBuf,
     ) -> Result<(), TopiaryConfigFetchingError> {
-        log::info!("{}: compiling grammar", self.name);
+        log::info!("{}: compiling grammar", name);
         let header_path = src_path;
         let parser_path = src_path.join("parser.c");
         let mut scanner_path = src_path.join("scanner.c");
@@ -266,8 +303,7 @@ impl Language {
                     cpp_command.env(key, value);
                 }
                 cpp_command.args(compiler.args());
-                let object_file =
-                    target_path.with_file_name(format!("{}_scanner.o", &self.config.grammar.rev));
+                let object_file = target_path.with_file_name(format!("{}_scanner.o", &self.rev));
                 cpp_command
                     .arg("-fPIC")
                     .arg("-fno-exceptions")
@@ -309,7 +345,7 @@ impl Language {
             )));
         }
 
-        log::info!("{}: succesfully compiled", self.name);
+        log::info!("{}: succesfully compiled", name);
         Ok(())
     }
 }
