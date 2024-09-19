@@ -398,11 +398,9 @@
 ; Ideally, we would like to indent only when annotations are multi-line, but
 ; this isn't current possible; see [^annotations-followed-by-eq].
 (_
-  (annot)
-  .
-  "=" @prepend_indent_start
-  .
-  (_) @append_indent_end
+  (annot) @append_indent_start
+  "="
+  (term) @append_indent_end
 )
 
 ; Break a multi-line polymorphic type annotation after the type
