@@ -318,46 +318,51 @@
 
 ;; Annotations
 
-; An annotation changes Start an indentation block from the start of the annotations to the
-; end of the enclosing node
-(_
-  (annot) @prepend_indent_start
-) @append_indent_end
-
-; Start a scope from the node previous to the annotations.
-; This properly checks if the annotations were intended to be
-; on newlines in such cases as:
+; Start a scope from the node previous to the annotations. This properly checks
+; if the annotations were intended to be on newlines in such cases as:
+;
 ; id
 ;   | a -> a
+;
 ; which, without the annotations scope, would consider the annotations to be a
 ; single line node and format it as such:
+;
 ; id | a -> a
+(
+  (#scope_id! "annotations")
+  (_) @append_begin_scope
+  .
+  (annot) @append_end_scope
+  .
+)
+
+; We want to include a potential "=" following the annotation in the scope, so
+; that we can properly add a newline between the last annotation and the "=" in
+; multi-line mode:
+;
+; {
+;   foo
+;     | Number
+;     | doc "hello"
+;     = 5,
+; }
+;
+; if we didn't include this rule, we could have
+;
+;     | doc "hello" = 5,
+;
+; which is arguably confusing
+;
+; Note that this query is disjoint from the other one defining the "annotations"
+; scope above, which that only applies when the annotation is the last named
+; node of its parent. Thus, only one of the two ever matches.
 (
   (#scope_id! "annotations")
   (_) @append_begin_scope
   .
   (annot)
   .
-  ; We include a potential subsequent `=` here, so that another query below can
-  ; add a scoped softline after the last annotation and a potential following
-  ; `=`. The goal is to format a packed representation like:
-  ;
-  ; let foo | Number = [
-  ;   1,
-  ;   2,
-  ; ]
-  ; in foo
-  ;
-  ; But format a multi-line version as:
-  ;
-  ; let foo
-  ;   | Number
-  ;   = [
-  ;     1,
-  ;     2,
-  ;    ]
-  ; in foo
-  "="? @append_end_scope
+  "=" @append_end_scope
 )
 
 ; Put each annotation on a new line, in a multi-line context.
@@ -373,6 +378,42 @@
   (annot) @append_spaced_scoped_softline
   .
   "="
+)
+
+; Indent the annotations themselves in multi-line mode with respect to the
+; identifier they annotate.
+(
+  (#multi_line_scope_only! "annotations")
+  (annot_atom) @prepend_indent_start @append_indent_end
+)
+
+; In multi-line mode, in presence of annotations, we want to indent the
+; potential definitions that comes after.
+;
+; In single-line mode (in the "annotations" scope), we want a packed
+; representation:
+;
+; let foo | Number = [
+;   1,
+;   2,
+; ]
+; in foo
+;
+; But we want to format a multi-line version as:
+;
+; let foo
+;   | Number
+;   = [
+;     1,
+;     2,
+;    ]
+; in foo
+(_
+  (annot (#multi_line_scope_only! "annotations")) @prepend_indent_start
+  .
+  "="
+  .
+  (_) @append_indent_end
 )
 
 ; Break a multi-line polymorphic type annotation after the type
