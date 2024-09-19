@@ -333,42 +333,6 @@
   (_) @append_begin_scope
   .
   (annot) @append_end_scope
-  .
-)
-
-; We want to include a potential "=" following the annotation in the scope, so
-; that we can properly add a newline between the last annotation and the "=" in
-; multi-line mode:
-;
-; {
-;   foo
-;     | Number
-;     | doc "hello"
-;     = 5,
-; }
-;
-; if we didn't include this rule, we could have
-;
-;     | doc "hello" = 5,
-;
-; which is arguably confusing
-;
-; Note that this query is disjoint from the other one defining the "annotations"
-; scope above, which that only applies when the annotation is the last named
-; node of its parent. Thus, only one of the two ever matches.
-;
-; WARNING: currently, splitting the rule in two is useless because we actually
-; add the newline before `=` inconditionally (see
-; [^annotations-followed-by-eq]). However, when this limitation is lifted, the
-; current rule architecture will allow for the desired formatting with minimal
-; change.
-(
-  (#scope_id! "annotations")
-  (_) @append_begin_scope
-  .
-  (annot)
-  .
-  "=" @append_end_scope
 )
 
 ; Put each annotation on a new line, in a multi-line context.
