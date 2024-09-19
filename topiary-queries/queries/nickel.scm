@@ -419,8 +419,7 @@
 ;
 ; which isn't optimal but still acceptable.
 (
-  (#scope_id! "annotations")
-  (annot) @append_spaced_scoped_softline
+  (annot) @append_spaced_softline
   .
   "="
 )
@@ -437,9 +436,9 @@
 ; Ideally, we would like to indent only when annotations are multi-line, but
 ; this isn't current possible; see [^annotations-followed-by-eq].
 (_
-  (annot) @append_indent_start
+  (annot)
   .
-  "="
+  "=" @prepend_indent_start
   .
   (_) @append_indent_end
 )
