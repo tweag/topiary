@@ -391,8 +391,7 @@
 ; Indent the annotations themselves in multi-line mode with respect to the
 ; identifier they annotate.
 (
-  (#multi_line_scope_only! "annotations")
-  (annot_atom) @prepend_indent_start @append_indent_end
+  (annot) @prepend_indent_start @append_indent_end
 )
 
 ; Indent the RHS of the let-binding in presence of annotations.
