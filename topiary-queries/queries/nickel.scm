@@ -356,6 +356,12 @@
 ; Note that this query is disjoint from the other one defining the "annotations"
 ; scope above, which that only applies when the annotation is the last named
 ; node of its parent. Thus, only one of the two ever matches.
+;
+; WARNING: currently, splitting the rule in two is useless because we actually
+; add the newline before `=` inconditionally (see
+; [^annotations-followed-by-eq]). However, when this limitation is lifted, the
+; current rule architecture will allow for the desired formatting with minimal
+; change.
 (
   (#scope_id! "annotations")
   (_) @append_begin_scope
@@ -371,8 +377,47 @@
   (annot_atom) @prepend_spaced_scoped_softline
 )
 
-; Add a new line before the last annotation and the following equal sign, if any,
-; in a multi-line context.
+; Add a new line before the last annotation and the following equal sign.
+;
+; [^annotations-followed-by-eq]: Ideally, we would like to only add this new
+; line for multi-line annotations only. That is, we would like to have the
+; following formatting:
+;
+; let foo
+;   | Array Number
+;   | doc "hello"
+;   = [
+;     1,
+;     2,
+;   ]
+; in ...
+;
+; But
+;
+; let foo | Array Number = [
+;   1,
+;   2,
+; ]
+; in ...
+;
+; While adding a scoped line isn't an issue, note that in the examples above,
+; the indentation of what comes after the `=` sign depends on the multi-liness
+; of the annotations (and thus of the multiliness of the "annotations" scope).
+; However, the RHS isn't part of this scope (and we don't want it to be).
+; Unfortunately, this can't be achieved in current Topiary.
+;
+; In the meantime, we always put the `=` sign a new line, whether in single-line
+; or multi-line mode, and always indent the RHS further in presence of
+; annotations. This give the following formatting for the second example:
+;
+; let foo | Array Number
+;   = [
+;     1,
+;     2,
+;   ]
+; in ...
+;
+; which isn't optimal but still acceptable.
 (
   (#scope_id! "annotations")
   (annot) @append_spaced_scoped_softline
@@ -387,29 +432,12 @@
   (annot_atom) @prepend_indent_start @append_indent_end
 )
 
-; In multi-line mode, in presence of annotations, we want to indent the
-; potential definitions that comes after.
+; Indent the RHS of the let-binding in presence of annotations.
 ;
-; In single-line mode (in the "annotations" scope), we want a packed
-; representation:
-;
-; let foo | Number = [
-;   1,
-;   2,
-; ]
-; in foo
-;
-; But we want to format a multi-line version as:
-;
-; let foo
-;   | Number
-;   = [
-;     1,
-;     2,
-;    ]
-; in foo
+; Ideally, we would like to indent only when annotations are multi-line, but
+; this isn't current possible; see [^annotations-followed-by-eq].
 (_
-  (annot (#multi_line_scope_only! "annotations")) @prepend_indent_start
+  (annot) @append_indent_start
   .
   "="
   .
