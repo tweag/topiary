@@ -343,7 +343,7 @@
 
 ; Add a new line before the last annotation and the following equal sign.
 ;
-; [^annotations-followed-by-eq]: Ideally, we would like to only add this new
+; [^annotations-followed-by-eq]: Ideally, we would like to add this new
 ; line for multi-line annotations only. That is, we would like to have the
 ; following formatting:
 ;
