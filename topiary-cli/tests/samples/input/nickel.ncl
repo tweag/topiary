@@ -127,7 +127,21 @@ bar == 'Goodbye
           if x == 1 then
               1
 else
-    3)
+    3),
+
+    # regression test for https://github.com/tweag/topiary/issues/743
+    # (partially fixed)
+    let foo
+    | Number
+    =
+[
+    1,
+    2,
+    3
+]
+in
+foo
+@ [],
   ],
 
   # Nickel standard library as of 44aef1672a09a76a71946fbf822713747ab7b9df
