@@ -566,6 +566,36 @@ between the words.
 This assumes you are already familiar with the [Tree-sitter query
 language][tree-sitter-query].
 
+### A note on anchors
+The behaviour of "anchors" can be counterintuitive. Consider, for instance, the
+following query:
+```scheme
+(
+  (list_entry) @append_space
+  .
+)
+```
+One might assume that this query only matches the final element in the list but
+this is not true. Since we did not explicitly march a parent node, the engine
+will match on every `list_entry`. After all, the when looking only at the nodes
+in the query, the `list_entry` is indeed the last node.
+
+To resolve this issue, match explicitly on the parent node:
+```scheme
+(list
+  (list_entry) @append_space
+  .
+)
+```
+
+Or even implicitly:
+```scheme
+(_
+  (list_entry) @append_space
+  .
+)
+```
+
 Note that a capture is put after the node it is associated with. If you
 want to put a space in front of a node, you do it like this:
 
