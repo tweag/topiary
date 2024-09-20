@@ -489,6 +489,31 @@ A final optional field, called `indent`, exists to define the indentation method
 for that language. Topiary defaults to two spaces `"  "` if it cannot find the
 indent field in any configuration file for a specific language.
 
+#### Specifying the grammar
+Topiary can fetch and build the grammar for you, or a grammar can be provided by
+some other method. To have Topiary fetch the grammar for you, specify the
+`grammar.source.git` attribute of a language:
+```nickel
+nickel = {
+  extensions = ["ncl"],
+  grammar.source.git = {
+    git = "https://github.com/nickel-lang/tree-sitter-nickel",
+    rev = "43433d8477b24cd13acaac20a66deda49b7e2547",
+  },
+},
+```
+
+To specify a prebuilt grammar, specify the `grammar.source.path` attribute:
+```nickel
+nickel = {
+  extensions = ["ncl"],
+  grammar.source.path = "/home/erin/Projects/tweag/tree-sitter-nickel/result/parser",
+},
+```
+For usage in Nix, a `languages_nix.ncl` file is provided that specifies the
+paths of every language using the `@nickel@` syntax. These can easily be
+replaced nixpkgs' `substituteAll`.
+
 ### Overriding
 If one of the sources listed above attempts to define a language configuration
 already present in the builtin configuration, Topiary will display a Nickel error.
