@@ -51,6 +51,7 @@ This name should be decided amongst the team before the release.
 ### Fixed
 - [#720](https://github.com/tweag/topiary/pull/720) [#722](https://github.com/tweag/topiary/pull/722) [#723](https://github.com/tweag/topiary/pull/723) [#724](https://github.com/tweag/topiary/pull/724) [#735](https://github.com/tweag/topiary/pull/735)
 [#738](https://github.com/tweag/topiary/pull/738) [#739](https://github.com/tweag/topiary/pull/739) [#745](https://github.com/tweag/topiary/pull/745) Various OCaml improvements
+- [#744](https://github.com/tweag/topiary/pull/744) Nickel: fix the indentation of `in` for annotated multiline let-bindings
 
 ### Changed
 - [#704](https://github.com/tweag/topiary/pull/704) Refactors our postprocessing code to be more versatile.
