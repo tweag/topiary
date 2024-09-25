@@ -640,12 +640,33 @@
   .
 )
 
+; Allow newlines after the comma (or semicolon) following a container
+; element.
 (
   (#scope_id! "container")
   [
-    ","
-    ";"
-  ] @append_spaced_scoped_softline
+    (record_field)
+    (record_last_field)
+    (field_pattern)
+    (last_field_pat)
+    (match_branch)
+    (term)
+    (pattern)
+    (last_elem_pat)
+    (enum)
+  ]
+  .
+  ["," ";"] @append_spaced_scoped_softline
+  .
+  (comment)? @do_nothing
+)
+
+; Enums and records can have a `;` at the very beginning; allow spaces after
+; these ones also.
+(_
+  (#scope_id! "container")
+  .
+  ";" @append_spaced_scoped_softline
   .
   (comment)? @do_nothing
 )
