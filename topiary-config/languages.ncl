@@ -43,7 +43,7 @@
       extensions = ["ncl"],
       grammar = {
         git = "https://github.com/nickel-lang/tree-sitter-nickel",
-        rev = "43433d8477b24cd13acaac20a66deda49b7e2547",
+        rev = "88d836a24b3b11c8720874a1a9286b8ae838d30a",
       },
     },
 

@@ -153,6 +153,16 @@
     in
     foo
     @ [],
+    let x = 1, y = 2 in x + y,
+    let
+      x = 1,
+      y = 2,
+    in x + y,
+    let rec
+      x = 1,
+      y = 2,
+    in
+    x + y,
   ],
 
   # Nickel standard library as of 44aef1672a09a76a71946fbf822713747ab7b9df
