@@ -47,10 +47,11 @@ This name should be decided amongst the team before the release.
 ### Added
 - [#705](https://github.com/tweag/topiary/pull/705) Added support for Nickel 1.7 extended pattern formatting
 - [#737](https://github.com/tweag/topiary/pull/737) Added the `prefetch` command, that prefetches and caches all grammars in the current configuration
+- [#755](https://github.com/tweag/topiary/pull/755) Introduce measuring scopes, which can be used in conjunction with regular scopes to add expressivity to the formatting queries.
 
 ### Fixed
 - [#720](https://github.com/tweag/topiary/pull/720) [#722](https://github.com/tweag/topiary/pull/722) [#723](https://github.com/tweag/topiary/pull/723) [#724](https://github.com/tweag/topiary/pull/724) [#735](https://github.com/tweag/topiary/pull/735)
-[#738](https://github.com/tweag/topiary/pull/738) [#739](https://github.com/tweag/topiary/pull/739) [#745](https://github.com/tweag/topiary/pull/745) Various OCaml improvements
+[#738](https://github.com/tweag/topiary/pull/738) [#739](https://github.com/tweag/topiary/pull/739) [#745](https://github.com/tweag/topiary/pull/745) [#755](https://github.com/tweag/topiary/pull/755) Various OCaml improvements
 - [#744](https://github.com/tweag/topiary/pull/744) Nickel: fix the indentation of `in` for annotated multiline let-bindings
 
 ### Changed
