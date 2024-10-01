@@ -92,20 +92,30 @@ pub enum Atom {
     /// Indicates the end of a scope, use in combination with the
     /// ScopedSoftlines and ScopedConditionals below.
     ScopeEnd(ScopeInformation),
+    // Indicates the beginning of a *measuring* scope, that must be related to a "normal" one.
+    // Used in combination with ScopedSoftlines and ScopedConditionals below.
+    MeasuringScopeBegin(ScopeInformation),
+    // Indicates the end of a *measuring* scope, that must be related to a "normal" one.
+    // Used in combination with ScopedSoftlines and ScopedConditionals below.
+    MeasuringScopeEnd(ScopeInformation),
     /// Scoped commands
-    // ScopedSoftline works together with the @{prepend,append}_begin_scope and
-    // @{prepend,append}_end_scope query tags. To decide if a scoped softline
+    // ScopedSoftline works together with the @{prepend,append}_begin[_measuring]_scope and
+    // @{prepend,append}_end[_measuring]_scope query tags. To decide if a scoped softline
     // must be expanded into a hardline, we look at the innermost scope having
     // the corresponding `scope_id`, that encompasses it. We expand the softline
-    // if that scope is multi-line. The `id` value is here for technical
-    // reasons, it allows tracking of the atom during post-processing.
+    // if that scope is multi-line.
+    // If that scope contains a *measuring* scope with the same `scope_id`, we expand
+    // the node iff that *measuring* scope is multi-line.
+    // The `id` value is here for technical reasons,
+    // it allows tracking of the atom during post-processing.
     ScopedSoftline {
         id: usize,
         scope_id: String,
         spaced: bool,
     },
-    /// Represents an atom that must only be output if the associated scope meets the condition
-    /// (single-line or multi-line)
+    /// Represents an atom that must only be output if the associated scope
+    /// (or its associated measuring scope, see above) meets the condition
+    /// (single-line or multi-line).
     ScopedConditional {
         id: usize,
         scope_id: String,

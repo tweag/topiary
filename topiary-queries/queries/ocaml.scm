@@ -1153,19 +1153,33 @@
 ;     long_argument_3
 ;     long_argument_4
 ;
-; When the last argument is a (parenthesized) function application, end the scope
+; When the last argument is a (parenthesized) function application, end the indentation
 ; _before_ the application. This allows the following to be formatted as such:
 ; let () =
 ;   foo bar (fun x ->
-;       something horrible onto x
+;     something horrible onto x
+;   )
+; But when the function application minus the last argument is multiline,
+; the whole scope still must be indented:
+; let () =
+;   foo
+;     bar
+;     (fun x ->
+;       x
 ;     )
+;
+; Because of these constraints, we must use measuring scopes here: the position of the
+; indent_end depends on the multi-line-ness of a subsection of the whole scope.
 (application_expression
   .
-  (_) @append_indent_start @prepend_begin_scope
+  (_) @append_indent_start @prepend_begin_scope @prepend_begin_measuring_scope
   (#scope_id! "function_application")
-  (_) @append_indent_end
+  (_) @append_end_scope
   .
 )
+; The end of the measuring scope depends on the last argument: if it's a function,
+; end it before the function, otherwise end it after the last argument. In that case,
+; it's the same as the regular scope.
 (application_expression
   (#scope_id! "function_application")
   (_
@@ -1173,7 +1187,7 @@
       (fun_expression)
       (function_expression)
     ]? @do_nothing
-  ) @append_end_scope
+  ) @append_end_measuring_scope
   .
 )
 (application_expression
@@ -1182,10 +1196,24 @@
     [
       (fun_expression)
       (function_expression)
-    ] @prepend_end_scope
+    ] @prepend_end_measuring_scope
   )
   .
 )
+; If the measuring scope is single-line, end indentation _before_ the last node.
+; Otherwise, end the indentation after the last node.
+(application_expression
+  (#multi_line_scope_only! "function_application")
+  (_) @append_indent_end
+  .
+)
+(application_expression
+  (#single_line_scope_only! "function_application")
+  (_) @prepend_indent_end
+  .
+)
+; The node to which we apply append_spaced_scoped_softline will always
+; be in both scopes, regular and measuring.
 (application_expression
   (_) @append_spaced_scoped_softline
   .

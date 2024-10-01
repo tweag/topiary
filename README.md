@@ -1225,6 +1225,88 @@ containing the matched nodes are is single-line (resp. multi-line).
 )
 ```
 
+### `@prepend_begin_measuring_scope` / `@append_begin_measuring_scope` / `@prepend_end_measuring_scope` / `@append_end_measuring_scope`
+
+Sometimes, custom scopes are not enough: we may want to format a node depending on the multi-line-ness of a piece of code that does not include the node in question. For instance, consider this function application in OCaml:
+```ocaml
+foo bar (fun x -> qux)
+```
+We may also want to format it as any of the following two, depending on the actual length of `foo`, `bar`, and `qux`:
+```ocaml
+foo bar (fun x ->
+  qux
+)
+```
+```ocaml
+foo
+  bar
+  (fun x ->
+    qux
+  )
+```
+Consider the indentation of `(fun x -> qux)`: if `foo bar` is single-line, we don't want to indent it. But if `foo bar` is multi-line, we do want to indent it.
+
+Because custom scopes can only impact the behaviour of nodes inside the scope, we can't use them to solve this issue. This is why we need `measuring_scope`.
+
+Measuring scopes are opened/closed with a similar syntax as "regular" custom scopes, with any of the following tags, in conjunction with the `#scope_id!` predicate:
+
+* `@prepend_begin_measuring_scope`
+* `@append_begin_measuring_scope`
+* `@prepend_end_measuring_scope`
+* `@prepend_begin_measuring_scope`
+
+Measuring scopes behave as follows:
+* A measuring scope must always be contained in a regular custom scope with the same `#scope_id!`. There can't be two measuring scopes with the same `#scope_id!` inside the same regular custom scope.
+* If a regular custom scope contains a measuring scope, then all tags contained in the regular scope that depend on its multi-line-ness will instead depend on the multi-line-ness of the measuring scope (hence the name: the inner, measuring scope measures the multi-line-ness of the outer, regular scope).
+
+#### Example
+
+The example below solves the problem of indenting function application in OCaml stated above, using measuring scopes.
+```scheme
+(application_expression
+  .
+  (_) @append_indent_start @prepend_begin_scope @prepend_begin_measuring_scope
+  (#scope_id! "function_application")
+  (_) @append_end_scope
+  .
+)
+; The end of the measuring scope depends on the last argument: if it's a function,
+; end it before the function, otherwise end it after the last argument. In that case,
+; it's the same as the regular scope.
+(application_expression
+  (#scope_id! "function_application")
+  (_
+    [
+      (fun_expression)
+      (function_expression)
+    ]? @do_nothing
+  ) @append_end_measuring_scope
+  .
+)
+(application_expression
+  (#scope_id! "function_application")
+  (_
+    [
+      (fun_expression)
+      (function_expression)
+    ] @prepend_end_measuring_scope
+  )
+  .
+)
+; If the measuring scope is single-line, end indentation _before_ the last node.
+; Otherwise, end the indentation after the last node.
+(application_expression
+  (#multi_line_scope_only! "function_application")
+  (_) @append_indent_end
+  .
+)
+(application_expression
+  (#single_line_scope_only! "function_application")
+  (_) @prepend_indent_end
+  .
+)
+```
+
 ## Suggested workflow
 
 In order to work productively on query files, the following is one
