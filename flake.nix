@@ -27,6 +27,12 @@
 
     flake-utils.url = "github:numtide/flake-utils";
     nix-filter.url = "github:numtide/nix-filter";
+
+    tree-sitter-nickel = {
+      url = "github:nickel-lang/tree-sitter-nickel";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
   };
 
   outputs = inputs:
@@ -55,7 +61,9 @@
 
         craneLib = crane.mkLib pkgs;
 
-        topiaryPkgs = pkgs.callPackage ./default.nix { inherit advisory-db crane rust-overlay nix-filter craneLib; };
+        topiaryPkgs = pkgs.callPackage ./default.nix {
+          inherit advisory-db crane rust-overlay nix-filter craneLib tree-sitter-nickel;
+        };
         binPkgs = pkgs.callPackage ./bin/default.nix { };
       in
       {
