@@ -99,7 +99,23 @@ impl Configuration {
             use rayon::prelude::*;
             self.languages
                 .par_iter()
-                .map(|l| l.fetch_and_compile_with_dir(l.library_path()?, tmp_dir_path.clone()))
+                .map(|l| match &l.config.grammar.source {
+                    language::GrammarSource::Git(git_source) => git_source
+                        .fetch_and_compile_with_dir(
+                            &l.name,
+                            l.library_path()?,
+                            tmp_dir_path.clone(),
+                        ),
+                    language::GrammarSource::Path(path) => {
+                        if !path.exists() {
+                            Err(TopiaryConfigFetchingError::GrammarFileNotFound(
+                                path.to_path_buf(),
+                            ))
+                        } else {
+                            Ok(())
+                        }
+                    }
+                })
                 .collect::<Result<Vec<_>, TopiaryConfigFetchingError>>()?;
         }
 

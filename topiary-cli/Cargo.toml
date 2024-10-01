@@ -33,6 +33,7 @@ env_logger = { workspace = true }
 futures = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
+nickel-lang-core.workspace = true
 serde = { workspace = true, features = ["derive"] }
 tempfile = { workspace = true }
 tokio = { workspace = true, features = ["fs", "rt-multi-thread", "sync", "macros"] }
