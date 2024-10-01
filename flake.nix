@@ -99,7 +99,7 @@
             wasm = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; craneLib = topiaryPkgs.passtru.craneLibWasm; inherit binPkgs; };
           };
 
-        ## For easy use in https://github.com/cachix/pre-commit-hooks.nix
+        ## For easy use in https://github.com/cachix/git-hooks.nix
         lib.pre-commit-hook = {
           enable = true;
           name = "topiary";

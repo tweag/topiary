@@ -17,7 +17,7 @@ get-cli-usage() {
 }
 
 get-readme-usage() {
-  # Get the help text from the README
+  # Get the help text from the usage file
   local subcommand="${1-ROOT}"
 
   sed --quiet "
@@ -26,11 +26,11 @@ get-readme-usage() {
       /${FENCE}/d  # Delete the code fences
       p            # Print anything else
     }
-  " README.md
+  " docs/book/src/cli-usage.md
 }
 
 diff-usage() {
-  # Generate a diff between the README and CLI help text
+  # Generate a diff between the usage file and CLI help text
   local subcommand="${1-ROOT}"
 
   diff --text \
@@ -46,13 +46,13 @@ main() {
   local _subcommand
   for _subcommand in "${subcommands[@]}"; do
     if ! _diff=$(diff-usage "${_subcommand}"); then
-      >&2 echo "Usage is not correctly documented in README.md for the ${_subcommand} subcommand!"
+      >&2 echo "Usage is not correctly documented in cli-usage.md for the ${_subcommand} subcommand!"
       echo "${_diff}"
       exit 1
     fi
   done
 
-  >&2 echo "Usage is correctly documented in README.md"
+  >&2 echo "Usage is correctly documented in cli-usage.md"
 }
 
 main
