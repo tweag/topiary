@@ -5,6 +5,11 @@
 , rust-overlay
 , nix-filter
 , craneLib
+# tree-sitter-Nickel is packaged in Nixpkgs, but it's an older version at the
+# time of writing. Since updating it seems non trivial, and we need Topiary to
+# be compatible with Nickel urgently (it is currently blocking for the CI), we
+# use the tree-sitter-nickel flake directly.
+, tree-sitter-nickel
 }:
 let
   wasmRustVersion = "1.77.2";
@@ -123,7 +128,7 @@ in
       bash="${pkgs.tree-sitter-grammars.tree-sitter-bash}/parser" \
       css="${pkgs.tree-sitter-grammars.tree-sitter-css}/parser" \
       json="${pkgs.tree-sitter-grammars.tree-sitter-json}/parser" \
-      nickel="${pkgs.tree-sitter-grammars.tree-sitter-nickel}/parser" \
+      nickel="${tree-sitter-nickel}/parser" \
       ocaml="${pkgs.tree-sitter-grammars.tree-sitter-ocaml}/parser" \
       ocaml_interface="${pkgs.tree-sitter-grammars.tree-sitter-ocaml-interface}/parser" \
       rust="${pkgs.tree-sitter-grammars.tree-sitter-rust}/parser" \
