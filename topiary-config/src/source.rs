@@ -48,9 +48,9 @@ impl Source {
 
     /// Attempts to find a configuration file, given a `path` parameter. If `path` is `None`, then
     /// the function returns `None`.
-    /// Otherwise, if the path is a rectory, then it attempts to find a `languages.ncl` file
+    /// Otherwise, if the path is a directory, then it attempts to find a `languages.ncl` file
     /// within that directory. If the file exists, then it returns `Some(path.join("languages.ncl"))`.
-    /// If the file does not exist, then it logs a warning and returns `None`. If the path is a file,
+    /// If the file does not exist, then it logs a message and returns `None`. If the path is a file,
     /// then it returns `Some(path)`.
     fn find(path: &Option<PathBuf>) -> Option<PathBuf> {
         match path {
@@ -65,8 +65,8 @@ impl Source {
                 if candidate.exists() {
                     Some(candidate)
                 } else {
-                    log::warn!(
-                        "Could not find configuration file: {}. Are you sure it exists?",
+                    log::info!(
+                        "Could not find configuration file: {}. Defaulting to built-in configuration.",
                         candidate.to_string_lossy()
                     );
                     None
