@@ -79,6 +79,24 @@ fn test_fmt_stdin_query() {
 }
 
 #[test]
+#[cfg(feature = "json")]
+fn test_fmt_stdin_query_fallback() {
+    let mut topiary = Command::cargo_bin("topiary").unwrap();
+
+    topiary
+        // run in topiary-cli/tests directory so that it couldn't find the
+        // default TOPIARY_LANGUAGE_DIR
+        .current_dir("tests")
+        .arg("fmt")
+        .arg("--language")
+        .arg("json")
+        .write_stdin(JSON_INPUT)
+        .assert()
+        .success()
+        .stdout(JSON_EXPECTED);
+}
+
+#[test]
 #[cfg(all(feature = "json", feature = "toml"))]
 fn test_fmt_files() {
     let json = State::new(JSON_INPUT, "json");
@@ -88,6 +106,28 @@ fn test_fmt_files() {
 
     topiary
         .env("TOPIARY_LANGUAGE_DIR", "../topiary-queries/queries")
+        .arg("fmt")
+        .arg(json.path())
+        .arg(toml.path())
+        .assert()
+        .success();
+
+    assert_eq!(json.read(), JSON_EXPECTED);
+    assert_eq!(toml.read(), TOML_EXPECTED);
+}
+
+#[test]
+#[cfg(all(feature = "json", feature = "toml"))]
+fn test_fmt_files_query_fallback() {
+    let json = State::new(JSON_INPUT, "json");
+    let toml = State::new(TOML_INPUT, "toml");
+
+    let mut topiary = Command::cargo_bin("topiary").unwrap();
+
+    topiary
+        // run in topiary-cli/tests directory so that it couldn't find the
+        // default TOPIARY_LANGUAGE_DIR
+        .current_dir("tests")
         .arg("fmt")
         .arg(json.path())
         .arg(toml.path())
