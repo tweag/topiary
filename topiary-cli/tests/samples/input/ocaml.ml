@@ -1237,3 +1237,15 @@ type bar = {
   b: int;
   c: int;
 }
+
+(* #731 function dangling on multi-line calls *)
+let _ =
+  foo bar baz @@ fun x ->
+  x
+
+let _ =
+  foo
+    bar
+    baz
+    @@ fun x ->
+    x
