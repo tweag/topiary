@@ -1307,6 +1307,40 @@ The example below solves the problem of indenting function application in OCaml 
 )
 ```
 
+### `#query_name!`
+
+When the logging verbosity is set to `-vv` or higher, Topiary outputs information about which queries are matched, for instance:
+```
+[2024-10-08T15:48:13Z INFO  topiary_core::tree_sitter] Processing match: LocalQueryMatch { pattern_index: 17, captures: [ {Node "," (1,3) - (1,4)} ] } at location (286,1)
+```
+The predicate `#query_name!` takes a string argument, is optional, and can be added to any query.
+It will modify the log line to display its argument.
+
+#### Example
+
+Considering the log line above, and let us assume that the query at `location (286,1)` is:
+
+```scheme
+(
+  "," @append_space
+  .
+  (_)
+)
+```
+If we add a `query_name` predicate:
+```scheme
+(
+  (#query_name! "comma spacing")
+  "," @append_space
+  .
+  (_)
+)
+```
+Then the log line will become:
+```
+[2024-10-08T15:48:13Z INFO  topiary_core::tree_sitter] Processing match of query "comma spacing": LocalQueryMatch { pattern_index: 17, captures: [ {Node "," (1,3) - (1,4)} ] } at location (286,1)
+```
+
 ## Suggested workflow
 
 In order to work productively on query files, the following is one
