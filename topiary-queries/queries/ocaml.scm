@@ -1543,7 +1543,7 @@
   ) @append_indent_end
 )
 
-; The same holds for rel_operator
+; The same holds for rel_operator, such as `>>=`
 (_
   ; If the parent expression also was a rel_operator, do not indent (see above).
   (rel_operator)? @do_nothing
@@ -1554,6 +1554,43 @@
     )? @do_nothing
     (fun_expression)? @do_nothing
   ) @append_indent_end
+)
+
+; The following bit of scope sorcery allows the following to be formatted as such:
+;
+; foo
+;   bar
+;   baz
+;   @@ fun x ->
+;   x
+;
+; While leaving the following as such:
+;
+; foo bar baz @@ fun x ->
+; x
+;
+; The related issue is https://github.com/tweag/topiary/issues/731
+(infix_expression
+  (application_expression) @prepend_begin_scope @prepend_begin_measuring_scope
+  .
+  (concat_operator) @append_end_measuring_scope
+  .
+  (#scope_id! "dangling_multiline_function")
+  [
+    (fun_expression)
+    (function_expression)
+  ] @append_end_scope
+)
+(infix_expression
+  (application_expression)
+  .
+  (concat_operator) @prepend_spaced_softline @prepend_indent_start
+  .
+  (#multi_line_scope_only! "dangling_multiline_function")
+  [
+    (fun_expression)
+    (function_expression)
+  ] @append_indent_end
 )
 
 ; Allow softlines in sequences and ppx sequences, such as
