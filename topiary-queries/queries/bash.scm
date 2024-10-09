@@ -8,11 +8,28 @@
 [
   (comment)
   (expansion)
-  (heredoc_body)
-  (simple_expansion)
+  (heredoc_redirect)
   (string)
   (word)
 ] @leaf
+
+(simple_expansion
+  "$"
+  .
+  (_) @leaf
+)
+(simple_expansion
+  (#delimiter! "{")
+  "$"
+  .
+  (_) @prepend_delimiter
+)
+(simple_expansion
+  (#delimiter! "}")
+  "$"
+  .
+  (_) @append_delimiter
+)
 
 ;; Spacing
 
@@ -165,9 +182,14 @@
 
 ; Rule 5
 (
-  (comment) @prepend_space
+  (comment) @prepend_begin_scope @append_begin_measuring_scope
   .
-  "\n"
+  _ @prepend_end_measuring_scope @prepend_end_scope
+  (#scope_id! "line_break_after_comment")
+)
+(
+  (comment) @prepend_space
+  (#multi_line_scope_only! "line_break_after_comment")
 )
 
 ;; Compound Statements and Subshells
@@ -245,80 +267,160 @@
 ; * Multi-line command substitutions
 ;
 ; We address each context individually, as there's no way to isolate the
-; exceptional contexts, where no line spacing is required. When a
-; "command" is followed by a new line in the input, then the grammar
-; inserts an anonymous "\n" sibling node. We target these to achieve the
-; formatting we want.
+; exceptional contexts, where no line spacing is required. We use custom scopes
+; to detect cases where a "command" is followed by a newline in the input, because
+; modifications to the grammar since v0.19.0 no longer add anonymous '\n' nodes to the tree.
 ;
 ; FIXME Adding @delete to the \n anonymous nodes removes the errant
 ; trailing space. However, doing so breaks inter-block spacing and
 ; (weirdly) de-indentation at the end of a non-terminated case branch.
 
 (program
-  [(command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement) (variable_assignment)] @append_hardline
+  [
+    (command)
+    (list)
+    (pipeline)
+    (subshell)
+    (compound_statement)
+    (redirected_statement)
+    (variable_assignment)
+  ] @append_begin_scope @append_empty_scoped_softline
   .
-  "\n"
+  _ @prepend_end_scope
+  (#scope_id! "program_line_break")
 )
 
 (compound_statement
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
+  [
+    (command)
+    (list)
+    (pipeline)
+    (subshell)
+    (compound_statement)
+    (redirected_statement)
+    (variable_assignment)
+  ] @append_begin_scope @append_empty_scoped_softline
   .
-  "\n"
+  _ @prepend_end_scope
+  (#scope_id! "compound_statement_line_break")
 )
 
 (subshell
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
+  [
+    (command)
+    (list)
+    (pipeline)
+    (subshell)
+    (compound_statement)
+    (redirected_statement)
+    (variable_assignment)
+  ] @append_begin_scope @append_empty_scoped_softline
   .
-  "\n"
+  _ @prepend_end_scope
+  (#scope_id! "subshell_line_break")
 )
 
 (if_statement
   .
   _
   "then"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
+  [
+    (command)
+    (list)
+    (pipeline)
+    (subshell)
+    (compound_statement)
+    (redirected_statement)
+    (variable_assignment)
+  ] @append_begin_scope @append_empty_scoped_softline
   .
-  "\n"
+  _ @prepend_end_scope
+  (#scope_id! "(if_statement_line_break")
 )
 
 (elif_clause
   .
   _
   "then"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
+  [
+    (command)
+    (list)
+    (pipeline)
+    (subshell)
+    (compound_statement)
+    (redirected_statement)
+    (variable_assignment)
+  ] @append_begin_scope @append_empty_scoped_softline
   .
-  "\n"
+  _ @prepend_end_scope
+  (#scope_id! "elif_clause_line_break")
 )
 
 (else_clause
   .
   "else"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
+  [
+    (command)
+    (list)
+    (pipeline)
+    (subshell)
+    (compound_statement)
+    (redirected_statement)
+    (variable_assignment)
+  ] @append_begin_scope @append_empty_scoped_softline
   .
-  "\n"
+  _ @prepend_end_scope
+  (#scope_id! "else_clause_line_break")
 )
 
 (case_item
   .
   _
   ")"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
+  [
+    (command)
+    (list)
+    (pipeline)
+    (subshell)
+    (compound_statement)
+    (redirected_statement)
+    (variable_assignment)
+  ] @append_begin_scope @append_empty_scoped_softline
   .
-  "\n"
+  _ @prepend_end_scope
+  (#scope_id! "case_item_line_break")
 )
 
 (do_group
   .
   "do"
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
+  [
+    (command)
+    (list)
+    (pipeline)
+    (subshell)
+    (compound_statement)
+    (redirected_statement)
+    (variable_assignment)
+  ] @append_begin_scope @append_empty_scoped_softline
   .
-  "\n"
+  _ @prepend_end_scope
+  (#scope_id! "do_group_line_break")
 )
 
 (command_substitution
-  [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement) (variable_assignment)] @append_hardline
+  [
+    (command)
+    (list)
+    (pipeline)
+    (subshell)
+    (compound_statement)
+    (redirected_statement)
+    (variable_assignment)
+  ] @append_begin_scope @append_empty_scoped_softline
   .
-  "\n"
+  _ @prepend_end_scope
+  (#scope_id! "command_substitution_line_break")
 )
 
 ; Spaces between named nodes and command list/pipeline delimiters
@@ -392,23 +494,6 @@
 
 ; ...with the exceptions of herestrings, that are spaced
 (herestring_redirect (_) @prepend_space)
-
-; Ensure heredocs start on a new line, after their start marker, and
-; there is a new line after their end marker, when followed by any named
-; node. (NOTE This may still need refinement...)
-; NOTE These are a syntactic requirements
-(heredoc_start) @append_hardline
-
-; NOTE Anecdotally, queries that target the (heredoc_body) node act
-; differently, dependant upon expansions existing in the heredoc. Hence
-; this query, that prepends a new line to any following named node,
-; rather than simply appending a new line to any heredoc (which,
-; unexpectedly, doesn't work in the general sense).
-(
-  (heredoc_body)
-  .
-  (_) @prepend_hardline
-)
 
 ;; Conditionals
 
@@ -573,7 +658,11 @@
 ; negative anchor!)
 
 ; Declarations always end with a new line
-(declaration_command) @append_hardline
+(
+  (declaration_command)
+  .
+  (_) @prepend_hardline
+)
 
 ; Multiple variables can be exported (and assigned) at once
 (declaration_command
