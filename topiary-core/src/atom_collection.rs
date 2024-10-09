@@ -1054,6 +1054,8 @@ pub struct QueryPredicates {
     /// The flag that indicates that the query only triggers if the associated
     /// custom scope containing the matched nodes is multi-line.
     pub multi_line_scope_only: Option<String>,
+    /// A query name, for debugging/logging purposes
+    pub query_name: Option<String>,
 }
 
 /// Collapses spaces before antispace atoms in a vector of atoms.

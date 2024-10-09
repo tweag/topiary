@@ -255,6 +255,13 @@ pub fn apply_query(
     // means we want to append a hardline at
     // the end, but we don't know if we get a line_comment capture or not.
     for m in matches {
+        let mut predicates = QueryPredicates::default();
+
+        for p in query.query.general_predicates(m.pattern_index) {
+            predicates = handle_predicate(&p, &predicates)?;
+        }
+        check_predicates(&predicates)?;
+
         // NOTE: Only performed if logging is enabled to avoid unnecessary computation of Position
         if log::log_enabled!(log::Level::Info) {
             #[cfg(target_arch = "wasm32")]
@@ -270,15 +277,14 @@ pub fn apply_query(
                 pos
             });
 
-            log::info!("Processing match: {m} at location {pos}");
-        }
+            let query_name_info = if let Some(name) = &predicates.query_name {
+                format!(" of query \"{name}\"")
+            } else {
+                "".into()
+            };
 
-        let mut predicates = QueryPredicates::default();
-
-        for p in query.query.general_predicates(m.pattern_index) {
-            predicates = handle_predicate(&p, &predicates)?;
+            log::info!("Processing match{query_name_info}: {m} at location {pos}");
         }
-        check_predicates(&predicates)?;
 
         // If any capture is a do_nothing, then do nothing.
         if m.captures
@@ -434,8 +440,20 @@ fn handle_predicate(
             multi_line_scope_only: Some(arg),
             ..predicates.clone()
         })
+    } else if "query_name!" == operator {
+        let arg =
+            predicate.args().into_iter().next().ok_or_else(|| {
+                FormatterError::Query(format!("{operator} needs an argument"), None)
+            })?;
+        Ok(QueryPredicates {
+            query_name: Some(arg),
+            ..predicates.clone()
+        })
     } else {
-        Ok(predicates.clone())
+        Err(FormatterError::Query(
+            format!("{operator} is an unknown predicate. Maybe you forgot a \"!\"?"),
+            None,
+        ))
     }
 }
 

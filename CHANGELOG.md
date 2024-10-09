@@ -48,6 +48,7 @@ This name should be decided amongst the team before the release.
 - [#705](https://github.com/tweag/topiary/pull/705) Added support for Nickel 1.7 extended pattern formatting
 - [#737](https://github.com/tweag/topiary/pull/737) Added the `prefetch` command, that prefetches and caches all grammars in the current configuration
 - [#755](https://github.com/tweag/topiary/pull/755) Introduce measuring scopes, which can be used in conjunction with regular scopes to add expressivity to the formatting queries.
+- [#760](https://github.com/tweag/topiary/pull/760) Introduce optional `query_name` predicate, to help with query logging and debugging.
 
 ### Fixed
 - [#720](https://github.com/tweag/topiary/pull/720) [#722](https://github.com/tweag/topiary/pull/722) [#723](https://github.com/tweag/topiary/pull/723) [#724](https://github.com/tweag/topiary/pull/724) [#735](https://github.com/tweag/topiary/pull/735)
