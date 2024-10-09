@@ -387,7 +387,6 @@ formatting. Otherwise, the following exit codes are defined:
 
 | Reason                       | Code |
 | :--------------------------- | ---: |
-| Unspecified error            |    1 |
 | CLI argument parsing error   |    2 |
 | I/O error                    |    3 |
 | Topiary query error          |    4 |
@@ -396,6 +395,7 @@ formatting. Otherwise, the following exit codes are defined:
 | Idempotency error            |    7 |
 | Unspecified formatting error |    8 |
 | Multiple errors              |    9 |
+| Unspecified error            |   10 |
 
 When given multiple inputs, Topiary will do its best to process them
 all, even in the presence of errors. Should _any_ errors occur, Topiary

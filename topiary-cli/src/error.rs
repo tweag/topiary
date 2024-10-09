@@ -92,8 +92,11 @@ impl From<TopiaryError> for ExitCode {
             // Bad arguments: Exit 2
             // (Handled by clap: https://github.com/clap-rs/clap/issues/3426)
 
-            // Anything else: Exit 1
-            _ => 1,
+            // Things went well but Topiary needs to answer 'false' in a clean way: Exit 1
+            // (Not used at the moment)
+
+            // Anything else: Exit 10
+            _ => 10,
         };
 
         ExitCode::from(exit_code)
