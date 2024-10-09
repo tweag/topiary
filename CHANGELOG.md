@@ -54,6 +54,7 @@ This name should be decided amongst the team before the release.
 - [#720](https://github.com/tweag/topiary/pull/720) [#722](https://github.com/tweag/topiary/pull/722) [#723](https://github.com/tweag/topiary/pull/723) [#724](https://github.com/tweag/topiary/pull/724) [#735](https://github.com/tweag/topiary/pull/735) [#738](https://github.com/tweag/topiary/pull/738) [#739](https://github.com/tweag/topiary/pull/739) [#745](https://github.com/tweag/topiary/pull/745) [#755](https://github.com/tweag/topiary/pull/755) [#759](https://github.com/tweag/topiary/pull/759) [#764](https://github.com/tweag/topiary/pull/764 Various OCaml improvements
 - [#762](https://github.com/tweag/topiary/pull/762) Various Rust improvements
 - [#744](https://github.com/tweag/topiary/pull/744) [#768](https://github.com/tweag/topiary/pull/768) Nickel: fix the formatting of annotated multiline let-bindings
+- [#763](https://github.com/tweag/topiary/pull/763) Various Bash fixes and improvements
 - [#761](https://github.com/tweag/topiary/pull/761) No longer use error code 1 for unspecified errors
 - [#770](https://github.com/tweag/topiary/pull/770) Fallback to compile-time included query files when formatting a file
 
