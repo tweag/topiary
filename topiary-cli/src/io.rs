@@ -182,17 +182,7 @@ impl<'cfg, 'i> Inputs<'cfg> {
                         // The user specified a query file
                         Some(p) => p,
                         // The user did not specify a file, try the default locations
-                        None => match language.find_query_file() {
-                            Ok(p) => p.into(),
-                            // For some reason, Topiary could not find any
-                            // matching file in a default location. As a final attempt, use try to the the
-                            // builtin ones. Store the error, return that if we
-                            // fail to find anything, because the builtin error might be unexpected.
-                            Err(e) => {
-                                log::warn!("No query files found in any of the expected locations. Falling back to compile-time included files.");
-                                to_query(&language_name).map_err(|_| e)?
-                            }
-                        },
+                        None => to_query_from_language(language)?,
                     };
 
                     Ok(InputFile {
@@ -207,7 +197,7 @@ impl<'cfg, 'i> Inputs<'cfg> {
                 .into_iter()
                 .map(|path| {
                     let language = config.detect(&path)?;
-                    let query = language.find_query_file()?.into();
+                    let query: QuerySource = to_query_from_language(language)?;
 
                     Ok(InputFile {
                         source: InputSource::Disk(path, None),
@@ -220,6 +210,21 @@ impl<'cfg, 'i> Inputs<'cfg> {
 
         Self(inputs)
     }
+}
+
+fn to_query_from_language(language: &topiary_config::language::Language) -> CLIResult<QuerySource> {
+    let query: QuerySource = match language.find_query_file() {
+            Ok(p) => p.into(),
+            // For some reason, Topiary could not find any
+            // matching file in a default location. As a final attempt, try the
+            // builtin ones. Store the error, return that if we
+            // fail to find anything, because the builtin error might be unexpected.
+            Err(e) => {
+                log::warn!("No query files found in any of the expected locations. Falling back to compile-time included files.");
+                to_query(&language.name).map_err(|_| e)?
+            }
+        };
+    Ok(query)
 }
 
 impl<'cfg> Iterator for Inputs<'cfg> {
