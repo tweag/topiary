@@ -1593,6 +1593,33 @@
   ] @append_indent_end
 )
 
+; The following allows
+;
+; somefun @@
+;   fun x -> body
+;
+; to be formatted as
+;
+; somefun @@ fun x ->
+; body
+(infix_expression
+  (#scope_id! "relocate_dangling_function_line_break")
+  (concat_operator) @append_begin_scope @append_begin_measuring_scope
+  .
+  (fun_expression
+    "fun" @prepend_end_measuring_scope
+    "->" @append_end_scope
+  )
+)
+(infix_expression
+  (#multi_line_scope_only! "relocate_dangling_function_line_break")
+  (concat_operator)
+  .
+  (fun_expression
+    "->" @append_hardline
+  )
+)
+
 ; Allow softlines in sequences and ppx sequences, such as
 ; let b =
 ;   foo;

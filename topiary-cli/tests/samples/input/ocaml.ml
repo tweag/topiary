@@ -1249,3 +1249,8 @@ let _ =
     baz
     @@ fun x ->
     x
+
+(* #546 Hanging forms *)
+let _ =
+  somefun @@
+    fun x -> body
