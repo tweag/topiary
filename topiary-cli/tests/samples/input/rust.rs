@@ -86,3 +86,27 @@ enum Mode6 {
        mode unchanged */
     Either,
 }
+
+// Inline with let stmt
+fn inline_let() { let hi = 1; }
+
+// While loop spacing
+while i == true {
+    let i = 42;
+}
+
+
+// Scoped blocks
+{
+    let i = 42;
+}
+{
+    let i = 43;
+}
+
+// Empty block inside of impl function
+impl MyTrait for MyStruct {
+    fn foo() {
+        // ... logic ...
+    }
+}

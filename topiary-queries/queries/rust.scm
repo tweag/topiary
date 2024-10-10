@@ -1,7 +1,11 @@
 ; Sometimes we want to indicate that certain parts of our source text should
 ; not be formatted, but taken as is. We use the leaf capture name to inform the
 ; tool of this.
-(string_literal) @leaf
+[
+  (block_comment)
+  (line_comment)
+  (string_literal)
+] @leaf
 
 ; Allow blank line before
 [
@@ -37,6 +41,7 @@
   "type"
   "unsafe"
   (visibility_modifier)
+  "while"
   "="
   "=="
   "-"
@@ -73,6 +78,7 @@
     (attribute_item)
     (enum_item)
     (extern_crate_declaration)
+    (expression_statement)
     (function_item)
     (impl_item)
     (let_declaration)
@@ -80,7 +86,7 @@
     (struct_item)
     (type_item)
     (use_declaration)
-  ] @append_hardline
+  ] @append_spaced_softline
   .
   [
     (block_comment)
@@ -91,6 +97,13 @@
 (line_comment) @append_hardline
 
 (block_comment) @multi_line_indent_all
+
+; Allow line break after block comments
+(
+  (block_comment)
+  .
+  _ @prepend_input_softline
+)
 
 ; Append softlines, unless followed by comments.
 (
@@ -161,7 +174,6 @@
 (block
   .
   "{" @append_spaced_softline @append_indent_start
-  _
   "}" @prepend_spaced_softline @prepend_indent_end
   .
 )
@@ -176,8 +188,20 @@
   "{" @prepend_space
 )
 
+(declaration_list
+  .
+  "{" @append_empty_softline @append_indent_start
+  "}" @prepend_empty_softline @prepend_indent_end
+  .
+)
+
 ; PhantomData<&'a ()>
 (_
   (lifetime) @append_space
   [(array_type) (generic_type) (primitive_type) (unit_type)]
+)
+
+; Never put a space before a comma
+(
+  "," @prepend_antispace
 )

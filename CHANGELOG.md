@@ -51,8 +51,8 @@ This name should be decided amongst the team before the release.
 - [#760](https://github.com/tweag/topiary/pull/760) Introduce optional `query_name` predicate, to help with query logging and debugging.
 
 ### Fixed
-- [#720](https://github.com/tweag/topiary/pull/720) [#722](https://github.com/tweag/topiary/pull/722) [#723](https://github.com/tweag/topiary/pull/723) [#724](https://github.com/tweag/topiary/pull/724) [#735](https://github.com/tweag/topiary/pull/735)
-[#738](https://github.com/tweag/topiary/pull/738) [#739](https://github.com/tweag/topiary/pull/739) [#745](https://github.com/tweag/topiary/pull/745) [#755](https://github.com/tweag/topiary/pull/755) [#759](https://github.com/tweag/topiary/pull/759) Various OCaml improvements
+- [#720](https://github.com/tweag/topiary/pull/720) [#722](https://github.com/tweag/topiary/pull/722) [#723](https://github.com/tweag/topiary/pull/723) [#724](https://github.com/tweag/topiary/pull/724) [#735](https://github.com/tweag/topiary/pull/735) [#738](https://github.com/tweag/topiary/pull/738) [#739](https://github.com/tweag/topiary/pull/739) [#745](https://github.com/tweag/topiary/pull/745) [#755](https://github.com/tweag/topiary/pull/755) [#759](https://github.com/tweag/topiary/pull/759) Various OCaml improvements
+- [#762](https://github.com/tweag/topiary/pull/762) Various Rust improvements
 - [#744](https://github.com/tweag/topiary/pull/744) Nickel: fix the indentation of `in` for annotated multiline let-bindings
 - [#761](https://github.com/tweag/topiary/pull/761) No longer use error code 1 for unspecified errors
 
