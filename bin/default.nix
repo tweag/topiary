@@ -36,7 +36,7 @@
     runtimeInputs = with pkgs; [
       emscripten
       git
-      toml2json
+      nickel
       tree-sitter
     ];
 

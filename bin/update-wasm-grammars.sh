@@ -22,15 +22,23 @@ readonly GREEN
 NC="$(tput sgr0)"
 readonly NC
 
+CONFIG=$(nickel export --format json "$(git rev-parse --show-toplevel)/topiary-config/languages.ncl")
+readonly CONFIG
+
 echo -e "${BLUE}Updating all Topiary grammars. This process can take a few minutes."
 
 ref_for_language() {
-  toml2json "$(git rev-parse --show-toplevel)/Cargo.lock" | jq ".package[] | select(.name==\"tree-sitter-$1\") | .source" | sed -e 's/.*#\(.*\)"/\1/'
+  echo "$CONFIG" | jq -r ".languages.$1.grammar.rev"
+}
+
+repo_for_language() {
+  echo "$CONFIG" | jq -r ".languages.$1.grammar.git"
 }
 
 json() {
   echo -e "${BLUE}JSON: Fetching${NC}"
-  git clone https://github.com/tree-sitter/tree-sitter-json.git "${WORKDIR}/tree-sitter-json" &> /dev/null
+  REPO=$(repo_for_language "json")
+  git clone "${REPO}" "${WORKDIR}/tree-sitter-json" &> /dev/null
   REV=$(ref_for_language "json")
   pushd "${WORKDIR}/tree-sitter-json" &> /dev/null
     git checkout "$REV" &> /dev/null
@@ -42,7 +50,8 @@ json() {
 
 nickel() {
   echo -e "${BLUE}Nickel: Fetching${NC}"
-  git clone https://github.com/nickel-lang/tree-sitter-nickel.git "${WORKDIR}/tree-sitter-nickel" &> /dev/null
+  REPO=$(repo_for_language "nickel")
+  git clone "${REPO}" "${WORKDIR}/tree-sitter-nickel" &> /dev/null
   REV=$(ref_for_language "nickel")
   pushd "${WORKDIR}/tree-sitter-nickel" &> /dev/null
     git checkout "$REV" &> /dev/null
@@ -54,7 +63,8 @@ nickel() {
 
 ocaml() {
   echo -e "${BLUE}OCaml: Fetching${NC}"
-  git clone https://github.com/tree-sitter/tree-sitter-ocaml.git "${WORKDIR}/tree-sitter-ocaml" &> /dev/null
+  REPO=$(repo_for_language "ocaml")
+  git clone "${REPO}" "${WORKDIR}/tree-sitter-ocaml" &> /dev/null
   REV=$(ref_for_language "ocaml")
   pushd "${WORKDIR}/tree-sitter-ocaml" &> /dev/null
     git checkout "$REV" &> /dev/null
@@ -67,7 +77,8 @@ ocaml() {
 
 ocamllex() {
   echo -e "${BLUE}OCamllex: Fetching${NC}"
-  git clone https://github.com/314eter/tree-sitter-ocamllex.git "${WORKDIR}/tree-sitter-ocamllex" &> /dev/null
+  REPO=$(repo_for_language "ocamllex")
+  git clone "${REPO}" "${WORKDIR}/tree-sitter-ocamllex" &> /dev/null
   REV=$(ref_for_language "ocamllex")
   pushd "${WORKDIR}/tree-sitter-ocamllex" &> /dev/null
     git checkout "$REV" &> /dev/null
@@ -79,7 +90,8 @@ ocamllex() {
 
 bash() {
   echo -e "${BLUE}Bash: Fetching${NC}"
-  git clone https://github.com/tree-sitter/tree-sitter-bash.git "${WORKDIR}/tree-sitter-bash" &> /dev/null
+  REPO=$(repo_for_language "bash")
+  git clone "${REPO}" "${WORKDIR}/tree-sitter-bash" &> /dev/null
   REV=$(ref_for_language "bash")
   pushd "${WORKDIR}/tree-sitter-bash" &> /dev/null
     git checkout "$REV" &> /dev/null
@@ -91,7 +103,8 @@ bash() {
 
 rust() {
   echo -e "${BLUE}Rust: Fetching${NC}"
-  git clone https://github.com/tree-sitter/tree-sitter-rust.git "${WORKDIR}/tree-sitter-rust" &> /dev/null
+  REPO=$(repo_for_language "rust")
+  git clone "${REPO}" "${WORKDIR}/tree-sitter-rust" &> /dev/null
   REV=$(ref_for_language "rust")
   pushd "${WORKDIR}/tree-sitter-rust" &> /dev/null
     git checkout "$REV" &> /dev/null
@@ -103,7 +116,8 @@ rust() {
 
 toml() {
   echo -e "${BLUE}TOML: Fetching${NC}"
-  git clone https://github.com/tree-sitter/tree-sitter-toml.git "${WORKDIR}/tree-sitter-toml" &> /dev/null
+  REPO=$(repo_for_language "toml")
+  git clone "${REPO}" "${WORKDIR}/tree-sitter-toml" &> /dev/null
   REV=$(ref_for_language "toml")
   pushd "${WORKDIR}/tree-sitter-toml" &> /dev/null
     git checkout "$REV" &> /dev/null
@@ -115,8 +129,9 @@ toml() {
 
 tree-sitter-query() {
   echo -e "${BLUE}Query: Fetching${NC}"
-  git clone https://github.com/nvim-treesitter/tree-sitter-query.git "${WORKDIR}/tree-sitter-query" &> /dev/null
-  REV=$(ref_for_language "query")
+  REPO=$(repo_for_language "tree_sitter_query")
+  git clone "${REPO}" "${WORKDIR}/tree-sitter-query" &> /dev/null
+  REV=$(ref_for_language "tree_sitter_query")
   pushd "${WORKDIR}/tree-sitter-query" &> /dev/null
     git checkout "$REV" &> /dev/null
   popd &> /dev/null
@@ -127,7 +142,8 @@ tree-sitter-query() {
 
 css() {
   echo -e "${BLUE}CSS: Fetching${NC}"
-  git clone https://github.com/tree-sitter/tree-sitter-css.git "${WORKDIR}/tree-sitter-css" &> /dev/null
+  REPO=$(repo_for_language "css")
+  git clone "${REPO}" "${WORKDIR}/tree-sitter-css" &> /dev/null
   REV=$(ref_for_language "css")
   pushd "${WORKDIR}/tree-sitter-css" &> /dev/null
     git checkout "$REV" &> /dev/null
