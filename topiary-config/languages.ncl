@@ -18,21 +18,21 @@
 
     json = {
       extensions = [
-          "json",
-          "avsc",
-          "geojson",
-          "gltf",
-          "har",
-          "ice",
-          "JSON-tmLanguage",
-          "jsonl",
-          "mcmeta",
-          "tfstate",
-          "tfstate.backup",
-          "topojson",
-          "webapp",
-          "webmanifest"
-        ],
+        "json",
+        "avsc",
+        "geojson",
+        "gltf",
+        "har",
+        "ice",
+        "JSON-tmLanguage",
+        "jsonl",
+        "mcmeta",
+        "tfstate",
+        "tfstate.backup",
+        "topojson",
+        "webapp",
+        "webmanifest"
+      ],
       grammar = {
         git = "https://github.com/tree-sitter/tree-sitter-json.git",
         rev = "94f5c527b2965465956c2000ed6134dd24daf2a7",
