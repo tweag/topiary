@@ -141,8 +141,7 @@
         3
     ),
 
-    # regression test for https://github.com/tweag/topiary/issues/743
-    # (partially fixed)
+    # regression tests for https://github.com/tweag/topiary/issues/743
     let foo
       | Number
       = [
@@ -153,6 +152,36 @@
     in
     foo
     @ [],
+    let x | Number = 1 + 1 in x,
+    let x | Number = 1 + 1
+    in x,
+    let x | Number | std.number.PosNat =
+      1
+      + 1
+    in x,
+    let x | Number = 1 + 1
+    in
+    x,
+    let x | Array String = ["a", "b"]
+    in x,
+    let x | Array Number = [
+      1,
+      2,
+      3
+    ]
+    in
+    x,
+    let x
+      | Array Number
+      = [
+        1 + 1,
+        2 + 2,
+        3 + 3,
+      ]
+    in
+    x,
+
+    # let blocks
     let x = 1, y = 2 in x + y,
     let
       x = 1,
