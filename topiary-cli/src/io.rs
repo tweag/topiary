@@ -355,6 +355,9 @@ where
         #[cfg(feature = "toml")]
         "toml" => Ok(topiary_queries::toml().into()),
 
+        #[cfg(feature = "nix")]
+        "nix" => Ok(topiary_queries::nix().into()),
+
         #[cfg(feature = "tree_sitter_query")]
         "tree_sitter_query" => Ok(topiary_queries::tree_sitter_query().into()),
 

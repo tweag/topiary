@@ -52,6 +52,12 @@ pub fn toml() -> &'static str {
     include_str!("../queries/toml.scm")
 }
 
+/// Returns the Topiary-compatible query file for Nix.
+#[cfg(feature = "nix")]
+pub fn nix() -> &'static str {
+    include_str!("../queries/nix.scm")
+}
+
 /// Returns the Topiary-compatible query file for the
 /// Tree-sitter query language.
 #[cfg(feature = "tree_sitter_query")]

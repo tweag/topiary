@@ -33,11 +33,11 @@ git2.workspace = true
 libloading.workspace = true
 
 [features]
-default = [ "parallel" ]
+default = ["parallel"]
 
 # Enabling the `parallel` feature enables parallel computation where possible.
 # At the moment, this is only in grammar prefetching
-parallel = [ "dep:rayon" ]
+parallel = ["dep:rayon"]
 
 bash = []
 css = []
@@ -46,6 +46,7 @@ nickel = []
 ocaml = []
 ocaml_interface = []
 ocamllex = []
+nix = []
 rust = []
 toml = []
 tree_sitter_query = []
@@ -53,14 +54,15 @@ tree_sitter_query = []
 # This a convenience for the sake of downstream applications which don't
 # wish to cherry-pick grammars (e.g., the playground)
 all = [
-  "bash",
-  "css",
-  "json",
-  "nickel",
-  "ocaml",
-  "ocaml_interface",
-  "ocamllex",
-  "rust",
-  "toml",
-  "tree_sitter_query"
+    "bash",
+    "css",
+    "json",
+    "nickel",
+    "ocaml",
+    "ocaml_interface",
+    "ocamllex",
+    "rust",
+    "nix",
+    "toml",
+    "tree_sitter_query",
 ]

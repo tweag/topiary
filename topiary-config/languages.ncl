@@ -16,6 +16,14 @@
       },
     },
 
+    nix = {
+      extensions = ["nix"],
+      grammar = {
+        git = "https://github.com/nix-community/tree-sitter-nix",
+        rev = "456b14a2fa6315abc7e02fcffaf4a1f35d4955d3",
+      },
+    },
+
     json = {
       extensions = [
         "json",

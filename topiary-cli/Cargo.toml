@@ -3,12 +3,12 @@ name = "topiary-cli"
 description = "CLI app for Topiary, the universal code formatter."
 categories = ["command-line-utilities", "development-tools", "text-processing"]
 keywords = [
-  "cli",
-  "code-formatter",
-  "formatter",
-  "text",
-  "tree-sitter",
-  "utility",
+    "cli",
+    "code-formatter",
+    "formatter",
+    "text",
+    "tree-sitter",
+    "utility",
 ]
 version.workspace = true
 edition.workspace = true
@@ -35,7 +35,12 @@ itertools = { workspace = true }
 log = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 tempfile = { workspace = true }
-tokio = { workspace = true, features = ["fs", "rt-multi-thread", "sync", "macros"] }
+tokio = { workspace = true, features = [
+    "fs",
+    "rt-multi-thread",
+    "sync",
+    "macros",
+] }
 toml = { workspace = true }
 topiary-core = { path = "../topiary-core" }
 topiary-config = { path = "../topiary-config" }
@@ -58,34 +63,37 @@ predicates = { workspace = true }
 
 [features]
 default = [
-  "contributed",
-  "json",
-  "nickel",
-  "ocaml",
-  "ocaml_interface",
-  "ocamllex",
-  "toml",
-  "tree_sitter_query"
+    "contributed",
+    "json",
+    "nickel",
+    "nix",
+    "ocaml",
+    "ocaml_interface",
+    "ocamllex",
+    "toml",
+    "tree_sitter_query",
 ]
 
 # Included by default
-contributed = [
-  "css"
-]
+contributed = ["css"]
 
 # Excluded by default
-experimental = [
-  "bash",
-  "rust",
-]
+experimental = ["bash", "rust"]
 
+nix = ["topiary-config/nix", "topiary-queries/nix"]
 bash = ["topiary-config/bash", "topiary-queries/bash"]
 css = ["topiary-config/css", "topiary-queries/css"]
 json = ["topiary-config/json", "topiary-queries/json"]
 nickel = ["topiary-config/nickel", "topiary-queries/nickel"]
 ocaml = ["topiary-config/ocaml", "topiary-queries/ocaml"]
-ocaml_interface = ["topiary-config/ocaml_interface", "topiary-queries/ocaml_interface"]
+ocaml_interface = [
+    "topiary-config/ocaml_interface",
+    "topiary-queries/ocaml_interface",
+]
 ocamllex = ["topiary-config/ocamllex", "topiary-queries/ocamllex"]
 rust = ["topiary-config/rust", "topiary-queries/rust"]
 toml = ["topiary-config/toml", "topiary-queries/toml"]
-tree_sitter_query = ["topiary-config/tree_sitter_query", "topiary-queries/tree_sitter_query"]
+tree_sitter_query = [
+    "topiary-config/tree_sitter_query",
+    "topiary-queries/tree_sitter_query",
+]
