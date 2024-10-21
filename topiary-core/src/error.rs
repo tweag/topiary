@@ -28,8 +28,7 @@ pub enum FormatterError {
     },
 
     /// The query contains a pattern that had no match in the input file.
-    /// Should only be raised in the test suite.
-    PatternDoesNotMatch(String),
+    PatternDoesNotMatch,
 
     /// There was an error in the query file. If this happened using our
     /// provided query files, it is a bug. Please log an issue.
@@ -81,10 +80,10 @@ impl fmt::Display for FormatterError {
                 write!(f, "Parsing error between line {start_line}, column {start_column} and line {end_line}, column {end_column}")
             }
 
-            Self::PatternDoesNotMatch(pattern_content) => {
+            Self::PatternDoesNotMatch => {
                 write!(
                     f,
-                    "The following pattern matches nothing in the input:\n{pattern_content}"
+                    "The query contains a pattern that does not match the input"
                 )
             }
 
@@ -102,7 +101,7 @@ impl Error for FormatterError {
         match self {
             Self::Idempotence
             | Self::Parsing { .. }
-            | Self::PatternDoesNotMatch(_)
+            | Self::PatternDoesNotMatch
             | Self::Io(IoError::Generic(_, None)) => None,
             Self::Internal(_, source) => source.as_ref().map(Deref::deref),
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),

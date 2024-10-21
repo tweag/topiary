@@ -144,6 +144,13 @@ pub enum Commands {
     #[command(display_order = 4)]
     Prefetch,
 
+    /// Checks how much of the tree-sitter query is used
+    #[command(display_order = 5)]
+    Coverage {
+        #[command(flatten)]
+        input: ExactlyOneInput,
+    },
+
     /// Generate shell completion script
     #[command(display_order = 100)]
     Completion {

@@ -187,6 +187,13 @@ impl<'a> Display for LocalQueryMatch<'a> {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+// A struct to store the result of a query coverage check
+pub struct CoverageData {
+    pub cover_percentage: f32,
+    pub missing_patterns: Vec<String>,
+}
+
 /// Applies a query to an input content and returns a collection of atoms.
 ///
 /// # Errors
@@ -202,9 +209,8 @@ pub fn apply_query(
     query: &TopiaryQuery,
     grammar: &topiary_tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
-    should_check_input_exhaustivity: bool,
 ) -> FormatterResult<AtomCollection> {
-    let (tree, grammar) = parse(input_content, grammar, tolerate_parsing_errors)?;
+    let (tree, _grammar) = parse(input_content, grammar, tolerate_parsing_errors)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
 
@@ -220,11 +226,6 @@ pub fn apply_query(
             pattern_index: query_match.pattern_index(),
             captures: local_captures,
         });
-    }
-
-    if should_check_input_exhaustivity {
-        let ref_match_count = matches.len();
-        check_input_exhaustivity(ref_match_count, query, grammar, &root, source)?;
     }
 
     // Find the ids of all tree-sitter nodes that were identified as a leaf
@@ -500,24 +501,40 @@ fn check_predicates(predicates: &QueryPredicates) -> FormatterResult<()> {
 /// Check if the input tests all patterns in the query, by successively disabling
 /// all patterns. If disabling a pattern does not decrease the number of matches,
 /// then that pattern originally matched nothing in the input.
-fn check_input_exhaustivity(
-    ref_match_count: usize,
+pub fn check_query_coverage(
+    input_content: &str,
     original_query: &TopiaryQuery,
     grammar: &topiary_tree_sitter_facade::Language,
-    root: &Node,
-    source: &[u8],
-) -> FormatterResult<()> {
+) -> FormatterResult<CoverageData> {
+    let (tree, grammar) = parse(input_content, grammar, false)?;
+    let root = tree.root_node();
+    let source = input_content.as_bytes();
+    let mut missing_patterns = Vec::new();
+
+    // Match queries
+    let mut cursor = QueryCursor::new();
+    let ref_match_count = original_query
+        .query
+        .matches(&root, source, &mut cursor)
+        .count();
     let pattern_count = original_query.query.pattern_count();
     let query_content = &original_query.query_content;
+
     // This particular test avoids a SIGSEGV error that occurs when trying
     // to count the matches of an empty query (see #481)
     if pattern_count == 1 {
+        let mut cover_percentage = 1.0;
         if ref_match_count == 0 {
-            return Err(FormatterError::PatternDoesNotMatch(query_content.into()));
-        } else {
-            return Ok(());
+            missing_patterns.push(query_content.into());
+            cover_percentage = 0.0
         }
+        return Ok(CoverageData {
+            cover_percentage,
+            missing_patterns,
+        });
     }
+
+    let mut ok_patterns = 0.0;
     for i in 0..pattern_count {
         // We don't need to use TopiaryQuery in this test since we have no need
         // for duplicate versions of the query_content string, instead we create the query
@@ -526,7 +543,7 @@ fn check_input_exhaustivity(
             .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
         query.disable_pattern(i);
         let mut cursor = QueryCursor::new();
-        let match_count = query.matches(root, source, &mut cursor).count();
+        let match_count = query.matches(&root, source, &mut cursor).count();
         if match_count == ref_match_count {
             let index_start = query.start_byte_for_pattern(i);
             let index_end = if i == pattern_count - 1 {
@@ -535,19 +552,24 @@ fn check_input_exhaustivity(
                 query.start_byte_for_pattern(i + 1)
             };
             let pattern_content = &query_content[index_start..index_end];
-            return Err(FormatterError::PatternDoesNotMatch(pattern_content.into()));
+            missing_patterns.push(pattern_content.into());
+        } else {
+            ok_patterns += 1.0;
         }
     }
-    Ok(())
+
+    let cover_percentage = ok_patterns / pattern_count as f32;
+    Ok(CoverageData {
+        cover_percentage,
+        missing_patterns,
+    })
 }
 
 #[cfg(target_arch = "wasm32")]
-fn check_input_exhaustivity(
-    _ref_match_count: usize,
+pub fn check_query_coverage(
+    _input_content: &str,
     _original_query: &TopiaryQuery,
     _grammar: &topiary_tree_sitter_facade::Language,
-    _root: &Node,
-    _source: &[u8],
-) -> FormatterResult<()> {
+) -> FormatterResult<CoverageData> {
     unimplemented!();
 }
