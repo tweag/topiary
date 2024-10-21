@@ -65,6 +65,7 @@ This name should be decided amongst the team before the release.
 - [#732](https://github.com/tweag/topiary/pull/732) Change how function application and parenthesized expressions are treated in Nickel to reduce the overall noise and indentation
 - [#736](https://github.com/tweag/topiary/pull/668) Updates our Nickel grammar, and adds support for let blocks.
 - [#769](https://github.com/tweag/topiary/pull/769) Move the web playground to a separate branch
+- [#773](https://github.com/tweag/topiary/pull/773) Change the status of Bash from "experimental" to "supported"
 
 ## v0.4.0 - Exquisite Elm - 2024-05-15
 

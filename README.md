@@ -88,6 +88,7 @@ stated design goals. They are exposed, in Topiary, through the
 `--language` command line flag, or language detection (based on file
 extension).
 
+* [Bash]
 * [JSON]
 * [Nickel]
 * [OCaml] (both implementations and interfaces)
@@ -111,7 +112,6 @@ gated behind a feature flag (either `experimental`, for all of them, or
 by their individual name). Once included, they can be accessed in
 Topiary in the usual way.
 
-* [Bash]
 * [Rust]
 
 ## Getting Started
