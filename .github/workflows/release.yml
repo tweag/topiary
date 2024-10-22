@@ -128,7 +128,21 @@ jobs:
         run: |
           ${{ matrix.packages_install }}
       - name: Build artifacts
+        # Fix broken link to OpenSSL lib for arm64
+        env:
+          AARCH64_APPLE_DARWIN_OPENSSL_LIB_DIR: ~/openssl
+          AARCH64_APPLE_DARWIN_OPENSSL_DIR: ~/openssl
+          # PKG_CONFIG_PATH: /usr/local/opt/openssl@1.1/lib/pkgconfig/
         run: |
+          # Hack: download OpenSSL headers directly
+          git clone --branch OpenSSL_1_1_0 https://github.com/openssl/openssl $AARCH64_APPLE_DARWIN_OPENSSL_LIB_DIR
+          cp $(brew --prefix openssl@1.1)/bin/* $AARCH64_APPLE_DARWIN_OPENSSL_LIB_DIR
+          # ls -l $AARCH64_APPLE_DARWIN_OPENSSL_LIB_DIR
+          # export AARCH64_APPLE_DARWIN_OPENSSL_LIB_DIR=$(brew --prefix openssl@1.1)/lib
+          # ls $AARCH64_APPLE_DARWIN_OPENSSL_DIR
+          # ls $AARCH64_APPLE_DARWIN_OPENSSL_LIB_DIR
+          # brew install openssl@1.1
+          # ln -sf /usr/local/opt/openssl@1.1/lib/pkgconfig /usr/local/lib/pkgconfig
           # Actually do builds and make zips and whatnot
           cargo dist build ${{ needs.plan.outputs.tag-flag }} --print=linkage --output-format=json ${{ matrix.dist_args }} > dist-manifest.json
           echo "cargo dist ran successfully"
