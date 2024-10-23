@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.5.0"
+version = "0.5.1"
 edition = "2021"
 authors = ["Tweag"]
 homepage = "https://topiary.tweag.io"
@@ -34,9 +34,9 @@ lto = "thin"
 # Config for 'cargo dist'
 [workspace.metadata.dist]
 # The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
-cargo-dist-version = "0.13.2"
+cargo-dist-version = "0.19.1"
 # CI backends to support
-ci = ["github"]
+ci = "github"
 # The installers to generate for each app
 installers = ["shell"]
 # Target platforms to build apps for (Rust target-triple syntax)
@@ -45,6 +45,8 @@ targets = ["aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-
 pr-run-mode = "plan"
 # Whether to install an updater program
 install-updater = false
+# Path that installers should place binaries in
+install-path = "CARGO_HOME"
 
 [workspace.dependencies]
 assert_cmd = "2.0"
@@ -89,8 +91,8 @@ wasm-bindgen-futures = "0.4"
 wasm-bindgen-test = "0.3"
 web-sys = "0.3"
 
-topiary-web-tree-sitter-sys = { version = "0.5.0", path = "./topiary-web-tree-sitter-sys" }
-topiary-tree-sitter-facade = { version = "0.5.0", path = "./topiary-tree-sitter-facade" }
+topiary-web-tree-sitter-sys = { version = "0.5.1", path = "./topiary-web-tree-sitter-sys" }
+topiary-tree-sitter-facade = { version = "0.5.1", path = "./topiary-tree-sitter-facade" }
 
 # tree-sitter-json's dependency on Tree-sitter is looser than ours, so
 # we have to pin its version to maintain API compatibility
