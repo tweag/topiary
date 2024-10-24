@@ -1,4 +1,4 @@
-use std::{fmt, fs, fs::File, io::Write, path::PathBuf};
+use std::{fmt, fs, fs::File, io::Write, path::PathBuf, sync::Once};
 
 use assert_cmd::Command;
 use predicates::{
@@ -16,6 +16,35 @@ const JSON_EXPECTED: &str = r#"{ "test": 123 }
 const TOML_INPUT: &str = r#"   test=    123"#;
 const TOML_EXPECTED: &str = r#"test = 123
 "#;
+
+// We need to prefetch JSON and TOML grammars before running the tests, on pain of race condition:
+// If multiple calls to Topiary are made in parallel and the grammar is missing, they will all try
+// to fetch and build it, thus creating an empty .so file while g++ is running. If another instance
+// of topiary starts at this moment, it will mistake the empty .so file for an already built grammar,
+// and try to run with it, resulting in an error. See https://github.com/tweag/topiary/issues/767
+static INIT: Once = Once::new();
+pub fn initialize() {
+    INIT.call_once(|| {
+        #[cfg(feature = "json")]
+        Command::cargo_bin("topiary")
+            .expect("Unable to build Topiary")
+            .arg("fmt")
+            .arg("--language")
+            .arg("json")
+            .write_stdin("")
+            .assert()
+            .success();
+        #[cfg(feature = "toml")]
+        Command::cargo_bin("topiary")
+            .expect("Unable to build Topiary")
+            .arg("fmt")
+            .arg("--language")
+            .arg("toml")
+            .write_stdin("")
+            .assert()
+            .success();
+    });
+}
 
 // The TempDir member of the State is not actually used.
 // However, removing it means that the directory is dropped at the end of the new() function, which causes it to be deleted.
@@ -47,6 +76,7 @@ impl State {
 #[test]
 #[cfg(feature = "json")]
 fn test_fmt_stdin() {
+    initialize();
     let mut topiary = Command::cargo_bin("topiary").unwrap();
 
     topiary
@@ -63,6 +93,7 @@ fn test_fmt_stdin() {
 #[test]
 #[cfg(feature = "json")]
 fn test_fmt_stdin_query() {
+    initialize();
     let mut topiary = Command::cargo_bin("topiary").unwrap();
 
     topiary
@@ -81,6 +112,7 @@ fn test_fmt_stdin_query() {
 #[test]
 #[cfg(feature = "json")]
 fn test_fmt_stdin_query_fallback() {
+    initialize();
     let mut topiary = Command::cargo_bin("topiary").unwrap();
 
     topiary
@@ -99,6 +131,7 @@ fn test_fmt_stdin_query_fallback() {
 #[test]
 #[cfg(all(feature = "json", feature = "toml"))]
 fn test_fmt_files() {
+    initialize();
     let json = State::new(JSON_INPUT, "json");
     let toml = State::new(TOML_INPUT, "toml");
 
@@ -119,6 +152,7 @@ fn test_fmt_files() {
 #[test]
 #[cfg(all(feature = "json", feature = "toml"))]
 fn test_fmt_files_query_fallback() {
+    initialize();
     let json = State::new(JSON_INPUT, "json");
     let toml = State::new(TOML_INPUT, "toml");
 
@@ -141,6 +175,7 @@ fn test_fmt_files_query_fallback() {
 #[test]
 #[cfg(feature = "json")]
 fn test_fmt_dir() {
+    initialize();
     let json = State::new(JSON_INPUT, "json");
 
     let mut topiary = Command::cargo_bin("topiary").unwrap();
@@ -158,6 +193,7 @@ fn test_fmt_dir() {
 #[test]
 #[cfg(feature = "json")]
 fn test_fmt_invalid() {
+    initialize();
     let mut topiary = Command::cargo_bin("topiary").unwrap();
 
     // Can't specify --language with input files
@@ -183,6 +219,7 @@ fn test_fmt_invalid() {
 #[test]
 #[cfg(feature = "json")]
 fn test_vis() {
+    initialize();
     let mut topiary = Command::cargo_bin("topiary").unwrap();
 
     // Sanity check output is a valid DOT graph
@@ -202,6 +239,7 @@ fn test_vis() {
 #[test]
 #[cfg(feature = "json")]
 fn test_vis_invalid() {
+    initialize();
     let mut topiary = Command::cargo_bin("topiary").unwrap();
 
     // Can't specify --language with input file
