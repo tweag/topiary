@@ -44,6 +44,9 @@ This name should be decided amongst the team before the release.
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.5.1...HEAD)
 
+### Fixed
+- [#779](https://github.com/tweag/topiary/pull/779) Load relevant grammars before CLI tests
+
 ## v0.5.1 - Fragrant Frangipani - 2024-10-22
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.4.0...v0.5.1)
