@@ -1,6 +1,5 @@
 use std::{
     borrow::Cow,
-    cmp::Ordering,
     collections::{HashMap, HashSet},
     mem,
     ops::Deref,
@@ -435,27 +434,27 @@ impl AtomCollection {
 
         // We sort the prepends/appends so that:
         // * BeginScope(s) will always be the first element(s)
+        // * MeasuringScopeBegin(s) will always come just after
         // * EndScope(s) will always be the last element(s)
+        // * MeasuringScopeEnd(s) will always come just before
         // This permits proper processing of measuring scopes and scoped atoms
         // that are added at the same place as Begin/EndScopes.
-        fn compare_atoms(a1: &Atom, a2: &Atom) -> Ordering {
-            match (a1, a2) {
-                (Atom::ScopeBegin(_), Atom::ScopeBegin(_)) => Ordering::Equal,
-                (Atom::ScopeBegin(_), _) => Ordering::Less,
-                (_, Atom::ScopeBegin(_)) => Ordering::Greater,
-                (Atom::ScopeEnd(_), Atom::ScopeEnd(_)) => Ordering::Equal,
-                (Atom::ScopeEnd(_), _) => Ordering::Greater,
-                (_, Atom::ScopeEnd(_)) => Ordering::Less,
-                (_, _) => Ordering::Equal,
+        fn atom_key(atom: &Atom) -> i8 {
+            match atom {
+                Atom::ScopeBegin(_) => -2,
+                Atom::MeasuringScopeBegin(_) => -1,
+                Atom::MeasuringScopeEnd(_) => 1,
+                Atom::ScopeEnd(_) => 2,
+                _ => 0,
             }
         }
 
         for atom in &mut self.atoms {
             if let Atom::Leaf { id, .. } = atom {
                 let prepends = self.prepend.entry(*id).or_default();
-                prepends.sort_by(compare_atoms);
+                prepends.sort_by_key(atom_key);
                 let appends = self.append.entry(*id).or_default();
-                appends.sort_by(compare_atoms);
+                appends.sort_by_key(atom_key);
 
                 // Rather than cloning the atom from the old vector, we
                 // simply take it. This will leave a default (empty) atom
