@@ -4,7 +4,7 @@
       extensions = ["sh", "bash"],
       grammar = {
         git = "https://github.com/tree-sitter/tree-sitter-bash.git",
-        rev = "1b0321ee85701d5036c334a6f04761cdc672e64c",
+        rev = "d1a1a3fe7189fdab5bd29a54d1df4a5873db5cb1",
       }
     },
 
@@ -52,7 +52,7 @@
       grammar = {
         git = "https://github.com/tree-sitter/tree-sitter-ocaml.git",
         rev = "9965d208337d88bbf1a38ad0b0fe49e5f5ec9677",
-        subdir = "grammars/ocaml",
+        subdir = "ocaml",
       },
     },
 
@@ -61,7 +61,7 @@
       grammar = {
         git = "https://github.com/tree-sitter/tree-sitter-ocaml.git",
         rev = "9965d208337d88bbf1a38ad0b0fe49e5f5ec9677",
-        subdir = "grammars/interface",
+        subdir = "interface",
       },
     },
 

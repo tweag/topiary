@@ -25,7 +25,7 @@ pub enum TopiaryConfigError {
 /// Since fetching an compilation is something that can easily be parallelized, we create a special error that DOES implement Sync/Send.
 #[cfg(not(target_arch = "wasm32"))]
 pub enum TopiaryConfigFetchingError {
-    Git(git2::Error),
+    Git(io::Error),
     Subprocess(String),
     Io(io::Error),
     LibLoading(libloading::Error),
@@ -109,13 +109,6 @@ impl From<topiary_tree_sitter_facade::LanguageError> for TopiaryConfigError {
 impl From<libloading::Error> for TopiaryConfigFetchingError {
     fn from(e: libloading::Error) -> Self {
         Self::LibLoading(e)
-    }
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-impl From<git2::Error> for TopiaryConfigFetchingError {
-    fn from(e: git2::Error) -> Self {
-        Self::Git(e)
     }
 }
 

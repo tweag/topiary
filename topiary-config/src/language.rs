@@ -7,9 +7,7 @@ use crate::error::{TopiaryConfigError, TopiaryConfigFetchingError};
 use std::collections::HashSet;
 
 #[cfg(not(target_arch = "wasm32"))]
-use git2::Oid;
-#[cfg(not(target_arch = "wasm32"))]
-use git2::Repository;
+use std::env;
 #[cfg(not(target_arch = "wasm32"))]
 use std::path::PathBuf;
 #[cfg(not(target_arch = "wasm32"))]
@@ -185,10 +183,21 @@ impl Language {
 
         // Clone the repository and checkout the configured revision
         log::info!("{}: cloning from {}", self.name, self.config.grammar.git);
-        let repo = Repository::clone(&self.config.grammar.git, &tmp_dir)?;
+        Command::new("git")
+            .arg("clone")
+            .arg(&self.config.grammar.git)
+            .arg(&tmp_dir)
+            .status()
+            .map_err(TopiaryConfigFetchingError::Git)?;
         log::info!("{}: checking out {}", self.name, self.config.grammar.rev);
-        repo.set_head_detached(Oid::from_str(&self.config.grammar.rev)?)?;
-
+        let current_dir = env::current_dir().map_err(TopiaryConfigFetchingError::Io)?;
+        env::set_current_dir(&tmp_dir).map_err(TopiaryConfigFetchingError::Io)?;
+        Command::new("git")
+            .arg("checkout")
+            .arg(&self.config.grammar.rev)
+            .status()
+            .map_err(TopiaryConfigFetchingError::Git)?;
+        env::set_current_dir(current_dir).map_err(TopiaryConfigFetchingError::Io)?;
         let path = match self.config.grammar.subdir.clone() {
             // Some grammars are in a subdirectory, go there
             Some(subdir) => tmp_dir.join(subdir),

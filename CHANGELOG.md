@@ -42,11 +42,11 @@ This name should be decided amongst the team before the release.
 
 ## Unreleased
 
-[Full list of changes](https://github.com/tweag/topiary/compare/v0.5.0...HEAD)
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.5.1...HEAD)
 
-## v0.5.0 - Fragrant Frangipani - 2024-10-22
+## v0.5.1 - Fragrant Frangipani - 2024-10-22
 
-[Full list of changes](https://github.com/tweag/topiary/compare/v0.4.0...v0.5.0)
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.4.0...v0.5.1)
 
 ### Added
 - [#705](https://github.com/tweag/topiary/pull/705) Added support for Nickel 1.7 extended pattern formatting
