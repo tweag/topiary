@@ -76,6 +76,7 @@ contributed = [
 # Excluded by default
 experimental = [
   "rust",
+  "nu",
 ]
 
 bash = ["topiary-config/bash", "topiary-queries/bash"]
@@ -86,5 +87,6 @@ ocaml = ["topiary-config/ocaml", "topiary-queries/ocaml"]
 ocaml_interface = ["topiary-config/ocaml_interface", "topiary-queries/ocaml_interface"]
 ocamllex = ["topiary-config/ocamllex", "topiary-queries/ocamllex"]
 rust = ["topiary-config/rust", "topiary-queries/rust"]
+nu = ["topiary-config/nu", "topiary-queries/nu"]
 toml = ["topiary-config/toml", "topiary-queries/toml"]
 tree_sitter_query = ["topiary-config/tree_sitter_query", "topiary-queries/tree_sitter_query"]

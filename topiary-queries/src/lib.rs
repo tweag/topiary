@@ -46,6 +46,12 @@ pub fn rust() -> &'static str {
     include_str!("../queries/rust.scm")
 }
 
+/// Returns the Topiary-compatible query file for Nush.
+#[cfg(feature = "nu")]
+pub fn nu() -> &'static str {
+    include_str!("../queries/nu.scm")
+}
+
 /// Returns the Topiary-compatible query file for Toml.
 #[cfg(feature = "toml")]
 pub fn toml() -> &'static str {

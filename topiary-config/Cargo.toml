@@ -46,6 +46,7 @@ ocaml = []
 ocaml_interface = []
 ocamllex = []
 rust = []
+nu = []
 toml = []
 tree_sitter_query = []
 
@@ -60,6 +61,7 @@ all = [
   "ocaml_interface",
   "ocamllex",
   "rust",
+  "nu",
   "toml",
   "tree_sitter_query"
 ]
