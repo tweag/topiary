@@ -44,6 +44,9 @@ This name should be decided amongst the team before the release.
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.5.1...HEAD)
 
+### Changed
+- [#780](https://github.com/tweag/topiary/pull/780) Measuring scopes are now independent from captures order
+
 ### Fixed
 - [#779](https://github.com/tweag/topiary/pull/779) Load relevant grammars before CLI tests
 
