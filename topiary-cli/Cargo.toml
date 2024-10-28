@@ -37,10 +37,10 @@ serde = { workspace = true, features = ["derive"] }
 tempfile = { workspace = true }
 tokio = { workspace = true, features = ["fs", "rt-multi-thread", "sync", "macros"] }
 toml = { workspace = true }
-topiary-core = { path = "../topiary-core" }
-topiary-config = { path = "../topiary-config" }
-topiary-queries = { path = "../topiary-queries" }
-topiary-tree-sitter-facade = { workspace = true }
+topiary-core.workspace = true
+topiary-config.workspace = true
+topiary-queries.workspace = true
+topiary-tree-sitter-facade.workspace = true
 
 # tree-sitter-json = { workspace = true, optional = true }
 # tree-sitter-css = { workspace = true, optional = true }

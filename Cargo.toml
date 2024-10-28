@@ -93,6 +93,9 @@ web-sys = "0.3"
 
 topiary-web-tree-sitter-sys = { version = "0.5.1", path = "./topiary-web-tree-sitter-sys" }
 topiary-tree-sitter-facade = { version = "0.5.1", path = "./topiary-tree-sitter-facade" }
+topiary-core = { version = "0.5.1", path = "./topiary-core" }
+topiary-config = { version = "0.5.1", path = "./topiary-config" }
+topiary-queries = { version = "0.5.1", path = "./topiary-queries" }
 
 # tree-sitter-json's dependency on Tree-sitter is looser than ours, so
 # we have to pin its version to maintain API compatibility
