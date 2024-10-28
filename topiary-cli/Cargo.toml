@@ -8,7 +8,6 @@ keywords = [
   "formatter",
   "text",
   "tree-sitter",
-  "utility",
 ]
 version.workspace = true
 edition.workspace = true
