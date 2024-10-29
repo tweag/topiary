@@ -99,9 +99,8 @@ fn coverage_tester() {
     #[cfg(feature = "bash")]
     coverage_test("bash.sh");
 
-    // FIXME: enrich CSS file
-    // #[cfg(feature = "css")]
-    // coverage_test("css.css");
+    #[cfg(feature = "css")]
+    coverage_test("css.css");
 
     #[cfg(feature = "json")]
     coverage_test("json.json");
