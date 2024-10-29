@@ -185,6 +185,7 @@ Commands:
   visualise   Visualise the input's Tree-sitter parse tree
   config      Print the current configuration
   prefetch    Prefetch all languages in the configuration
+  coverage    Checks how much of the tree-sitter query is used
   completion  Generate shell completion script
   help        Print this message or the help of the given subcommand(s)
 
@@ -366,6 +367,48 @@ Options:
 ```
 <!-- usage:end:prefetch -->
 
+#### Coverage
+
+This subcommand checks how much of the language query file is used to process the input.
+Specifically, it checks the percentage of queries in the query file that match the given input,
+And prints the queries that don't matched anything.
+
+<!-- DO NOT REMOVE THE "usage" COMMENTS -->
+<!-- usage:start:coverage-->
+```
+Checks how much of the tree-sitter query is used
+
+Usage: topiary coverage [OPTIONS] <--language <LANGUAGE>|FILE>
+
+Arguments:
+  [FILE]
+          Input file (omit to read from stdin)
+
+          Language detection and query selection is automatic, mapped from file extensions defined
+          in the Topiary configuration.
+
+Options:
+  -l, --language <LANGUAGE>
+          Topiary language identifier (for formatting stdin)
+
+  -q, --query <QUERY>
+          Topiary query file override (when formatting stdin)
+
+  -C, --configuration <CONFIGURATION>
+          Configuration file
+
+          [env: TOPIARY_CONFIG_FILE]
+
+  -v, --verbose...
+          Logging verbosity (increased per occurrence)
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+<!-- usage:end:coverage -->
+
+The `coverage` subcommand will exit with error code `1` if the coverage is less than 100%.
+
 #### Logging
 
 By default, the Topiary CLI will only output error messages. You can
@@ -387,6 +430,7 @@ formatting. Otherwise, the following exit codes are defined:
 
 | Reason                       | Code |
 | :--------------------------- | ---: |
+| Negative result              |    1 |
 | CLI argument parsing error   |    2 |
 | I/O error                    |    3 |
 | Topiary query error          |    4 |
@@ -396,6 +440,9 @@ formatting. Otherwise, the following exit codes are defined:
 | Unspecified formatting error |    8 |
 | Multiple errors              |    9 |
 | Unspecified error            |   10 |
+
+Negative results with error code `1` only happen when Topiary is called
+with the `coverage` sub-command, if the input does not cover 100% of the query.
 
 When given multiple inputs, Topiary will do its best to process them
 all, even in the presence of errors. Should _any_ errors occur, Topiary
