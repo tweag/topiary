@@ -40,7 +40,7 @@ diff-usage() {
 }
 
 main() {
-  local -a subcommands=(ROOT format visualise config completion prefetch)
+  local -a subcommands=(ROOT format visualise config completion coverage prefetch)
 
   local _diff
   local _subcommand

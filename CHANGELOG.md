@@ -44,6 +44,9 @@ This name should be decided amongst the team before the release.
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.5.1...HEAD)
 
+### Added
+- [#785](https://github.com/tweag/topiary/pull/785) Added the `coverage` command, that checks how much of the query file is used by the input.
+
 ### Changed
 - [#780](https://github.com/tweag/topiary/pull/780) Measuring scopes are now independent from captures order
 

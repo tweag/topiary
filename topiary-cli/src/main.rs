@@ -10,7 +10,8 @@ use std::{
     process::ExitCode,
 };
 
-use topiary_core::{formatter, Operation};
+use error::Benign;
+use topiary_core::{coverage, formatter, Operation};
 
 use crate::{
     cli::Commands,
@@ -22,7 +23,9 @@ use crate::{
 #[tokio::main]
 async fn main() -> ExitCode {
     if let Err(e) = run().await {
-        print_error(&e);
+        if !e.benign() {
+            print_error(&e)
+        }
         return e.into();
     }
 
@@ -145,6 +148,27 @@ async fn run() -> CLIResult<()> {
 
         Commands::Prefetch => {
             config.prefetch_languages()?;
+        }
+
+        Commands::Coverage { input } => {
+            // We are guaranteed (by clap) to have exactly one input, so it's safe to unwrap
+            let input = Inputs::new(&config, &input).next().unwrap()?;
+            let output = OutputFile::Stdout;
+
+            // We don't need a `LanguageDefinitionCache` when there's only one input,
+            // which saves us the thread-safety overhead
+            let language = input.to_language().await?;
+
+            log::info!(
+                "Checking query coverage of {}, as {}",
+                input.source(),
+                input.language().name,
+            );
+
+            let mut buf_input = BufReader::new(input);
+            let mut buf_output = BufWriter::new(output);
+
+            coverage(&mut buf_input, &mut buf_output, &language)?
         }
 
         Commands::Completion { shell } => {

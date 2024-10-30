@@ -68,6 +68,9 @@ impl error::Error for TopiaryError {
 impl From<TopiaryError> for ExitCode {
     fn from(e: TopiaryError) -> Self {
         let exit_code = match e {
+            // Things went well but Topiary needs to answer 'false' in a clean way: Exit 1
+            _ if e.benign() => 1,
+
             // Multiple errors: Exit 9
             TopiaryError::Bin(_, Some(CLIError::Multiple)) => 9,
 
@@ -91,9 +94,6 @@ impl From<TopiaryError> for ExitCode {
 
             // Bad arguments: Exit 2
             // (Handled by clap: https://github.com/clap-rs/clap/issues/3426)
-
-            // Things went well but Topiary needs to answer 'false' in a clean way: Exit 1
-            // (Not used at the moment)
 
             // Anything else: Exit 10
             _ => 10,
@@ -165,5 +165,21 @@ impl From<tokio::task::JoinError> for TopiaryError {
             "Could not join parallel formatting tasks".into(),
             Some(CLIError::Generic(Box::new(e))),
         )
+    }
+}
+
+// Tells whether an error should raise a message on stderr,
+// or if it's an "expected" error.
+pub trait Benign {
+    fn benign(&self) -> bool;
+}
+
+impl Benign for TopiaryError {
+    #[allow(clippy::match_like_matches_macro)]
+    fn benign(&self) -> bool {
+        match self {
+            TopiaryError::Lib(FormatterError::PatternDoesNotMatch) => true,
+            _ => false,
+        }
     }
 }
