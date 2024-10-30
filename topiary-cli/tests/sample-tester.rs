@@ -36,6 +36,27 @@ fn io_test(file: &str) {
     pretty_assert_eq(&expected_output, &formatted);
 }
 
+fn coverage_test(file: &str) {
+    let input = PathBuf::from(format!("tests/samples/input/{file}"));
+
+    // Make sure our test makes sense
+    assert!(input.exists());
+
+    // Run `topiary coverage` against the input file
+    let mut topiary = Command::cargo_bin("topiary").unwrap();
+    let output = topiary
+        .env("TOPIARY_LANGUAGE_DIR", "../topiary-queries/queries/")
+        .arg("coverage")
+        .arg(&input)
+        .output()
+        .expect("Failed to run `topiary coverage`");
+
+    if !output.status.success() {
+        let output_str = String::from_utf8(output.stdout).expect("Failed to decode topiary output");
+        panic!("Insufficient coverage of \"{file}\":\n{output_str}")
+    }
+}
+
 #[test]
 fn input_output_tester() {
     // TODO There's probably a better way than this...
@@ -69,6 +90,41 @@ fn input_output_tester() {
 
     #[cfg(feature = "tree_sitter_query")]
     io_test("tree_sitter_query.scm");
+}
+
+#[test]
+fn coverage_tester() {
+    // TODO There definitely should be a better way than this...
+
+    #[cfg(feature = "bash")]
+    coverage_test("bash.sh");
+
+    #[cfg(feature = "css")]
+    coverage_test("css.css");
+
+    #[cfg(feature = "json")]
+    coverage_test("json.json");
+
+    #[cfg(feature = "nickel")]
+    coverage_test("nickel.ncl");
+
+    #[cfg(feature = "ocaml")]
+    coverage_test("ocaml.ml");
+
+    // "ocaml-interface.mli" is voluntarily omitted:
+    // the queries should all be covered by "ocaml.ml"
+
+    #[cfg(feature = "ocamllex")]
+    coverage_test("ocamllex.mll");
+
+    #[cfg(feature = "rust")]
+    coverage_test("rust.rs");
+
+    #[cfg(feature = "toml")]
+    coverage_test("toml.toml");
+
+    #[cfg(feature = "tree_sitter_query")]
+    coverage_test("tree_sitter_query.scm");
 }
 
 // Test that our query files are properly formatted
