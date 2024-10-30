@@ -1388,27 +1388,148 @@ Then the log line will become:
 [2024-10-08T15:48:13Z INFO  topiary_core::tree_sitter] Processing match of query "comma spacing": LocalQueryMatch { pattern_index: 17, captures: [ {Node "," (1,3) - (1,4)} ] } at location (286,1)
 ```
 
+## Add a new language
+
+This section illustrates how to add a supported language to Topiary, provided it already has a tree-sitter grammar.
+
+We will use C as the running example in this section.
+
+### Minimal steps
+
+The two following steps are enough to jumpstart the formatting of a new language:
+
+#### Register the grammar in `topiary-config/languages.ncl`:
+
+```nickel
+    c = {
+      extensions = ["c", "h"],
+      grammar = {
+        git = "https://github.com/tree-sitter/tree-sitter-c.git",
+        rev = "6c7f459ddc0bcf78b615d3a3f4e8fed87b8b3b1b",
+      },
+    },
+```
+
+#### Create the query file
+```bash
+touch topiary-queries/queries/c.scm
+```
+
+#### Testing
+
+You can now check that Topiary is able to "format" your new language with:
+
+```bash
+$ echo 'void main();' | cargo run -- format -s --language c
+voidmain();
+```
+
+```bash
+$ echo 'void main();' > foo.c && cargo run -- format -s foo.c && cat foo.c
+voidmain();
+```
+
+### Add the new language to the test suite
+
+#### Create input/expected files
+```bash
+echo 'void main ();' > topiary-cli/tests/samples/input/c.c
+echo 'voidmain();' > topiary-cli/tests/samples/expected/c.c
+```
+
+#### Add the Cargo feature flags
+
+##### In `topiary-cli/Cargo.toml`
+```toml
+experimental = [
+  "clang",
+]
+
+clang = ["topiary-config/clang", "topiary-queries/clang"]
+```
+
+##### In `topiary-config/Cargo.toml`
+```toml
+clang = []
+
+all = [
+  "clang",
+]
+```
+
+##### In `topiary-queries/Cargo.toml`
+```toml
+clang = []
+```
+
+#### Add tests in `topiary-cli/tests/sample-tester.rs`
+```rust
+fn input_output_tester() {
+
+[...]
+
+    #[cfg(feature = "clang")]
+    io_test("c.c");
+
+[...]
+
+fn coverage_tester() {
+
+[...]
+
+    #[cfg(feature = "clang")]
+    coverage_test("c.c");
+```
+
+#### Testing
+You should be able to successfully run the new tests with
+```bash
+cargo test --no-default-features -F clang -p topiary-cli --test sample-tester
+```
+
+### Include the query file in Topiary at compile time
+
+#### In `topiary-queries/src/lib.rs`
+```rust
+/// Returns the Topiary-compatible query file for C.
+#[cfg(feature = "clang")]
+pub fn c() -> &'static str {
+    include_str!("../queries/c.scm")
+}
+```
+
+#### In `topiary-cli/src/io.rs`
+```rust
+fn to_query<T>(name: T) -> CLIResult<QuerySource>
+
+[...]
+
+        #[cfg(feature = "clang")]
+        "c" => Ok(topiary_queries::c().into()),
+```
+
+This will allow your query file to by considered as the default fallback query, when no other file can be found at runtime for your language.
+
 ## Suggested workflow
 
 In order to work productively on query files, the following is one
 suggested way to work:
 
-1. Add a sample file to `topiary-cli/tests/samples/input`.
+1. If you're working on a new language, follow the steps in [the previous section](#add-a-new-language).
 
-2. Copy the same file to `topiary-cli/tests/samples/expected`, and make any changes
-   to how you want the output to be formatted.
+2. Add a snippet of code you want to format to `topiary-cli/tests/samples/input/mylanguage.mlg`.
 
-3. If this is a new language, add its Tree-sitter grammar, extend
-   `crate::language::Language` and process it everywhere, then make a
-   mostly empty query file with just the `(#language!)` configuration.
+3. Add the properly formatted version of the code to `topiary-cli/tests/samples/expected/mylanguage.mlg`.
 
 4. Run:
 
-   ```
-   RUST_LOG=debug \
-   cargo test -p topiary-cli \
-              input_output_tester \
-              -- --nocapture
+   ```bash
+   cargo test \
+     --no-default-features \
+     -F mylanguage \
+     -p topiary-cli \
+     input_output_tester \
+     -- --nocapture
    ```
 
    Provided it works, it should output a _lot_ of log messages. Copy
