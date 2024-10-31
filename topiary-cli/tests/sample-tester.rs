@@ -22,12 +22,17 @@ fn io_test(file: &str) {
 
     // Run Topiary against the staged input file
     let mut topiary = Command::cargo_bin("topiary").unwrap();
-    topiary
+    let output = topiary
         .env("TOPIARY_LANGUAGE_DIR", "../topiary-queries/queries/")
         .arg("fmt")
+        .arg("-vvv")
         .arg(&staged)
-        .assert()
-        .success();
+        .output()
+        .expect("Failed to run `topiary fmt`");
+
+    // Print the invocation output, so that it can be inspected with --nocapture
+    let output_str = String::from_utf8(output.stderr).expect("Failed to decode Topiary output");
+    println!("{output_str}");
 
     // Read the file after formatting
     let formatted = fs::read_to_string(&staged).unwrap();
