@@ -43,10 +43,10 @@ impl fmt::Display for TopiaryConfigError {
             TopiaryConfigError::Io(error) => write!(f, "We encountered an io error: {error}"),
             TopiaryConfigError::Missing => write!(f, "A configuration file is missing. If you passed a configuration file, make sure it exists."),
             TopiaryConfigError::TreeSitterFacade(_) => write!(f, "We could not load the grammar for the given language"),
-            TopiaryConfigError::Nickel(e) => write!(f, "Nickel error: {:?}", e),
-            TopiaryConfigError::NickelDeserialization(e) => write!(f, "Nickel error: {:?}", e),
+            TopiaryConfigError::Nickel(e) => write!(f, "Nickel error: {:#?}\n\nDid you forget to add a \"priority\" annotation in your config file?", e),
+            TopiaryConfigError::NickelDeserialization(e) => write!(f, "Nickel error: {:#?}", e),
             #[cfg(not(target_arch = "wasm32"))]
-            TopiaryConfigError::Fetching(e) => write!(f, "Error Fetching Language: {:?}", e),
+            TopiaryConfigError::Fetching(e) => write!(f, "Error Fetching Language: {}", e),
         }
     }
 }
