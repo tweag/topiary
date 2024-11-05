@@ -108,7 +108,8 @@
         "flake-utils": "flake-utils",
         "nix-filter": "nix-filter",
         "nixpkgs": "nixpkgs",
-        "rust-overlay": "rust-overlay"
+        "rust-overlay": "rust-overlay",
+        "tree-sitter-nickel-input": "tree-sitter-nickel-input"
       }
     },
     "rust-overlay": {
@@ -141,6 +142,29 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "tree-sitter-nickel-input": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1723707504,
+        "narHash": "sha256-IvlUwNO/wLLPuqCZf0NtSxMdDx+4ASYYOobklY/97aQ=",
+        "owner": "nickel-lang",
+        "repo": "tree-sitter-nickel",
+        "rev": "88d836a24b3b11c8720874a1a9286b8ae838d30a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nickel-lang",
+        "repo": "tree-sitter-nickel",
         "type": "github"
       }
     }

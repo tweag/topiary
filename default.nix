@@ -5,6 +5,11 @@
 , rust-overlay
 , nix-filter
 , craneLib
+# tree-sitter-Nickel is packaged in Nixpkgs, but it's an older version at the
+# time of writing. Since updating it seems non trivial, and we need Topiary to
+# be compatible with Nickel urgently (it is currently blocking for the CI), we
+# use the tree-sitter-nickel flake directly.
+, tree-sitter-nickel
 }:
 let
   wasmRustVersion = "1.77.2";
@@ -24,6 +29,7 @@ let
         "Cargo.lock"
         "Cargo.toml"
         "languages.ncl"
+        "languages_nix.ncl"
         "tests"
         "topiary-core"
         "topiary-cli"
@@ -106,12 +112,33 @@ in
     cargoExtraArgs = "-p topiary-core";
   });
 
-  topiary-cli = craneLib.buildPackage (commonArgs
+  topiary-cli = { nixSupport ? false }: craneLib.buildPackage (commonArgs
     // {
     inherit cargoArtifacts;
     pname = "topiary";
     cargoExtraArgs = "-p topiary-cli";
     cargoTestExtraArgs = "--no-default-features";
+
+
+    preConfigurePhases = pkgs.lib.optional nixSupport "useNixConfiguration";
+
+    # ocamllex is not (yet) packaged in nixpkgs
+    # ocamllex="${pkgs.tree-sitter-grammars.tree-sitter-ocamllex}/parser" \
+    useNixConfiguration = ''
+      bash="${pkgs.tree-sitter-grammars.tree-sitter-bash}/parser" \
+      css="${pkgs.tree-sitter-grammars.tree-sitter-css}/parser" \
+      json="${pkgs.tree-sitter-grammars.tree-sitter-json}/parser" \
+      nickel="${tree-sitter-nickel}/parser" \
+      ocaml="${pkgs.tree-sitter-grammars.tree-sitter-ocaml}/parser" \
+      ocaml_interface="${pkgs.tree-sitter-grammars.tree-sitter-ocaml-interface}/parser" \
+      rust="${pkgs.tree-sitter-grammars.tree-sitter-rust}/parser" \
+      toml="${pkgs.tree-sitter-grammars.tree-sitter-toml}/parser" \
+      tree_sitter_query="${pkgs.tree-sitter-grammars.tree-sitter-query}/parser" \
+      substituteAllInPlace topiary-config/languages_nix.ncl
+
+      mv topiary-config/languages_nix.ncl topiary-config/languages.ncl
+    '';
+
     postInstall = ''
       install -Dm444 topiary-queries/queries/* -t $out/share/queries
     '';

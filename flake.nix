@@ -27,6 +27,12 @@
 
     flake-utils.url = "github:numtide/flake-utils";
     nix-filter.url = "github:numtide/nix-filter";
+
+    tree-sitter-nickel-input = {
+      url = "github:nickel-lang/tree-sitter-nickel";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
   };
 
   outputs = inputs:
@@ -55,16 +61,22 @@
 
         craneLib = crane.mkLib pkgs;
 
-        topiaryPkgs = pkgs.callPackage ./default.nix { inherit advisory-db crane rust-overlay nix-filter craneLib; };
+        tree-sitter-nickel = tree-sitter-nickel-input.packages.${system}.default;
+
+        topiaryPkgs = pkgs.callPackage ./default.nix {
+          inherit advisory-db crane rust-overlay nix-filter craneLib tree-sitter-nickel;
+        };
         binPkgs = pkgs.callPackage ./bin/default.nix { };
       in
       {
-        packages = {
+        packages = rec {
           inherit (topiaryPkgs)
-            topiary-cli
             topiary-playground
             topiary-queries
             client-app;
+
+          topiary-cli = topiaryPkgs.topiary-cli { };
+          topiary-cli-nix = topiaryPkgs.topiary-cli { nixSupport = true; };
 
           inherit (binPkgs)
             # FIXME: Broken
@@ -74,11 +86,12 @@
             update-wasm-grammars
             verify-documented-usage;
 
-          default = topiaryPkgs.topiary-cli;
+          default = topiary-cli;
         };
 
         checks = {
-          inherit (topiaryPkgs) clippy clippy-wasm fmt topiary-core topiary-cli topiary-playground audit benchmark;
+          inherit (topiaryPkgs) clippy clippy-wasm fmt topiary-core topiary-playground audit benchmark;
+          topiary-cli = topiaryPkgs.topiary-cli { };
 
           ## Check that the `lib.pre-commit-hook` output builds/evaluates
           ## correctly. `deepSeq e1 e2` evaluates `e1` strictly in depth before
@@ -90,7 +103,8 @@
         devShells =
           let
             checksLight = {
-              inherit (topiaryPkgs) clippy fmt topiary-core topiary-cli;
+              inherit (topiaryPkgs) clippy fmt topiary-core;
+              topiary-cli = topiaryPkgs.topiary-cli { };
             };
           in
           {
@@ -104,7 +118,7 @@
           enable = true;
           name = "topiary";
           description = "A general code formatter based on tree-sitter.";
-          entry = "${topiaryPkgs.topiary-cli}/bin/topiary fmt";
+          entry = "${topiaryPkgs.topiary-cli {}}/bin/topiary fmt";
           types = [ "text" ];
         };
       }
