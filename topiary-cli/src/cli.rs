@@ -40,6 +40,10 @@ pub struct GlobalArgs {
     )]
     pub configuration: Option<PathBuf>,
 
+    /// Enable merging for configuration files
+    #[arg(short = 'M', long, display_order = 101, global = true)]
+    pub merge_configuration: bool,
+
     /// Logging verbosity (increased per occurrence)
     #[arg(
         short,
