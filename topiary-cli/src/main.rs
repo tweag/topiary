@@ -35,7 +35,7 @@ async fn main() -> ExitCode {
 async fn run() -> CLIResult<()> {
     let args = cli::get_args()?;
 
-    let config = topiary_config::Configuration::fetch(&args.global.configuration)?;
+    let config = topiary_config::Configuration::fetch(false, &args.global.configuration)?;
 
     // Delegate by subcommand
     match args.command {

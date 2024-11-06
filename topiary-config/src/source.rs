@@ -4,7 +4,7 @@ use std::{env::current_dir, ffi::OsString, fmt, io::Cursor, path::PathBuf};
 
 use crate::error::TopiaryConfigError;
 
-/// Sources of TOML configuration
+/// Sources of Nickel configuration
 #[derive(Debug, Clone)]
 pub enum Source {
     Builtin,
@@ -21,13 +21,13 @@ impl From<Source> for nickel_lang_core::program::Input<Cursor<String>, OsString>
 }
 
 impl Source {
-    /// Return the valid sources of configuration, in priority order (lowest to highest):
+    /// Return the valid sources of configuration, in priority order (highest to lowest):
     ///
-    /// 1. Built-in configuration (per `Self::builtin_nickel()`)
-    /// 2. `~/.config/topiary/languages.ncl` (or equivalent)
-    /// 3. `.topiary/languages.ncl` (or equivalent)
-    /// 4. `file`, passed as a CLI argument/environment variable
-    pub fn fetch(file: &Option<PathBuf>) -> Vec<Self> {
+    /// 1. `file`, passed as a CLI argument/environment variable
+    /// 2. `.topiary/languages.ncl` (or equivalent)
+    /// 3. `~/.config/topiary/languages.ncl` (or equivalent)
+    /// 4. Built-in configuration (per `Self::builtin_nickel()`)
+    pub fn fetch_all(file: &Option<PathBuf>) -> Vec<Self> {
         let candidates = [
             Some(find_os_configuration_dir_config()),
             find_workspace_configuration_dir_config(),
@@ -44,6 +44,35 @@ impl Source {
         }
 
         res
+    }
+
+    /// Return the source of configuration that has top priority among available ones.
+    /// The priority order is, from highest to lowest:
+    ///
+    /// 1. `file`, passed as a CLI argument/environment variable
+    /// 2. `.topiary/languages.ncl` (or equivalent)
+    /// 3. `~/.config/topiary/languages.ncl` (or equivalent)
+    /// 4. Built-in configuration (per `Self::builtin_nickel()`)
+    pub fn fetch_one(file: &Option<PathBuf>) -> Self {
+        let cli_specified = Self::find(&file.clone()).map(Self::File);
+        let workspace_specified =
+            Self::find(&find_workspace_configuration_dir_config()).map(Self::File);
+        let os_config_specified =
+            Self::find(&Some(find_os_configuration_dir_config())).map(Self::File);
+
+        if let Some(res) = cli_specified {
+            log::info!("Using CLI-specified configuration: {res}");
+            res
+        } else if let Some(res) = workspace_specified {
+            log::info!("Using workspace-specified configuration: {res}");
+            res
+        } else if let Some(res) = os_config_specified {
+            log::info!("Using global os-specified configuration: {res}");
+            res
+        } else {
+            log::info!("Using built-in configuration");
+            Self::Builtin
+        }
     }
 
     /// Attempts to find a configuration file, given a `path` parameter. If `path` is `None`, then
