@@ -191,6 +191,7 @@ Commands:
 
 Options:
   -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
+  -M, --merge-configuration            Enable merging for configuration files
   -v, --verbose...                     Logging verbosity (increased per occurrence)
   -h, --help                           Print help
   -V, --version                        Print version
@@ -230,6 +231,9 @@ Options:
           Configuration file
 
           [env: TOPIARY_CONFIG_FILE]
+
+  -M, --merge-configuration
+          Enable merging for configuration files
 
   -v, --verbose...
           Logging verbosity (increased per occurrence)
@@ -283,6 +287,9 @@ Options:
 
           [env: TOPIARY_CONFIG_FILE]
 
+  -M, --merge-configuration
+          Enable merging for configuration files
+
   -v, --verbose...
           Logging verbosity (increased per occurrence)
 
@@ -310,6 +317,7 @@ Usage: topiary config [OPTIONS]
 
 Options:
   -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
+  -M, --merge-configuration            Enable merging for configuration files
   -v, --verbose...                     Logging verbosity (increased per occurrence)
   -h, --help                           Print help
 ```
@@ -336,6 +344,7 @@ Arguments:
 
 Options:
   -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
+  -M, --merge-configuration            Enable merging for configuration files
   -v, --verbose...                     Logging verbosity (increased per occurrence)
   -h, --help                           Print help
 ```
@@ -362,6 +371,7 @@ Usage: topiary prefetch [OPTIONS]
 
 Options:
   -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
+  -M, --merge-configuration            Enable merging for configuration files
   -v, --verbose...                     Logging verbosity (increased per occurrence)
   -h, --help                           Print help
 ```
@@ -398,6 +408,9 @@ Options:
           Configuration file
 
           [env: TOPIARY_CONFIG_FILE]
+
+  -M, --merge-configuration
+          Enable merging for configuration files
 
   -v, --verbose...
           Logging verbosity (increased per occurrence)
@@ -567,9 +580,12 @@ For usage in Nix, a `languages_nix.ncl` file is provided that specifies the
 paths of every language using the `@nickel@` syntax. These can easily be
 replaced with nixpkgs' `substituteAll`.
 
-### Overriding
-If one of the sources listed above attempts to define a language configuration
-already present in the builtin configuration, Topiary will display a Nickel error.
+### Overriding with `--merge-configuration`
+
+By default, Topiary only considers the configuration file with the [highest priority](#configuration-sources). However, if the `-M` or `--merge-configuration` option is provided to the CLI, then all available configurations are merged together, as per the [Nickel specification](https://nickel-lang.org/user-manual/merging).
+
+In that case, if one of the sources listed above attempts to define a language configuration
+already present in the builtin configuration, or if two configuration files have conflicting values, then Topiary will display a Nickel error.
 
 To understand why, one can read the [Nickel documentation on Merging](https://nickel-lang.org/user-manual/merging).
 The short answer is that a priority must be defined. The builtin configuration

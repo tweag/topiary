@@ -51,7 +51,7 @@ impl Configuration {
     /// with the path that was not found.
     /// If the configuration file exists, but cannot be parsed, this function will return a
     /// `TopiaryConfigError` with the error that occurred.
-    pub fn fetch(file: &Option<PathBuf>) -> TopiaryConfigResult<Self> {
+    pub fn fetch(merge: bool, file: &Option<PathBuf>) -> TopiaryConfigResult<Self> {
         // If we have an explicit file, fail if it doesn't exist
         if let Some(path) = file {
             if !path.exists() {
@@ -59,11 +59,19 @@ impl Configuration {
             }
         }
 
-        // Otherwise, gather a list of all the files we want to look for
-        let sources: Vec<Source> = Source::fetch(file);
+        if merge {
+            // Get all available configuration sources
+            let sources: Vec<Source> = Source::fetch_all(file);
 
-        // And ask nickel to parse and merge them
-        Self::parse_and_merge(&sources)
+            // And ask Nickel to parse and merge them
+            Self::parse_and_merge(&sources)
+        } else {
+            // Get the available configuration with best priority
+            let source: Source = Source::fetch_one(file);
+
+            // And parse it with Nickel
+            Self::parse(source)
+        }
     }
 
     /// Gets a language configuration from the entire configuration.
@@ -157,6 +165,16 @@ impl Configuration {
         let inputs = sources.iter().map(|s| s.clone().into());
 
         let mut program = Program::<CacheImpl>::new_from_inputs(inputs, std::io::stderr())?;
+
+        let term = program.eval_full_for_export()?;
+
+        let serde_config = SerdeConfiguration::deserialize(term)?;
+
+        Ok(serde_config.into())
+    }
+
+    fn parse(source: Source) -> TopiaryConfigResult<Self> {
+        let mut program = Program::<CacheImpl>::new_from_input(source.into(), std::io::stderr())?;
 
         let term = program.eval_full_for_export()?;
 
