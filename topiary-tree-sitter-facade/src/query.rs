@@ -2,8 +2,9 @@
 mod native {
     use crate::{
         error::QueryError, language::Language, node::Node, query_cursor::QueryCursor,
-        query_match::QueryMatch, query_predicate::QueryPredicate,
+        query_predicate::QueryPredicate,
     };
+    use streaming_iterator::StreamingIterator;
 
     pub struct Query {
         pub(crate) inner: tree_sitter::Query,
@@ -17,16 +18,19 @@ mod native {
         }
 
         #[inline]
-        pub fn matches<'a, 'tree: 'a>(
-            &'a self,
+        pub fn matches<
+            'query,
+            'cursor: 'query,
+            'tree: 'query,
+            T: tree_sitter::TextProvider<I> + 'query,
+            I: AsRef<[u8]> + 'query,
+        >(
+            &'query self,
             node: &Node<'tree>,
-            source: &'a [u8],
-            cursor: &'a mut QueryCursor,
-        ) -> impl Iterator<Item = QueryMatch<'a>> + 'a {
-            cursor
-                .inner
-                .matches(&self.inner, node.inner, source)
-                .map(Into::into)
+            source: T,
+            cursor: &'cursor mut QueryCursor,
+        ) -> impl StreamingIterator<Item = tree_sitter::QueryMatch<'query, 'tree>> {
+            cursor.inner.matches(&self.inner, node.inner, source)
         }
 
         #[inline]
@@ -35,8 +39,7 @@ mod native {
         }
 
         #[inline]
-        pub fn general_predicates(&self, index: u32) -> Vec<QueryPredicate> {
-            let index = index as usize;
+        pub fn general_predicates(&self, index: usize) -> Vec<QueryPredicate> {
             self.inner
                 .general_predicates(index)
                 .iter()

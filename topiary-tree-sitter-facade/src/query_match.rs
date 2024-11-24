@@ -1,36 +1,25 @@
 #[cfg(not(target_arch = "wasm32"))]
 mod native {
     use crate::query_capture::QueryCapture;
-    use std::convert::TryFrom;
+    pub use tree_sitter::QueryMatches;
 
-    pub struct QueryMatch<'tree> {
-        pub(crate) inner: tree_sitter::QueryMatch<'tree, 'tree>,
+    pub trait QueryMatch<'tree> {
+        fn pattern_index(&self) -> usize;
+
+        fn captures(&self) -> impl ExactSizeIterator<Item = QueryCapture<'tree>>;
     }
 
-    impl<'tree> QueryMatch<'tree> {
+    impl<'tree> QueryMatch<'tree> for tree_sitter::QueryMatch<'tree, 'tree> {
         #[inline]
-        pub fn pattern_index(&self) -> u32 {
-            u32::try_from(self.inner.pattern_index).unwrap()
+        fn pattern_index(&self) -> usize {
+            self.pattern_index
         }
 
         #[inline]
-        pub fn captures(&self) -> impl ExactSizeIterator<Item = QueryCapture<'tree>> {
-            self.inner.captures.iter().map(Into::into)
+        fn captures(&self) -> impl ExactSizeIterator<Item = QueryCapture<'tree>> {
+            self.captures.iter().map(Into::into)
         }
     }
-
-    impl<'tree> From<tree_sitter::QueryMatch<'tree, 'tree>> for QueryMatch<'tree> {
-        #[inline]
-        fn from(inner: tree_sitter::QueryMatch<'tree, 'tree>) -> Self {
-            Self { inner }
-        }
-    }
-
-    impl<'tree> std::panic::RefUnwindSafe for QueryMatch<'tree> {}
-
-    impl<'tree> Unpin for QueryMatch<'tree> {}
-
-    impl<'tree> std::panic::UnwindSafe for QueryMatch<'tree> {}
 }
 
 #[cfg(not(target_arch = "wasm32"))]

@@ -80,10 +80,10 @@ mod native {
         }
     }
 
-    impl From<tree_sitter::Language> for Language {
+    impl From<tree_sitter_language::LanguageFn> for Language {
         #[inline]
-        fn from(inner: tree_sitter::Language) -> Self {
-            Self { inner }
+        fn from(inner: tree_sitter_language::LanguageFn) -> Self {
+            Self { inner: tree_sitter::Language::new(inner) }
         }
     }
 
