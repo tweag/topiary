@@ -563,11 +563,11 @@ nickel = {
 },
 ```
 
-To specify a prebuilt grammar, specify the `grammar.source.path` attribute:
+To specify a prebuilt grammar, specify the `grammar.source.path` attribute, which must point to a compiled grammar file:
 ```nickel
 nickel = {
   extensions = ["ncl"],
-  grammar.source.path = "/path/to/compiled/grammar/file",
+  grammar.source.path = "/path/to/compiled/grammar/file.so",
 },
 ```
 
