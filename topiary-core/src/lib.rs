@@ -188,7 +188,7 @@ pub enum Operation {
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
 /// let mut output = Vec::new();
-/// let json = tree_sitter_json::language();
+/// let json = topiary_tree_sitter_facade::Language::from(tree_sitter_json::LANGUAGE);
 ///
 /// let mut query_file = BufReader::new(File::open("../topiary-queries/queries/json.scm").expect("query file"));
 /// let mut query_content = String::new();
