@@ -1991,6 +1991,7 @@ dependencies = [
  "topiary-tree-sitter-facade",
  "topiary-web-tree-sitter-sys",
  "tree-sitter",
+ "tree-sitter-language",
 ]
 
 [[package]]
