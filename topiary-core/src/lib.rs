@@ -188,7 +188,7 @@ pub enum Operation {
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
 /// let mut output = Vec::new();
-/// let json = tree_sitter_json::language();
+/// let json = topiary_tree_sitter_facade::Language::from(tree_sitter_json::LANGUAGE);
 ///
 /// let mut query_file = BufReader::new(File::open("../topiary-queries/queries/json.scm").expect("query file"));
 /// let mut query_content = String::new();
@@ -389,7 +389,7 @@ mod tests {
         let mut input = r#"{"foo":{"bar"}}"#.as_bytes();
         let mut output = Vec::new();
         let query_content = "(#language! json)";
-        let grammar = topiary_tree_sitter_facade::Language::from(tree_sitter_json::language());
+        let grammar = topiary_tree_sitter_facade::Language::from(tree_sitter_json::LANGUAGE);
         let language = Language {
             name: "json".to_owned(),
             query: TopiaryQuery::new(&grammar, query_content).unwrap(),
@@ -425,7 +425,7 @@ mod tests {
 
         let mut output = Vec::new();
         let query_content = fs::read_to_string("../topiary-queries/queries/json.scm").unwrap();
-        let grammar = tree_sitter_json::language().into();
+        let grammar = tree_sitter_json::LANGUAGE.into();
         let language = Language {
             name: "json".to_owned(),
             query: TopiaryQuery::new(&grammar, &query_content).unwrap(),

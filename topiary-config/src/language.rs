@@ -156,9 +156,9 @@ impl Language {
         };
 
         let language = unsafe {
-            let language_fn: Symbol<unsafe extern "C" fn() -> tree_sitter::Language> =
+            let language_fn: Symbol<unsafe extern "C" fn() -> *const ()> =
                 library.get(language_fn_name.as_bytes())?;
-            language_fn()
+            tree_sitter_language::LanguageFn::from_raw(*language_fn)
         };
         std::mem::forget(library);
         Ok(topiary_tree_sitter_facade::Language::from(language))

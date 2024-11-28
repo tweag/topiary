@@ -254,9 +254,12 @@ checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
 
 [[package]]
 name = "cc"
-version = "1.1.1"
+version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "907d8581360765417f8f2e0e7d602733bbed60156b4465b7617243689ef9b83d"
+checksum = "fd9de9f2205d5ef3fd67e685b0df337994ddd4495e2a28d185500d0e1edfea47"
+dependencies = [
+ "shlex",
+]
 
 [[package]]
 name = "cfg-if"
@@ -1436,9 +1439,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.10.5"
+version = "1.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b91213439dad192326a0d7c6ee3955910425f441d7038e0d6933b0aec5c4517f"
+checksum = "4219d74c6b67a3654a9fbebc4b419e22126d13d2f3c4a07ee0cb61ff79a79619"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -1626,6 +1629,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "shlex"
+version = "1.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
+
+[[package]]
 name = "simple-counter"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1651,6 +1660,12 @@ name = "smallvec"
 version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
+
+[[package]]
+name = "streaming-iterator"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b2231b7c3057d5e4ad0156fb3dc807d900806020c5ffa3ee6ff2c8c76fb8520"
 
 [[package]]
 name = "string_cache"
@@ -1976,6 +1991,7 @@ dependencies = [
  "topiary-tree-sitter-facade",
  "topiary-web-tree-sitter-sys",
  "tree-sitter",
+ "tree-sitter-language",
 ]
 
 [[package]]
@@ -1991,11 +2007,13 @@ dependencies = [
  "prettydiff",
  "serde",
  "serde_json",
+ "streaming-iterator",
  "test-log",
  "tokio",
  "tokio-test",
  "topiary-tree-sitter-facade",
  "topiary-web-tree-sitter-sys",
+ "tree-sitter",
  "tree-sitter-json",
  "tree-sitter-ocaml",
 ]
@@ -2021,8 +2039,10 @@ name = "topiary-tree-sitter-facade"
 version = "0.5.1"
 dependencies = [
  "js-sys",
+ "streaming-iterator",
  "topiary-web-tree-sitter-sys",
  "tree-sitter",
+ "tree-sitter-language",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
@@ -2089,30 +2109,39 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter"
-version = "0.22.6"
+version = "0.24.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df7cc499ceadd4dcdf7ec6d4cbc34ece92c3fa07821e287aedecd4416c516dca"
+checksum = "b67baf55e7e1b6806063b1e51041069c90afff16afcbbccd278d899f9d84bca4"
 dependencies = [
  "cc",
  "regex",
+ "regex-syntax 0.8.4",
+ "streaming-iterator",
+ "tree-sitter-language",
 ]
 
 [[package]]
 name = "tree-sitter-json"
-version = "0.21.0"
-source = "git+https://github.com/tree-sitter/tree-sitter-json.git?rev=94f5c527b2965465956c2000ed6134dd24daf2a7#94f5c527b2965465956c2000ed6134dd24daf2a7"
+version = "0.24.8"
+source = "git+https://github.com/tree-sitter/tree-sitter-json.git?rev=4d770d31f732d50d3ec373865822fbe659e47c75#4d770d31f732d50d3ec373865822fbe659e47c75"
 dependencies = [
  "cc",
- "tree-sitter",
+ "tree-sitter-language",
 ]
 
 [[package]]
+name = "tree-sitter-language"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8ddffe35a0e5eeeadf13ff7350af564c6e73993a24db62caee1822b185c2600"
+
+[[package]]
 name = "tree-sitter-ocaml"
-version = "0.22.0"
-source = "git+https://github.com/tree-sitter/tree-sitter-ocaml.git?rev=036226e5edb410aec004cc7ac0f4b2014dd04a0e#036226e5edb410aec004cc7ac0f4b2014dd04a0e"
+version = "0.23.2"
+source = "git+https://github.com/tree-sitter/tree-sitter-ocaml.git?rev=98c2130c59ca7553b47086f91c5d22180151ad55#98c2130c59ca7553b47086f91c5d22180151ad55"
 dependencies = [
  "cc",
- "tree-sitter",
+ "tree-sitter-language",
 ]
 
 [[package]]

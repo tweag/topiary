@@ -1,8 +1,9 @@
 use std::{collections::HashSet, fmt::Display};
 
 use serde::Serialize;
+use streaming_iterator::StreamingIterator;
 use topiary_tree_sitter_facade::{
-    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryPredicate, Tree,
+    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate, Tree,
 };
 
 use crate::{
@@ -158,11 +159,26 @@ impl<'a> NodeExt for Node<'a> {
     }
 }
 
+impl<'a> NodeExt for tree_sitter::Node<'a> {
+    fn display_one_based(&self) -> String {
+        format!(
+            "{{Node {:?} {} - {}}}",
+            self.kind(),
+            Position::from(<tree_sitter::Point as Into<Point>>::into(
+                self.start_position()
+            )),
+            Position::from(<tree_sitter::Point as Into<Point>>::into(
+                self.end_position()
+            )),
+        )
+    }
+}
+
 #[derive(Debug)]
 // A struct to statically store the public fields of query match results,
 // to avoid running queries twice.
 struct LocalQueryMatch<'a> {
-    pattern_index: u32,
+    pattern_index: usize,
     captures: Vec<QueryCapture<'a>>,
 }
 
@@ -219,7 +235,8 @@ pub fn apply_query(
     let mut matches: Vec<LocalQueryMatch> = Vec::new();
     let capture_names = query.query.capture_names();
 
-    for query_match in query.query.matches(&root, source, &mut cursor) {
+    let mut query_matches = query.query.matches(&root, source, &mut cursor);
+    while let Some(query_match) = query_matches.next() {
         let local_captures: Vec<QueryCapture> = query_match.captures().collect();
 
         matches.push(LocalQueryMatch {
@@ -272,9 +289,9 @@ pub fn apply_query(
             }
 
             // Fetch from pattern_positions, otherwise insert
-            let pos = pattern_positions[m.pattern_index as usize].unwrap_or_else(|| {
-                let pos = query.pattern_position(m.pattern_index as usize);
-                pattern_positions[m.pattern_index as usize] = Some(pos);
+            let pos = pattern_positions[m.pattern_index].unwrap_or_else(|| {
+                let pos = query.pattern_position(m.pattern_index);
+                pattern_positions[m.pattern_index] = Some(pos);
                 pos
             });
 
