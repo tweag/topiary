@@ -50,6 +50,7 @@ This name should be decided amongst the team before the release.
 - [#747](https://github.com/tweag/topiary/pull/747) Added support for specifying paths to prebuilt grammars in Topiary's configuration
 
 ### Changed
+- [#794](https://github.com/tweag/topiary/pull/794) Bump the `tree-sitter` dependency to 0.24 @ZedThree
 - [#780](https://github.com/tweag/topiary/pull/780) Measuring scopes are now independent from captures order
 - [#790](https://github.com/tweag/topiary/pull/790) No longer merge config files by default, use priority instead.
 
