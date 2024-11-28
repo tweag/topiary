@@ -156,7 +156,7 @@ impl Language {
         };
 
         let language = unsafe {
-            let language_fn: Symbol<unsafe extern "C" fn() -> *const()> =
+            let language_fn: Symbol<unsafe extern "C" fn() -> *const ()> =
                 library.get(language_fn_name.as_bytes())?;
             tree_sitter_language::LanguageFn::from_raw(*language_fn)
         };
