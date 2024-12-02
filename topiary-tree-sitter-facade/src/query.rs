@@ -135,7 +135,7 @@ mod wasm {
         }
 
         #[inline]
-        pub fn general_predicates(&self, index: u32) -> Vec<QueryPredicate> {
+        pub fn general_predicates(&self, index: usize) -> Vec<QueryPredicate> {
             let predicates: Vec<_> = self
                 .inner
                 .predicates_for_pattern(index)
