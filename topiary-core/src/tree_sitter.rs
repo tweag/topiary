@@ -1,9 +1,8 @@
 use std::{collections::HashSet, fmt::Display};
 
 use serde::Serialize;
-use streaming_iterator::StreamingIterator;
 use topiary_tree_sitter_facade::{
-    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate, Tree,
+    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryPredicate, Tree,
 };
 
 use crate::{
@@ -11,6 +10,12 @@ use crate::{
     error::FormatterError,
     FormatterResult,
 };
+
+#[cfg(not(target_arch = "wasm32"))]
+use streaming_iterator::StreamingIterator;
+
+#[cfg(not(target_arch = "wasm32"))]
+use topiary_tree_sitter_facade::QueryMatch;
 
 /// Supported visualisation formats
 #[derive(Clone, Copy, Debug)]
