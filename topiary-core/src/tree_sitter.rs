@@ -1,15 +1,15 @@
+// WASM build doesn't use topiary_tree_sitter_facade::QueryMatch or
+// streaming_iterator::StreamingIterator
+#![cfg_attr(target_arch = "wasm32", allow(dead_code))]
+
 use std::{collections::HashSet, fmt::Display};
 
 use serde::Serialize;
 
-// WASM build doesn't use topiary_tree_sitter_facade::QueryMatch
-#[cfg_attr(target_arch = "wasm32", allow(dead_code))]
 use topiary_tree_sitter_facade::{
     Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate, Tree,
 };
 
-// WASM build doesn't use streaming_iterator::StreamingIterator
-#[cfg_attr(target_arch = "wasm32", allow(dead_code))]
 use streaming_iterator::StreamingIterator;
 
 use crate::{
