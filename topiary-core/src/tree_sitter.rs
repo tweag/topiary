@@ -1,6 +1,6 @@
 // WASM build doesn't use topiary_tree_sitter_facade::QueryMatch or
 // streaming_iterator::StreamingIterator
-#![cfg_attr(target_arch = "wasm32", allow(dead_code))]
+#![cfg_attr(target_arch = "wasm32", allow(unused_imports))]
 
 use std::{collections::HashSet, fmt::Display};
 
