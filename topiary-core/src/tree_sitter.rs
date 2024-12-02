@@ -1,21 +1,22 @@
 use std::{collections::HashSet, fmt::Display};
 
 use serde::Serialize;
+
+// WASM build doesn't use topiary_tree_sitter_facade::QueryMatch
+#[cfg_attr(target_arch = "wasm32", allow(dead_code))]
 use topiary_tree_sitter_facade::{
-    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryPredicate, Tree,
+    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate, Tree,
 };
+
+// WASM build doesn't use streaming_iterator::StreamingIterator
+#[cfg_attr(target_arch = "wasm32", allow(dead_code))]
+use streaming_iterator::StreamingIterator;
 
 use crate::{
     atom_collection::{AtomCollection, QueryPredicates},
     error::FormatterError,
     FormatterResult,
 };
-
-#[cfg(not(target_arch = "wasm32"))]
-use streaming_iterator::StreamingIterator;
-
-#[cfg(not(target_arch = "wasm32"))]
-use topiary_tree_sitter_facade::QueryMatch;
 
 /// Supported visualisation formats
 #[derive(Clone, Copy, Debug)]
