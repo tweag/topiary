@@ -242,6 +242,7 @@ pub fn apply_query(
     let capture_names = query.query.capture_names();
 
     let mut query_matches = query.query.matches(&root, source, &mut cursor);
+    #[allow(clippy::while_let_on_iterator)] // This is not a normal iterator
     while let Some(query_match) = query_matches.next() {
         let local_captures: Vec<QueryCapture> = query_match.captures().collect();
 
@@ -290,8 +291,8 @@ pub fn apply_query(
         if log::log_enabled!(log::Level::Info) {
             #[cfg(target_arch = "wasm32")]
             // Resize the pattern_positions vector if we need to store more positions
-            if m.pattern_index as usize >= pattern_positions.len() {
-                pattern_positions.resize(m.pattern_index as usize + 1, None);
+            if m.pattern_index >= pattern_positions.len() {
+                pattern_positions.resize(m.pattern_index + 1, None);
             }
 
             // Fetch from pattern_positions, otherwise insert
