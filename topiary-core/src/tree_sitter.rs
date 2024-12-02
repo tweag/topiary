@@ -164,6 +164,7 @@ impl<'a> NodeExt for Node<'a> {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl<'a> NodeExt for tree_sitter::Node<'a> {
     fn display_one_based(&self) -> String {
         format!(
