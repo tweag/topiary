@@ -7,7 +7,7 @@ use topiary_core::{formatter, Language, Operation, TopiaryQuery};
 async fn format() {
     let input = fs::read_to_string("../topiary-cli/tests/samples/input/ocaml.ml").unwrap();
     let query_content = fs::read_to_string("../topiary-queries/queries/ocaml.scm").unwrap();
-    let ocaml = tree_sitter_ocaml::language_ocaml();
+    let ocaml = tree_sitter_ocaml::LANGUAGE_OCAML;
 
     let mut input = input.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());

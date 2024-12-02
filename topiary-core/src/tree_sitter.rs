@@ -1,10 +1,16 @@
+// WASM build doesn't use topiary_tree_sitter_facade::QueryMatch or
+// streaming_iterator::StreamingIterator
+#![cfg_attr(target_arch = "wasm32", allow(unused_imports))]
+
 use std::{collections::HashSet, fmt::Display};
 
 use serde::Serialize;
-use streaming_iterator::StreamingIterator;
+
 use topiary_tree_sitter_facade::{
     Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate, Tree,
 };
+
+use streaming_iterator::StreamingIterator;
 
 use crate::{
     atom_collection::{AtomCollection, QueryPredicates},
@@ -159,6 +165,7 @@ impl<'a> NodeExt for Node<'a> {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl<'a> NodeExt for tree_sitter::Node<'a> {
     fn display_one_based(&self) -> String {
         format!(
@@ -236,6 +243,7 @@ pub fn apply_query(
     let capture_names = query.query.capture_names();
 
     let mut query_matches = query.query.matches(&root, source, &mut cursor);
+    #[allow(clippy::while_let_on_iterator)] // This is not a normal iterator
     while let Some(query_match) = query_matches.next() {
         let local_captures: Vec<QueryCapture> = query_match.captures().collect();
 
@@ -284,8 +292,8 @@ pub fn apply_query(
         if log::log_enabled!(log::Level::Info) {
             #[cfg(target_arch = "wasm32")]
             // Resize the pattern_positions vector if we need to store more positions
-            if m.pattern_index as usize >= pattern_positions.len() {
-                pattern_positions.resize(m.pattern_index as usize + 1, None);
+            if m.pattern_index >= pattern_positions.len() {
+                pattern_positions.resize(m.pattern_index + 1, None);
             }
 
             // Fetch from pattern_positions, otherwise insert

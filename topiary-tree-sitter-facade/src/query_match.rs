@@ -28,6 +28,7 @@ pub use native::*;
 #[cfg(target_arch = "wasm32")]
 mod wasm {
     use crate::query_capture::QueryCapture;
+    use std::convert::TryInto;
     use wasm_bindgen::JsCast;
 
     #[derive(Clone)]
@@ -38,8 +39,9 @@ mod wasm {
 
     impl<'tree> QueryMatch<'tree> {
         #[inline]
-        pub fn pattern_index(&self) -> u32 {
-            self.inner.pattern()
+        pub fn pattern_index(&self) -> usize {
+            // On WASM32, usize is the same as u32, so the unwrap is safe
+            self.inner.pattern().try_into().unwrap()
         }
 
         #[inline]
