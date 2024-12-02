@@ -40,6 +40,7 @@ mod wasm {
     impl<'tree> QueryMatch<'tree> {
         #[inline]
         pub fn pattern_index(&self) -> usize {
+            // On WASM32, usize is the same as u32, so the unwrap is safe
             self.inner.pattern().try_into().unwrap()
         }
 
