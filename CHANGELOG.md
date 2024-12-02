@@ -56,6 +56,7 @@ This name should be decided amongst the team before the release.
 
 ### Fixed
 - [#779](https://github.com/tweag/topiary/pull/779) Load relevant grammars before CLI tests
+- [#799](https://github.com/tweag/topiary/pull/799) Line break after table-less pairs in TOML
 
 ## v0.5.1 - Fragrant Frangipani - 2024-10-22
 
