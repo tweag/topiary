@@ -19,6 +19,10 @@
   (comment)
 ] @append_hardline
 
+(document
+  (pair) @append_hardline
+)
+
 (table
   (pair) @append_hardline
 )

@@ -1,3 +1,7 @@
+# Table-less pairs (#798)
+foo = "bar"
+baz = 'quux'
+abc = 123
 
 [package]
 
