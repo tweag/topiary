@@ -135,13 +135,13 @@ fn find_comments(
 
 /// The section of code to which a comment refers. We also remember whether the comment
 /// is positioned before or after the section.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Commented {
     /// The code section is before the comment, as in:
     /// ```
     /// struct Foo {
-    ///     baz: Baz, // this is baz
-    ///     quz: Qux, // this is qux
+    ///     baz: usize, // this is baz
+    ///     quz: usize, // this is qux
     /// }
     /// ```
     CommentedBefore(InputSection),
@@ -149,9 +149,9 @@ pub enum Commented {
     /// ```
     /// struct Foo {
     ///     // let's have a baz
-    ///     baz: Baz,
+    ///     baz: usize,
     ///     // and a qux
-    ///     qux: Qux,
+    ///     qux: usize,
     /// }
     /// ```
     CommentedAfter(InputSection),
@@ -335,7 +335,7 @@ fn find_anchor<'tree>(node: &'tree Node<'tree>, input: &str) -> FormatterResult<
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct AnchoredComment {
     pub comment_text: String,
     // We need to keep track of the column for indentation purposes
