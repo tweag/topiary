@@ -23,13 +23,13 @@ pub use crate::{
 };
 
 mod atom_collection;
-mod comments;
-mod common;
+pub mod comments;
+pub mod common;
 mod error;
 mod graphviz;
 mod language;
 mod pretty;
-mod tree_sitter;
+pub mod tree_sitter;
 
 #[doc(hidden)]
 pub mod test_utils;
