@@ -263,7 +263,8 @@ example, using Graphviz's `dot`: `topiary visualise input.ocaml | dot -Tpng
 ```
 Visualise the input's Tree-sitter parse tree
 
-Visualise generates a graph representation of the parse tree that can be rendered by external visualisation tools, such as Graphviz. By default, the output is in the DOT format.
+Visualise generates a graph representation of the parse tree that can be rendered by external
+visualisation tools, such as Graphviz. By default, the output is in the DOT format.
 
 Usage: topiary visualise [OPTIONS] <--language <LANGUAGE>|FILE>
 
