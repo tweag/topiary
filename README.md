@@ -252,10 +252,18 @@ Note: `fmt` is a recognised alias of the `format` subcommand.
 
 #### Visualise
 
+`topiary visualise` converts the input's Tree-sitter parse tree to a graph
+representation in the selected format. By default, Topiary outputs a DOT file,
+which can be rendered using a visualisation tool such as the Graphviz suite. For
+example, using Graphviz's `dot`: `topiary visualise input.ocaml | dot -Tpng
+-ooutput.png`.
+
 <!-- DO NOT REMOVE THE "usage" COMMENTS -->
 <!-- usage:start:visualise -->
 ```
 Visualise the input's Tree-sitter parse tree
+
+Visualise generates a graph representation of the parse tree that can be rendered by external visualisation tools, such as Graphviz. By default, the output is in the DOT format.
 
 Usage: topiary visualise [OPTIONS] <--language <LANGUAGE>|FILE>
 

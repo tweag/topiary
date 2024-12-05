@@ -130,6 +130,10 @@ pub enum Commands {
     },
 
     /// Visualise the input's Tree-sitter parse tree
+    ///
+    /// Visualise generates a graph representation of the parse tree that can be rendered by
+    /// external visualisation tools, such as Graphviz. By default, the output is in the DOT
+    /// format.
     #[command(aliases = &["vis", "visualize", "view"], display_order = 2)]
     Visualise {
         /// Visualisation format
