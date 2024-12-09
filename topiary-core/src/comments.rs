@@ -127,6 +127,42 @@ impl Diff<InputSection> for Commented {
     }
 }
 
+/// A comment, as part of Topiary's output.
+/// We forget posiiton information here, because the struct
+/// is supposed to be attached to the node it comments.
+#[derive(Debug)]
+pub enum Comment {
+    /// The comment is before the code section, as is:
+    /// ```
+    /// struct Foo {
+    ///     // let's have a baz
+    ///     baz: usize,
+    ///     // and a qux
+    ///     qux: usize,
+    /// }
+    /// ```
+    CommentBefore(String),
+    /// The comment is after the code section, as in:
+    /// The code section is before the comment, as in:
+    /// ```
+    /// struct Foo {
+    ///     baz: usize, // this is baz
+    ///     quz: usize, // this is qux
+    /// }
+    /// ```
+    CommentAfter(String),
+}
+
+impl From<&AnchoredComment> for Comment {
+    fn from(value: &AnchoredComment) -> Self {
+        let content = value.comment_text.clone();
+        match value.commented {
+            Commented::CommentedAfter(_) => Comment::CommentBefore(content),
+            Commented::CommentedBefore(_) => Comment::CommentAfter(content),
+        }
+    }
+}
+
 // TODO: if performance is an issue, use TreeCursor to navigate the tree
 fn next_non_comment_leaf<'tree>(starting_node: Node<'tree>) -> Option<Node<'tree>> {
     let mut node: Node<'tree> = starting_node;
@@ -259,9 +295,9 @@ fn find_anchor<'tree>(node: &'tree Node<'tree>, input: &str) -> FormatterResult<
         })?;
     if prefix.trim_start() == "" {
         if let Some(anchor) = next_non_comment_leaf(node.clone()) {
-            return Ok(Commented::CommentedAfter(anchor.into()));
+            return Ok(Commented::CommentedAfter((&anchor).into()));
         } else if let Some(anchor) = previous_non_comment_leaf(node.clone()) {
-            return Ok(Commented::CommentedBefore(anchor.into()));
+            return Ok(Commented::CommentedBefore((&anchor).into()));
         } else {
             return Err(FormatterError::Internal(
                 format!("Could find no anchor for comment {node:?}",),
@@ -270,9 +306,9 @@ fn find_anchor<'tree>(node: &'tree Node<'tree>, input: &str) -> FormatterResult<
         }
     } else {
         if let Some(anchor) = previous_non_comment_leaf(node.clone()) {
-            return Ok(Commented::CommentedBefore(anchor.into()));
+            return Ok(Commented::CommentedBefore((&anchor).into()));
         } else if let Some(anchor) = next_non_comment_leaf(node.clone()) {
-            return Ok(Commented::CommentedAfter(anchor.into()));
+            return Ok(Commented::CommentedAfter((&anchor).into()));
         } else {
             return Err(FormatterError::Internal(
                 format!("Could find no anchor for comment {node:?}",),
@@ -286,6 +322,15 @@ fn find_anchor<'tree>(node: &'tree Node<'tree>, input: &str) -> FormatterResult<
 pub struct AnchoredComment {
     pub comment_text: String,
     pub commented: Commented,
+}
+
+impl From<&AnchoredComment> for InputSection {
+    fn from(value: &AnchoredComment) -> Self {
+        match value.commented {
+            Commented::CommentedBefore(section) => section,
+            Commented::CommentedAfter(section) => section,
+        }
+    }
 }
 
 pub struct SeparatedInput {
@@ -339,7 +384,7 @@ pub fn extract_comments<'a>(
                      comment_text,
                  }|
                  -> FormatterResult<AnchoredComment> {
-                    commented.subtract(comment.clone().into())?;
+                    commented.subtract((&comment).into())?;
                     Ok(AnchoredComment {
                         commented,
                         comment_text: comment_text.to_string(),

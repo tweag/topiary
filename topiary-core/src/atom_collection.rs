@@ -8,7 +8,7 @@ use std::{
 use topiary_tree_sitter_facade::Node;
 
 use crate::{
-    tree_sitter::NodeExt, Atom, FormatterError, FormatterResult, ScopeCondition, ScopeInformation,
+    comments::{AnchoredComment, Comment}, tree_sitter::NodeExt, types::InputSection, Atom, FormatterError, FormatterResult, ScopeCondition, ScopeInformation
 };
 
 /// A struct that holds sets of node IDs that have line breaks before or after them.
@@ -37,6 +37,8 @@ pub struct AtomCollection {
     /// something to a node, a new Atom is added to this HashMap.
     /// The key of the hashmap is the identifier of the node.
     append: HashMap<usize, Vec<Atom>>,
+    /// 
+    comments: HashMap<usize, Vec<Comment>>,
     /// A query file can define custom leaf nodes (nodes that Topiary should not
     /// touch during formatting). When such a node is encountered, its id is stored in
     /// this HashSet.
@@ -72,6 +74,7 @@ impl AtomCollection {
             atoms,
             prepend: HashMap::new(),
             append: HashMap::new(),
+            comments: HashMap::new(),
             specified_leaf_nodes: HashSet::new(),
             parent_leaf_nodes: HashMap::new(),
             multi_line_nodes: HashSet::new(),
@@ -87,6 +90,7 @@ impl AtomCollection {
         root: &Node,
         source: &[u8],
         specified_leaf_nodes: HashSet<usize>,
+        comments: Vec<AnchoredComment>,
     ) -> FormatterResult<Self> {
         // Flatten the tree, from the root node, in a depth-first traversal
         let dfs_nodes = dfs_flatten(root);
@@ -100,6 +104,7 @@ impl AtomCollection {
             atoms: Vec::new(),
             prepend: HashMap::new(),
             append: HashMap::new(),
+            comments: HashMap::new(),
             specified_leaf_nodes,
             parent_leaf_nodes: HashMap::new(),
             multi_line_nodes,
@@ -109,7 +114,7 @@ impl AtomCollection {
             counter: 0,
         };
 
-        atoms.collect_leafs_inner(root, source, &Vec::new(), 0)?;
+        atoms.collect_leafs_inner(root, source, &comments, &Vec::new(), 0)?;
 
         Ok(atoms)
     }
@@ -509,6 +514,7 @@ impl AtomCollection {
         &mut self,
         node: &Node,
         source: &[u8],
+        comments: &mut Vec<AnchoredComment>,
         parent_ids: &[usize],
         level: usize,
     ) -> FormatterResult<()> {
@@ -541,9 +547,19 @@ impl AtomCollection {
             });
             // Mark all sub-nodes as having this node as a "leaf parent"
             self.mark_leaf_parent(node, node.id());
+            // Test the node for comments
+            while let Some(comment) = comments.last() {
+                let node_section: InputSection = node.into();
+                while node_section.contains(&comment.into()) {
+                    self.comments.entry(id)
+                        .or_insert(Vec::new())
+                        .push(comment.into());
+                    comments.pop();
+                }
+            }
         } else {
             for child in node.children(&mut node.walk()) {
-                self.collect_leafs_inner(&child, source, &parent_ids, level + 1)?;
+                self.collect_leafs_inner(&child, source, comments, &parent_ids, level + 1)?;
             }
         }
 
