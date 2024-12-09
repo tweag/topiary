@@ -14,7 +14,9 @@ use streaming_iterator::StreamingIterator;
 
 use crate::{
     atom_collection::{AtomCollection, QueryPredicates},
+    comments::{extract_comments, AnchoredComment, SeparatedInput},
     error::FormatterError,
+    types::Position,
     FormatterResult,
 };
 
@@ -23,21 +25,6 @@ use crate::{
 pub enum Visualisation {
     GraphViz,
     Json,
-}
-
-/// Refers to a position within the code. Used for error reporting, and for
-/// comparing input with formatted output. The numbers are 1-based, because that
-/// is how editors usually refer to a position. Derived from tree_sitter::Point.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
-pub struct Position {
-    pub row: u32,
-    pub column: u32,
-}
-
-impl Display for Position {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "({},{})", self.row, self.column)
-    }
 }
 
 /// Topiary often needs both the tree-sitter `Query` and the original content
@@ -94,15 +81,6 @@ impl TopiaryQuery {
     #[cfg(target_arch = "wasm32")]
     pub fn pattern_position(&self, _pattern_index: usize) -> Position {
         unimplemented!()
-    }
-}
-
-impl From<Point> for Position {
-    fn from(point: Point) -> Self {
-        Self {
-            row: point.row() + 1,
-            column: point.column() + 1,
-        }
     }
 }
 
@@ -233,9 +211,24 @@ pub fn apply_query(
     grammar: &topiary_tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<AtomCollection> {
-    let (tree, _grammar) = parse(input_content, grammar, tolerate_parsing_errors)?;
-    let root = tree.root_node();
-    let source = input_content.as_bytes();
+    let (tree, grammar) = parse(input_content, grammar, tolerate_parsing_errors)?;
+
+    // Remove comments in a separate stream before applying queries
+    let SeparatedInput {
+        input_string,
+        input_tree,
+        comments,
+    } = extract_comments(&tree, input_content, grammar)?;
+    let source = input_string.as_bytes();
+    let root = input_tree.root_node();
+
+    for AnchoredComment {
+        comment_text,
+        commented,
+    } in comments
+    {
+        log::debug!("Found comment \"{comment_text}\" with anchor {commented:?}");
+    }
 
     // Match queries
     let mut cursor = QueryCursor::new();
