@@ -4,3 +4,4 @@ target
 /.direnv
 *.profraw
 /.vscode
+.envrc
