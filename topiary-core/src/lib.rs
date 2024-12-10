@@ -262,7 +262,7 @@ pub fn formatter(
         }
 
         Operation::Visualise { output_format } => {
-            let (tree, _) = tree_sitter::parse(&content, &language.grammar, false)?;
+            let tree = tree_sitter::parse(&content, &language.grammar, false)?;
             let root: SyntaxNode = tree.root_node().into();
 
             match output_format {

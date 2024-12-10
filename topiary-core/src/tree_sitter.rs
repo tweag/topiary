@@ -233,7 +233,7 @@ pub fn apply_query(
     grammar: &topiary_tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<AtomCollection> {
-    let (tree, _grammar) = parse(input_content, grammar, tolerate_parsing_errors)?;
+    let tree = parse(input_content, grammar, tolerate_parsing_errors)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
 
@@ -332,17 +332,12 @@ pub fn apply_query(
     Ok(atoms)
 }
 
-// A single "language" can correspond to multiple grammars.
-// For instance, we have separate grammars for interfaces and implementation in OCaml.
-// When the proper grammar cannot be inferred from the extension of the input file,
-// this function tries to parse the data with every possible grammar.
-// It returns the syntax tree of the first grammar that succeeds, along with said grammar,
-// or the last error if all grammars fail.
-pub fn parse<'a>(
+/// Parses some string into a syntax tree, given a tree-sitter grammar.
+pub fn parse(
     content: &str,
-    grammar: &'a topiary_tree_sitter_facade::Language,
+    grammar: &topiary_tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
-) -> FormatterResult<(Tree, &'a topiary_tree_sitter_facade::Language)> {
+) -> FormatterResult<Tree> {
     let mut parser = Parser::new()?;
     parser.set_language(grammar).map_err(|_| {
         FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
@@ -357,7 +352,7 @@ pub fn parse<'a>(
         check_for_error_nodes(&tree.root_node())?;
     }
 
-    Ok((tree, grammar))
+    Ok(tree)
 }
 
 fn check_for_error_nodes(node: &Node) -> FormatterResult<()> {
@@ -531,7 +526,7 @@ pub fn check_query_coverage(
     original_query: &TopiaryQuery,
     grammar: &topiary_tree_sitter_facade::Language,
 ) -> FormatterResult<CoverageData> {
-    let (tree, grammar) = parse(input_content, grammar, false)?;
+    let tree = parse(input_content, grammar, false)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
     let mut missing_patterns = Vec::new();
