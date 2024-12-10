@@ -3,7 +3,6 @@
 , advisory-db
 , crane
 , rust-overlay
-, nix-filter
 , craneLib
 # tree-sitter-Nickel is packaged in Nixpkgs, but it's an older version at the
 # time of writing. Since updating it seems non trivial, and we need Topiary to
@@ -12,6 +11,7 @@
 , tree-sitter-nickel
 }:
 let
+  inherit (pkgs.lib) fileset;
   wasmRustVersion = "1.77.2";
   wasmTarget = "wasm32-unknown-unknown";
 
@@ -22,23 +22,21 @@ let
   commonArgs = {
     pname = "topiary";
 
-    src = nix-filter.lib.filter {
+    src = fileset.toSource {
       root = ./.;
-      include = [
-        "benches"
-        "Cargo.lock"
-        "Cargo.toml"
-        "languages.ncl"
-        "languages_nix.ncl"
-        "tests"
-        "topiary-core"
-        "topiary-cli"
-        "topiary-config"
-        "topiary-playground"
-        "topiary-queries"
-        "topiary-tree-sitter-facade"
-        "topiary-web-tree-sitter-sys"
-        "examples"
+      fileset = fileset.unions [
+        ./Cargo.lock
+        ./Cargo.toml
+        ./languages.ncl
+        ./languages_nix.ncl
+        ./examples
+        ./topiary-core
+        ./topiary-cli
+        ./topiary-config
+        ./topiary-playground
+        ./topiary-queries
+        ./topiary-tree-sitter-facade
+        ./topiary-web-tree-sitter-sys
       ];
     };
 
