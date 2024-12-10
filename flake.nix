@@ -27,16 +27,15 @@
 
     flake-utils.url = "github:numtide/flake-utils";
 
-    tree-sitter-nickel-input = {
+    tree-sitter-nickel = {
       url = "github:nickel-lang/tree-sitter-nickel";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
   };
 
-  outputs = inputs:
-    with inputs;
-    flake-utils.lib.eachDefaultSystem (
+  outputs = { self, nixpkgs, ... }@inputs:
+    inputs.flake-utils.lib.eachDefaultSystem (
       system:
       let
         wasm-bindgen-cli-overlay = final: prev:
@@ -55,15 +54,16 @@
 
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [ rust-overlay.overlays.default wasm-bindgen-cli-overlay ];
+          overlays = [ inputs.rust-overlay.overlays.default wasm-bindgen-cli-overlay ];
         };
 
-        craneLib = crane.mkLib pkgs;
+        craneLib = inputs.crane.mkLib pkgs;
 
-        tree-sitter-nickel = tree-sitter-nickel-input.packages.${system}.default;
+        tree-sitter-nickel = inputs.tree-sitter-nickel.packages.${system}.default;
 
         topiaryPkgs = pkgs.callPackage ./default.nix {
-          inherit advisory-db crane rust-overlay craneLib tree-sitter-nickel;
+          inherit (inputs) advisory-db crane rust-overlay;
+          inherit craneLib tree-sitter-nickel;
         };
         binPkgs = pkgs.callPackage ./bin/default.nix { };
       in

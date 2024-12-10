@@ -93,7 +93,7 @@
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs",
         "rust-overlay": "rust-overlay",
-        "tree-sitter-nickel-input": "tree-sitter-nickel-input"
+        "tree-sitter-nickel": "tree-sitter-nickel"
       }
     },
     "rust-overlay": {
@@ -129,7 +129,7 @@
         "type": "github"
       }
     },
-    "tree-sitter-nickel-input": {
+    "tree-sitter-nickel": {
       "inputs": {
         "flake-utils": [
           "flake-utils"
