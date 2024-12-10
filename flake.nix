@@ -109,7 +109,7 @@
           {
             default = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; inherit craneLib; inherit binPkgs; };
             light = pkgs.callPackage ./shell.nix { checks = checksLight; inherit craneLib; inherit binPkgs; optionals = false; };
-            wasm = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; craneLib = topiaryPkgs.passtru.craneLibWasm; inherit binPkgs; };
+            wasm = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; craneLib = topiaryPkgs.passthru.craneLibWasm; inherit binPkgs; };
           };
 
         ## For easy use in https://github.com/cachix/pre-commit-hooks.nix
