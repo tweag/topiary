@@ -390,7 +390,7 @@ Options:
 
 This subcommand checks how much of the language query file is used to process the input.
 Specifically, it checks the percentage of queries in the query file that match the given input,
-And prints the queries that don't matched anything.
+and prints the queries that don't match anything.
 
 <!-- DO NOT REMOVE THE "usage" COMMENTS -->
 <!-- usage:start:coverage-->
