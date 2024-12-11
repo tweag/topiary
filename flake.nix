@@ -68,7 +68,7 @@
         binPkgs = pkgs.callPackage ./bin/default.nix { };
       in
       {
-        packages = rec {
+        packages = {
           inherit (topiaryPkgs)
             topiary-playground
             topiary-queries
@@ -85,12 +85,12 @@
             update-wasm-grammars
             verify-documented-usage;
 
-          default = topiary-cli;
+          default = self.packages.${system}.topiary-cli;
         };
 
         checks = {
           inherit (topiaryPkgs) clippy clippy-wasm fmt topiary-core topiary-playground audit benchmark;
-          topiary-cli = topiaryPkgs.topiary-cli { };
+          topiary-cli = self.packages.${system}.topiary-cli;
 
           ## Check that the `lib.pre-commit-hook` output builds/evaluates
           ## correctly. `deepSeq e1 e2` evaluates `e1` strictly in depth before
@@ -103,7 +103,7 @@
           let
             checksLight = {
               inherit (topiaryPkgs) clippy fmt topiary-core;
-              topiary-cli = topiaryPkgs.topiary-cli { };
+              topiary-cli = self.packages.${system}.topiary-cli;
             };
           in
           {
@@ -117,7 +117,7 @@
           enable = true;
           name = "topiary";
           description = "A general code formatter based on tree-sitter.";
-          entry = "${pkgs.lib.getExe (topiaryPkgs.topiary-cli {})} fmt";
+          entry = "${pkgs.lib.getExe self.packages.${system}.topiary-cli} fmt";
           types = [ "text" ];
         };
       }
