@@ -12,7 +12,7 @@ use std::{
 };
 
 use language::{Language, LanguageConfiguration};
-use nickel_lang_core::{eval::cache::CacheImpl, program::Program};
+use nickel_lang_core::{eval::cache::CacheImpl, program::Program, term::RichTerm};
 use serde::Deserialize;
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -51,7 +51,7 @@ impl Configuration {
     /// with the path that was not found.
     /// If the configuration file exists, but cannot be parsed, this function will return a
     /// `TopiaryConfigError` with the error that occurred.
-    pub fn fetch(merge: bool, file: &Option<PathBuf>) -> TopiaryConfigResult<Self> {
+    pub fn fetch(merge: bool, file: &Option<PathBuf>) -> TopiaryConfigResult<(Self, RichTerm)> {
         // If we have an explicit file, fail if it doesn't exist
         if let Some(path) = file {
             if !path.exists() {
@@ -161,26 +161,26 @@ impl Configuration {
         Err(TopiaryConfigError::NoExtension(pb.clone()))
     }
 
-    fn parse_and_merge(sources: &[Source]) -> TopiaryConfigResult<Self> {
+    fn parse_and_merge(sources: &[Source]) -> TopiaryConfigResult<(Self, RichTerm)> {
         let inputs = sources.iter().map(|s| s.clone().into());
 
         let mut program = Program::<CacheImpl>::new_from_inputs(inputs, std::io::stderr())?;
 
         let term = program.eval_full_for_export()?;
 
-        let serde_config = SerdeConfiguration::deserialize(term)?;
+        let serde_config = SerdeConfiguration::deserialize(term.clone())?;
 
-        Ok(serde_config.into())
+        Ok((serde_config.into(), term))
     }
 
-    fn parse(source: Source) -> TopiaryConfigResult<Self> {
+    fn parse(source: Source) -> TopiaryConfigResult<(Self, RichTerm)> {
         let mut program = Program::<CacheImpl>::new_from_input(source.into(), std::io::stderr())?;
 
         let term = program.eval_full_for_export()?;
 
-        let serde_config = SerdeConfiguration::deserialize(term)?;
+        let serde_config = SerdeConfiguration::deserialize(term.clone())?;
 
-        Ok(serde_config.into())
+        Ok((serde_config.into(), term))
     }
 }
 
