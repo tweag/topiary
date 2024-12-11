@@ -35,7 +35,7 @@ async fn main() -> ExitCode {
 async fn run() -> CLIResult<()> {
     let args = cli::get_args()?;
 
-    let config = topiary_config::Configuration::fetch(
+    let (config, nickel_config) = topiary_config::Configuration::fetch(
         args.global.merge_configuration,
         &args.global.configuration,
     )?;
@@ -145,8 +145,8 @@ async fn run() -> CLIResult<()> {
         }
 
         Commands::Config => {
-            // Output collated configuration as debug
-            print!("{:#?}", config);
+            // Output the collated nickel configuration
+            println!("{nickel_config}")
         }
 
         Commands::Prefetch => {

@@ -54,6 +54,7 @@ This name should be decided amongst the team before the release.
 - [#780](https://github.com/tweag/topiary/pull/780) Measuring scopes are now independent from captures order
 - [#790](https://github.com/tweag/topiary/pull/790) No longer merge config files by default, use priority instead.
 - [#801](https://github.com/tweag/topiary/pull/801) Improved documentation of the `visualise` subcommand
+- [#811](https://github.com/tweag/topiary/pull/811) The `config` subcommand now outputs a Nickel file instead of some inner representation
 
 ### Fixed
 - [#779](https://github.com/tweag/topiary/pull/779) Load relevant grammars before CLI tests
