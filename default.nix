@@ -150,6 +150,8 @@ in
     shellHook = ''
       export TOPIARY_LANGUAGE_DIR=$PWD/queries
     '';
+
+    meta.mainProgram = "topiary";
   });
 
   topiary-queries = craneLib.buildPackage (commonArgs

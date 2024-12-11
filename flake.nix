@@ -117,7 +117,7 @@
           enable = true;
           name = "topiary";
           description = "A general code formatter based on tree-sitter.";
-          entry = "${topiaryPkgs.topiary-cli {}}/bin/topiary fmt";
+          entry = "${pkgs.lib.getExe topiaryPkgs.topiary-cli {}} fmt";
           types = [ "text" ];
         };
       }
