@@ -535,7 +535,7 @@ impl AtomCollection {
             self.atoms.push(Atom::Leaf {
                 content: String::from(node.utf8_text(source)?),
                 id,
-                original_position: node.start_position().into(),
+                original_column: node.start_position().column() as i32,
                 single_line_no_indent: false,
                 multi_line_indent_all: false,
             });
