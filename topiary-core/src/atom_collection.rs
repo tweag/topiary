@@ -931,14 +931,92 @@ impl AtomCollection {
         }
     }
 
+    /// Create atoms out of comments, and put them at the correct place in the atom stream.
+    fn post_process_comments(&mut self) {
+        let mut comments_queue: VecDeque<Atom> = VecDeque::new();
+
+        // First pass: get atoms in reverse order, put comments that come before atoms at the correct position
+        let mut atoms_with_comments_before: VecDeque<Atom> = VecDeque::new();
+
+        while let Some(atom) = self.atoms.pop() {
+            if let Atom::Leaf { id, .. } = atom {
+                while let Some(Comment {
+                    content,
+                    original_column,
+                }) = self.comments_before.entry(id).or_default().pop_back()
+                {
+                    let comment_atom = Atom::Leaf {
+                        content,
+                        id: self.next_id(),
+                        original_column,
+                        single_line_no_indent: false,
+                        multi_line_indent_all: true,
+                    };
+                    comments_queue.push_front(comment_atom);
+                }
+            }
+            if Atom::Hardline == atom || Atom::Blankline == atom {
+                // Prepend the comments, each one followed by a newline
+                while let Some(comment) = comments_queue.pop_back() {
+                    atoms_with_comments_before.push_front(Atom::Hardline);
+                    atoms_with_comments_before.push_front(comment);
+                }
+            }
+            atoms_with_comments_before.push_front(atom);
+        }
+        // If we still have comments left, add them at the beginning of the file
+        while let Some(comment) = comments_queue.pop_back() {
+            atoms_with_comments_before.push_front(Atom::Hardline);
+            atoms_with_comments_before.push_front(comment);
+        }
+
+        // Second pass: get atoms in reverse order, put comments that come after atoms at the correct position
+        let mut atoms_with_all_comments: VecDeque<Atom> = VecDeque::new();
+        while let Some(atom) = atoms_with_comments_before.pop_front() {
+            if let Atom::Leaf { id, .. } = atom {
+                while let Some(Comment {
+                    content,
+                    original_column,
+                }) = self.comments_after.entry(id).or_default().pop_front()
+                {
+                    let comment_atom = Atom::Leaf {
+                        content,
+                        id: self.next_id(),
+                        original_column,
+                        single_line_no_indent: false,
+                        multi_line_indent_all: true,
+                    };
+                    comments_queue.push_front(comment_atom);
+                }
+            }
+            if Atom::Hardline == atom || Atom::Blankline == atom {
+                // Append the comments, each one preceded by a space
+                while let Some(comment) = comments_queue.pop_back() {
+                    atoms_with_all_comments.push_back(Atom::Space);
+                    atoms_with_all_comments.push_back(comment);
+                }
+            }
+            atoms_with_all_comments.push_back(atom);
+        }
+        // If we still have comments left, add them at the end of the file
+        while let Some(comment) = comments_queue.pop_back() {
+            atoms_with_all_comments.push_back(Atom::Space);
+            atoms_with_all_comments.push_back(comment);
+        }
+
+        self.atoms = atoms_with_all_comments.into()
+    }
+
     /// This function merges the spaces, new lines and blank lines.
     /// If there are several tokens of different kind one after the other,
     /// the blank line is kept over the new line which itself is kept over the space.
     /// Furthermore, this function put the indentation delimiters before any space/line atom.
     pub fn post_process(&mut self) {
         self.post_process_scopes();
-        self.post_process_deletes();
         self.post_process_inner();
+        // Comments must be processed before deletes, because comment anchors might be deleted.
+        self.post_process_comments();
+        self.post_process_deletes();
 
         // We have taken care of spaces following an antispace. Now fix the
         // preceding spaces.
