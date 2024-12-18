@@ -68,7 +68,7 @@ let
   craneLibWasm = craneLib.overrideToolchain rustWithWasmTarget;
 in
 {
-  passtru = {
+  passthru = {
     inherit craneLibWasm;
   };
 
