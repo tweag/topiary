@@ -168,6 +168,24 @@ impl Diff<InputSection> for Commented {
     }
 }
 
+/// A comment, as part of Topiary's output.
+/// We forget node information here, because the struct
+/// is supposed to be attached to the node it comments.
+#[derive(Debug)]
+pub struct Comment {
+    pub content: String,
+    pub original_column: i32,
+}
+
+impl From<&AnchoredComment> for Comment {
+    fn from(value: &AnchoredComment) -> Self {
+        Comment {
+            content: value.comment_text.clone(),
+            original_column: value.original_column,
+        }
+    }
+}
+
 fn next_disjoint_node<'tree>(starting_node: &'tree Node<'tree>) -> Option<Node<'tree>> {
     let mut node: Node<'tree> = starting_node.clone();
     // move up until we find a next sibling
@@ -314,23 +332,21 @@ fn find_anchor<'tree>(node: &'tree Node<'tree>, input: &str) -> FormatterResult<
         if let Some(anchor) = next_non_comment_leaf(node.clone()) {
             return Ok(Commented::CommentedAfter(anchor.into()));
         } else if let Some(anchor) = previous_non_comment_leaf(node.clone()) {
-            return Ok(Commented::CommentedBefore(anchor.into()));
+            Ok(Commented::CommentedBefore((&anchor).into()))
         } else {
-            return Err(FormatterError::Internal(
-                format!("Could find no anchor for comment {node:?}",),
-                None,
-            ));
+            Err(FormatterError::CommentOrphaned(
+                node.utf8_text(input.as_bytes())?.to_string(),
+            ))
         }
     } else {
         if let Some(anchor) = previous_non_comment_leaf(node.clone()) {
-            return Ok(Commented::CommentedBefore(anchor.into()));
+            Ok(Commented::CommentedBefore((&anchor).into()))
         } else if let Some(anchor) = next_non_comment_leaf(node.clone()) {
             return Ok(Commented::CommentedAfter(anchor.into()));
         } else {
-            return Err(FormatterError::Internal(
-                format!("Could find no anchor for comment {node:?}",),
-                None,
-            ));
+            Err(FormatterError::CommentOrphaned(
+                node.utf8_text(input.as_bytes())?.to_string(),
+            ))
         }
     }
 }

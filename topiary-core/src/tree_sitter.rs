@@ -225,7 +225,8 @@ pub fn apply_query(
     for AnchoredComment {
         comment_text,
         commented,
-    } in comments
+        ..
+    } in comments.iter()
     {
         log::debug!("Found comment \"{comment_text}\" with anchor {commented:?}");
     }
@@ -251,7 +252,7 @@ pub fn apply_query(
     let specified_leaf_nodes: HashSet<usize> = collect_leaf_ids(&matches, capture_names.clone());
 
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
-    let mut atoms = AtomCollection::collect_leafs(&root, source, specified_leaf_nodes)?;
+    let mut atoms = AtomCollection::collect_leafs(&root, source, specified_leaf_nodes, comments)?;
 
     log::debug!("List of atoms before formatting: {atoms:?}");
 
