@@ -1,6 +1,6 @@
 use std::{
     borrow::Cow,
-    collections::{HashMap, HashSet},
+    collections::{HashMap, HashSet, VecDeque},
     mem,
     ops::Deref,
 };
@@ -8,6 +8,8 @@ use std::{
 use topiary_tree_sitter_facade::Node;
 
 use crate::{
+    comments::{AnchoredComment, Comment, Commented},
+    common::InputSection,
     tree_sitter::NodeExt,
     Atom, FormatterError, FormatterResult, ScopeCondition, ScopeInformation,
 };
@@ -38,6 +40,10 @@ pub struct AtomCollection {
     /// something to a node, a new Atom is added to this HashMap.
     /// The key of the hashmap is the identifier of the node.
     append: HashMap<usize, Vec<Atom>>,
+    /// Maps node IDs to comments before that node. Comments are stored in reading order.
+    comments_before: HashMap<usize, VecDeque<Comment>>,
+    /// Maps node IDs to comments after that node. Comments are stored in reading order.
+    comments_after: HashMap<usize, VecDeque<Comment>>,
     /// A query file can define custom leaf nodes (nodes that Topiary should not
     /// touch during formatting). When such a node is encountered, its id is stored in
     /// this HashSet.
@@ -73,6 +79,8 @@ impl AtomCollection {
             atoms,
             prepend: HashMap::new(),
             append: HashMap::new(),
+            comments_before: HashMap::new(),
+            comments_after: HashMap::new(),
             specified_leaf_nodes: HashSet::new(),
             parent_leaf_nodes: HashMap::new(),
             multi_line_nodes: HashSet::new(),
@@ -88,6 +96,7 @@ impl AtomCollection {
         root: &Node,
         source: &[u8],
         specified_leaf_nodes: HashSet<usize>,
+        mut comments: Vec<AnchoredComment>,
     ) -> FormatterResult<Self> {
         // Flatten the tree, from the root node, in a depth-first traversal
         let dfs_nodes = dfs_flatten(root);
@@ -101,6 +110,8 @@ impl AtomCollection {
             atoms: Vec::new(),
             prepend: HashMap::new(),
             append: HashMap::new(),
+            comments_before: HashMap::new(),
+            comments_after: HashMap::new(),
             specified_leaf_nodes,
             parent_leaf_nodes: HashMap::new(),
             multi_line_nodes,
@@ -110,9 +121,18 @@ impl AtomCollection {
             counter: 0,
         };
 
-        atoms.collect_leafs_inner(root, source, &Vec::new(), 0)?;
+        atoms.collect_leafs_inner(root, source, &mut comments, &Vec::new(), 0)?;
 
-        Ok(atoms)
+        if let Some(comment) = comments.pop() {
+            // Some anchored couldn't be attached back to the code:
+            // raise an error with the first of them
+            Err(FormatterError::CommentAbandoned(
+                comment.comment_text,
+                format!("{:?}", comment.commented),
+            ))
+        } else {
+            Ok(atoms)
+        }
     }
 
     // wrap inside a conditional atom if #single/multi_line_scope_only! is set
@@ -496,11 +516,14 @@ impl AtomCollection {
     /// A leaf node is either a node with no children or a node that is specified as a leaf node by the formatter.
     /// A leaf parent is the closest ancestor of a leaf node.
     ///
+    /// This function also attach comments to the leaf node that contains their anchor.
+    ///
     /// # Arguments
     ///
     /// * `node` - The current node to process.
     /// * `source` - The full source code as a byte slice.
     /// * `parent_ids` - A vector of node ids that are the ancestors of the current node.
+    /// * `comments` - A vector that stores unattached comments.
     /// * `level` - The depth of the current node in the CST tree.
     ///
     /// # Errors
@@ -510,6 +533,7 @@ impl AtomCollection {
         &mut self,
         node: &Node,
         source: &[u8],
+        comments: &mut Vec<AnchoredComment>,
         parent_ids: &[usize],
         level: usize,
     ) -> FormatterResult<()> {
@@ -542,9 +566,32 @@ impl AtomCollection {
             });
             // Mark all sub-nodes as having this node as a "leaf parent"
             self.mark_leaf_parent(node, node.id());
+            // Test the node for comments
+            // `comments` is sorted in reverse order, so `pop()` gets the first one.
+            while let Some(comment) = comments.pop() {
+                let node_section: InputSection = node.into();
+                // REVIEW: the double borrow is sort of weird, is this idiomatic?
+                if node_section.contains(&(&comment).into()) {
+                    match comment.commented {
+                        Commented::CommentedAfter(_) => self
+                            .comments_before
+                            .entry(id)
+                            .or_default()
+                            .push_back((&comment).into()),
+                        Commented::CommentedBefore(_) => self
+                            .comments_after
+                            .entry(id)
+                            .or_default()
+                            .push_back((&comment).into()),
+                    }
+                } else {
+                    comments.push(comment);
+                    break;
+                }
+            }
         } else {
             for child in node.children(&mut node.walk()) {
-                self.collect_leafs_inner(&child, source, &parent_ids, level + 1)?;
+                self.collect_leafs_inner(&child, source, comments, &parent_ids, level + 1)?;
             }
         }
 

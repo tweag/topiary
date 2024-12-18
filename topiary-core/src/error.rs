@@ -6,6 +6,14 @@ use std::{error::Error, fmt, io, ops::Deref, str, string};
 /// The various errors the formatter may return.
 #[derive(Debug)]
 pub enum FormatterError {
+    /// Found an anchored comment that couldn't be re-attached to its anchor.
+    /// The second argument should be an InputSection, but cyclic dependencies
+    /// make it difficult.
+    CommentAbandoned(String, String),
+
+    /// Found a comment for which no anchor could be found.
+    CommentOrphaned(String),
+
     /// The input produced output that isn't idempotent, i.e. formatting the
     /// output again made further changes. If this happened using our provided
     /// query files, it is a bug. Please log an issue.
@@ -57,6 +65,20 @@ impl fmt::Display for FormatterError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let please_log_message = "If this happened with the built-in query files, it is a bug. It would be\nhelpful if you logged this error at\nhttps://github.com/tweag/topiary/issues/new?assignees=&labels=type%3A+bug&template=bug_report.md";
         match self {
+            Self::CommentAbandoned(comment, anchor) => {
+                write!(
+                    f,
+                    "Found an anchored comment, but could not attach it back to its anchor\n{comment}\nThe anchor was {anchor}",
+                )
+            }
+
+            Self::CommentOrphaned(comment) => {
+                write!(
+                    f,
+                    "Found a comment for which no anchor could be found:\n{comment}",
+                )
+            }
+
             Self::Idempotence => {
                 write!(
                     f,
@@ -100,6 +122,8 @@ impl Error for FormatterError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             Self::Idempotence
+            | Self::CommentAbandoned(..)
+            | Self::CommentOrphaned(_)
             | Self::Parsing { .. }
             | Self::PatternDoesNotMatch
             | Self::Io(IoError::Generic(_, None)) => None,

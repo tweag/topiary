@@ -40,8 +40,14 @@ pub struct InputSection {
     pub end: Position,
 }
 
-impl From<Node<'_>> for InputSection {
-    fn from(value: Node) -> Self {
+impl InputSection {
+    pub fn contains(self, other: &Self) -> bool {
+        self.start <= other.start && other.end <= self.end
+    }
+}
+
+impl From<&Node<'_>> for InputSection {
+    fn from(value: &Node) -> Self {
         InputSection {
             start: value.start_position().into(),
             end: value.end_position().into(),
