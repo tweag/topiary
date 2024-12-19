@@ -1,6 +1,6 @@
 use std::{
     borrow::Cow,
-    collections::{HashMap, HashSet},
+    collections::{HashMap, HashSet, VecDeque},
     mem,
     ops::Deref,
 };
@@ -8,7 +8,10 @@ use std::{
 use topiary_tree_sitter_facade::Node;
 
 use crate::{
-    tree_sitter::NodeExt, Atom, FormatterError, FormatterResult, ScopeCondition, ScopeInformation,
+    comments::{AnchoredComment, Comment, Commented},
+    common::InputSection,
+    tree_sitter::NodeExt,
+    Atom, FormatterError, FormatterResult, ScopeCondition, ScopeInformation,
 };
 
 /// A struct that holds sets of node IDs that have line breaks before or after them.
@@ -37,6 +40,10 @@ pub struct AtomCollection {
     /// something to a node, a new Atom is added to this HashMap.
     /// The key of the hashmap is the identifier of the node.
     append: HashMap<usize, Vec<Atom>>,
+    /// Maps node IDs to comments before that node. Comments are stored in reading order.
+    comments_before: HashMap<usize, VecDeque<Comment>>,
+    /// Maps node IDs to comments after that node. Comments are stored in reading order.
+    comments_after: HashMap<usize, VecDeque<Comment>>,
     /// A query file can define custom leaf nodes (nodes that Topiary should not
     /// touch during formatting). When such a node is encountered, its id is stored in
     /// this HashSet.
@@ -72,6 +79,8 @@ impl AtomCollection {
             atoms,
             prepend: HashMap::new(),
             append: HashMap::new(),
+            comments_before: HashMap::new(),
+            comments_after: HashMap::new(),
             specified_leaf_nodes: HashSet::new(),
             parent_leaf_nodes: HashMap::new(),
             multi_line_nodes: HashSet::new(),
@@ -87,6 +96,7 @@ impl AtomCollection {
         root: &Node,
         source: &[u8],
         specified_leaf_nodes: HashSet<usize>,
+        mut comments: Vec<AnchoredComment>,
     ) -> FormatterResult<Self> {
         // Flatten the tree, from the root node, in a depth-first traversal
         let dfs_nodes = dfs_flatten(root);
@@ -100,6 +110,8 @@ impl AtomCollection {
             atoms: Vec::new(),
             prepend: HashMap::new(),
             append: HashMap::new(),
+            comments_before: HashMap::new(),
+            comments_after: HashMap::new(),
             specified_leaf_nodes,
             parent_leaf_nodes: HashMap::new(),
             multi_line_nodes,
@@ -109,9 +121,18 @@ impl AtomCollection {
             counter: 0,
         };
 
-        atoms.collect_leafs_inner(root, source, &Vec::new(), 0)?;
+        atoms.collect_leafs_inner(root, source, &mut comments, &Vec::new(), 0)?;
 
-        Ok(atoms)
+        if let Some(comment) = comments.pop() {
+            // Some anchored couldn't be attached back to the code:
+            // raise an error with the first of them
+            Err(FormatterError::CommentAbandoned(
+                comment.comment_text,
+                format!("{:?}", comment.commented),
+            ))
+        } else {
+            Ok(atoms)
+        }
     }
 
     // wrap inside a conditional atom if #single/multi_line_scope_only! is set
@@ -495,11 +516,14 @@ impl AtomCollection {
     /// A leaf node is either a node with no children or a node that is specified as a leaf node by the formatter.
     /// A leaf parent is the closest ancestor of a leaf node.
     ///
+    /// This function also attach comments to the leaf node that contains their anchor.
+    ///
     /// # Arguments
     ///
     /// * `node` - The current node to process.
     /// * `source` - The full source code as a byte slice.
     /// * `parent_ids` - A vector of node ids that are the ancestors of the current node.
+    /// * `comments` - A vector that stores unattached comments.
     /// * `level` - The depth of the current node in the CST tree.
     ///
     /// # Errors
@@ -509,6 +533,7 @@ impl AtomCollection {
         &mut self,
         node: &Node,
         source: &[u8],
+        comments: &mut Vec<AnchoredComment>,
         parent_ids: &[usize],
         level: usize,
     ) -> FormatterResult<()> {
@@ -535,15 +560,38 @@ impl AtomCollection {
             self.atoms.push(Atom::Leaf {
                 content: String::from(node.utf8_text(source)?),
                 id,
-                original_position: node.start_position().into(),
+                original_column: node.start_position().column() as i32,
                 single_line_no_indent: false,
                 multi_line_indent_all: false,
             });
             // Mark all sub-nodes as having this node as a "leaf parent"
             self.mark_leaf_parent(node, node.id());
+            // Test the node for comments
+            // `comments` is sorted in reverse order, so `pop()` gets the first one.
+            while let Some(comment) = comments.pop() {
+                let node_section: InputSection = node.into();
+                // REVIEW: the double borrow is sort of weird, is this idiomatic?
+                if node_section.contains(&(&comment).into()) {
+                    match comment.commented {
+                        Commented::CommentedAfter(_) => self
+                            .comments_before
+                            .entry(id)
+                            .or_default()
+                            .push_back((&comment).into()),
+                        Commented::CommentedBefore(_) => self
+                            .comments_after
+                            .entry(id)
+                            .or_default()
+                            .push_back((&comment).into()),
+                    }
+                } else {
+                    comments.push(comment);
+                    break;
+                }
+            }
         } else {
             for child in node.children(&mut node.walk()) {
-                self.collect_leafs_inner(&child, source, &parent_ids, level + 1)?;
+                self.collect_leafs_inner(&child, source, comments, &parent_ids, level + 1)?;
             }
         }
 
@@ -883,6 +931,82 @@ impl AtomCollection {
         }
     }
 
+    /// Create atoms out of comments, and put them at the correct place in the atom stream.
+    fn post_process_comments(&mut self) {
+        let mut comments_queue: VecDeque<Atom> = VecDeque::new();
+
+        // First pass: get atoms in reverse order, put comments that come before atoms at the correct position
+        let mut atoms_with_comments_before: VecDeque<Atom> = VecDeque::new();
+
+        while let Some(atom) = self.atoms.pop() {
+            if let Atom::Leaf { id, .. } = atom {
+                while let Some(Comment {
+                    content,
+                    original_column,
+                }) = self.comments_before.entry(id).or_default().pop_back()
+                {
+                    let comment_atom = Atom::Leaf {
+                        content,
+                        id: self.next_id(),
+                        original_column,
+                        single_line_no_indent: false,
+                        multi_line_indent_all: true,
+                    };
+                    comments_queue.push_front(comment_atom);
+                }
+            }
+            if Atom::Hardline == atom || Atom::Blankline == atom {
+                // Prepend the comments, each one followed by a newline
+                while let Some(comment) = comments_queue.pop_back() {
+                    atoms_with_comments_before.push_front(Atom::Hardline);
+                    atoms_with_comments_before.push_front(comment);
+                }
+            }
+            atoms_with_comments_before.push_front(atom);
+        }
+        // If we still have comments left, add them at the beginning of the file
+        while let Some(comment) = comments_queue.pop_back() {
+            atoms_with_comments_before.push_front(Atom::Hardline);
+            atoms_with_comments_before.push_front(comment);
+        }
+
+        // Second pass: get atoms in reverse order, put comments that come after atoms at the correct position
+        let mut atoms_with_all_comments: VecDeque<Atom> = VecDeque::new();
+        while let Some(atom) = atoms_with_comments_before.pop_front() {
+            if let Atom::Leaf { id, .. } = atom {
+                while let Some(Comment {
+                    content,
+                    original_column,
+                }) = self.comments_after.entry(id).or_default().pop_front()
+                {
+                    let comment_atom = Atom::Leaf {
+                        content,
+                        id: self.next_id(),
+                        original_column,
+                        single_line_no_indent: false,
+                        multi_line_indent_all: true,
+                    };
+                    comments_queue.push_front(comment_atom);
+                }
+            }
+            if Atom::Hardline == atom || Atom::Blankline == atom {
+                // Append the comments, each one preceded by a space
+                while let Some(comment) = comments_queue.pop_back() {
+                    atoms_with_all_comments.push_back(Atom::Space);
+                    atoms_with_all_comments.push_back(comment);
+                }
+            }
+            atoms_with_all_comments.push_back(atom);
+        }
+        // If we still have comments left, add them at the end of the file
+        while let Some(comment) = comments_queue.pop_back() {
+            atoms_with_all_comments.push_back(Atom::Space);
+            atoms_with_all_comments.push_back(comment);
+        }
+
+        self.atoms = atoms_with_all_comments.into()
+    }
+
     /// This function merges the spaces, new lines and blank lines.
     /// If there are several tokens of different kind one after the other,
     /// the blank line is kept over the new line which itself is kept over the space.
@@ -899,6 +1023,8 @@ impl AtomCollection {
         // We have to do one more post-processing pass, as the collapsing of
         // antispaces may have produced more empty atoms.
         self.post_process_inner();
+
+        self.post_process_comments();
 
         log::debug!("List of atoms after post-processing: {:?}", self.atoms);
     }
