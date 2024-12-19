@@ -573,7 +573,7 @@ impl AtomCollection {
                 // REVIEW: the double borrow is sort of weird, is this idiomatic?
                 if node_section.contains(&(&comment).into()) {
                     match comment.commented {
-                        Commented::CommentedAfter(_) => self
+                        Commented::CommentedAfter { .. } => self
                             .comments_before
                             .entry(id)
                             .or_default()
@@ -933,7 +933,12 @@ impl AtomCollection {
 
     /// Create atoms out of comments, and put them at the correct place in the atom stream.
     fn post_process_comments(&mut self) {
-        let mut comments_queue: VecDeque<Atom> = VecDeque::new();
+        struct CommentWithContext {
+            comment: Atom,
+            blank_line_after: bool,
+            blank_line_before: bool,
+        }
+        let mut comments_queue_with_context: VecDeque<CommentWithContext> = VecDeque::new();
 
         // First pass: get atoms in reverse order, put comments that come before atoms at the correct position
         let mut atoms_with_comments_before: VecDeque<Atom> = VecDeque::new();
@@ -943,6 +948,8 @@ impl AtomCollection {
                 while let Some(Comment {
                     content,
                     original_column,
+                    blank_line_after,
+                    blank_line_before,
                 }) = self.comments_before.entry(id).or_default().pop_back()
                 {
                     let comment_atom = Atom::Leaf {
@@ -952,31 +959,60 @@ impl AtomCollection {
                         single_line_no_indent: false,
                         multi_line_indent_all: true,
                     };
-                    comments_queue.push_front(comment_atom);
+                    comments_queue_with_context.push_front(CommentWithContext{
+                        comment: comment_atom,
+                        blank_line_after,
+                        blank_line_before
+                    });
                 }
-            }
-            if Atom::Hardline == atom || Atom::Blankline == atom {
+                atoms_with_comments_before.push_front(atom);
+            } else if Atom::Hardline == atom || Atom::Blankline == atom {
+                let mut blank_line_before_first_comment = false;
                 // Prepend the comments, each one followed by a newline
-                while let Some(comment) = comments_queue.pop_back() {
-                    atoms_with_comments_before.push_front(Atom::Hardline);
+                while let Some(CommentWithContext{comment, blank_line_after, blank_line_before}) = comments_queue_with_context.pop_back() {
+                    if blank_line_after {
+                        atoms_with_comments_before.push_front(Atom::Blankline)
+                    } else {
+                        atoms_with_comments_before.push_front(Atom::Hardline);
+                    }
                     atoms_with_comments_before.push_front(comment);
+                    blank_line_before_first_comment = blank_line_before;
                 }
+                if blank_line_before_first_comment && atom == Atom::Hardline {
+                    atoms_with_comments_before.push_front(Atom::Blankline);
+                } else {
+                    atoms_with_comments_before.push_front(atom);
+                }
+            } else {
+                atoms_with_comments_before.push_front(atom);
             }
-            atoms_with_comments_before.push_front(atom);
         }
+        let mut blank_line_before_first_comment = false;
         // If we still have comments left, add them at the beginning of the file
-        while let Some(comment) = comments_queue.pop_back() {
-            atoms_with_comments_before.push_front(Atom::Hardline);
+        while let Some(CommentWithContext{comment, blank_line_after, blank_line_before}) = comments_queue_with_context.pop_back() {
+            if blank_line_after {
+                atoms_with_comments_before.push_front(Atom::Blankline)
+            } else {
+                atoms_with_comments_before.push_front(Atom::Hardline);
+            }
             atoms_with_comments_before.push_front(comment);
+            blank_line_before_first_comment = blank_line_before;
+        }
+        if blank_line_before_first_comment {
+            atoms_with_comments_before.push_front(Atom::Blankline);
         }
 
         // Second pass: get atoms in reverse order, put comments that come after atoms at the correct position
         let mut atoms_with_all_comments: VecDeque<Atom> = VecDeque::new();
+        let mut comments_queue: VecDeque<Atom> = VecDeque::new();
         while let Some(atom) = atoms_with_comments_before.pop_front() {
             if let Atom::Leaf { id, .. } = atom {
                 while let Some(Comment {
                     content,
                     original_column,
+                    // We don't care about blank lines here: they only matter for comments that
+                    // come before atoms.
+                    ..
                 }) = self.comments_after.entry(id).or_default().pop_front()
                 {
                     let comment_atom = Atom::Leaf {

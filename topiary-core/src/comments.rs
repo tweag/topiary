@@ -92,28 +92,51 @@ fn find_comments(
         //   (we don't want to create undue blank lines)
         let prev = previous_disjoint_node(&node);
         let next = next_disjoint_node(&node);
-        // Nested ifs are necessary, because `if let ...` don't play well with other clauses
-        let edit: InputEdit = if let Some(prev) = prev {
-            if let Some(next) = next {
-                if prev.end_position().row() < node.start_position().row()
-                    && node.end_position().row() < next.start_position().row()
-                {
-                    InputEdit::new(
-                        prev.end_byte(),
-                        node.end_byte(),
-                        prev.end_byte(),
-                        &prev.end_position(),
-                        &node.end_position(),
-                        &prev.end_position(),
-                    )
-                } else {
-                    into_edit(&node)
-                }
-            } else {
+        let is_alone_before = prev
+            .as_ref()
+            .map(|n| n.start_position().row() < node.start_position().row());
+        let is_alone_after = next
+            .as_ref()
+            .map(|n| node.end_position().row() < n.start_position().row());
+
+        // The logic is a bit complex here. Each case gives an example of a comment it would match
+        let edit: InputEdit = match (is_alone_before, is_alone_after) {
+            // /* define a foo */ let _ = foo
+            (Some(false), _) |
+            // let _ = foo /* we defined a foo */
+            (_, Some(false)) |
+            // /* this file has a comment and nothing else */
+            (None, None) => {
                 into_edit(&node)
+            },
+            // let _ = foo
+            // /* This comment is alone on its line, but has stuff before and after */
+            // let _ = bar
+            (Some(true), Some(true)) |
+            // /* This is the first line of the file */
+            // let _ = foo
+            (None, Some(true)) => {
+                InputEdit::new(
+                    node.start_byte(),
+                    next.as_ref().unwrap().start_byte(),
+                    node.start_byte(),
+                    &node.start_position(),
+                    &next.as_ref().unwrap().start_position(),
+                    &node.start_position()
+                )
+            },
+            // let _ = foo
+            // /* This is the last line of the file */
+            (Some(true), None) => {
+                InputEdit::new(
+                    prev.as_ref().unwrap().end_byte(),
+                    node.end_byte(),
+                    prev.as_ref().unwrap().end_byte(),
+                    &prev.as_ref().unwrap().end_position(),
+                    &node.end_position(),
+                    &prev.as_ref().unwrap().end_position(),
+                )
             }
-        } else {
-            into_edit(&node)
         };
         comments.push((
             edit,
@@ -154,7 +177,18 @@ pub enum Commented {
     ///     qux: usize,
     /// }
     /// ```
-    CommentedAfter(InputSection),
+    CommentedAfter {
+        section: InputSection,
+        /// Whether or not there is a blank line before/after the comment, as in:
+        /// ```
+        /// // The previous section was tiring, let's rest a little
+        ///
+        /// // Alright, back to the code:
+        /// let foo = 1;
+        /// ```
+        blank_line_after: bool,
+        blank_line_before: bool,
+    },
 }
 
 impl Diff<InputSection> for Commented {
@@ -163,7 +197,7 @@ impl Diff<InputSection> for Commented {
     fn subtract(&mut self, other: InputSection) -> FormatterResult<()> {
         match self {
             Commented::CommentedBefore(section) => section.subtract(other),
-            Commented::CommentedAfter(section) => section.subtract(other),
+            Commented::CommentedAfter { section, .. } => section.subtract(other),
         }
     }
 }
@@ -175,6 +209,8 @@ impl Diff<InputSection> for Commented {
 pub struct Comment {
     pub content: String,
     pub original_column: i32,
+    pub blank_line_after: bool,
+    pub blank_line_before: bool,
 }
 
 impl From<&AnchoredComment> for Comment {
@@ -182,6 +218,18 @@ impl From<&AnchoredComment> for Comment {
         Comment {
             content: value.comment_text.clone(),
             original_column: value.original_column,
+            blank_line_after: match value.commented {
+                Commented::CommentedBefore(_) => false,
+                Commented::CommentedAfter {
+                    blank_line_after, ..
+                } => blank_line_after,
+            },
+            blank_line_before: match value.commented {
+                Commented::CommentedBefore(_) => false,
+                Commented::CommentedAfter {
+                    blank_line_before, ..
+                } => blank_line_before,
+            },
         }
     }
 }
@@ -330,7 +378,17 @@ fn find_anchor<'tree>(node: &'tree Node<'tree>, input: &str) -> FormatterResult<
         })?;
     if prefix.trim_start() == "" {
         if let Some(anchor) = next_non_comment_leaf(node.clone()) {
-            return Ok(Commented::CommentedAfter(anchor.into()));
+            let prev = previous_disjoint_node(&node);
+            let next = next_disjoint_node(&node);
+            Ok(Commented::CommentedAfter {
+                section: (&anchor).into(),
+                blank_line_after: next
+                    .map(|next| next.start_position().row() > node.end_position().row() + 1)
+                    .unwrap_or(false),
+                blank_line_before: prev
+                    .map(|prev| prev.end_position().row() + 1 < node.start_position().row())
+                    .unwrap_or(false),
+            })
         } else if let Some(anchor) = previous_non_comment_leaf(node.clone()) {
             Ok(Commented::CommentedBefore((&anchor).into()))
         } else {
@@ -342,7 +400,17 @@ fn find_anchor<'tree>(node: &'tree Node<'tree>, input: &str) -> FormatterResult<
         if let Some(anchor) = previous_non_comment_leaf(node.clone()) {
             Ok(Commented::CommentedBefore((&anchor).into()))
         } else if let Some(anchor) = next_non_comment_leaf(node.clone()) {
-            return Ok(Commented::CommentedAfter(anchor.into()));
+            let prev = previous_disjoint_node(&node);
+            let next = next_disjoint_node(&node);
+            Ok(Commented::CommentedAfter {
+                section: (&anchor).into(),
+                blank_line_after: next
+                    .map(|next| next.start_position().row() > node.end_position().row() + 1)
+                    .unwrap_or(false),
+                blank_line_before: prev
+                    .map(|prev| prev.end_position().row() + 1 < node.start_position().row())
+                    .unwrap_or(false),
+            })
         } else {
             Err(FormatterError::CommentOrphaned(
                 node.utf8_text(input.as_bytes())?.to_string(),
@@ -357,6 +425,15 @@ pub struct AnchoredComment {
     // We need to keep track of the column for indentation purposes
     pub original_column: i32,
     pub commented: Commented,
+}
+
+impl From<&AnchoredComment> for InputSection {
+    fn from(value: &AnchoredComment) -> Self {
+        match value.commented {
+            Commented::CommentedBefore(section) => section,
+            Commented::CommentedAfter { section, .. } => section,
+        }
+    }
 }
 
 pub struct SeparatedInput {
@@ -381,7 +458,7 @@ pub fn extract_comments<'a>(
     // for each (comment, anchor) pair in reverse order, we:
     // 1) remove the comment from the input,
     // 2) register an InputEdit to modify the tree,
-    // 3) edit the following anchors to account for the removed comment.
+    // 3) edit all anchors to account for the removed comment.
     //
     // The order is reversed so that all InputEdits can be applied in succession:
     // one will not affect the others.
@@ -392,10 +469,13 @@ pub fn extract_comments<'a>(
             "",
         );
         // 2)
-        let section: InputSection = (&edit).into();
         edits.push(edit);
-        // 3)
         anchored_comments.push(anchored_comment);
+    }
+    for edit in edits {
+        new_tree.edit(&edit);
+        // 3)
+        let section: InputSection = (&edit).into();
         anchored_comments = anchored_comments
             .iter()
             .map(
@@ -414,9 +494,6 @@ pub fn extract_comments<'a>(
                 },
             )
             .collect::<FormatterResult<Vec<_>>>()?;
-    }
-    for edit in edits {
-        new_tree.edit(&edit);
     }
     new_tree = parse(
         new_input.as_str(),
