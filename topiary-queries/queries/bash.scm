@@ -675,3 +675,16 @@
 (command
   (variable_assignment) @append_space
 )
+
+; Multi-line arrays start an indentation block
+(array
+  "(" @append_empty_softline @append_indent_start
+  ")" @prepend_empty_softline @prepend_indent_end
+)
+
+; Array elements need to be spaced
+(array
+  (_) @append_spaced_softline
+  .
+  (_)
+)
