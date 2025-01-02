@@ -165,7 +165,8 @@
 ;    input (i.e., blank lines shouldn't be engineered elsewhere).
 ; 4. A comment can never change flavour (i.e., standalone to trailing,
 ;    or vice versa).
-; 5. Trailing comments should be interposed by a space.
+; 5. Trailing comments must be interposed by a space (unless they follow
+;    a semicolon, but we still insert the space).
 
 ; Rule 1: See @leaf rule, above
 
@@ -181,16 +182,7 @@
 ; and becoming a trailing comment. That case is satisfied by Rule 5.
 
 ; Rule 5
-(
-  (comment) @prepend_begin_scope @append_begin_measuring_scope
-  .
-  _ @prepend_end_measuring_scope @prepend_end_scope
-  (#scope_id! "line_break_after_comment")
-)
-(
-  (comment) @prepend_space
-  (#multi_line_scope_only! "line_break_after_comment")
-)
+(comment) @prepend_space
 
 ;; Compound Statements and Subshells
 
