@@ -2,14 +2,14 @@
 ; any which are encountered by Topiary will be forcibly collapsed on to
 ; a single line. (See Issue #172)
 
-; Don't modify string literals, heredocs, comments, atomic "words" or
+; Don't modify string contents, heredocs, comments, atomic "words" or
 ; variable expansions (simple or otherwise)
 ; FIXME The first line of heredocs are affected by the indent level
 [
   (comment)
   (expansion)
   (heredoc_redirect)
-  (string)
+  (string_content)
   (word)
 ] @leaf
 
@@ -456,22 +456,9 @@
 )
 
 ; Multi-line command substitutions become an indent block
-; NOTE This is a bit of a hack! We _have_ to append softlines,
-; otherwise command substitutions enclosed within a string will force
-; that new line to the start of the string, which can result in
-; syntactically incorrect output (see Issue 201). Thus we target the
-; node immediately before the closing parenthesis.
-; FIXME If there is only a single named child within a multi-line
-; command substitution, then -- for reasons -- the new line will not be
-; appended after the $(. The output remains syntactically correct.
 (command_substitution
-  .
   "$(" @append_empty_softline @append_indent_start
-  _
-  (_) @append_empty_softline @append_indent_end
-  .
-  ")"
-  .
+  ")" @prepend_empty_softline @prepend_indent_end
 )
 
 ;; Redirections
