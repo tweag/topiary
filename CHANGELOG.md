@@ -50,7 +50,7 @@ This name should be decided amongst the team before the release.
 - [#747](https://github.com/tweag/topiary/pull/747) Added support for specifying paths to prebuilt grammars in Topiary's configuration
 
 ### Changed
-- [#794](https://github.com/tweag/topiary/pull/794) Bump the `tree-sitter` dependency to 0.24 @ZedThree
+- [#794](https://github.com/tweag/topiary/pull/794) Bump the `tree-sitter` dependency to 0.24, thanks to @ZedThree
 - [#780](https://github.com/tweag/topiary/pull/780) Measuring scopes are now independent from captures order
 - [#790](https://github.com/tweag/topiary/pull/790) No longer merge config files by default, use priority instead.
 - [#801](https://github.com/tweag/topiary/pull/801) Improved documentation of the `visualise` subcommand
@@ -59,6 +59,7 @@ This name should be decided amongst the team before the release.
 ### Fixed
 - [#779](https://github.com/tweag/topiary/pull/779) Load relevant grammars before CLI tests
 - [#799](https://github.com/tweag/topiary/pull/799) Line break after table-less pairs in TOML
+- [#822](https://github.com/tweag/topiary/pull/822) Various Bash fixes and improvements
 - [#826](https://github.com/tweag/topiary/pull/826) Various Tree-sitter query fixes, thanks to @mkatychev
 
 ## v0.5.1 - Fragrant Frangipani - 2024-10-22
