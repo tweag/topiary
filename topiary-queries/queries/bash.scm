@@ -502,18 +502,40 @@
 ;; Test Commands
 
 (test_command
-  .
-  (unary_expression
-    _ @prepend_space
-  ) @append_space
+  "[[" @append_space
+  "]]" @prepend_space
 )
 
-; FIXME The binary_expression node is not being returned by Tree-Sitter
-; in the context of a (test_command); it does work in other contexts
-; See https://github.com/tweag/topiary/pull/155#issuecomment-1364143677
+(test_command
+  "((" @append_space
+  "))" @prepend_space
+)
+
+(test_command
+  "[" @append_delimiter
+  (#delimiter! "[ ")
+)
+
+(test_command
+  "]" @prepend_delimiter
+  (#delimiter! " ]")
+)
+
+(arithmetic_expansion
+  "((" @append_space
+  "))" @prepend_space
+)
+
+(unary_expression
+  "!" @append_space
+)
+
+(unary_expression
+  (test_operator) @append_space
+)
+
 (binary_expression
-  left: _ @append_space
-  right: _ @prepend_space
+  operator: (_) @append_space @prepend_space
 )
 
 ;; Case Statements
