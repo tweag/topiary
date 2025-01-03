@@ -4,7 +4,6 @@
 
 ; Don't modify string contents, heredocs, comments, atomic "words" or
 ; variable expansions (simple or otherwise)
-; FIXME The first line of heredocs are affected by the indent level
 [
   (comment)
   (expansion)
@@ -17,18 +16,6 @@
   "$"
   .
   (_) @leaf
-)
-(simple_expansion
-  (#delimiter! "{")
-  "$"
-  .
-  (_) @prepend_delimiter
-)
-(simple_expansion
-  (#delimiter! "}")
-  "$"
-  .
-  (_) @append_delimiter
 )
 
 ;; Spacing
@@ -259,13 +246,10 @@
 ; * Multi-line command substitutions
 ;
 ; We address each context individually, as there's no way to isolate the
-; exceptional contexts, where no line spacing is required. We use custom scopes
-; to detect cases where a "command" is followed by a newline in the input, because
-; modifications to the grammar since v0.19.0 no longer add anonymous '\n' nodes to the tree.
-;
-; FIXME Adding @delete to the \n anonymous nodes removes the errant
-; trailing space. However, doing so breaks inter-block spacing and
-; (weirdly) de-indentation at the end of a non-terminated case branch.
+; exceptional contexts, where no line spacing is required. We use custom
+; scopes to detect cases where a "command" is followed by a newline in
+; the input, because modifications to the grammar since v0.19.0 no
+; longer add anonymous '\n' nodes to the tree.
 
 (program
   [
@@ -429,12 +413,12 @@
 )
 
 ; Prepend the asynchronous operator with a space
-; NOTE If I'm not mistaken, this can interpose two "commands" -- like a
-; delimiter -- but I've never seen this form in the wild
+; NOTE This can interpose two "commands", but it's rare to see it in the
+; wild. As such, we also append a spaced softline
 (_
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)]
   .
-  "&" @prepend_space
+  "&" @prepend_space @append_spaced_softline
 )
 
 ; Spaces between command and its arguments
@@ -621,7 +605,8 @@
 )
 
 (function_definition
-  name: (_) @append_delimiter _? @do_nothing
+  name: (_) @append_delimiter
+  _? @do_nothing
   body: _
 
   (#delimiter! "()")
@@ -635,10 +620,6 @@
 )
 
 ;; Variable Declaration, Assignment and Expansion
-
-; NOTE It would be nice to convert (simple_expansion) nodes into
-; (expansion) nodes by inserting "delimiters" in appropriate places.
-; This doesn't appear to currently be possible (see Issue #187).
 
 ; NOTE Assignment only gets a new line when not part of a declaration;
 ; that is, all the contexts in which units of execution can appear.
@@ -675,4 +656,19 @@
   (_) @append_spaced_softline
   .
   (_)
+)
+
+; Convert (simple_expansion) into (expansion)s
+(simple_expansion
+  (#delimiter! "{")
+  "$"
+  .
+  (_) @prepend_delimiter
+)
+
+(simple_expansion
+  (#delimiter! "}")
+  "$"
+  .
+  (_) @append_delimiter
 )
