@@ -617,9 +617,18 @@
 ; statements and test commands as function bodies.
 
 (function_definition
-  body: _ @prepend_space @append_hardline
+  body: (_) @prepend_space @append_hardline
 )
 
+(function_definition
+  name: (_) @append_delimiter _? @do_nothing
+  body: _
+
+  (#delimiter! "()")
+)
+
+; NOTE This rule must appear after the above, where the "()" are
+; appended, if necessary
 (function_definition
   .
   "function" @delete
