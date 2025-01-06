@@ -407,10 +407,15 @@
 )
 
 (pipeline
-  [(_) "|" "|&"] @append_space
-  .
-  _
+  ["|" "|&"] @prepend_space @append_spaced_softline
 )
+
+(pipeline
+  .
+  (_)
+  .
+  ["|" "|&"] @append_indent_start
+) @append_indent_end
 
 ; Prepend the asynchronous operator with a space
 ; NOTE This can interpose two "commands", but it's rare to see it in the
@@ -535,7 +540,8 @@
 )
 
 (binary_expression
-  operator: (_) @append_space @prepend_space
+  left: (_) @append_space
+  right: (_) @prepend_space
 )
 
 ;; Case Statements
