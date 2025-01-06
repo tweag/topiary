@@ -91,17 +91,21 @@ enum Mode6 {
 fn inline_let() { let hi = 1; }
 
 // While loop spacing
-while i == true {
-    let i = 42;
+fn my_while() {
+    while i == true {
+        let i = 42;
+    }
 }
 
 
 // Scoped blocks
-{
-    let i = 42;
-}
-{
-    let i = 43;
+fn foo() {
+    {
+        let i = 42;
+    }
+    {
+        let i = 43;
+    }
 }
 
 // Empty block inside of impl function
