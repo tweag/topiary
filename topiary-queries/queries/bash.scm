@@ -687,16 +687,19 @@
 )
 
 ; Convert (simple_expansion) into (expansion)s
+; NOTE Only convert $word, not special forms like $0, $@, etc.
 (simple_expansion
   (#delimiter! "{")
   "$"
   .
-  (_) @prepend_delimiter
+  (variable_name) @prepend_delimiter
+  (#not-match? @prepend_delimiter "[0-9]")
 )
 
 (simple_expansion
   (#delimiter! "}")
   "$"
   .
-  (_) @append_delimiter
+  (variable_name) @append_delimiter
+  (#not-match? @append_delimiter "[0-9]")
 )
