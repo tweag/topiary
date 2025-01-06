@@ -527,8 +527,18 @@
 )
 
 (arithmetic_expansion
-  "((" @append_space
-  "))" @prepend_space
+  "$[" @delete @append_delimiter
+  (#delimiter! "$(( ")
+)
+
+(arithmetic_expansion
+  "]" @delete @append_delimiter
+  (#delimiter! " ))")
+)
+
+(arithmetic_expansion
+  ["$((" "(("] @append_space
+  ["))"] @prepend_space
 )
 
 (unary_expression
