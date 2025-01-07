@@ -659,9 +659,13 @@
 )
 
 (function_definition
-  name: (_) @append_delimiter
-  _? @do_nothing
-  body: _
+  .
+  (word) @append_delimiter
+  .
+  (
+    "("
+    ")"
+  )? @do_nothing
 
   (#delimiter! "()")
 )
@@ -685,6 +689,11 @@
   (declaration_command)
   .
   (_) @prepend_hardline
+)
+
+; All declaration arguments must be separated by whitespace
+(declaration_command
+  (_) @prepend_space
 )
 
 ; Multiple variables can be exported (and assigned) at once
