@@ -2,13 +2,13 @@
 ; any which are encountered by Topiary will be forcibly collapsed on to
 ; a single line. (See Issue #172)
 
-; Don't modify string contents, heredocs, comments, atomic "words" or
-; variable expansions (simple or otherwise)
+; Don't modify strings, heredocs, comments, atomic "words" or variable
+; expansions (simple or otherwise)
 [
   (comment)
   (expansion)
   (heredoc_redirect)
-  (string_content)
+  (string)
   (word)
 ] @leaf
 
@@ -444,6 +444,22 @@
   "!" @prepend_space @append_space
 )
 
+(command_substitution
+  .
+  "`" @delete @append_delimiter
+  .
+  _ @prepend_empty_softline @prepend_indent_start
+  (#delimiter! "$(")
+)
+
+(command_substitution
+  _ @append_empty_softline @append_indent_end
+  .
+  "`" @delete @append_delimiter
+  .
+  (#delimiter! ")")
+)
+
 ; Multi-line command substitutions become an indent block
 (command_substitution
   "$(" @append_empty_softline @append_indent_start
@@ -496,15 +512,26 @@
 
 ; Keep the "if"/"elif" and the "then" on the same line,
 ; inserting a spaced delimiter when necessary
-; FIXME Why does the space need to be explicitly inserted?
 (_
   ";"* @do_nothing
   .
-  "then" @prepend_delimiter @prepend_space
-  (#delimiter! ";")
+  "then" @prepend_delimiter
+  (#delimiter! "; ")
 )
 
 ;; Test Commands
+
+; Convert sh-style [ ... ] tests to Bash-style [[ ... ]]
+; FIXME This breaks _sometimes_, but I don't know why :(
+(test_command
+  "[" @append_delimiter
+  (#delimiter! "[ ")
+)
+
+(test_command
+  "]" @prepend_delimiter
+  (#delimiter! " ]")
+)
 
 (test_command
   "[[" @append_space
@@ -514,16 +541,6 @@
 (test_command
   "((" @append_space
   "))" @prepend_space
-)
-
-(test_command
-  "[" @append_delimiter
-  (#delimiter! "[ ")
-)
-
-(test_command
-  "]" @prepend_delimiter
-  (#delimiter! " ]")
 )
 
 (arithmetic_expansion
@@ -613,12 +630,11 @@
 
 ; Keep the loop construct and the "do" on the same line,
 ; inserting a spaced delimiter when necessary
-; FIXME Why does the space need to be explicitly inserted?
 (_
   ";"* @do_nothing
   .
-  (do_group) @prepend_delimiter @prepend_space
-  (#delimiter! ";")
+  (do_group) @prepend_delimiter
+  (#delimiter! "; ")
 )
 
 ;; Function Definitions
