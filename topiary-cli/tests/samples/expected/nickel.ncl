@@ -182,6 +182,7 @@
     x,
 
     # let blocks
+
     let x = 1, y = 2 in x + y,
     let
       x = 1,
