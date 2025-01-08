@@ -1023,8 +1023,8 @@
   ":" @append_indent_start
   (_) @append_indent_end
   .
-  ; just doing _ above doesn't work, because it matches the final named node as
-  ; well as the final non-named node, causing double indentation.
+; just doing _ above doesn't work, because it matches the final named node as
+; well as the final non-named node, causing double indentation.
 )
 
 (value_specification
