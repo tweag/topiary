@@ -254,7 +254,7 @@ pub fn apply_query(
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
     let mut atoms = AtomCollection::collect_leafs(&root, source, specified_leaf_nodes, comments)?;
 
-    log::debug!("List of atoms before formatting: {atoms:?}");
+    log::debug!("List of atoms before formatting: {atoms:#?}");
 
     // Memoization of the pattern positions
     let mut pattern_positions: Vec<Option<Position>> = Vec::new();

@@ -1062,7 +1062,7 @@ impl AtomCollection {
         // antispaces may have produced more empty atoms.
         self.post_process_inner();
 
-        log::debug!("List of atoms after post-processing: {:?}", self.atoms);
+        log::debug!("List of atoms after post-processing: {:#?}", self.atoms);
     }
 
     /// This function post-processes the atoms in the collection.
