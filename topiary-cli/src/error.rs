@@ -1,5 +1,5 @@
 use std::{error, fmt, io, path::PathBuf, process::ExitCode, result};
-use topiary_config::error::TopiaryConfigError;
+use topiary_config::error::{TopiaryConfigError, TopiaryConfigFetchingError};
 use topiary_core::FormatterError;
 
 /// A convenience wrapper around `std::result::Result<T, TopiaryError>`.
@@ -68,6 +68,9 @@ impl error::Error for TopiaryError {
 impl From<TopiaryError> for ExitCode {
     fn from(e: TopiaryError) -> Self {
         let exit_code = match e {
+            // Things went well but Topiary needs to answer 'false' in a clean way: Exit 1
+            _ if e.benign() => 1,
+
             // Multiple errors: Exit 9
             TopiaryError::Bin(_, Some(CLIError::Multiple)) => 9,
 
@@ -92,8 +95,8 @@ impl From<TopiaryError> for ExitCode {
             // Bad arguments: Exit 2
             // (Handled by clap: https://github.com/clap-rs/clap/issues/3426)
 
-            // Anything else: Exit 1
-            _ => 1,
+            // Anything else: Exit 10
+            _ => 10,
         };
 
         ExitCode::from(exit_code)
@@ -109,6 +112,12 @@ impl From<FormatterError> for TopiaryError {
 impl From<TopiaryConfigError> for TopiaryError {
     fn from(e: TopiaryConfigError) -> Self {
         Self::Config(e)
+    }
+}
+
+impl From<TopiaryConfigFetchingError> for TopiaryError {
+    fn from(e: TopiaryConfigFetchingError) -> Self {
+        Self::Config(TopiaryConfigError::Fetching(e))
     }
 }
 
@@ -156,5 +165,21 @@ impl From<tokio::task::JoinError> for TopiaryError {
             "Could not join parallel formatting tasks".into(),
             Some(CLIError::Generic(Box::new(e))),
         )
+    }
+}
+
+// Tells whether an error should raise a message on stderr,
+// or if it's an "expected" error.
+pub trait Benign {
+    fn benign(&self) -> bool;
+}
+
+impl Benign for TopiaryError {
+    #[allow(clippy::match_like_matches_macro)]
+    fn benign(&self) -> bool {
+        match self {
+            TopiaryError::Lib(FormatterError::PatternDoesNotMatch) => true,
+            _ => false,
+        }
     }
 }

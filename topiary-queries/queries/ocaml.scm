@@ -154,7 +154,7 @@
 )
 
 ; Surround spaces
-; A space is put after, and before (except just after an open parenthesis).
+; A space is put after, except when followed by a PPX "%".
 (
   [
     "and"
@@ -214,7 +214,6 @@
     "|"
     "->"
     "<-"
-    "{"
     ":"
     ";"
     "+="
@@ -228,16 +227,22 @@
   "%"? @do_nothing
 )
 
-; Those keywords are not expected to come right after an open parenthesis.
+; Prepend a space. Note that these nodes are not expected to come after an open parenthesis,
+; or if they do, we still want a space before.
 [
   "as"
+  (attribute)
   "constraint"
   "do"
   "done"
   "downto"
   "else"
+  (floating_attribute)
   "in"
-  ; Infix operators can come after an open parenthesis, but we want a space before anyway
+  (item_attribute)
+  (module_parameter)
+  "nonrec"
+  "of"
   (pow_operator)
   (mult_operator)
   (add_operator)
@@ -246,14 +251,14 @@
   (and_operator)
   (or_operator)
   (assign_operator)
-  "nonrec"
-  "of"
+  (parameter)
   "rec"
   "then"
   "to"
   "virtual"
   "when"
   "with"
+  "="
   "|"
   "->"
   "<-"
@@ -275,162 +280,6 @@
   (let_operator) @append_space
   .
   ")"* @do_nothing
-)
-
-; For those queries, we should not have multiple queries,
-; however, due to a known bug in tree-sitter queries
-; https://github.com/tree-sitter/tree-sitter/issues/1811
-; using an alternative after the starred parenthesis does not work as intented.
-;
-(
-  "("* @do_nothing
-  .
-  "assert" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  (attribute) @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "begin" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "class" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "exception" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "external" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  (floating_attribute) @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "for" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "include" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "inherit" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "initializer" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  (item_attribute) @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "let" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "method" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "module" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  (module_parameter) @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "mutable" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "new" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "object" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "open" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  (parameter) @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "private" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "sig" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "try" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "type" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "val" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "while" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "*" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "=" @prepend_space
-)
-(
-  "("* @do_nothing
-  .
-  "}" @prepend_space
 )
 
 ; Put a space after commas, except the last one.
@@ -562,6 +411,7 @@
   [
     (constructor_name)
     (fun_expression)
+    (module_name)
     (parenthesized_expression)
     (value_name)
     (value_pattern)
@@ -597,7 +447,6 @@
     "struct"
     "then"
     "with"
-    "{"
     ";"
   ] @append_spaced_softline
   .
@@ -617,7 +466,6 @@
     "struct"
     "then"
     "with"
-    "{"
     ";"
   ]
   .
@@ -677,11 +525,11 @@
   (item_attribute)
   "*"
   "|"
-  "}"
 ] @prepend_spaced_softline
 
 [
   (match_expression)
+  "}"
 ] @prepend_empty_softline
 
 ; Softline before the first match case
@@ -717,6 +565,25 @@
   (#multi_line_only!)
 )
 
+; Same as above, with polymorphic variant type
+(polymorphic_variant_type
+  "["
+  .
+  "|" @delete
+  .
+  (tag_specification)
+  (#single_line_only!)
+)
+(polymorphic_variant_type
+  "["
+  .
+  "|"? @do_nothing
+  .
+  (tag_specification) @prepend_delimiter
+  (#delimiter! "| ") ; sic
+  (#multi_line_only!)
+)
+
 ; Multi-line definitions must have a linebreak after "=" and before "in":
 ;
 ; let a =
@@ -748,6 +615,10 @@
   [
     (function_expression)
     (fun_expression)
+    (list_expression)
+    (record_expression)
+    (parenthesized_expression)
+    (array_expression)
   ]* @do_nothing
 )
 
@@ -848,7 +719,6 @@
     (let_expression)
     (object_expression)
     (product_expression)
-    (record_expression)
     (sequence_expression)
     (set_expression)
     (typed_expression)
@@ -934,7 +804,7 @@
 )
 
 (record_declaration
-  (field_declaration) @prepend_spaced_softline
+  (field_declaration) @prepend_empty_softline
 )
 
 ; Allow multi-line attributes after field declaratioms, such as:
@@ -985,7 +855,7 @@
 )
 
 (record_expression
-  (field_expression) @prepend_spaced_softline
+  (field_expression) @prepend_empty_softline
 )
 
 (record_expression
@@ -1246,9 +1116,33 @@
 )
 
 ; Make an indented block where a function/match starts in PPX syntax.
+; The special case about function expressions allows the following to be formatted
+; as such, instead of having a double indentation in the function:
+; let x =
+;   [%expr function
+;     | false -> 0.
+;     | true -> 1.
+;   ]
+;
+; This case has been introduced because of a double indentation in
+; https://github.com/tweag/topiary/pull/724
 (extension
+  .
   "[%" @append_indent_start
-  "]" @prepend_indent_end @prepend_empty_softline
+  (attribute_payload
+    (expression_item
+      [
+        (function_expression)
+        (fun_expression)
+      ]? @do_nothing
+    )?
+  )
+  "]" @prepend_indent_end
+  .
+)
+(extension
+  "]" @prepend_empty_softline
+  .
 )
 
 ; Indent and add softlines in multiline application expressions, such as
@@ -1258,16 +1152,73 @@
 ;     long_argument_2
 ;     long_argument_3
 ;     long_argument_4
+;
+; When the last argument is a (parenthesized) function application, end the indentation
+; _before_ the application. This allows the following to be formatted as such:
+; let () =
+;   foo bar (fun x ->
+;     something horrible onto x
+;   )
+; But when the function application minus the last argument is multiline,
+; the whole scope still must be indented:
+; let () =
+;   foo
+;     bar
+;     (fun x ->
+;       x
+;     )
+;
+; Because of these constraints, we must use measuring scopes here: the position of the
+; indent_end depends on the multi-line-ness of a subsection of the whole scope.
 (application_expression
   .
-  (_) @append_indent_start
+  (_) @append_indent_start @prepend_begin_scope @prepend_begin_measuring_scope
+  (#scope_id! "function_application")
+  (_) @append_end_scope
+  .
+)
+; The end of the measuring scope depends on the last argument: if it's a function,
+; end it before the function, otherwise end it after the last argument. In that case,
+; it's the same as the regular scope.
+(application_expression
+  (#scope_id! "function_application")
+  (_
+    [
+      (fun_expression)
+      (function_expression)
+    ]? @do_nothing
+  ) @append_end_measuring_scope
+  .
+)
+(application_expression
+  (#scope_id! "function_application")
+  (_
+    [
+      (fun_expression)
+      (function_expression)
+    ] @prepend_end_measuring_scope
+  )
+  .
+)
+; If the measuring scope is single-line, end indentation _before_ the last node.
+; Otherwise, end the indentation after the last node.
+(application_expression
+  (#multi_line_scope_only! "function_application")
   (_) @append_indent_end
   .
 )
 (application_expression
-  (_) @append_spaced_softline
+  (#single_line_scope_only! "function_application")
+  (_) @prepend_indent_end
+  .
+)
+; The node to which we apply append_spaced_scoped_softline will always
+; be in both scopes, regular and measuring.
+(application_expression
+  (_) @append_spaced_scoped_softline
   .
   (_)
+  (#scope_id! "function_application")
 )
 
 ; Indent and allow softlines in multiline function definitions, such as
@@ -1279,12 +1230,44 @@
 ;     : int
 ;   =
 ;   42
+;
+; Do not indent if a function expression is being bound:
+; the function itself will add the indentation, as in
+; let horrible = fun x ->
+;   something horrible onto x
 (let_binding
   .
-  (_) @append_indent_start @append_indent_start
-  "=" @prepend_indent_end
-  (_) @append_indent_end
+  (_) @append_indent_start
+  "="
+  (_
+    ; any node that doesn't add its own indentation
+    .
+    [
+      "fun" ; fun_expression
+      "function" ; function_expression
+      "[" ; list_expression
+      "[|" ; array_expression
+      "{" ; record_expression. Unfortunately this also captures quoted strings
+      "(" ; parenthesized_expression. Unfortunately this also captures unit
+    ]? @do_nothing
+  ) @append_indent_end
   .
+)
+; Special case to still indent quoted strings and unit, despite the rule above
+(let_binding
+  .
+  (_) @append_indent_start
+  "="
+  [
+    (quoted_string)
+    (unit)
+  ] @append_indent_end
+  .
+)
+(let_binding
+  .
+  (_) @append_indent_start
+  "=" @prepend_indent_end
 )
 (let_binding
   .
@@ -1309,12 +1292,26 @@
 ;   (long_argument_3: int)
 ;   (long_argument_4: int) ->
 ;   ()
+;
+; The particular interaction with "concat_operator" comes from
+; https://github.com/tweag/topiary/pull/723
+(
+  [
+    (concat_operator)
+    (rel_operator)
+  ]? @do_nothing
+  .
+  (fun_expression
+    .
+    "fun" @append_indent_start
+    (_) @append_indent_end
+    .
+  )
+)
 (fun_expression
   .
-  "fun" @append_indent_start @append_indent_start
+  "fun" @append_indent_start
   "->" @prepend_indent_end
-  (_) @append_indent_end
-  .
 )
 (fun_expression
   .
@@ -1331,6 +1328,19 @@
   "->" @prepend_spaced_scoped_softline
   (#scope_id! "fun_expr_before_arrow")
 )
+(
+  [
+    (concat_operator)
+    (rel_operator)
+  ]? @do_nothing
+  .
+  (function_expression
+    .
+    "function" @append_indent_start
+    (_) @append_indent_end
+    .
+  )
+)
 
 ; Indent and allow softlines in tuples and local opens, such as
 ; let _ =
@@ -1339,10 +1349,21 @@
 ;     long_value_2,
 ;     long_value_3
 ;   )
+;
+; When the parenthesized expression contains a function, neither indent
+; nor add a softline after the "(".
 (parenthesized_expression
   .
   "(" @append_empty_softline @append_indent_start
-  ")" @prepend_indent_end @prepend_empty_softline
+  [
+    (fun_expression)
+    (function_expression)
+  ]? @do_nothing
+  ")" @prepend_indent_end
+  .
+)
+(parenthesized_expression
+  ")" @prepend_empty_softline
   .
 )
 (local_open_expression
@@ -1454,6 +1475,8 @@
   (#scope_id! "or_infix_expression")
 )
 
+; When a "rel_operator" (like ">>=") is followed by a function definition,
+; do not add a newline
 (
   (rel_operator)? @do_nothing
   .
@@ -1464,6 +1487,8 @@
 )
 (infix_expression
   (rel_operator) @prepend_spaced_scoped_softline
+  (fun_expression)? @do_nothing
+  (function_expression)? @do_nothing
   (#scope_id! "rel_infix_expression")
 )
 
@@ -1478,12 +1503,16 @@
   right: (_) @append_indent_end
 )
 
-; After every concat_operator, we want to place a spaced_softline
+; After concat_operator, we want to place a spaced_softline, except when a function definition follows.
 (infix_expression
   operator: (concat_operator) @append_spaced_softline
+  .
+  (fun_expression)? @do_nothing
+  (function_expression)? @do_nothing
 )
 
-; Then, we want to indent the expression after a concat_operator (with the exception of concat_operator chains)
+; Then, we want to indent the expression after a concat_operator
+; (with the exception of concat_operator chains, and function definitions)
 ; Ideally like so:
 ;
 ; let two =
@@ -1495,15 +1524,100 @@
 ; let three =
 ;   raise @@
 ;     Exception
+;
+; let four =
+;   run @@ fun x ->
+;   something horrible onto x
+;
+; The particular interaction with "fun_expression" comes from
+; https://github.com/tweag/topiary/pull/723
 (_
-  ; If our parent expression was also a concat_operator, do not indent (see above).
+  ; If the parent expression also was a concat_operator, do not indent (see above).
   (concat_operator)? @do_nothing
   (infix_expression
     operator: (concat_operator) @append_indent_start
-    right: (infix_expression
+    (infix_expression
       operator: (concat_operator)
     )? @do_nothing
+    (fun_expression)? @do_nothing
   ) @append_indent_end
+)
+
+; The same holds for rel_operator, such as `>>=`
+(_
+  ; If the parent expression also was a rel_operator, do not indent (see above).
+  (rel_operator)? @do_nothing
+  (infix_expression
+    operator: (rel_operator) @append_indent_start
+    (infix_expression
+      operator: (rel_operator)
+    )? @do_nothing
+    (fun_expression)? @do_nothing
+  ) @append_indent_end
+)
+
+; The following bit of scope sorcery allows the following to be formatted as such:
+;
+; foo
+;   bar
+;   baz
+;   @@ fun x ->
+;   x
+;
+; While leaving the following as such:
+;
+; foo bar baz @@ fun x ->
+; x
+;
+; The related issue is https://github.com/tweag/topiary/issues/731
+(infix_expression
+  (application_expression) @prepend_begin_scope @prepend_begin_measuring_scope
+  .
+  (concat_operator) @append_end_measuring_scope
+  .
+  (#scope_id! "dangling_multiline_function")
+  [
+    (fun_expression)
+    (function_expression)
+  ] @append_end_scope
+)
+(infix_expression
+  (application_expression)
+  .
+  (concat_operator) @prepend_spaced_softline @prepend_indent_start
+  .
+  (#multi_line_scope_only! "dangling_multiline_function")
+  [
+    (fun_expression)
+    (function_expression)
+  ] @append_indent_end
+)
+
+; The following allows
+;
+; somefun @@
+;   fun x -> body
+;
+; to be formatted as
+;
+; somefun @@ fun x ->
+; body
+(infix_expression
+  (#scope_id! "relocate_dangling_function_line_break")
+  (concat_operator) @append_begin_scope @append_begin_measuring_scope
+  .
+  (fun_expression
+    "fun" @prepend_end_measuring_scope
+    "->" @append_end_scope
+  )
+)
+(infix_expression
+  (#multi_line_scope_only! "relocate_dangling_function_line_break")
+  (concat_operator)
+  .
+  (fun_expression
+    "->" @append_hardline
+  )
 )
 
 ; Allow softlines in sequences and ppx sequences, such as
@@ -1567,6 +1681,13 @@
 )
 
 (list_pattern
+  .
+  "[" @append_indent_start @append_empty_softline
+  "]" @prepend_indent_end @prepend_empty_softline
+  .
+)
+
+(polymorphic_variant_type
   .
   "[" @append_indent_start @append_empty_softline
   "]" @prepend_indent_end @prepend_empty_softline
@@ -1638,6 +1759,54 @@
 (set_expression
   "<-" @append_spaced_softline @append_indent_start
 ) @append_indent_end
+
+; Antispaces for brackets and parentheses
+(
+  [
+    "("
+    "["
+    "[|"
+    "{"
+  ] @append_antispace
+)
+(
+  [
+    ")"
+    "]"
+    "|]"
+    "}"
+  ] @prepend_antispace
+)
+
+; Formatting typed patterns in function arguments, e.g.
+; let foo
+;   (bar :
+;     int ->
+;     string ->
+;     unit
+;   )
+;   ~(baz :
+;     int ->
+;     string ->
+;     unit
+;   )
+;   =
+;   bar baz
+(typed_pattern
+  .
+  "("
+  ":" @append_spaced_softline @append_indent_start
+  ")" @prepend_indent_end @prepend_empty_softline
+  .
+)
+(parameter
+  "~"
+  .
+  "("
+  ":" @append_spaced_softline @append_indent_start
+  ")" @prepend_indent_end @prepend_empty_softline
+  .
+)
 
 ; Input softlines before and after all comments. This means that the input
 ; decides if a comment should have line breaks before or after. But don't put a

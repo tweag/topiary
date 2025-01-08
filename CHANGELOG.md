@@ -42,14 +42,50 @@ This name should be decided amongst the team before the release.
 
 ## Unreleased
 
-[Full list of changes](https://github.com/tweag/topiary/compare/v0.4.0...HEAD)
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.5.1...HEAD)
+
+### Added
+- [#785](https://github.com/tweag/topiary/pull/785) Added the `coverage` command, that checks how much of the query file is used by the input.
+- [#786](https://github.com/tweag/topiary/pull/786) Re-introduce tests to check that all of the language queries are useful.
+- [#747](https://github.com/tweag/topiary/pull/747) Added support for specifying paths to prebuilt grammars in Topiary's configuration
+
+### Changed
+- [#794](https://github.com/tweag/topiary/pull/794) Bump the `tree-sitter` dependency to 0.24 @ZedThree
+- [#780](https://github.com/tweag/topiary/pull/780) Measuring scopes are now independent from captures order
+- [#790](https://github.com/tweag/topiary/pull/790) No longer merge config files by default, use priority instead.
+- [#801](https://github.com/tweag/topiary/pull/801) Improved documentation of the `visualise` subcommand
+- [#811](https://github.com/tweag/topiary/pull/811) The `config` subcommand now outputs a Nickel file instead of some inner representation
+
+### Fixed
+- [#779](https://github.com/tweag/topiary/pull/779) Load relevant grammars before CLI tests
+- [#799](https://github.com/tweag/topiary/pull/799) Line break after table-less pairs in TOML
+
+## v0.5.1 - Fragrant Frangipani - 2024-10-22
+
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.4.0...v0.5.1)
 
 ### Added
 - [#705](https://github.com/tweag/topiary/pull/705) Added support for Nickel 1.7 extended pattern formatting
+- [#737](https://github.com/tweag/topiary/pull/737) Added the `prefetch` command, that prefetches and caches all grammars in the current configuration
+- [#755](https://github.com/tweag/topiary/pull/755) Introduce measuring scopes, which can be used in conjunction with regular scopes to add expressivity to the formatting queries.
+- [#760](https://github.com/tweag/topiary/pull/760) Introduce optional `query_name` predicate, to help with query logging and debugging.
+
+### Fixed
+- [#720](https://github.com/tweag/topiary/pull/720) [#722](https://github.com/tweag/topiary/pull/722) [#723](https://github.com/tweag/topiary/pull/723) [#724](https://github.com/tweag/topiary/pull/724) [#735](https://github.com/tweag/topiary/pull/735) [#738](https://github.com/tweag/topiary/pull/738) [#739](https://github.com/tweag/topiary/pull/739) [#745](https://github.com/tweag/topiary/pull/745) [#755](https://github.com/tweag/topiary/pull/755) [#759](https://github.com/tweag/topiary/pull/759) [#764](https://github.com/tweag/topiary/pull/764 Various OCaml improvements
+- [#762](https://github.com/tweag/topiary/pull/762) Various Rust improvements
+- [#744](https://github.com/tweag/topiary/pull/744) [#768](https://github.com/tweag/topiary/pull/768) Nickel: fix the formatting of annotated multiline let-bindings
+- [#763](https://github.com/tweag/topiary/pull/763) Various Bash fixes and improvements
+- [#761](https://github.com/tweag/topiary/pull/761) No longer use error code 1 for unspecified errors
+- [#770](https://github.com/tweag/topiary/pull/770) Fallback to compile-time included query files when formatting a file
 
 ### Changed
 - [#704](https://github.com/tweag/topiary/pull/704) Refactors our postprocessing code to be more versatile.
 - [#711](https://github.com/tweag/topiary/pull/711) Feature gate all grammars, with supported and contributed languages built by default.
+- [#716](https://github.com/tweag/topiary/pull/716) Dynamicly fetch, compile, and load language grammars. Topiary now no longer ships with statically linked grammars.
+- [#732](https://github.com/tweag/topiary/pull/732) Change how function application and parenthesized expressions are treated in Nickel to reduce the overall noise and indentation
+- [#736](https://github.com/tweag/topiary/pull/668) Updates our Nickel grammar, and adds support for let blocks.
+- [#769](https://github.com/tweag/topiary/pull/769) Move the web playground to a separate branch
+- [#773](https://github.com/tweag/topiary/pull/773) Change the status of Bash from "experimental" to "supported"
 
 ## v0.4.0 - Exquisite Elm - 2024-05-15
 

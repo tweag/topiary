@@ -12,8 +12,13 @@ use std::{
 };
 
 use language::{Language, LanguageConfiguration};
-use nickel_lang_core::{eval::cache::CacheImpl, program::Program};
+use nickel_lang_core::{eval::cache::CacheImpl, program::Program, term::RichTerm};
 use serde::Deserialize;
+
+#[cfg(not(target_arch = "wasm32"))]
+use crate::error::TopiaryConfigFetchingError;
+#[cfg(not(target_arch = "wasm32"))]
+use tempfile::tempdir;
 
 use crate::{
     error::{TopiaryConfigError, TopiaryConfigResult},
@@ -46,7 +51,7 @@ impl Configuration {
     /// with the path that was not found.
     /// If the configuration file exists, but cannot be parsed, this function will return a
     /// `TopiaryConfigError` with the error that occurred.
-    pub fn fetch(file: &Option<PathBuf>) -> TopiaryConfigResult<Self> {
+    pub fn fetch(merge: bool, file: &Option<PathBuf>) -> TopiaryConfigResult<(Self, RichTerm)> {
         // If we have an explicit file, fail if it doesn't exist
         if let Some(path) = file {
             if !path.exists() {
@@ -54,11 +59,19 @@ impl Configuration {
             }
         }
 
-        // Otherwise, gather a list of all the files we want to look for
-        let sources: Vec<Source> = Source::fetch(file);
+        if merge {
+            // Get all available configuration sources
+            let sources: Vec<Source> = Source::fetch_all(file);
 
-        // And ask nickel to parse and merge them
-        Self::parse_and_merge(&sources)
+            // And ask Nickel to parse and merge them
+            Self::parse_and_merge(&sources)
+        } else {
+            // Get the available configuration with best priority
+            let source: Source = Source::fetch_one(file);
+
+            // And parse it with Nickel
+            Self::parse(source)
+        }
     }
 
     /// Gets a language configuration from the entire configuration.
@@ -75,6 +88,55 @@ impl Configuration {
             .iter()
             .find(|language| language.name == name.as_ref())
             .ok_or(TopiaryConfigError::UnknownLanguage(name.to_string()))
+    }
+
+    /// Prefetches and builds all known languages.
+    /// This can be beneficial to speed up future startup time.
+    ///
+    /// # Errors
+    ///
+    /// If any Grammar could not be build, a `TopiaryConfigError` is returned.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn prefetch_languages(&self) -> TopiaryConfigResult<()> {
+        let tmp_dir = tempdir()?;
+        let tmp_dir_path = tmp_dir.path().to_owned();
+
+        // When "parallel" is enabled, we use rayon to fetch and compile all found grammars in parallel.
+        #[cfg(feature = "parallel")]
+        {
+            use rayon::prelude::*;
+            self.languages
+                .par_iter()
+                .map(|l| match &l.config.grammar.source {
+                    language::GrammarSource::Git(git_source) => git_source
+                        .fetch_and_compile_with_dir(
+                            &l.name,
+                            l.library_path()?,
+                            tmp_dir_path.clone(),
+                        ),
+                    language::GrammarSource::Path(path) => {
+                        if !path.exists() {
+                            Err(TopiaryConfigFetchingError::GrammarFileNotFound(
+                                path.to_path_buf(),
+                            ))
+                        } else {
+                            Ok(())
+                        }
+                    }
+                })
+                .collect::<Result<Vec<_>, TopiaryConfigFetchingError>>()?;
+        }
+
+        #[cfg(not(feature = "parallel"))]
+        {
+            self.languages
+                .iter()
+                .map(|l| l.fetch_and_compile_with_dir(l.library_path()?, tmp_dir_path.clone()))
+                .collect::<Result<Vec<_>, TopiaryConfigFetchingError>>()?;
+        }
+
+        tmp_dir.close()?;
+        Ok(())
     }
 
     /// Convenience alias to detect the Language from a Path-like value's extension.
@@ -99,16 +161,26 @@ impl Configuration {
         Err(TopiaryConfigError::NoExtension(pb.clone()))
     }
 
-    fn parse_and_merge(sources: &[Source]) -> TopiaryConfigResult<Self> {
+    fn parse_and_merge(sources: &[Source]) -> TopiaryConfigResult<(Self, RichTerm)> {
         let inputs = sources.iter().map(|s| s.clone().into());
 
         let mut program = Program::<CacheImpl>::new_from_inputs(inputs, std::io::stderr())?;
 
         let term = program.eval_full_for_export()?;
 
-        let serde_config = SerdeConfiguration::deserialize(term)?;
+        let serde_config = SerdeConfiguration::deserialize(term.clone())?;
 
-        Ok(serde_config.into())
+        Ok((serde_config.into(), term))
+    }
+
+    fn parse(source: Source) -> TopiaryConfigResult<(Self, RichTerm)> {
+        let mut program = Program::<CacheImpl>::new_from_input(source.into(), std::io::stderr())?;
+
+        let term = program.eval_full_for_export()?;
+
+        let serde_config = SerdeConfiguration::deserialize(term.clone())?;
+
+        Ok((serde_config.into(), term))
     }
 }
 
@@ -119,7 +191,8 @@ impl Default for Configuration {
         let mut program = Program::<CacheImpl>::new_from_source(
             Source::Builtin
                 .read()
-                .expect("Evaluating the builtin configuration should be safe"),
+                .expect("Evaluating the builtin configuration should be safe")
+                .as_slice(),
             "builtin",
             std::io::empty(),
         )
@@ -166,4 +239,9 @@ impl From<SerdeConfiguration> for Configuration {
 
         Self { languages }
     }
+}
+
+pub(crate) fn project_dirs() -> directories::ProjectDirs {
+    directories::ProjectDirs::from("", "", "topiary")
+        .expect("Could not access the OS's Home directory")
 }

@@ -5,7 +5,7 @@ use topiary_core::test_utils::pretty_assert_eq;
 
 use tempfile::TempDir;
 
-fn io_test(file: &str) -> () {
+fn io_test(file: &str) {
     let input = PathBuf::from(format!("tests/samples/input/{file}"));
     let expected = PathBuf::from(format!("tests/samples/expected/{file}"));
 
@@ -22,18 +22,44 @@ fn io_test(file: &str) -> () {
 
     // Run Topiary against the staged input file
     let mut topiary = Command::cargo_bin("topiary").unwrap();
-    topiary
+    let output = topiary
         .env("TOPIARY_LANGUAGE_DIR", "../topiary-queries/queries/")
         .arg("fmt")
+        .arg("-vvv")
         .arg(&staged)
-        .assert()
-        .success();
+        .output()
+        .expect("Failed to run `topiary fmt`");
+
+    // Print the invocation output, so that it can be inspected with --nocapture
+    let output_str = String::from_utf8(output.stderr).expect("Failed to decode Topiary output");
+    println!("{output_str}");
 
     // Read the file after formatting
     let formatted = fs::read_to_string(&staged).unwrap();
 
     // Assert the formatted file is as expected
     pretty_assert_eq(&expected_output, &formatted);
+}
+
+fn coverage_test(file: &str) {
+    let input = PathBuf::from(format!("tests/samples/input/{file}"));
+
+    // Make sure our test makes sense
+    assert!(input.exists());
+
+    // Run `topiary coverage` against the input file
+    let mut topiary = Command::cargo_bin("topiary").unwrap();
+    let output = topiary
+        .env("TOPIARY_LANGUAGE_DIR", "../topiary-queries/queries/")
+        .arg("coverage")
+        .arg(&input)
+        .output()
+        .expect("Failed to run `topiary coverage`");
+
+    if !output.status.success() {
+        let output_str = String::from_utf8(output.stdout).expect("Failed to decode topiary output");
+        panic!("Insufficient coverage of \"{file}\":\n{output_str}")
+    }
 }
 
 #[test]
@@ -68,7 +94,42 @@ fn input_output_tester() {
     io_test("toml.toml");
 
     #[cfg(feature = "tree_sitter_query")]
-    io_test("tree-sitter-query.scm");
+    io_test("tree_sitter_query.scm");
+}
+
+#[test]
+fn coverage_tester() {
+    // TODO There definitely should be a better way than this...
+
+    #[cfg(feature = "bash")]
+    coverage_test("bash.sh");
+
+    #[cfg(feature = "css")]
+    coverage_test("css.css");
+
+    #[cfg(feature = "json")]
+    coverage_test("json.json");
+
+    #[cfg(feature = "nickel")]
+    coverage_test("nickel.ncl");
+
+    #[cfg(feature = "ocaml")]
+    coverage_test("ocaml.ml");
+
+    // "ocaml-interface.mli" is voluntarily omitted:
+    // the queries should all be covered by "ocaml.ml"
+
+    #[cfg(feature = "ocamllex")]
+    coverage_test("ocamllex.mll");
+
+    #[cfg(feature = "rust")]
+    coverage_test("rust.rs");
+
+    #[cfg(feature = "toml")]
+    coverage_test("toml.toml");
+
+    #[cfg(feature = "tree_sitter_query")]
+    coverage_test("tree_sitter_query.scm");
 }
 
 // Test that our query files are properly formatted

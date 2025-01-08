@@ -94,6 +94,7 @@ if ( foo; bar ); then
 fi
 
 { one; (inside; the); other; }
+
 ( one
   { inside
     the
@@ -130,13 +131,12 @@ if foo 2>/dev/null; then
   exit 1
 fi
 
-# This cannot be fixed without upstream changes; see Issue #200.
-# {
-#   cat <<EOF
-# This shouldn't be indented ${foo}
-# ...nor this
-# EOF
-# }
+{
+  cat <<EOF
+This shouldn't be indented ${foo}
+...nor this
+EOF
+}
 
 readonly a="$(foo | bar || baz --quux 2>&1)"
 foo <(bar||baz --something) | tee >(quux)

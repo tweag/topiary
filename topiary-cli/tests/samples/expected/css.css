@@ -4904,3 +4904,38 @@
     display: none !important;
   }
 }
+@media (min-width: 1200px), (max-width: 1200px) and (not (min-width: 1200px)) {
+  .fs-1 {
+    font-size: 2.5rem !important;
+  }
+}
+@import url("my-imported-styles.css");
+@charset "UTF-8";
+@keyframes identifier {
+  0% {
+    top: 0;
+    left: 0;
+  }
+  30% {
+    top: 50px;
+  }
+  72% {
+    left: 50px;
+  }
+  100% {
+    top: 100px;
+    left: 100%;
+  }
+}
+/* Various selectors: descendant, sibling, and adjacent sibling */
+li li {
+  list-style-type: circle;
+}
+
+li ~ li {
+  list-style-type: circle;
+}
+
+li + li {
+  list-style-type: circle;
+}

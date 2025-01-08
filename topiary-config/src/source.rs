@@ -2,11 +2,9 @@
 
 use std::{env::current_dir, ffi::OsString, fmt, io::Cursor, path::PathBuf};
 
-use directories::ProjectDirs;
-
 use crate::error::TopiaryConfigError;
 
-/// Sources of TOML configuration
+/// Sources of Nickel configuration
 #[derive(Debug, Clone)]
 pub enum Source {
     Builtin,
@@ -23,13 +21,13 @@ impl From<Source> for nickel_lang_core::program::Input<Cursor<String>, OsString>
 }
 
 impl Source {
-    /// Return the valid sources of configuration, in priority order (lowest to highest):
+    /// Return the valid sources of configuration, in priority order (highest to lowest):
     ///
-    /// 1. Built-in configuration (per `Self::builtin_nickel()`)
-    /// 2. `~/.config/topiary/languages.ncl` (or equivalent)
-    /// 3. `.topiary/languages.ncl` (or equivalent)
-    /// 4. `file`, passed as a CLI argument/environment variable
-    pub fn fetch(file: &Option<PathBuf>) -> Vec<Self> {
+    /// 1. `file`, passed as a CLI argument/environment variable
+    /// 2. `.topiary/languages.ncl` (or equivalent)
+    /// 3. `~/.config/topiary/languages.ncl` (or equivalent)
+    /// 4. Built-in configuration (per `Self::builtin_nickel()`)
+    pub fn fetch_all(file: &Option<PathBuf>) -> Vec<Self> {
         let candidates = [
             Some(find_os_configuration_dir_config()),
             find_workspace_configuration_dir_config(),
@@ -48,11 +46,40 @@ impl Source {
         res
     }
 
+    /// Return the source of configuration that has top priority among available ones.
+    /// The priority order is, from highest to lowest:
+    ///
+    /// 1. `file`, passed as a CLI argument/environment variable
+    /// 2. `.topiary/languages.ncl` (or equivalent)
+    /// 3. `~/.config/topiary/languages.ncl` (or equivalent)
+    /// 4. Built-in configuration (per `Self::builtin_nickel()`)
+    pub fn fetch_one(file: &Option<PathBuf>) -> Self {
+        let cli_specified = Self::find(&file.clone()).map(Self::File);
+        let workspace_specified =
+            Self::find(&find_workspace_configuration_dir_config()).map(Self::File);
+        let os_config_specified =
+            Self::find(&Some(find_os_configuration_dir_config())).map(Self::File);
+
+        if let Some(res) = cli_specified {
+            log::info!("Using CLI-specified configuration: {res}");
+            res
+        } else if let Some(res) = workspace_specified {
+            log::info!("Using workspace-specified configuration: {res}");
+            res
+        } else if let Some(res) = os_config_specified {
+            log::info!("Using global os-specified configuration: {res}");
+            res
+        } else {
+            log::info!("Using built-in configuration");
+            Self::Builtin
+        }
+    }
+
     /// Attempts to find a configuration file, given a `path` parameter. If `path` is `None`, then
     /// the function returns `None`.
-    /// Otherwise, if the path is a rectory, then it attempts to find a `languages.ncl` file
+    /// Otherwise, if the path is a directory, then it attempts to find a `languages.ncl` file
     /// within that directory. If the file exists, then it returns `Some(path.join("languages.ncl"))`.
-    /// If the file does not exist, then it logs a warning and returns `None`. If the path is a file,
+    /// If the file does not exist, then it logs a message and returns `None`. If the path is a file,
     /// then it returns `Some(path)`.
     fn find(path: &Option<PathBuf>) -> Option<PathBuf> {
         match path {
@@ -67,8 +94,8 @@ impl Source {
                 if candidate.exists() {
                     Some(candidate)
                 } else {
-                    log::warn!(
-                        "Could not find configuration file: {}. Are you sure it exists?",
+                    log::info!(
+                        "Could not find configuration file: {}. Defaulting to built-in configuration.",
                         candidate.to_string_lossy()
                     );
                     None
@@ -77,12 +104,12 @@ impl Source {
         }
     }
 
-    pub fn read(&self) -> Result<std::io::Cursor<String>, TopiaryConfigError> {
+    pub fn read(&self) -> Result<Vec<u8>, TopiaryConfigError> {
         match self {
-            Self::Builtin => Ok(std::io::Cursor::new(self.builtin_nickel())),
+            Self::Builtin => Ok(self.builtin_nickel().into_bytes()),
             Self::File(path) => std::fs::read_to_string(path)
-                .map_err(TopiaryConfigError::IoError)
-                .map(std::io::Cursor::new),
+                .map_err(TopiaryConfigError::Io)
+                .map(|s| s.into_bytes()),
         }
     }
 
@@ -107,10 +134,7 @@ impl fmt::Display for Source {
 
 /// Find the OS-specific configuration directory
 fn find_os_configuration_dir_config() -> PathBuf {
-    ProjectDirs::from("", "", "topiary")
-        .expect("Could not access the OS's Home directory")
-        .config_dir()
-        .to_path_buf()
+    crate::project_dirs().config_dir().to_path_buf()
 }
 
 /// Ascend the directory hierarchy, starting from the current working directory, in search of the

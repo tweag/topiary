@@ -1097,6 +1097,102 @@ let _ =
   match foo with
   | Bar { baz } -> qux
 
+(* #721: unbalanced spacing around parenthesized expressions *)
+let _ = (begin end)
+
+(* #718: indentations and newlines around final-argument continuations *)
+let eval_tree ~addr ~source_path (tree : Syn.tree) =
+  let fm = {T.empty_frontmatter with addr; source_path} in
+  Frontmatter.run ~init:fm @@ fun () ->
+  Emitted_trees.run ~init:[] @@ fun () ->
+  Jobs.run ~init:[] @@ fun () ->
+  Heap.run ~init:Env.empty @@ fun () ->
+  Lex_env.run ~env:Env.empty @@ fun () ->
+  Dyn_env.run ~env:Env.empty @@ fun () ->
+  let main = eval_tree_inner ~addr tree in
+  let side = Emitted_trees.get () in
+  let jobs = Jobs.get () in
+  {main; side; jobs}
+
+(* #660 dangling functions *)
+let foo x = fun y ->
+  zzzzzzzzzz
+
+let () =
+  foo @@ fun y ->
+  zzzzzzzzzz
+
+let () =
+  foo >>= fun y ->
+  zzzzzzzzzz
+
+let () =
+  foo x (fun y ->
+    zzzzzzzzzz
+  )
+
+let foo x = function
+  | y -> zzzzzzzzzz
+  | u -> vvvvvvvv
+
+let () =
+  foo x @@ function
+    | y -> zzzzzzzzzz
+    | u -> vvvvvvvv
+
+let () =
+  foo x >>= function
+    | y -> zzzzzzzzzz
+    | u -> vvvvvvvv
+
+let () =
+  foo x (function
+    | y -> zzzzzzzzzz
+    | u -> vvvvvvvvv
+  )
+
+(* #727 proper formatting of multi-lined typed function argument *)
+let foo
+  (bar :
+    int ->
+    string ->
+    unit
+  )
+  ~(baz :
+    int ->
+    string ->
+    unit
+  )
+=
+  bar baz
+
+(* #728 missing space in module function arguments *)
+let foo
+    (bar : int)
+    (module Baz : BAZTYPE)
+  =
+  Baz.foo bar
+
+(* #729 Spacing in single-line records *)
+let _ = [a; b; c]
+let _ = [|a; b; c|]
+let _ = { a; b; c }
+type x = [`Foo | `Bar]
+type x = [> `Foo | `Bar]
+type x = [< `Foo | `Bar]
+type x = { a: int; b: int; c: int }
+
+(* #726 multi-line calls containing functions *)
+let _ =
+  foo
+    bar
+    (fun baz ->
+      baaaaaaz
+    )
+    (fun qux ->
+      quuuuuux
+    )
+
 (* #659 handling of the `;;` separator *)
 
 let bonjour () = "Bonjour"
@@ -1114,3 +1210,47 @@ let topiary _x = "Topiary"
 
 print_string (topiary 27);
 print_endline "!"
+
+(* #730 consistency of opening brackets dangling *)
+let foo = [|
+  1;
+  2;
+  3;
+|]
+let foo = [
+  1;
+  2;
+  3;
+]
+let foo = {
+  a = 1;
+  b = 2;
+  c = 3;
+}
+type bar = [
+  | `A
+  | `B
+  | `C
+]
+type bar = {
+  a: int;
+  b: int;
+  c: int;
+}
+
+(* #731 function dangling on multi-line calls *)
+let _ =
+  foo bar baz @@ fun x ->
+  x
+
+let _ =
+  foo
+    bar
+    baz
+    @@ fun x ->
+    x
+
+(* #546 Hanging forms *)
+let _ =
+  somefun @@
+    fun x -> body

@@ -477,7 +477,7 @@ extern "C" {
 
     // -> PredicateResult[]
     #[wasm_bindgen(method, js_name = predicatesForPattern)]
-    pub fn predicates_for_pattern(this: &Query, pattern_index: u32) -> Box<[JsValue]>;
+    pub fn predicates_for_pattern(this: &Query, pattern_index: usize) -> Box<[JsValue]>;
 }
 
 #[wasm_bindgen]

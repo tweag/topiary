@@ -2,6 +2,22 @@
 mod native {
     use std::{borrow::Cow, convert::TryFrom};
 
+    pub struct LanguageRef<'a> {
+        pub(crate) inner: tree_sitter::LanguageRef<'a>,
+    }
+
+    impl<'a> LanguageRef<'a> {
+        pub fn field_count(&self) -> usize {
+            self.inner.field_count()
+        }
+    }
+
+    impl<'a> From<tree_sitter::LanguageRef<'a>> for LanguageRef<'a> {
+        fn from(inner: tree_sitter::LanguageRef<'a>) -> Self {
+            LanguageRef { inner }
+        }
+    }
+
     #[derive(Clone, Eq, PartialEq)]
     pub struct Language {
         pub(crate) inner: tree_sitter::Language,
@@ -14,7 +30,10 @@ mod native {
         }
 
         #[inline]
-        pub fn field_id_for_name(&self, field_name: impl AsRef<[u8]>) -> Option<u16> {
+        pub fn field_id_for_name(
+            &self,
+            field_name: impl AsRef<[u8]>,
+        ) -> Option<std::num::NonZeroU16> {
             let field_name = field_name.as_ref();
             self.inner.field_id_for_name(field_name)
         }
@@ -61,10 +80,12 @@ mod native {
         }
     }
 
-    impl From<tree_sitter::Language> for Language {
+    impl From<tree_sitter_language::LanguageFn> for Language {
         #[inline]
-        fn from(inner: tree_sitter::Language) -> Self {
-            Self { inner }
+        fn from(inner: tree_sitter_language::LanguageFn) -> Self {
+            Self {
+                inner: tree_sitter::Language::new(inner),
+            }
         }
     }
 

@@ -78,10 +78,8 @@ Topiary has been created with the following goals in mind:
 ## Language Support
 <!-- Update this section as necessary on new developments/releases -->
 
-[For now][topiary-issue4], the Tree-sitter grammars for the languages
-that Topiary targets are statically linked. The formatting styles for
-these languages come in two levels of maturity: supported and
-experimental.
+The formatting styles for these languages come in two levels of maturity:
+supported and experimental.
 
 #### Supported
 
@@ -90,6 +88,7 @@ stated design goals. They are exposed, in Topiary, through the
 `--language` command line flag, or language detection (based on file
 extension).
 
+* [Bash]
 * [JSON]
 * [Nickel]
 * [OCaml] (both implementations and interfaces)
@@ -113,7 +112,6 @@ gated behind a feature flag (either `experimental`, for all of them, or
 by their individual name). Once included, they can be accessed in
 Topiary in the usual way.
 
-* [Bash]
 * [Rust]
 
 ## Getting Started
@@ -186,11 +184,14 @@ Commands:
   format      Format inputs
   visualise   Visualise the input's Tree-sitter parse tree
   config      Print the current configuration
+  prefetch    Prefetch all languages in the configuration
+  coverage    Checks how much of the tree-sitter query is used
   completion  Generate shell completion script
   help        Print this message or the help of the given subcommand(s)
 
 Options:
   -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
+  -M, --merge-configuration            Enable merging for configuration files
   -v, --verbose...                     Logging verbosity (increased per occurrence)
   -h, --help                           Print help
   -V, --version                        Print version
@@ -231,6 +232,9 @@ Options:
 
           [env: TOPIARY_CONFIG_FILE]
 
+  -M, --merge-configuration
+          Enable merging for configuration files
+
   -v, --verbose...
           Logging verbosity (increased per occurrence)
 
@@ -248,10 +252,19 @@ Note: `fmt` is a recognised alias of the `format` subcommand.
 
 #### Visualise
 
+`topiary visualise` converts the input's Tree-sitter parse tree to a graph
+representation in the selected format. By default, Topiary outputs a DOT file,
+which can be rendered using a visualisation tool such as the Graphviz suite. For
+example, using Graphviz's `dot`: `topiary visualise input.ocaml | dot -Tpng
+-ooutput.png`.
+
 <!-- DO NOT REMOVE THE "usage" COMMENTS -->
 <!-- usage:start:visualise -->
 ```
 Visualise the input's Tree-sitter parse tree
+
+Visualise generates a graph representation of the parse tree that can be rendered by external
+visualisation tools, such as Graphviz. By default, the output is in the DOT format.
 
 Usage: topiary visualise [OPTIONS] <--language <LANGUAGE>|FILE>
 
@@ -283,6 +296,9 @@ Options:
 
           [env: TOPIARY_CONFIG_FILE]
 
+  -M, --merge-configuration
+          Enable merging for configuration files
+
   -v, --verbose...
           Logging verbosity (increased per occurrence)
 
@@ -310,6 +326,7 @@ Usage: topiary config [OPTIONS]
 
 Options:
   -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
+  -M, --merge-configuration            Enable merging for configuration files
   -v, --verbose...                     Logging verbosity (increased per occurrence)
   -h, --help                           Print help
 ```
@@ -336,6 +353,7 @@ Arguments:
 
 Options:
   -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
+  -M, --merge-configuration            Enable merging for configuration files
   -v, --verbose...                     Logging verbosity (increased per occurrence)
   -h, --help                           Print help
 ```
@@ -346,6 +364,72 @@ For example, in Bash:
 ```bash
 source <(topiary completion)
 ```
+
+#### Prefetching
+
+Topiary dynamically downloads, builds, and loads the tree-sitter grammars. In
+order to ensure offline availability or speed up startup time, the grammars can
+be prefetched and compiled.
+
+<!-- DO NOT REMOVE THE "usage" COMMENTS -->
+<!-- usage:start:prefetch-->
+```
+Prefetch all languages in the configuration
+
+Usage: topiary prefetch [OPTIONS]
+
+Options:
+  -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
+  -M, --merge-configuration            Enable merging for configuration files
+  -v, --verbose...                     Logging verbosity (increased per occurrence)
+  -h, --help                           Print help
+```
+<!-- usage:end:prefetch -->
+
+#### Coverage
+
+This subcommand checks how much of the language query file is used to process the input.
+Specifically, it checks the percentage of queries in the query file that match the given input,
+and prints the queries that don't match anything.
+
+<!-- DO NOT REMOVE THE "usage" COMMENTS -->
+<!-- usage:start:coverage-->
+```
+Checks how much of the tree-sitter query is used
+
+Usage: topiary coverage [OPTIONS] <--language <LANGUAGE>|FILE>
+
+Arguments:
+  [FILE]
+          Input file (omit to read from stdin)
+
+          Language detection and query selection is automatic, mapped from file extensions defined
+          in the Topiary configuration.
+
+Options:
+  -l, --language <LANGUAGE>
+          Topiary language identifier (for formatting stdin)
+
+  -q, --query <QUERY>
+          Topiary query file override (when formatting stdin)
+
+  -C, --configuration <CONFIGURATION>
+          Configuration file
+
+          [env: TOPIARY_CONFIG_FILE]
+
+  -M, --merge-configuration
+          Enable merging for configuration files
+
+  -v, --verbose...
+          Logging verbosity (increased per occurrence)
+
+  -h, --help
+          Print help (see a summary with '-h')
+```
+<!-- usage:end:coverage -->
+
+The `coverage` subcommand will exit with error code `1` if the coverage is less than 100%.
 
 #### Logging
 
@@ -368,7 +452,7 @@ formatting. Otherwise, the following exit codes are defined:
 
 | Reason                       | Code |
 | :--------------------------- | ---: |
-| Unspecified error            |    1 |
+| Negative result              |    1 |
 | CLI argument parsing error   |    2 |
 | I/O error                    |    3 |
 | Topiary query error          |    4 |
@@ -377,6 +461,10 @@ formatting. Otherwise, the following exit codes are defined:
 | Idempotency error            |    7 |
 | Unspecified formatting error |    8 |
 | Multiple errors              |    9 |
+| Unspecified error            |   10 |
+
+Negative results with error code `1` only happen when Topiary is called
+with the `coverage` sub-command, if the input does not cover 100% of the query.
 
 When given multiple inputs, Topiary will do its best to process them
 all, even in the presence of errors. Should _any_ errors occur, Topiary
@@ -470,9 +558,43 @@ A final optional field, called `indent`, exists to define the indentation method
 for that language. Topiary defaults to two spaces `"  "` if it cannot find the
 indent field in any configuration file for a specific language.
 
-### Overriding
-If one of the sources listed above attempts to define a language configuration
-already present in the builtin configuration, Topiary will display a Nickel error.
+#### Specifying the grammar
+Topiary can fetch and build the grammar for you, or a grammar can be provided by
+some other method. To have Topiary fetch the grammar for you, specify the
+`grammar.source.git` attribute of a language:
+```nickel
+nickel = {
+  extensions = ["ncl"],
+  grammar.source.git = {
+    git = "https://github.com/nickel-lang/tree-sitter-nickel",
+    rev = "43433d8477b24cd13acaac20a66deda49b7e2547",
+  },
+},
+```
+
+To specify a prebuilt grammar, specify the `grammar.source.path` attribute, which must point to a compiled grammar file:
+```nickel
+nickel = {
+  extensions = ["ncl"],
+  grammar.source.path = "/path/to/compiled/grammar/file.so",
+},
+```
+
+:bulb: If you want to link to a grammar file that has already been compiled by Topiary itself, those look like `<GIT_HASH>.so`.
+
+[!WARNING]
+As of Topiary version 0.5.1, the option to directly specify a compiled grammar isn't available on Windows.
+
+For usage in Nix, a `languages_nix.ncl` file is provided that specifies the
+paths of every language using the `@nickel@` syntax. These can easily be
+replaced with nixpkgs' `substituteAll`.
+
+### Overriding with `--merge-configuration`
+
+By default, Topiary only considers the configuration file with the [highest priority](#configuration-sources). However, if the `-M` or `--merge-configuration` option is provided to the CLI, then all available configurations are merged together, as per the [Nickel specification](https://nickel-lang.org/user-manual/merging).
+
+In that case, if one of the sources listed above attempts to define a language configuration
+already present in the builtin configuration, or if two configuration files have conflicting values, then Topiary will display a Nickel error.
 
 To understand why, one can read the [Nickel documentation on Merging](https://nickel-lang.org/user-manual/merging).
 The short answer is that a priority must be defined. The builtin configuration
@@ -546,6 +668,36 @@ between the words.
 
 This assumes you are already familiar with the [Tree-sitter query
 language][tree-sitter-query].
+
+### A note on anchors
+The behaviour of "anchors" can be counterintuitive. Consider, for instance, the
+following query:
+```scheme
+(
+  (list_entry) @append_space
+  .
+)
+```
+One might assume that this query only matches the final element in the list but
+this is not true. Since we did not explicitly march a parent node, the engine
+will match on every `list_entry`. After all, the when looking only at the nodes
+in the query, the `list_entry` is indeed the last node.
+
+To resolve this issue, match explicitly on the parent node:
+```scheme
+(list
+  (list_entry) @append_space
+  .
+)
+```
+
+Or even implicitly:
+```scheme
+(_
+  (list_entry) @append_space
+  .
+)
+```
 
 Note that a capture is put after the node it is associated with. If you
 want to put a space in front of a node, you do it like this:
@@ -1176,27 +1328,264 @@ containing the matched nodes are is single-line (resp. multi-line).
 )
 ```
 
+### `@prepend_begin_measuring_scope` / `@append_begin_measuring_scope` / `@prepend_end_measuring_scope` / `@append_end_measuring_scope`
+
+Sometimes, custom scopes are not enough: we may want to format a node depending on the multi-line-ness of a piece of code that does not include the node in question. For instance, consider this function application in OCaml:
+```ocaml
+foo bar (fun x -> qux)
+```
+We may also want to format it as any of the following two, depending on the actual length of `foo`, `bar`, and `qux`:
+```ocaml
+foo bar (fun x ->
+  qux
+)
+```
+```ocaml
+foo
+  bar
+  (fun x ->
+    qux
+  )
+```
+Consider the indentation of `(fun x -> qux)`: if `foo bar` is single-line, we don't want to indent it. But if `foo bar` is multi-line, we do want to indent it.
+
+Because custom scopes can only impact the behaviour of nodes inside the scope, we can't use them to solve this issue. This is why we need `measuring_scope`.
+
+Measuring scopes are opened/closed with a similar syntax as "regular" custom scopes, with any of the following tags, in conjunction with the `#scope_id!` predicate:
+
+* `@prepend_begin_measuring_scope`
+* `@append_begin_measuring_scope`
+* `@prepend_end_measuring_scope`
+* `@prepend_begin_measuring_scope`
+
+Measuring scopes behave as follows:
+* A measuring scope must always be contained in a regular custom scope with the same `#scope_id!`. There can't be two measuring scopes with the same `#scope_id!` inside the same regular custom scope.
+* If a regular custom scope contains a measuring scope, then all tags contained in the regular scope that depend on its multi-line-ness will instead depend on the multi-line-ness of the measuring scope (hence the name: the inner, measuring scope measures the multi-line-ness of the outer, regular scope).
+
+#### Example
+
+The example below solves the problem of indenting function application in OCaml stated above, using measuring scopes.
+```scheme
+(application_expression
+  .
+  (_) @append_indent_start @prepend_begin_scope @prepend_begin_measuring_scope
+  (#scope_id! "function_application")
+  (_) @append_end_scope
+  .
+)
+; The end of the measuring scope depends on the last argument: if it's a function,
+; end it before the function, otherwise end it after the last argument. In that case,
+; it's the same as the regular scope.
+(application_expression
+  (#scope_id! "function_application")
+  (_
+    [
+      (fun_expression)
+      (function_expression)
+    ]? @do_nothing
+  ) @append_end_measuring_scope
+  .
+)
+(application_expression
+  (#scope_id! "function_application")
+  (_
+    [
+      (fun_expression)
+      (function_expression)
+    ] @prepend_end_measuring_scope
+  )
+  .
+)
+; If the measuring scope is single-line, end indentation _before_ the last node.
+; Otherwise, end the indentation after the last node.
+(application_expression
+  (#multi_line_scope_only! "function_application")
+  (_) @append_indent_end
+  .
+)
+(application_expression
+  (#single_line_scope_only! "function_application")
+  (_) @prepend_indent_end
+  .
+)
+```
+
+### `#query_name!`
+
+When the logging verbosity is set to `-vv` or higher, Topiary outputs information about which queries are matched, for instance:
+```
+[2024-10-08T15:48:13Z INFO  topiary_core::tree_sitter] Processing match: LocalQueryMatch { pattern_index: 17, captures: [ {Node "," (1,3) - (1,4)} ] } at location (286,1)
+```
+The predicate `#query_name!` takes a string argument, is optional, and can be added to any query.
+It will modify the log line to display its argument.
+
+#### Example
+
+Considering the log line above, and let us assume that the query at `location (286,1)` is:
+
+```scheme
+(
+  "," @append_space
+  .
+  (_)
+)
+```
+If we add a `query_name` predicate:
+```scheme
+(
+  (#query_name! "comma spacing")
+  "," @append_space
+  .
+  (_)
+)
+```
+Then the log line will become:
+```
+[2024-10-08T15:48:13Z INFO  topiary_core::tree_sitter] Processing match of query "comma spacing": LocalQueryMatch { pattern_index: 17, captures: [ {Node "," (1,3) - (1,4)} ] } at location (286,1)
+```
+
+## Add a new language
+
+This section illustrates how to add a supported language to Topiary, provided it already has a tree-sitter grammar.
+
+We will use C as the running example in this section.
+
+### Minimal steps
+
+The two following steps are enough to jumpstart the formatting of a new language:
+
+#### Register the grammar in `topiary-config/languages.ncl`:
+
+```nickel
+    c = {
+      extensions = ["c", "h"],
+      grammar = {
+        git = "https://github.com/tree-sitter/tree-sitter-c.git",
+        rev = "6c7f459ddc0bcf78b615d3a3f4e8fed87b8b3b1b",
+      },
+    },
+```
+
+#### Create the query file
+```bash
+touch topiary-queries/queries/c.scm
+```
+
+#### Testing
+
+You can now check that Topiary is able to "format" your new language with:
+
+```bash
+$ echo 'void main();' | cargo run -- format -s --language c
+voidmain();
+```
+
+```bash
+$ echo 'void main();' > foo.c && cargo run -- format -s foo.c && cat foo.c
+voidmain();
+```
+
+### Add the new language to the test suite
+
+#### Create input/expected files
+```bash
+echo 'void main ();' > topiary-cli/tests/samples/input/c.c
+echo 'voidmain();' > topiary-cli/tests/samples/expected/c.c
+```
+
+#### Add the Cargo feature flags
+
+##### In `topiary-cli/Cargo.toml`
+```toml
+experimental = [
+  "clang",
+]
+
+clang = ["topiary-config/clang", "topiary-queries/clang"]
+```
+
+##### In `topiary-config/Cargo.toml`
+```toml
+clang = []
+
+all = [
+  "clang",
+]
+```
+
+##### In `topiary-queries/Cargo.toml`
+```toml
+clang = []
+```
+
+#### Add tests in `topiary-cli/tests/sample-tester.rs`
+```rust
+fn input_output_tester() {
+
+[...]
+
+    #[cfg(feature = "clang")]
+    io_test("c.c");
+
+[...]
+
+fn coverage_tester() {
+
+[...]
+
+    #[cfg(feature = "clang")]
+    coverage_test("c.c");
+```
+
+#### Testing
+You should be able to successfully run the new tests with
+```bash
+cargo test --no-default-features -F clang -p topiary-cli --test sample-tester
+```
+
+### Include the query file in Topiary at compile time
+
+#### In `topiary-queries/src/lib.rs`
+```rust
+/// Returns the Topiary-compatible query file for C.
+#[cfg(feature = "clang")]
+pub fn c() -> &'static str {
+    include_str!("../queries/c.scm")
+}
+```
+
+#### In `topiary-cli/src/io.rs`
+```rust
+fn to_query<T>(name: T) -> CLIResult<QuerySource>
+
+[...]
+
+        #[cfg(feature = "clang")]
+        "c" => Ok(topiary_queries::c().into()),
+```
+
+This will allow your query file to by considered as the default fallback query, when no other file can be found at runtime for your language.
+
 ## Suggested workflow
 
 In order to work productively on query files, the following is one
 suggested way to work:
 
-1. Add a sample file to `topiary-cli/tests/samples/input`.
+1. If you're working on a new language, follow the steps in [the previous section](#add-a-new-language).
 
-2. Copy the same file to `topiary-cli/tests/samples/expected`, and make any changes
-   to how you want the output to be formatted.
+2. Add a snippet of code you want to format to `topiary-cli/tests/samples/input/mylanguage.mlg`.
 
-3. If this is a new language, add its Tree-sitter grammar, extend
-   `crate::language::Language` and process it everywhere, then make a
-   mostly empty query file with just the `(#language!)` configuration.
+3. Add the properly formatted version of the code to `topiary-cli/tests/samples/expected/mylanguage.mlg`.
 
 4. Run:
 
-   ```
-   RUST_LOG=debug \
-   cargo test -p topiary-cli \
-              input_output_tester \
-              -- --nocapture
+   ```bash
+   cargo test \
+     --no-default-features \
+     -F mylanguage \
+     -p topiary-cli \
+     input_output_tester \
+     -- --nocapture
    ```
 
    Provided it works, it should output a _lot_ of log messages. Copy
@@ -1353,7 +1742,6 @@ of choice open in another.
 [rustfmt]: https://rust-lang.github.io/rustfmt
 [shfmt]: https://github.com/mvdan/sh
 [toml]: https://toml.io
-[topiary-issue4]: https://github.com/tweag/topiary/issues/4
 [topiary-playground]: https://topiary.tweag.io/playground
 [topiary-website]: https://topiary.tweag.io
 [tree-sitter-parsers]: https://tree-sitter.github.io/tree-sitter/#available-parsers

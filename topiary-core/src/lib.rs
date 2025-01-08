@@ -19,7 +19,7 @@ use tree_sitter::Position;
 pub use crate::{
     error::{FormatterError, IoError},
     language::Language,
-    tree_sitter::{apply_query, SyntaxNode, TopiaryQuery, Visualisation},
+    tree_sitter::{apply_query, CoverageData, SyntaxNode, TopiaryQuery, Visualisation},
 };
 
 mod atom_collection;
@@ -92,20 +92,30 @@ pub enum Atom {
     /// Indicates the end of a scope, use in combination with the
     /// ScopedSoftlines and ScopedConditionals below.
     ScopeEnd(ScopeInformation),
+    // Indicates the beginning of a *measuring* scope, that must be related to a "normal" one.
+    // Used in combination with ScopedSoftlines and ScopedConditionals below.
+    MeasuringScopeBegin(ScopeInformation),
+    // Indicates the end of a *measuring* scope, that must be related to a "normal" one.
+    // Used in combination with ScopedSoftlines and ScopedConditionals below.
+    MeasuringScopeEnd(ScopeInformation),
     /// Scoped commands
-    // ScopedSoftline works together with the @{prepend,append}_begin_scope and
-    // @{prepend,append}_end_scope query tags. To decide if a scoped softline
+    // ScopedSoftline works together with the @{prepend,append}_begin[_measuring]_scope and
+    // @{prepend,append}_end[_measuring]_scope query tags. To decide if a scoped softline
     // must be expanded into a hardline, we look at the innermost scope having
     // the corresponding `scope_id`, that encompasses it. We expand the softline
-    // if that scope is multi-line. The `id` value is here for technical
-    // reasons, it allows tracking of the atom during post-processing.
+    // if that scope is multi-line.
+    // If that scope contains a *measuring* scope with the same `scope_id`, we expand
+    // the node iff that *measuring* scope is multi-line.
+    // The `id` value is here for technical reasons,
+    // it allows tracking of the atom during post-processing.
     ScopedSoftline {
         id: usize,
         scope_id: String,
         spaced: bool,
     },
-    /// Represents an atom that must only be output if the associated scope meets the condition
-    /// (single-line or multi-line)
+    /// Represents an atom that must only be output if the associated scope
+    /// (or its associated measuring scope, see above) meets the condition
+    /// (single-line or multi-line).
     ScopedConditional {
         id: usize,
         scope_id: String,
@@ -178,7 +188,7 @@ pub enum Operation {
 /// let input = "[1,2]".to_string();
 /// let mut input = input.as_bytes();
 /// let mut output = Vec::new();
-/// let json = tree_sitter_json::language();
+/// let json = topiary_tree_sitter_facade::Language::from(tree_sitter_json::LANGUAGE);
 ///
 /// let mut query_file = BufReader::new(File::open("../topiary-queries/queries/json.scm").expect("query file"));
 /// let mut query_content = String::new();
@@ -186,7 +196,7 @@ pub enum Operation {
 ///
 /// let language: Language = Language {
 ///     name: "json".to_owned(),
-///     query: TopiaryQuery::new(&json.into(), &query_content).unwrap(),
+///     query: TopiaryQuery::new(&json.clone().into(), &query_content).unwrap(),
 ///     grammar: json.into(),
 ///     indent: None,
 /// };
@@ -230,7 +240,6 @@ pub fn formatter(
                 &language.query,
                 &language.grammar,
                 tolerate_parsing_errors,
-                false,
             )?;
 
             // Various post-processing of whitespace
@@ -253,7 +262,7 @@ pub fn formatter(
         }
 
         Operation::Visualise { output_format } => {
-            let (tree, _) = tree_sitter::parse(&content, &language.grammar, false)?;
+            let tree = tree_sitter::parse(&content, &language.grammar, false)?;
             let root: SyntaxNode = tree.root_node().into();
 
             match output_format {
@@ -264,6 +273,43 @@ pub fn formatter(
     };
 
     Ok(())
+}
+
+pub fn coverage(
+    input: &mut impl io::Read,
+    output: &mut impl io::Write,
+    language: &Language,
+) -> FormatterResult<()> {
+    let content = read_input(input).map_err(|e| {
+        FormatterError::Io(IoError::Filesystem(
+            "Failed to read input contents".into(),
+            e,
+        ))
+    })?;
+
+    let res = tree_sitter::check_query_coverage(&content, &language.query, &language.grammar)?;
+
+    let queries_string = if res.missing_patterns.is_empty() {
+        "All queries are matched".into()
+    } else {
+        format!(
+            "Unmatched queries:\n{}",
+            &res.missing_patterns[..].join("\n"),
+        )
+    };
+
+    write!(
+        output,
+        "Query coverage: {:.2}%\n{}\n",
+        res.cover_percentage * 100.0,
+        queries_string,
+    )?;
+
+    if res.cover_percentage == 1.0 {
+        Ok(())
+    } else {
+        Err(FormatterError::PatternDoesNotMatch)
+    }
 }
 
 /// Simple helper function to read the full content of an io Read stream
@@ -343,7 +389,7 @@ mod tests {
         let mut input = r#"{"foo":{"bar"}}"#.as_bytes();
         let mut output = Vec::new();
         let query_content = "(#language! json)";
-        let grammar = tree_sitter_json::language().into();
+        let grammar = topiary_tree_sitter_facade::Language::from(tree_sitter_json::LANGUAGE);
         let language = Language {
             name: "json".to_owned(),
             query: TopiaryQuery::new(&grammar, query_content).unwrap(),
@@ -379,7 +425,7 @@ mod tests {
 
         let mut output = Vec::new();
         let query_content = fs::read_to_string("../topiary-queries/queries/json.scm").unwrap();
-        let grammar = tree_sitter_json::language().into();
+        let grammar = tree_sitter_json::LANGUAGE.into();
         let language = Language {
             name: "json".to_owned(),
             query: TopiaryQuery::new(&grammar, &query_content).unwrap(),

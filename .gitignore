@@ -3,3 +3,5 @@ target
 /result
 /.direnv
 *.profraw
+/.vscode
+.envrc

@@ -2,8 +2,9 @@
 mod native {
     use crate::{
         error::QueryError, language::Language, node::Node, query_cursor::QueryCursor,
-        query_match::QueryMatch, query_predicate::QueryPredicate,
+        query_predicate::QueryPredicate,
     };
+    use streaming_iterator::StreamingIterator;
 
     pub struct Query {
         pub(crate) inner: tree_sitter::Query,
@@ -12,32 +13,33 @@ mod native {
     impl Query {
         #[inline]
         pub fn new(language: &Language, source: &str) -> Result<Self, QueryError> {
-            let inner = tree_sitter::Query::new(language.inner, source)?;
+            let inner = tree_sitter::Query::new(&language.inner, source)?;
             Ok(Self { inner })
         }
 
         #[inline]
-        pub fn matches<'a, 'tree: 'a>(
-            &'a self,
+        pub fn matches<
+            'query,
+            'cursor: 'query,
+            'tree: 'query,
+            T: tree_sitter::TextProvider<I> + 'query,
+            I: AsRef<[u8]> + 'query,
+        >(
+            &'query self,
             node: &Node<'tree>,
-            source: &'a [u8],
-            cursor: &'a mut QueryCursor,
-        ) -> impl Iterator<Item = QueryMatch<'a>> + 'a {
-            cursor
-                .inner
-                .matches(&self.inner, node.inner, source)
-                .map(Into::into)
+            source: T,
+            cursor: &'cursor mut QueryCursor,
+        ) -> impl StreamingIterator<Item = tree_sitter::QueryMatch<'query, 'tree>> {
+            cursor.inner.matches(&self.inner, node.inner, source)
         }
 
         #[inline]
-        pub fn capture_names(&self) -> Vec<String> {
-            let names: Vec<_> = self.inner.capture_names().to_vec();
-            names
+        pub fn capture_names(&self) -> Vec<&str> {
+            self.inner.capture_names().to_vec()
         }
 
         #[inline]
-        pub fn general_predicates(&self, index: u32) -> Vec<QueryPredicate> {
-            let index = index as usize;
+        pub fn general_predicates(&self, index: usize) -> Vec<QueryPredicate> {
             self.inner
                 .general_predicates(index)
                 .iter()
@@ -126,14 +128,14 @@ mod wasm {
         }
 
         #[inline]
-        pub fn capture_names(&self) -> Vec<String> {
+        pub fn capture_names(&self) -> Vec<&str> {
             // The Wasm code does not use this when looking up
             // QueryCapture::name, the way the native code needs to.
             vec![]
         }
 
         #[inline]
-        pub fn general_predicates(&self, index: u32) -> Vec<QueryPredicate> {
+        pub fn general_predicates(&self, index: usize) -> Vec<QueryPredicate> {
             let predicates: Vec<_> = self
                 .inner
                 .predicates_for_pattern(index)

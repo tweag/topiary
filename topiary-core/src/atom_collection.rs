@@ -307,6 +307,34 @@ impl AtomCollection {
                     predicates,
                 );
             }
+            "prepend_begin_measuring_scope" => {
+                self.prepend(
+                    Atom::MeasuringScopeBegin(scope_information_prepend()?),
+                    node,
+                    predicates,
+                );
+            }
+            "append_begin_measuring_scope" => {
+                self.append(
+                    Atom::MeasuringScopeBegin(scope_information_append()?),
+                    node,
+                    predicates,
+                );
+            }
+            "prepend_end_measuring_scope" => {
+                self.prepend(
+                    Atom::MeasuringScopeEnd(scope_information_prepend()?),
+                    node,
+                    predicates,
+                );
+            }
+            "append_end_measuring_scope" => {
+                self.append(
+                    Atom::MeasuringScopeEnd(scope_information_append()?),
+                    node,
+                    predicates,
+                );
+            }
             // Scoped softlines
             "append_empty_scoped_softline" => {
                 let id = self.next_id();
@@ -404,10 +432,29 @@ impl AtomCollection {
     pub fn apply_prepends_and_appends(&mut self) {
         let mut expanded: Vec<Atom> = Vec::new();
 
+        // We sort the prepends/appends so that:
+        // * BeginScope(s) will always be the first element(s)
+        // * MeasuringScopeBegin(s) will always come just after
+        // * EndScope(s) will always be the last element(s)
+        // * MeasuringScopeEnd(s) will always come just before
+        // This permits proper processing of measuring scopes and scoped atoms
+        // that are added at the same place as Begin/EndScopes.
+        fn atom_key(atom: &Atom) -> i8 {
+            match atom {
+                Atom::ScopeBegin(_) => -2,
+                Atom::MeasuringScopeBegin(_) => -1,
+                Atom::MeasuringScopeEnd(_) => 1,
+                Atom::ScopeEnd(_) => 2,
+                _ => 0,
+            }
+        }
+
         for atom in &mut self.atoms {
             if let Atom::Leaf { id, .. } = atom {
                 let prepends = self.prepend.entry(*id).or_default();
+                prepends.sort_by_key(atom_key);
                 let appends = self.append.entry(*id).or_default();
+                appends.sort_by_key(atom_key);
 
                 // Rather than cloning the atom from the old vector, we
                 // simply take it. This will leave a default (empty) atom
@@ -605,10 +652,16 @@ impl AtomCollection {
         type ScopeId = String;
         type LineIndex = u32;
         type ScopedNodeId = usize;
-        // `opened_scopes` maintains stacks of opened scopes,
-        // the line at which they started,
-        // and the list of `ScopedSoftline` they contain.
-        let mut opened_scopes: HashMap<&ScopeId, Vec<(LineIndex, Vec<&Atom>)>> = HashMap::new();
+        type OpenedScopeInfo<'a> = (LineIndex, Vec<&'a Atom>, Option<bool>);
+        // `opened_scopes` maintains stacks of opened scopes.
+        // For each scope, we record:
+        // * the line at which they started (LineIndex),
+        // * the list of `ScopedSoftline` and `ScopedConditional` they contain (Vec<&Atom>),
+        // * if they contain a measuring scope, whether it is multi-line (Option<bool>).
+        let mut opened_scopes: HashMap<&ScopeId, Vec<OpenedScopeInfo>> = HashMap::new();
+        // `opened_measuring_scopes` maintains stacks of opened measuring scopes,
+        // and the line at which they started.
+        let mut opened_measuring_scopes: HashMap<&ScopeId, Vec<LineIndex>> = HashMap::new();
         // We can't process `ScopedSoftline` in-place as we encounter them in the list of
         // atoms: we need to know when their encompassing scope ends to decide what to
         // replace them with. Instead of in-place modifications, we associate a replacement
@@ -631,16 +684,20 @@ impl AtomCollection {
                 opened_scopes
                     .entry(scope_id)
                     .or_default()
-                    .push((*line_start, Vec::new()));
+                    .push((*line_start, Vec::new(), None));
             } else if let Atom::ScopeEnd(ScopeInformation {
                 line_number: line_end,
                 scope_id,
             }) = atom
             {
-                if let Some((line_start, atoms)) =
+                if let Some((line_start, atoms, measuring_scope)) =
                     opened_scopes.get_mut(scope_id).and_then(Vec::pop)
                 {
-                    let multiline = line_start != *line_end;
+                    let multiline = if let Some(mult) = measuring_scope {
+                        mult
+                    } else {
+                        line_start != *line_end
+                    };
                     for atom in atoms {
                         if let Atom::ScopedSoftline { id, spaced, .. } = atom {
                             let new_atom = if multiline {
@@ -671,9 +728,58 @@ impl AtomCollection {
                     log::warn!("Closing unopened scope {scope_id:?}");
                     force_apply_modifications = true;
                 }
+            // Open measuring scope
+            } else if let Atom::MeasuringScopeBegin(ScopeInformation {
+                line_number: line_start,
+                scope_id,
+            }) = atom
+            {
+                if opened_scopes.entry(scope_id).or_default().is_empty() {
+                    log::warn!(
+                        "Opening measuring scope with no associated regular scope {scope_id:?}"
+                    );
+                    force_apply_modifications = true;
+                } else {
+                    opened_measuring_scopes
+                        .entry(scope_id)
+                        .or_default()
+                        .push(*line_start)
+                }
+            // Close measuring scope and register multi-line-ness in the appropriate regular scope
+            } else if let Atom::MeasuringScopeEnd(ScopeInformation {
+                line_number: line_end,
+                scope_id,
+            }) = atom
+            {
+                if let Some(line_start) =
+                    opened_measuring_scopes.get_mut(scope_id).and_then(Vec::pop)
+                {
+                    let multi_line = line_start != *line_end;
+                    if let Some((regular_line_start, vec, measuring_scope)) =
+                        opened_scopes.get_mut(scope_id).and_then(Vec::pop)
+                    {
+                        if measuring_scope.is_none() {
+                            opened_scopes.entry(scope_id).or_default().push((
+                                regular_line_start,
+                                vec,
+                                Some(multi_line),
+                            ));
+                        } else {
+                            log::warn!("Found several measuring scopes in a single regular scope {scope_id:?}");
+                            force_apply_modifications = true;
+                        }
+                    } else {
+                        log::warn!("Found measuring scope outside of regular scope {scope_id:?}");
+                        force_apply_modifications = true;
+                    }
+                } else {
+                    log::warn!("Closing unopened measuring scope {scope_id:?}");
+                    force_apply_modifications = true;
+                }
             // Register the ScopedSoftline in the correct scope
             } else if let Atom::ScopedSoftline { scope_id, .. } = atom {
-                if let Some((_, vec)) = opened_scopes.get_mut(&scope_id).and_then(|v| v.last_mut())
+                if let Some((_, vec, _)) =
+                    opened_scopes.get_mut(&scope_id).and_then(|v| v.last_mut())
                 {
                     vec.push(atom);
                 } else {
@@ -682,7 +788,8 @@ impl AtomCollection {
                 }
             // Register the ScopedConditional in the correct scope
             } else if let Atom::ScopedConditional { scope_id, .. } = atom {
-                if let Some((_, vec)) = opened_scopes.get_mut(&scope_id).and_then(|v| v.last_mut())
+                if let Some((_, vec, _)) =
+                    opened_scopes.get_mut(&scope_id).and_then(|v| v.last_mut())
                 {
                     vec.push(atom);
                 } else {
@@ -691,7 +798,7 @@ impl AtomCollection {
                 }
             }
         }
-        let still_opened: Vec<&String> = opened_scopes
+        let mut still_opened: Vec<&String> = opened_scopes
             .into_iter()
             .filter_map(|(scope_id, vec)| if vec.is_empty() { None } else { Some(scope_id) })
             .collect();
@@ -699,13 +806,25 @@ impl AtomCollection {
             log::warn!("Some scopes have been left opened: {:?}", still_opened);
             force_apply_modifications = true;
         }
+        still_opened = opened_measuring_scopes
+            .into_iter()
+            .filter_map(|(scope_id, vec)| if vec.is_empty() { None } else { Some(scope_id) })
+            .collect();
+        if !still_opened.is_empty() {
+            log::warn!(
+                "Some measuring scopes have been left opened: {:?}",
+                still_opened
+            );
+            force_apply_modifications = true;
+        }
 
         // Remove scopes from the atom list
         for atom in &mut self.atoms {
             match atom {
-                Atom::ScopeBegin(_) | Atom::ScopeEnd(_) => {
-                    *atom = Atom::Empty;
-                }
+                Atom::ScopeBegin(_)
+                | Atom::ScopeEnd(_)
+                | Atom::MeasuringScopeBegin(_)
+                | Atom::MeasuringScopeEnd(_) => *atom = Atom::Empty,
                 _ => {}
             }
         }
@@ -934,6 +1053,8 @@ pub struct QueryPredicates {
     /// The flag that indicates that the query only triggers if the associated
     /// custom scope containing the matched nodes is multi-line.
     pub multi_line_scope_only: Option<String>,
+    /// A query name, for debugging/logging purposes
+    pub query_name: Option<String>,
 }
 
 /// Collapses spaces before antispace atoms in a vector of atoms.
@@ -954,7 +1075,8 @@ fn collapse_spaces_before_antispace(v: &mut [Atom]) {
             antispace_mode = true;
         } else if *a == Atom::Space && antispace_mode {
             *a = Atom::Empty;
-        } else {
+        } else if *a != Atom::Empty {
+            // Don't change mode when encountering Empty
             antispace_mode = false;
         }
     }

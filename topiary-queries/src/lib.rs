@@ -31,7 +31,7 @@ pub fn ocaml() -> &'static str {
 /// Returns the Topiary-compatible query file for Ocaml Interface.
 #[cfg(feature = "ocaml_interface")]
 pub fn ocaml_interface() -> &'static str {
-    include_str!("../queries/ocaml.scm")
+    include_str!("../queries/ocaml_interface.scm")
 }
 
 /// Returns the Topiary-compatible query file for Ocamllex.
@@ -62,5 +62,5 @@ pub fn toml() -> &'static str {
 /// Tree-sitter query language.
 #[cfg(feature = "tree_sitter_query")]
 pub fn tree_sitter_query() -> &'static str {
-    include_str!("../queries/tree-sitter-query.scm")
+    include_str!("../queries/tree_sitter_query.scm")
 }

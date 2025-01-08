@@ -40,6 +40,10 @@ pub struct GlobalArgs {
     )]
     pub configuration: Option<PathBuf>,
 
+    /// Enable merging for configuration files
+    #[arg(short = 'M', long, display_order = 101, global = true)]
+    pub merge_configuration: bool,
+
     /// Logging verbosity (increased per occurrence)
     #[arg(
         short,
@@ -126,6 +130,10 @@ pub enum Commands {
     },
 
     /// Visualise the input's Tree-sitter parse tree
+    ///
+    /// Visualise generates a graph representation of the parse tree that can be rendered by
+    /// external visualisation tools, such as Graphviz. By default, the output is in the DOT
+    /// format.
     #[command(aliases = &["vis", "visualize", "view"], display_order = 2)]
     Visualise {
         /// Visualisation format
@@ -139,6 +147,17 @@ pub enum Commands {
     /// Print the current configuration
     #[command(alias = "cfg", display_order = 3)]
     Config,
+
+    /// Prefetch all languages in the configuration
+    #[command(display_order = 4)]
+    Prefetch,
+
+    /// Checks how much of the tree-sitter query is used
+    #[command(display_order = 5)]
+    Coverage {
+        #[command(flatten)]
+        input: ExactlyOneInput,
+    },
 
     /// Generate shell completion script
     #[command(display_order = 100)]
@@ -169,6 +188,11 @@ fn traverse_fs(files: &mut Vec<PathBuf>) -> CLIResult<()> {
 /// Parse CLI arguments and normalise them for the caller
 pub fn get_args() -> CLIResult<Cli> {
     let mut args = Cli::parse();
+
+    // When doing prefetching, we should always output at at least verbosity level two
+    if matches!(args.command, Commands::Prefetch) && args.global.verbose < 2 {
+        args.global.verbose = 2;
+    }
 
     // This is the earliest point that we can initialise the logger, from the --verbose flags,
     // before any fallible operations have started

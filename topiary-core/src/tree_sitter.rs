@@ -1,9 +1,16 @@
+// WASM build doesn't use topiary_tree_sitter_facade::QueryMatch or
+// streaming_iterator::StreamingIterator
+#![cfg_attr(target_arch = "wasm32", allow(unused_imports))]
+
 use std::{collections::HashSet, fmt::Display};
 
 use serde::Serialize;
+
 use topiary_tree_sitter_facade::{
-    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryPredicate, Tree,
+    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate, Tree,
 };
+
+use streaming_iterator::StreamingIterator;
 
 use crate::{
     atom_collection::{AtomCollection, QueryPredicates},
@@ -158,11 +165,27 @@ impl<'a> NodeExt for Node<'a> {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+impl<'a> NodeExt for tree_sitter::Node<'a> {
+    fn display_one_based(&self) -> String {
+        format!(
+            "{{Node {:?} {} - {}}}",
+            self.kind(),
+            Position::from(<tree_sitter::Point as Into<Point>>::into(
+                self.start_position()
+            )),
+            Position::from(<tree_sitter::Point as Into<Point>>::into(
+                self.end_position()
+            )),
+        )
+    }
+}
+
 #[derive(Debug)]
 // A struct to statically store the public fields of query match results,
 // to avoid running queries twice.
 struct LocalQueryMatch<'a> {
-    pattern_index: u32,
+    pattern_index: usize,
     captures: Vec<QueryCapture<'a>>,
 }
 
@@ -187,6 +210,13 @@ impl<'a> Display for LocalQueryMatch<'a> {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+// A struct to store the result of a query coverage check
+pub struct CoverageData {
+    pub cover_percentage: f32,
+    pub missing_patterns: Vec<String>,
+}
+
 /// Applies a query to an input content and returns a collection of atoms.
 ///
 /// # Errors
@@ -202,9 +232,8 @@ pub fn apply_query(
     query: &TopiaryQuery,
     grammar: &topiary_tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
-    should_check_input_exhaustivity: bool,
 ) -> FormatterResult<AtomCollection> {
-    let (tree, grammar) = parse(input_content, grammar, tolerate_parsing_errors)?;
+    let tree = parse(input_content, grammar, tolerate_parsing_errors)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
 
@@ -213,7 +242,9 @@ pub fn apply_query(
     let mut matches: Vec<LocalQueryMatch> = Vec::new();
     let capture_names = query.query.capture_names();
 
-    for query_match in query.query.matches(&root, source, &mut cursor) {
+    let mut query_matches = query.query.matches(&root, source, &mut cursor);
+    #[allow(clippy::while_let_on_iterator)] // This is not a normal iterator
+    while let Some(query_match) = query_matches.next() {
         let local_captures: Vec<QueryCapture> = query_match.captures().collect();
 
         matches.push(LocalQueryMatch {
@@ -222,14 +253,9 @@ pub fn apply_query(
         });
     }
 
-    if should_check_input_exhaustivity {
-        let ref_match_count = matches.len();
-        check_input_exhaustivity(ref_match_count, query, grammar, &root, source)?;
-    }
-
     // Find the ids of all tree-sitter nodes that were identified as a leaf
     // We want to avoid recursing into them in the collect_leafs function.
-    let specified_leaf_nodes: HashSet<usize> = collect_leaf_ids(&matches, &capture_names);
+    let specified_leaf_nodes: HashSet<usize> = collect_leaf_ids(&matches, capture_names.clone());
 
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
     let mut atoms = AtomCollection::collect_leafs(&root, source, specified_leaf_nodes)?;
@@ -255,24 +281,6 @@ pub fn apply_query(
     // means we want to append a hardline at
     // the end, but we don't know if we get a line_comment capture or not.
     for m in matches {
-        // NOTE: Only performed if logging is enabled to avoid unnecessary computation of Position
-        if log::log_enabled!(log::Level::Info) {
-            #[cfg(target_arch = "wasm32")]
-            // Resize the pattern_positions vector if we need to store more positions
-            if m.pattern_index as usize >= pattern_positions.len() {
-                pattern_positions.resize(m.pattern_index as usize + 1, None);
-            }
-
-            // Fetch from pattern_positions, otherwise insert
-            let pos = pattern_positions[m.pattern_index as usize].unwrap_or_else(|| {
-                let pos = query.pattern_position(m.pattern_index as usize);
-                pattern_positions[m.pattern_index as usize] = Some(pos);
-                pos
-            });
-
-            log::info!("Processing match: {m} at location {pos}");
-        }
-
         let mut predicates = QueryPredicates::default();
 
         for p in query.query.general_predicates(m.pattern_index) {
@@ -280,17 +288,40 @@ pub fn apply_query(
         }
         check_predicates(&predicates)?;
 
+        // NOTE: Only performed if logging is enabled to avoid unnecessary computation of Position
+        if log::log_enabled!(log::Level::Info) {
+            #[cfg(target_arch = "wasm32")]
+            // Resize the pattern_positions vector if we need to store more positions
+            if m.pattern_index >= pattern_positions.len() {
+                pattern_positions.resize(m.pattern_index + 1, None);
+            }
+
+            // Fetch from pattern_positions, otherwise insert
+            let pos = pattern_positions[m.pattern_index].unwrap_or_else(|| {
+                let pos = query.pattern_position(m.pattern_index);
+                pattern_positions[m.pattern_index] = Some(pos);
+                pos
+            });
+
+            let query_name_info = if let Some(name) = &predicates.query_name {
+                format!(" of query \"{name}\"")
+            } else {
+                "".into()
+            };
+
+            log::info!("Processing match{query_name_info}: {m} at location {pos}");
+        }
+
         // If any capture is a do_nothing, then do nothing.
         if m.captures
             .iter()
-            .map(|c| c.name(&capture_names))
-            .any(|name| name == "do_nothing")
+            .any(|c| c.name(capture_names.as_slice()) == "do_nothing")
         {
             continue;
         }
 
         for c in m.captures {
-            let name = c.name(&capture_names);
+            let name = c.name(capture_names.as_slice());
             atoms.resolve_capture(&name, &c.node(), &predicates)?;
         }
     }
@@ -301,17 +332,12 @@ pub fn apply_query(
     Ok(atoms)
 }
 
-// A single "language" can correspond to multiple grammars.
-// For instance, we have separate grammars for interfaces and implementation in OCaml.
-// When the proper grammar cannot be inferred from the extension of the input file,
-// this function tries to parse the data with every possible grammar.
-// It returns the syntax tree of the first grammar that succeeds, along with said grammar,
-// or the last error if all grammars fail.
-pub fn parse<'a>(
+/// Parses some string into a syntax tree, given a tree-sitter grammar.
+pub fn parse(
     content: &str,
-    grammar: &'a topiary_tree_sitter_facade::Language,
+    grammar: &topiary_tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
-) -> FormatterResult<(Tree, &'a topiary_tree_sitter_facade::Language)> {
+) -> FormatterResult<Tree> {
     let mut parser = Parser::new()?;
     parser.set_language(grammar).map_err(|_| {
         FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
@@ -326,7 +352,7 @@ pub fn parse<'a>(
         check_for_error_nodes(&tree.root_node())?;
     }
 
-    Ok((tree, grammar))
+    Ok(tree)
 }
 
 fn check_for_error_nodes(node: &Node) -> FormatterResult<()> {
@@ -354,12 +380,12 @@ fn check_for_error_nodes(node: &Node) -> FormatterResult<()> {
 ///
 /// This function takes a slice of `LocalQueryMatch` and a slice of capture names,
 /// and returns a `HashSet` of node IDs that are matched by the "leaf" capture name.
-fn collect_leaf_ids(matches: &[LocalQueryMatch], capture_names: &[String]) -> HashSet<usize> {
+fn collect_leaf_ids(matches: &[LocalQueryMatch], capture_names: Vec<&str>) -> HashSet<usize> {
     let mut ids = HashSet::new();
 
     for m in matches {
         for c in &m.captures {
-            if c.name(capture_names) == "leaf" {
+            if c.name(capture_names.as_slice()) == "leaf" {
                 ids.insert(c.node().id());
             }
         }
@@ -435,8 +461,20 @@ fn handle_predicate(
             multi_line_scope_only: Some(arg),
             ..predicates.clone()
         })
+    } else if "query_name!" == operator {
+        let arg =
+            predicate.args().into_iter().next().ok_or_else(|| {
+                FormatterError::Query(format!("{operator} needs an argument"), None)
+            })?;
+        Ok(QueryPredicates {
+            query_name: Some(arg),
+            ..predicates.clone()
+        })
     } else {
-        Ok(predicates.clone())
+        Err(FormatterError::Query(
+            format!("{operator} is an unknown predicate. Maybe you forgot a \"!\"?"),
+            None,
+        ))
     }
 }
 
@@ -483,24 +521,40 @@ fn check_predicates(predicates: &QueryPredicates) -> FormatterResult<()> {
 /// Check if the input tests all patterns in the query, by successively disabling
 /// all patterns. If disabling a pattern does not decrease the number of matches,
 /// then that pattern originally matched nothing in the input.
-fn check_input_exhaustivity(
-    ref_match_count: usize,
+pub fn check_query_coverage(
+    input_content: &str,
     original_query: &TopiaryQuery,
     grammar: &topiary_tree_sitter_facade::Language,
-    root: &Node,
-    source: &[u8],
-) -> FormatterResult<()> {
+) -> FormatterResult<CoverageData> {
+    let tree = parse(input_content, grammar, false)?;
+    let root = tree.root_node();
+    let source = input_content.as_bytes();
+    let mut missing_patterns = Vec::new();
+
+    // Match queries
+    let mut cursor = QueryCursor::new();
+    let ref_match_count = original_query
+        .query
+        .matches(&root, source, &mut cursor)
+        .count();
     let pattern_count = original_query.query.pattern_count();
     let query_content = &original_query.query_content;
+
     // This particular test avoids a SIGSEGV error that occurs when trying
     // to count the matches of an empty query (see #481)
     if pattern_count == 1 {
+        let mut cover_percentage = 1.0;
         if ref_match_count == 0 {
-            return Err(FormatterError::PatternDoesNotMatch(query_content.into()));
-        } else {
-            return Ok(());
+            missing_patterns.push(query_content.into());
+            cover_percentage = 0.0
         }
+        return Ok(CoverageData {
+            cover_percentage,
+            missing_patterns,
+        });
     }
+
+    let mut ok_patterns = 0.0;
     for i in 0..pattern_count {
         // We don't need to use TopiaryQuery in this test since we have no need
         // for duplicate versions of the query_content string, instead we create the query
@@ -509,7 +563,7 @@ fn check_input_exhaustivity(
             .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
         query.disable_pattern(i);
         let mut cursor = QueryCursor::new();
-        let match_count = query.matches(root, source, &mut cursor).count();
+        let match_count = query.matches(&root, source, &mut cursor).count();
         if match_count == ref_match_count {
             let index_start = query.start_byte_for_pattern(i);
             let index_end = if i == pattern_count - 1 {
@@ -518,19 +572,24 @@ fn check_input_exhaustivity(
                 query.start_byte_for_pattern(i + 1)
             };
             let pattern_content = &query_content[index_start..index_end];
-            return Err(FormatterError::PatternDoesNotMatch(pattern_content.into()));
+            missing_patterns.push(pattern_content.into());
+        } else {
+            ok_patterns += 1.0;
         }
     }
-    Ok(())
+
+    let cover_percentage = ok_patterns / pattern_count as f32;
+    Ok(CoverageData {
+        cover_percentage,
+        missing_patterns,
+    })
 }
 
 #[cfg(target_arch = "wasm32")]
-fn check_input_exhaustivity(
-    _ref_match_count: usize,
+pub fn check_query_coverage(
+    _input_content: &str,
     _original_query: &TopiaryQuery,
     _grammar: &topiary_tree_sitter_facade::Language,
-    _root: &Node,
-    _source: &[u8],
-) -> FormatterResult<()> {
+) -> FormatterResult<CoverageData> {
     unimplemented!();
 }

@@ -19,9 +19,10 @@ pretty_assertions = { workspace = true }
 prettydiff = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
+streaming-iterator = { workspace = true }
 topiary-tree-sitter-facade = { workspace = true }
-tokio-test = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt"] }
+tree-sitter = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 futures = { workspace = true }
@@ -33,6 +34,7 @@ env_logger = { workspace = true }
 test-log = { workspace = true }
 tree-sitter-json.workspace = true
 tree-sitter-ocaml.workspace = true
+tokio-test = { workspace = true }
 
 [[bench]]
 name = "benchmark"
