@@ -131,6 +131,8 @@
   "while"
 ] @append_space
 
+";" @prepend_antispace
+
 ; Prepend a space to intra-statement keywords
 [
   "in"
@@ -468,6 +470,18 @@
 (command_substitution
   "$(" @append_empty_softline @append_indent_start
   ")" @prepend_empty_softline @prepend_indent_end
+)
+
+; Ensure a space interposes command substitutions containing subshells
+; This is to remove the ambiguity with $(( ... ))
+(command_substitution
+  .
+  (subshell) @prepend_space
+)
+
+(command_substitution
+  (subshell) @append_space
+  .
 )
 
 ;; Redirections
