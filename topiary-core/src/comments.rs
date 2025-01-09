@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use topiary_tree_sitter_facade::{InputEdit, Language, Node, Tree};
 
 use crate::{
@@ -63,11 +65,6 @@ impl Diff<InputSection> for InputSection {
     }
 }
 
-// TODO: allow the users to manually identify comments. Maybe with a separate query file?
-fn is_comment(node: &Node) -> bool {
-    node.is_extra() && node.kind().to_string().contains("comment")
-}
-
 fn into_edit(node: &Node<'_>) -> InputEdit {
     InputEdit::new(
         node.start_byte(),
@@ -82,10 +79,11 @@ fn into_edit(node: &Node<'_>) -> InputEdit {
 fn find_comments(
     node: Node,
     input: &str,
+    comment_ids: &HashSet<usize>,
     comments: &mut Vec<(InputEdit, AnchoredComment)>,
 ) -> FormatterResult<()> {
-    if is_comment(&node) {
-        let commented = find_anchor(&node, input)?;
+    if comment_ids.contains(&node.id()) {
+        let commented = find_anchor(&node, input, comment_ids)?;
         // Build the corresponding InputEdit:
         // - If the comment is not alone on its line, return its bounds
         // - If the comment is alone on its line, return the bounds of all its line
@@ -150,7 +148,7 @@ fn find_comments(
     } else {
         let mut walker = node.walk();
         for child in node.children(&mut walker) {
-            find_comments(child, input, comments)?;
+            find_comments(child, input, comment_ids, comments)?;
         }
         Ok(())
     }
@@ -259,7 +257,10 @@ fn previous_disjoint_node<'tree>(starting_node: &'tree Node<'tree>) -> Option<No
 }
 
 // TODO: if performance is an issue, use TreeCursor to navigate the tree
-fn next_non_comment_leaf<'tree>(starting_node: Node<'tree>) -> Option<Node<'tree>> {
+fn next_non_comment_leaf<'tree>(
+    starting_node: Node<'tree>,
+    comment_ids: &HashSet<usize>,
+) -> Option<Node<'tree>> {
     let mut node: Node<'tree> = starting_node;
     loop {
         // get the next leaf:
@@ -275,7 +276,7 @@ fn next_non_comment_leaf<'tree>(starting_node: Node<'tree>) -> Option<Node<'tree
                 }
                 Some(sibling) => {
                     node = sibling;
-                    if is_comment(&node) {
+                    if comment_ids.contains(&node.id()) {
                         // get the following sibling
                         continue;
                     } else {
@@ -287,14 +288,14 @@ fn next_non_comment_leaf<'tree>(starting_node: Node<'tree>) -> Option<Node<'tree
         // 2) get the leftmost leaf of the sibling.
         // If we encounter a comment, we stop. We'll get back to 1) after the loop
         while let Some(child) = node.child(0) {
-            if is_comment(&child) {
+            if comment_ids.contains(&child.id()) {
                 break;
             } else {
                 node = child
             }
         }
         // check if the leaf is a comment. If it is not, start over again.
-        if is_comment(&node) {
+        if comment_ids.contains(&node.id()) {
             continue;
         } else {
             return Some(node);
@@ -303,7 +304,10 @@ fn next_non_comment_leaf<'tree>(starting_node: Node<'tree>) -> Option<Node<'tree
 }
 
 // TODO: if performance is an issue, use TreeCursor to navigate the tree
-fn previous_non_comment_leaf<'tree>(starting_node: Node<'tree>) -> Option<Node<'tree>> {
+fn previous_non_comment_leaf<'tree>(
+    starting_node: Node<'tree>,
+    comment_ids: &HashSet<usize>,
+) -> Option<Node<'tree>> {
     let mut node: Node<'tree> = starting_node;
     loop {
         // get the previous leaf:
@@ -320,7 +324,7 @@ fn previous_non_comment_leaf<'tree>(starting_node: Node<'tree>) -> Option<Node<'
                 }
                 Some(sibling) => {
                     node = sibling;
-                    if is_comment(&node) {
+                    if comment_ids.contains(&node.id()) {
                         // get the previous sibling
                         continue;
                     } else {
@@ -338,14 +342,14 @@ fn previous_non_comment_leaf<'tree>(starting_node: Node<'tree>) -> Option<Node<'
                 node.child(node.child_count() - 1)
             }
         } {
-            if is_comment(&child) {
+            if comment_ids.contains(&child.id()) {
                 break;
             } else {
                 node = child
             }
         }
         // check if the leaf is a comment. If it is not, start over again.
-        if is_comment(&node) {
+        if comment_ids.contains(&node.id()) {
             continue;
         } else {
             return Some(node);
@@ -360,7 +364,11 @@ fn previous_non_comment_leaf<'tree>(starting_node: Node<'tree>) -> Option<Node<'
 // If there is no such node, we anchor to the first non-comment sibling node
 // in the other direction.
 #[allow(clippy::collapsible_else_if)]
-fn find_anchor<'tree>(node: &'tree Node<'tree>, input: &str) -> FormatterResult<Commented> {
+fn find_anchor<'tree>(
+    node: &'tree Node<'tree>,
+    input: &str,
+    comment_ids: &HashSet<usize>,
+) -> FormatterResult<Commented> {
     let point = node.start_position();
     let mut lines = input.lines();
     let prefix = lines
@@ -377,7 +385,7 @@ fn find_anchor<'tree>(node: &'tree Node<'tree>, input: &str) -> FormatterResult<
             )
         })?;
     if prefix.trim_start() == "" {
-        if let Some(anchor) = next_non_comment_leaf(node.clone()) {
+        if let Some(anchor) = next_non_comment_leaf(node.clone(), comment_ids) {
             let prev = previous_disjoint_node(node);
             let next = next_disjoint_node(node);
             Ok(Commented::CommentedAfter {
@@ -389,7 +397,7 @@ fn find_anchor<'tree>(node: &'tree Node<'tree>, input: &str) -> FormatterResult<
                     .map(|prev| prev.end_position().row() + 1 < node.start_position().row())
                     .unwrap_or(false),
             })
-        } else if let Some(anchor) = previous_non_comment_leaf(node.clone()) {
+        } else if let Some(anchor) = previous_non_comment_leaf(node.clone(), comment_ids) {
             Ok(Commented::CommentedBefore((&anchor).into()))
         } else {
             Err(FormatterError::CommentOrphaned(
@@ -397,9 +405,9 @@ fn find_anchor<'tree>(node: &'tree Node<'tree>, input: &str) -> FormatterResult<
             ))
         }
     } else {
-        if let Some(anchor) = previous_non_comment_leaf(node.clone()) {
+        if let Some(anchor) = previous_non_comment_leaf(node.clone(), comment_ids) {
             Ok(Commented::CommentedBefore((&anchor).into()))
-        } else if let Some(anchor) = next_non_comment_leaf(node.clone()) {
+        } else if let Some(anchor) = next_non_comment_leaf(node.clone(), comment_ids) {
             let prev = previous_disjoint_node(node);
             let next = next_disjoint_node(node);
             Ok(Commented::CommentedAfter {
@@ -445,6 +453,7 @@ pub struct SeparatedInput {
 pub fn extract_comments<'a>(
     tree: &'a Tree,
     input: &'a str,
+    comment_ids: HashSet<usize>,
     grammar: &Language,
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<SeparatedInput> {
@@ -452,7 +461,7 @@ pub fn extract_comments<'a>(
     let mut anchored_comments: Vec<AnchoredComment> = Vec::new();
     let mut new_input: String = input.to_string();
     let mut new_tree: Tree = tree.clone();
-    find_comments(tree.root_node(), input, &mut anchors)?;
+    find_comments(tree.root_node(), input, &comment_ids, &mut anchors)?;
     anchors.sort_by_key(|(node, _)| node.start_byte());
     let mut edits: Vec<InputEdit> = Vec::new();
     // for each (comment, anchor) pair in reverse order, we:

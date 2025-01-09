@@ -5,7 +5,8 @@ use topiary_core::{
         SeparatedInput,
     },
     common::{parse, InputSection},
-    Position,
+    tree_sitter::collect_comment_ids,
+    Position, TopiaryQuery,
 };
 
 const OCAML_WITH_COMMENTS: &str = r#"(* starting comment *)
@@ -20,6 +21,8 @@ fun (* fun comment *) x (* var comment *) ->
 const OCAML_WITHOUT_COMMENTS: &str = r#"fun  x  ->
   body
 "#;
+
+const OCAML_COMMENTS_QUERY: &str = "(comment) @comment";
 
 // The section corresponding to `fun` in the curated code
 const FUN_SECTION: InputSection = InputSection {
@@ -45,12 +48,14 @@ fn test_extract_comments() {
     let ocaml = tree_sitter_ocaml::LANGUAGE_OCAML;
 
     let tree = parse(input, &ocaml.into(), false, None).unwrap();
+    let comment_query = TopiaryQuery::new(&ocaml.into(), OCAML_COMMENTS_QUERY).unwrap();
+    let comment_ids = collect_comment_ids(&tree, input, &comment_query);
 
     let SeparatedInput {
         input_tree: _,
         input_string: new_input_string,
         mut comments,
-    } = extract_comments(&tree, input, &ocaml.into(), false).unwrap();
+    } = extract_comments(&tree, input, comment_ids, &ocaml.into(), false).unwrap();
 
     let mut expected_comments: Vec<AnchoredComment> = vec![
         AnchoredComment {

@@ -199,6 +199,7 @@ pub enum Operation {
 /// let language: Language = Language {
 ///     name: "json".to_owned(),
 ///     query: TopiaryQuery::new(&json.clone().into(), &query_content).unwrap(),
+///     comment_query: None,
 ///     grammar: json.into(),
 ///     indent: None,
 /// };
@@ -240,6 +241,7 @@ pub fn formatter(
             let mut atoms = tree_sitter::apply_query(
                 &content,
                 &language.query,
+                &language.comment_query,
                 &language.grammar,
                 tolerate_parsing_errors,
             )?;
@@ -395,6 +397,7 @@ mod tests {
         let language = Language {
             name: "json".to_owned(),
             query: TopiaryQuery::new(&grammar, query_content).unwrap(),
+            comment_query: None,
             grammar,
             indent: None,
         };
@@ -431,6 +434,7 @@ mod tests {
         let language = Language {
             name: "json".to_owned(),
             query: TopiaryQuery::new(&grammar, &query_content).unwrap(),
+            comment_query: None,
             grammar,
             indent: None,
         };

@@ -81,8 +81,10 @@ impl Language {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    pub fn find_query_file(&self) -> TopiaryConfigResult<PathBuf> {
-        let basename = PathBuf::from(self.name.as_str()).with_extension("scm");
+    pub fn find_query_file(&self) -> TopiaryConfigResult<(PathBuf, Option<PathBuf>)> {
+        let name = self.name.clone();
+        let basename = PathBuf::from(&name).with_extension("scm"); // "clang.scm"
+        let comment_basename = PathBuf::from(&name).with_extension("comment.scm"); // "clang.comment.scm"
 
         #[rustfmt::skip]
         let potentials: [Option<PathBuf>; 4] = [
@@ -92,12 +94,20 @@ impl Language {
             Some(PathBuf::from("../topiary-queries/queries")),
         ];
 
-        potentials
+        let query_file = potentials
             .into_iter()
             .flatten()
             .map(|path| path.join(&basename))
             .find(|path| path.exists())
-            .ok_or_else(|| TopiaryConfigError::QueryFileNotFound(basename))
+            .ok_or_else(|| TopiaryConfigError::QueryFileNotFound(basename))?;
+
+        let comment_query_file = query_file.parent().unwrap().join(comment_basename);
+
+        if comment_query_file.exists() {
+            Ok((query_file, Some(comment_query_file)))
+        } else {
+            Ok((query_file, None))
+        }
     }
 
     #[cfg(not(target_arch = "wasm32"))]

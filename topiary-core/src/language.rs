@@ -13,6 +13,9 @@ pub struct Language {
     /// The Query Topiary will use to get the formating captures, must be
     /// present. The topiary engine does not include any formatting queries.
     pub query: TopiaryQuery,
+    /// The Query Topiary will use to determine which nodes are comments.
+    /// When missing, ther ewill be no separate comment processing.
+    pub comment_query: Option<TopiaryQuery>,
     /// The tree-sitter Language. Topiary will use this Language for parsing.
     pub grammar: topiary_tree_sitter_facade::Language,
     /// The indentation string used for that particular language. Defaults to "  "

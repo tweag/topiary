@@ -7,7 +7,7 @@ use std::{collections::HashSet, fmt::Display};
 use serde::Serialize;
 
 use topiary_tree_sitter_facade::{
-    Node, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate,
+    Node, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate, Tree,
 };
 
 use streaming_iterator::StreamingIterator;
@@ -195,6 +195,30 @@ pub struct CoverageData {
     pub missing_patterns: Vec<String>,
 }
 
+/// Run a tree-sitter query to identify comments in the tree, then return their IDs
+pub fn collect_comment_ids(
+    tree: &Tree,
+    input_content: &str,
+    query: &TopiaryQuery,
+) -> HashSet<usize> {
+    let mut cursor = QueryCursor::new();
+    let mut query_matches =
+        query
+            .query
+            .matches(&tree.root_node(), input_content.as_bytes(), &mut cursor);
+    let capture_names = query.query.capture_names();
+    let mut ids = HashSet::new();
+    #[allow(clippy::while_let_on_iterator)] // This is not a normal iterator
+    while let Some(query_match) = query_matches.next() {
+        for capture in query_match.captures() {
+            if capture.name(capture_names.as_slice()) == "comment" {
+                ids.insert(capture.node().id());
+            }
+        }
+    }
+    ids
+}
+
 /// Applies a query to an input content and returns a collection of atoms.
 ///
 /// # Errors
@@ -208,19 +232,36 @@ pub struct CoverageData {
 pub fn apply_query(
     input_content: &str,
     query: &TopiaryQuery,
+    comment_query: &Option<TopiaryQuery>,
     grammar: &topiary_tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<AtomCollection> {
     let tree = parse(input_content, grammar, tolerate_parsing_errors, None)?;
 
-    // Remove comments in a separate stream before applying queries
+    // Remove comments in a separate stream before applying queries, if applicable
     let SeparatedInput {
         input_string,
         input_tree,
         comments,
-    } = extract_comments(&tree, input_content, grammar, tolerate_parsing_errors)?;
-    let source = input_string.as_bytes();
+    } = match comment_query {
+        Some(comment_query) => {
+            let comment_ids = collect_comment_ids(&tree, input_content, comment_query);
+            extract_comments(
+                &tree,
+                input_content,
+                comment_ids,
+                grammar,
+                tolerate_parsing_errors,
+            )?
+        }
+        None => SeparatedInput {
+            input_string: input_content.to_string(),
+            input_tree: tree,
+            comments: Vec::new(),
+        },
+    };
     let root = input_tree.root_node();
+    let source = input_string.as_bytes();
 
     for AnchoredComment {
         comment_text,

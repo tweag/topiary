@@ -44,6 +44,7 @@ mod wasm_mod {
         let language = Language {
             name: language.name,
             query,
+            comment_query: None,
             grammar,
             indent: language.config.indent,
         };
