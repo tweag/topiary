@@ -77,7 +77,7 @@
       extensions = ["scad"],
       grammar.source.git = {
         git = "https://github.com/mkatychev/tree-sitter-openscad.git",
-        rev = "5810de67549363bf9ff420f1c907fc0e1ff0f5d7",
+        rev = "0efdd5e8cfd021d3f35b2fc1fec0d42f7b4d82ea",
       },
     },
 
