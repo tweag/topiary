@@ -50,9 +50,6 @@
 ; Spacing before and after a rule_set
 (rule_set) @allow_blank_line_before @prepend_hardline
 
-; Allow comments to have a blank line before them
-(comment) @allow_blank_line_before
-
 ; Allow blank lines before any declaration in a block except the first one
 (block . (declaration) (declaration) @allow_blank_line_before)
 

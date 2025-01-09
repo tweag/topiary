@@ -7,8 +7,6 @@
   (string)
 ] @leaf
 
-(comment) @prepend_input_softline @append_hardline @allow_blank_line_before
-
 ; Elements at top-level must be alone on their line. Blank lines are allowed
 (program
   _ @allow_blank_line_before @prepend_hardline

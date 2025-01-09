@@ -2,15 +2,12 @@
 ; not be formatted, but taken as is. We use the leaf capture name to inform the
 ; tool of this.
 [
-  (block_comment)
-  (line_comment)
   (string_literal)
 ] @leaf
 
 ; Allow blank line before
 [
   (attribute_item)
-  (block_comment)
   (call_expression)
   (enum_item)
   (enum_variant)
@@ -18,7 +15,6 @@
   (function_item)
   (impl_item)
   (let_declaration)
-  (line_comment)
   (mod_item)
   (struct_item)
   (type_item)
@@ -54,25 +50,7 @@
   ":"
 ] @append_space
 
-; Input softlines before and after all comments. This means that the input
-; decides if a comment should have line breaks before or after. A line comment
-; always ends with a line break.
-[
-  (block_comment)
-  (line_comment)
-] @prepend_input_softline
-
-; Input softline after block comments unless followed by comma or semicolon, as
-; they are always put directly after.
-(
-  (block_comment) @append_input_softline
-  .
-  ["," ";"]* @do_nothing
-)
-
-; Append line breaks. If there is a comment following, we don't add anything,
-; because the input softlines and spaces above will already have sorted out the
-; formatting.
+; Append line breaks.
 (
   [
     (attribute_item)
@@ -87,32 +65,14 @@
     (type_item)
     (use_declaration)
   ] @append_spaced_softline
-  .
-  [
-    (block_comment)
-    (line_comment)
-  ]* @do_nothing
 )
 
-(line_comment) @append_hardline
-
-(block_comment) @multi_line_indent_all
-
-; Allow line break after block comments
-(
-  (block_comment)
-  .
-  _ @prepend_input_softline
-)
-
-; Append softlines, unless followed by comments.
+; Append softlines
 (
   [
     ","
     ";"
   ] @append_spaced_softline
-  .
-  [(block_comment) (line_comment)]* @do_nothing
 )
 
 ; Prepend softlines before dots

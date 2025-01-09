@@ -1,8 +1,6 @@
 ; NOTE[regexp] regexp is a unnamed node without a field name, so we typically
 ; account for places it can be instead of formatting it directly.
 
-(comment) @multi_line_indent_all @allow_blank_line_before @prepend_input_softline @append_input_softline @multi_line_indent_all
-
 (
   (#scope_id! "action")
   (action) @prepend_begin_scope @append_end_scope

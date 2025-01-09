@@ -8,16 +8,12 @@
 
 ; Allow blank line before
 [
-  (comment)
   (table)
   (table_array_element)
   (pair)
 ] @allow_blank_line_before
 
 ; Append line breaks
-[
-  (comment)
-] @append_hardline
 
 (document
   (pair) @append_hardline
@@ -50,19 +46,12 @@
   "}"
 ] @prepend_space @append_space
 
-; Input softlines before all comments. This means that the input decides if a
-; comment should have line breaks in front of it.
-(comment) @prepend_input_softline
-
 ; Softlines. These become either a space or a newline, depending on whether we
 ; format their node as single-line or multi-line.
 (
   "," @append_spaced_softline
   .
-  [
-    (comment)
-    "]"
-  ]? @do_nothing
+  "]"? @do_nothing
 )
 
 ; remove trailing comma from last element of single line array
@@ -72,7 +61,7 @@
 
 ; add trailing comma if absent to last string of multiline array
 (array
-  (((string) @append_delimiter) . ","* @do_nothing . (comment)? . "]")(#delimiter! ",")
+  (((string) @append_delimiter) . ","* @do_nothing . "]")(#delimiter! ",")
   (#multi_line_only!)
 )
 
