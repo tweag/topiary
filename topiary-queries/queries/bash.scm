@@ -18,6 +18,10 @@
   (_) @leaf
 )
 
+(subscript
+  index: (_) @leaf
+)
+
 ;; Spacing
 
 ; Allow blank line before
@@ -693,14 +697,21 @@
 
 ; All declaration arguments must be separated by whitespace
 (declaration_command
-  (_) @prepend_space
+  (word) @append_space
 )
 
-; Multiple variables can be exported (and assigned) at once
+; Multiple variables can be declared (and assigned) at once
 (declaration_command
+  [
+    (variable_name)
+    (variable_assignment)
+  ] @prepend_space
+)
+
+(declaration_command
+  (variable_name)? @do_nothing
   .
-  "export"
-  [(variable_name) (variable_assignment)] @prepend_space
+  (concatenation) @prepend_space
 )
 
 ; Environment variables assigned to commands inline need to be spaced
