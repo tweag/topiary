@@ -959,17 +959,22 @@ impl AtomCollection {
                         single_line_no_indent: false,
                         multi_line_indent_all: true,
                     };
-                    comments_queue_with_context.push_front(CommentWithContext{
+                    comments_queue_with_context.push_front(CommentWithContext {
                         comment: comment_atom,
                         blank_line_after,
-                        blank_line_before
+                        blank_line_before,
                     });
                 }
                 atoms_with_comments_before.push_front(atom);
             } else if Atom::Hardline == atom || Atom::Blankline == atom {
                 let mut blank_line_before_first_comment = false;
                 // Prepend the comments, each one followed by a newline
-                while let Some(CommentWithContext{comment, blank_line_after, blank_line_before}) = comments_queue_with_context.pop_back() {
+                while let Some(CommentWithContext {
+                    comment,
+                    blank_line_after,
+                    blank_line_before,
+                }) = comments_queue_with_context.pop_back()
+                {
                     if blank_line_after {
                         atoms_with_comments_before.push_front(Atom::Blankline)
                     } else {
@@ -989,7 +994,12 @@ impl AtomCollection {
         }
         let mut blank_line_before_first_comment = false;
         // If we still have comments left, add them at the beginning of the file
-        while let Some(CommentWithContext{comment, blank_line_after, blank_line_before}) = comments_queue_with_context.pop_back() {
+        while let Some(CommentWithContext {
+            comment,
+            blank_line_after,
+            blank_line_before,
+        }) = comments_queue_with_context.pop_back()
+        {
             if blank_line_after {
                 atoms_with_comments_before.push_front(Atom::Blankline)
             } else {

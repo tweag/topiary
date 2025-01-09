@@ -55,10 +55,10 @@ fn test_extract_comments() {
     let mut expected_comments: Vec<AnchoredComment> = vec![
         AnchoredComment {
             comment_text: "(* starting comment *)".into(),
-            commented: CommentedAfter{
+            commented: CommentedAfter {
                 section: FUN_SECTION,
                 blank_line_after: false,
-                blank_line_before: false
+                blank_line_before: false,
             },
             original_column: 0,
         },
@@ -74,7 +74,7 @@ fn test_extract_comments() {
         },
         AnchoredComment {
             comment_text: "(** multi-lined\n    * body comment\n    *)".into(),
-            commented: CommentedAfter{
+            commented: CommentedAfter {
                 section: BODY_SECTION,
                 blank_line_after: false,
                 blank_line_before: false,

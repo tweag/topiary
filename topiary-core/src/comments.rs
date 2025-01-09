@@ -378,8 +378,8 @@ fn find_anchor<'tree>(node: &'tree Node<'tree>, input: &str) -> FormatterResult<
         })?;
     if prefix.trim_start() == "" {
         if let Some(anchor) = next_non_comment_leaf(node.clone()) {
-            let prev = previous_disjoint_node(&node);
-            let next = next_disjoint_node(&node);
+            let prev = previous_disjoint_node(node);
+            let next = next_disjoint_node(node);
             Ok(Commented::CommentedAfter {
                 section: (&anchor).into(),
                 blank_line_after: next
@@ -400,8 +400,8 @@ fn find_anchor<'tree>(node: &'tree Node<'tree>, input: &str) -> FormatterResult<
         if let Some(anchor) = previous_non_comment_leaf(node.clone()) {
             Ok(Commented::CommentedBefore((&anchor).into()))
         } else if let Some(anchor) = next_non_comment_leaf(node.clone()) {
-            let prev = previous_disjoint_node(&node);
-            let next = next_disjoint_node(&node);
+            let prev = previous_disjoint_node(node);
+            let next = next_disjoint_node(node);
             Ok(Commented::CommentedAfter {
                 section: (&anchor).into(),
                 blank_line_after: next
