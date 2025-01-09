@@ -113,10 +113,9 @@
 ; Append line break after module include, except if it's alone in a single-lined struct
 (
   [
-    ; start equivalence class
+    ; both elements are in an equivalence class
     (include_module)
     (include_module_type)
-    ; end equivalence class
   ] @append_hardline
   .
   "end"? @do_nothing
@@ -125,10 +124,9 @@
   "struct"
   .
   [
-    ; start equivalence class
+    ; both elements are in an equivalence class
     (include_module)
     (include_module_type)
-    ; end equivalence class
   ] @append_spaced_softline
   .
   "end"
@@ -740,10 +738,9 @@
     (module_definition)
     (value_specification)
     (type_definition)
-    ; start equivalence class
+    ; the following two elements are in an equivalence class
     (include_module)
     (include_module_type)
-    ; end equivalence class
   ] @append_spaced_softline
 )
 
@@ -937,8 +934,8 @@
   ":" @append_indent_start
   (_) @append_indent_end
   .
-  ; just doing _ above doesn't work, because it matches the final named node as
-  ; well as the final non-named node, causing double indentation.
+; just doing _ above doesn't work, because it matches the final named node as
+; well as the final non-named node, causing double indentation.
 )
 
 (value_specification

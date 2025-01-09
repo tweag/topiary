@@ -14,17 +14,17 @@
   "{" @append_spaced_scoped_softline @append_indent_start
   (ocaml) @multi_line_indent_all
   "}" @prepend_spaced_scoped_softline @prepend_indent_end
-  ; This last capture name is a bit unfortunate, but it resolves an issue where
-  ; the @append_input_softline of the comment is not resolved because the \n is
-  ; after it.
+; This last capture name is a bit unfortunate, but it resolves an issue where
+; the @append_input_softline of the comment is not resolved because the \n is
+; after it.
 ) @prepend_input_softline
 
 ; Regular expression related rules
 (named_regexp
   "let" @append_space
   "=" @prepend_space @append_space
-  ; If the regexp spand multiple lines, we may want it to be indented
-  ; regexp: (_) @prepend_indent_start @append_indent_end
+; If the regexp spand multiple lines, we may want it to be indented
+; regexp: (_) @prepend_indent_start @append_indent_end
 ) @allow_blank_line_before @append_hardline
 
 ; Actual regex rules
@@ -91,7 +91,7 @@
   (#scope_id! "lexer_entry")
   ; TODO: Is this allowed to be a space? Use hardline if not
   "|" @prepend_hardline @allow_blank_line_before
-  ; @prepend_space is for NOTE[regexp]
+; @prepend_space is for NOTE[regexp]
 )
 
 (lexer_entry
