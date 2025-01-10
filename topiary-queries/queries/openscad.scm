@@ -15,7 +15,7 @@
   (line_comment)
   (function_item)
   (transform_chain)
-  (module_declaration)
+  (module_item)
   (expression)
 ] @allow_blank_line_before
 
@@ -66,11 +66,11 @@
 ; formatting.
 (
   [
-    (assignment)
+    (var_declaration)
     (use_statement)
     (include_statement)
     (function_item)
-    (module_declaration)
+    (module_item)
     (transform_chain)
   ] @append_spaced_softline
   .
@@ -93,7 +93,7 @@
 
 ; indent the body of a function
 (function_item
-  (parameters_declaration)
+  (parameters)
   .
   "=" @append_spaced_softline @append_indent_start
   (expression)
