@@ -98,3 +98,9 @@ topiary-tree-sitter-facade = { version = "0.5.1", path = "./topiary-tree-sitter-
 topiary-core = { version = "0.5.1", path = "./topiary-core" }
 topiary-config = { version = "0.5.1", path = "./topiary-config" }
 topiary-queries = { version = "0.5.1", path = "./topiary-queries" }
+
+[profile.dev.package.lalrpop]
+opt-level = 3
+
+[profile.release.package.lalrpop]
+opt-level = 3
