@@ -59,8 +59,7 @@ This name should be decided amongst the team before the release.
 ### Fixed
 - [#779](https://github.com/tweag/topiary/pull/779) Load relevant grammars before CLI tests
 - [#799](https://github.com/tweag/topiary/pull/799) Line break after table-less pairs in TOML
-- tree-sitter-query: Long predicate parameters now retain newline separation
-- tree-sitter-query: Prevent invalid concatenation of `field_definition`s that followed an `identifier`
+- [#826](https://github.com/tweag/topiary/pull/799) Various Tree-sitter query fixes, thanks to @mkatychev
 
 ## v0.5.1 - Fragrant Frangipani - 2024-10-22
 
