@@ -145,3 +145,14 @@ export xyzzy=$(
   something
   another_thing --foo
 )
+
+an_array=(a b c)
+
+multi_line_array=(
+  a
+  b
+  [1]+=foo
+)
+
+# NOTE This MUST be on the last line of this file
+foo # bar

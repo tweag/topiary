@@ -21,14 +21,16 @@ fi
 
 if [[ -e "/some/file" ]] || true; then
   foo
-elif ! ((1 == 0)); then
+elif ! (( 1 == 0 )); then
   bar
   baz
 else
   baz && quux || xyzzy &
 fi
 
-multi | line |& pipeline
+multi |
+  line |&
+  pipeline
 
 for thing in foo bar quux; do
   echo ${thing}
@@ -139,3 +141,14 @@ export xyzzy=$(
   something
   another_thing --foo
 )
+
+an_array=(a b c)
+
+multi_line_array=(
+  a
+  b
+  [1]+=foo
+)
+
+# NOTE This MUST be on the last line of this file
+foo # bar
