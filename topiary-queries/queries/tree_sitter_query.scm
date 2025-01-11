@@ -52,9 +52,13 @@
 ; The grammar always includes a (parameters) child node under
 ; (predicate), even when there are none. Topiary will deal with the
 ; zero-byte nodes, so we just need to set the spacing correctly.
+; Add softlines and indentation after parameter capture groups and identifiers.
 (predicate
   (parameters
-    _ @prepend_spaced_softline
+    [(identifier) (capture)]+ @append_spaced_softline @prepend_space @append_indent_start
+    (_)* @append_spaced_softline
+    (_) @append_indent_end @append_empty_softline
+    .
   )
 )
 
