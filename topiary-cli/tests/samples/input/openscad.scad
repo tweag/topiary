@@ -1,34 +1,32 @@
 include <my_path/my_lib.scad>
 use <my_path/my_lib.scad>
 // variables
-rr = a_vector[2];      // member of vector
+rr = a_vector[2]; // member of vector
 range1 = [-1.5:0.5:3]; // for() loop range
-xx = [0:5];            // alternate for() loop range
-    $fn = 360; // special variable
+xx = [0:5]; // alternate for() loop range
+$fn = 360; // special variable
 E = 2.71828182845904523536028747135266249775724709369995; // constant
-cond_var ="is_true"?true:false;
+cond_var = "is_true" ? true : false;
 
 function line(point1, point2, width = 1) =
 
-let(angle = 90 - atan((point2[1] - point1[1]) / (point2[0] - point1[0])))
+  let (angle = 90 - atan((point2[1] - point1[1]) / (point2[0] - point1[0])))
 
-let(offset_x = 0.5 * width * cos(angle), offset_y = 0.5 * width * sin(angle))
+  let (offset_x = 0.5 * width * cos(angle), offset_y = 0.5 * width * sin(angle))
 
-let(offset1 = [-offset_x, offset_y], offset2 = [offset_x, -offset_y])
+  let (offset1 = [ -offset_x, offset_y], offset2 = [offset_x, -offset_y])
 
-// [P1a, P2a, P2b, P1b]
-[point1 + offset1, point2 + offset1, point2 + offset2, point1 + offset2];
-
+  // [P1a, P2a, P2b, P1b]
+  [point1 + offset1, point2 + offset1, point2 + offset2, point1 + offset2];
 
 // ================================================================================
 // Transformations
 // ================================================================================
 cylinder();
 cylinder(
-    d=5,
-    h=100,
+    d = 5,
+    h = 100,
 );
-
 rotate([90, 0, 0]) cylinder();
 translate([1, 0, 0]) {
     difference() {
@@ -40,9 +38,8 @@ translate([1, 0, 0]) {
 // ================================================================================
 // Nested Items
 // ================================================================================
-module big_module() {
-  function inner_function() = undef;
-  module inner_module() cube();
+module big_module(){ function inner_function() = undef;
+module inner_module()cube();
 }
 
 // module extern_module() include <other_file.scad>

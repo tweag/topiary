@@ -47,6 +47,9 @@
 (anonymous_node
   (capture) @prepend_space
 )
+; (grouping
+;   (capture) @prepend_space
+; )
 
 ; The grammar always includes a (parameters) child node under
 ; (predicate), even when there are none. Topiary will deal with the
@@ -81,6 +84,7 @@
 (
   [
     (anonymous_node)
+    (grouping)
     (field_definition)
     (list)
     (named_node)
@@ -90,6 +94,7 @@
   .
   [
     (anonymous_node)
+    (grouping)
     (field_definition)
     (list)
     (named_node)

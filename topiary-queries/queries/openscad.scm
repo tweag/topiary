@@ -100,6 +100,22 @@
   ";" @prepend_indent_end
 )
 
+(arguments
+  "(" @append_empty_softline @append_indent_start
+  "," @append_input_softline
+  ")" @prepend_indent_end
+)
+
+(arguments
+  (assignment
+    "=" @append_antispace @prepend_antispace
+  )
+)
+
+; (function_call
+;   "=" @prepend_antispace @append_antispace
+; )
+
 ; Append softlines, unless followed by comments.
 (
   [
@@ -123,7 +139,7 @@
 )
 
 ; Don't insert spaces between the starting '[' and ending ']' of an index expression
-(index_expression
-  value: _ @append_antispace
-  index: _ @prepend_antispace @append_antispace
-)
+; (index_expression
+;   value: _ @append_antispace
+;   index: _ @prepend_antispace @append_antispace
+; )
