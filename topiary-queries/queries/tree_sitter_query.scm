@@ -55,11 +55,15 @@
 ; Add softlines and indentation after parameter capture groups and identifiers.
 (predicate
   (parameters
-    [(identifier) (capture)]+ @append_spaced_softline @prepend_space @append_indent_start
+    [(identifier) (capture)]+ @append_spaced_softline @append_indent_start
     (_)* @append_spaced_softline
+    .
     (_) @append_indent_end @append_empty_softline
     .
   )
+)
+(predicate
+  (predicate_type) @append_space
 )
 
 ; Line breaks and indentation in multi-line lists and nodes
