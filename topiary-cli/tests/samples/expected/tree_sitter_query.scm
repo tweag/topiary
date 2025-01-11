@@ -1510,10 +1510,9 @@
 )
 
 ; ================================================================================
-; Test cases
+; Predicate parameter newline separatation and indentation
 ; ================================================================================
 
-; retain predicate parameter newline delimitation after capture groups and identifiers
 (#any-of? @function.builtin
   "union"
   "difference"
