@@ -1,5 +1,5 @@
 ; Configuration
-(#language!ocaml)
+(#language! ocaml)
 
 ; This query file is used to format trees produced by two different grammars:
 ; - the grammar for OCaml interface files `tree_sitter_ocaml::language_ocaml_interface()`
@@ -746,7 +746,7 @@
   (fun_expression
     "->" @append_spaced_scoped_softline
   ) @append_end_scope
-  (#scope_id!"fun_definition")
+  (#scope_id! "fun_definition")
 )
 
 ; The same as above holds for single-line `function`.
@@ -770,23 +770,23 @@
   (function_expression
     "function" @append_spaced_scoped_softline
   ) @append_end_scope
-  (#scope_id!"function_definition")
+  (#scope_id! "function_definition")
 )
 (parenthesized_expression
   (function_expression) @prepend_begin_scope @append_end_scope
-  (#scope_id!"function_definition")
+  (#scope_id! "function_definition")
 )
 (function_expression
   "|"* @do_nothing
   .
   (match_case) @prepend_spaced_scoped_softline
-  (#scope_id!"function_definition")
+  (#scope_id! "function_definition")
 )
 (function_expression
   "|"* @prepend_spaced_scoped_softline
   .
   (match_case)
-  (#scope_id!"function_definition")
+  (#scope_id! "function_definition")
 )
 
 (value_definition
@@ -886,7 +886,7 @@
   ]*
   .
   ";" @delete
-  (#delimiter!";")
+  (#delimiter! ";")
 )
 
 (record_declaration
@@ -903,7 +903,7 @@
 ;     [@and again]; (* and a last one *)
 ; }
 (record_declaration
-  (#scope_id!"field_declaration")
+  (#scope_id! "field_declaration")
   [
     (field_declaration)
     (attribute)
@@ -913,7 +913,7 @@
   (field_declaration) @prepend_begin_scope
 )
 (record_declaration
-  (#scope_id!"field_declaration")
+  (#scope_id! "field_declaration")
   [
     (field_declaration)
     (attribute)
@@ -924,7 +924,7 @@
 )
 (record_declaration
   (attribute) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
-  (#scope_id!"field_declaration")
+  (#scope_id! "field_declaration")
 )
 
 ; Duplicate the same logic as above for record *expressions*
@@ -937,7 +937,7 @@
   ]*
   .
   ";" @delete
-  (#delimiter!";")
+  (#delimiter! ";")
 )
 
 (record_expression
@@ -945,7 +945,7 @@
 )
 
 (record_expression
-  (#scope_id!"field_expression")
+  (#scope_id! "field_expression")
   [
     (field_expression)
     (attribute)
@@ -955,7 +955,7 @@
   (field_expression) @prepend_begin_scope
 )
 (record_expression
-  (#scope_id!"field_expression")
+  (#scope_id! "field_expression")
   [
     (field_expression)
     (attribute)
@@ -966,7 +966,7 @@
 )
 (record_expression
   (attribute) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
-  (#scope_id!"field_expression")
+  (#scope_id! "field_expression")
 )
 
 ; Start an indented block after these
@@ -1217,16 +1217,16 @@
   .
   (_) @prepend_begin_scope
   "=" @append_end_scope
-  (#scope_id!"let_binding_before_equal")
+  (#scope_id! "let_binding_before_equal")
 )
 (let_binding
   (parameter) @prepend_spaced_scoped_softline
-  (#scope_id!"let_binding_before_equal")
+  (#scope_id! "let_binding_before_equal")
 )
 (let_binding
   ":"? @prepend_spaced_scoped_softline
   "=" @prepend_spaced_scoped_softline
-  (#scope_id!"let_binding_before_equal")
+  (#scope_id! "let_binding_before_equal")
 )
 
 ; Indent and allow softlines in anonymous function definitions, such as
@@ -1247,16 +1247,16 @@
   .
   "fun" @prepend_begin_scope
   "->" @append_end_scope
-  (#scope_id!"fun_expr_before_arrow")
+  (#scope_id! "fun_expr_before_arrow")
 )
 (fun_expression
   (parameter) @prepend_spaced_scoped_softline
-  (#scope_id!"fun_expr_before_arrow")
+  (#scope_id! "fun_expr_before_arrow")
 )
 (fun_expression
   ":"? @prepend_spaced_scoped_softline
   "->" @prepend_spaced_scoped_softline
-  (#scope_id!"fun_expr_before_arrow")
+  (#scope_id! "fun_expr_before_arrow")
 )
 
 ; Indent and allow softlines in tuples, such as
@@ -1290,11 +1290,11 @@
   (product_expression) @prepend_begin_scope @append_end_scope
   .
   ","? @do_nothing
-  (#scope_id!"tuple")
+  (#scope_id! "tuple")
 )
 (product_expression
   "," @append_spaced_scoped_softline
-  (#scope_id!"tuple")
+  (#scope_id! "tuple")
 )
 
 ; Allow softlines in function types, such as
@@ -1322,11 +1322,11 @@
   "->"? @do_nothing
   .
   (function_type) @prepend_begin_scope @append_end_scope
-  (#scope_id!"function_type")
+  (#scope_id! "function_type")
 )
 (function_type
   "->" @append_spaced_scoped_softline
-  (#scope_id!"function_type")
+  (#scope_id! "function_type")
 )
 
 ; Allow softlines in infix expressions, such as
@@ -1347,7 +1347,7 @@
   )? @do_nothing
   .
   (infix_expression) @prepend_begin_scope @append_end_scope
-  (#scope_id!"infix_expression")
+  (#scope_id! "infix_expression")
 )
 (infix_expression
   (infix_operator
@@ -1356,7 +1356,7 @@
       "&&"
     ]
   ) @prepend_spaced_scoped_softline
-  (#scope_id!"infix_expression")
+  (#scope_id! "infix_expression")
 )
 
 ; Allow softlines in sequences and ppx sequences, such as
@@ -1377,11 +1377,11 @@
     .
     "%"? @do_nothing
   ) @prepend_begin_scope @append_end_scope
-  (#scope_id!"sequence_expression")
+  (#scope_id! "sequence_expression")
 )
 (sequence_expression
   ";" @append_spaced_scoped_softline
-  (#scope_id!"sequence_expression")
+  (#scope_id! "sequence_expression")
 )
 
 (
@@ -1399,7 +1399,7 @@
     .
     "%"
   ) @prepend_begin_scope @append_end_scope
-  (#scope_id!"ppx_sequence_expression")
+  (#scope_id! "ppx_sequence_expression")
 )
 (sequence_expression
   ";"
@@ -1407,7 +1407,7 @@
   "%"
   .
   (attribute_id) @append_spaced_scoped_softline
-  (#scope_id!"ppx_sequence_expression")
+  (#scope_id! "ppx_sequence_expression")
 )
 
 ; Indent and add softlines in lists and arrays, such as
@@ -1457,11 +1457,11 @@
 (module_binding
   (module_name) @append_indent_start @prepend_begin_scope
   "=" @prepend_empty_scoped_softline @prepend_indent_end @append_end_scope
-  (#scope_id!"module_binding_before_equal")
+  (#scope_id! "module_binding_before_equal")
 )
 ; if a module binding has no equal sign and isn't just a signature, everything enters the scope
 (module_binding
-  (#scope_id!"module_binding_before_equal")
+  (#scope_id! "module_binding_before_equal")
   (module_name) @append_indent_start @prepend_begin_scope
   "="? @do_nothing
   (signature)? @do_nothing
@@ -1469,7 +1469,7 @@
 (module_binding
   (module_name) @append_empty_scoped_softline
   (module_parameter) @prepend_spaced_scoped_softline
-  (#scope_id!"module_binding_before_equal")
+  (#scope_id! "module_binding_before_equal")
 )
 
 ; Try block formatting
