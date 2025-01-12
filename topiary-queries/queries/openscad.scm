@@ -29,6 +29,7 @@
   "assign"
   "use"
   "each"
+  "if"
   "||"
   "&&"
   "=="
@@ -73,6 +74,7 @@
   ] @append_spaced_softline
   .
   [
+    "else"
     (block_comment)
     (line_comment)
   ]* @do_nothing
@@ -160,13 +162,20 @@
   .
 )
 
+((union_block) @append_space . "else")
+
 ; everything except `union_block` after a for/if/else statement should be a spaced_softline
 ; but a union
 (if_block
-  condition: (_) @prepend_space @append_spaced_softline @append_indent_start
-  consequence: (_) @append_spaced_softline @append_indent_end
-)
-(if_block
-  "else" @append_spaced_softline @append_indent_start
-  alternative: (_) @append_spaced_softline @append_indent_end
+  (parenthesized_expression) @append_spaced_softline @append_indent_start
+  .
+  (union_block)? @do_nothing
+) @append_indent_end
+(
+  "else" @append_spaced_softline
+  .
+  [
+    (union_block)
+    (if_block)
+  ]? @do_nothing
 )
