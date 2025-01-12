@@ -62,6 +62,30 @@ if ($preview)
     else
         translate([2, 0, 0]) cube();
 
+
+            if (len(bevel) > 0) {
+         offset = (centroid(bevpaths[0]));
+     }
+     else if (is_vector(shape)){
+         attachable(anchor = anchor) {
+             down(ht/2)
+                 linear_extrude(height = ht, convexity=8) {
+                     _honeycomb(shp, spacing = spacing, hex_wall = strut);
+                     offset_stroke(shp, width=[-frame, 0], closed=true);
+                 }
+             children();
+         }
+    }
+    else {
+         anchors = [
+           named_anchor("zcenter", [0,0,0], UP),
+           named_anchor("base", [0,0,-ht/2], UP),
+           named_anchor("top", [0,0,ht/2], UP)
+         ];
+             children();
+         }
+
+
 for (i = [1:2:7]) {
     let (x = i ^ 2, y = x - 1)
     {
