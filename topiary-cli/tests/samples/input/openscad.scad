@@ -24,53 +24,58 @@ function line(point1, point2, width = 1) =
 // ================================================================================
 cylinder();
 cylinder(
-    d = 5,
-    h = 100,
+    d=5,
+    h=100,
 );
 rotate([90, 0, 0]) cylinder();
 translate([1, 0, 0]) {
-    difference() {
-        rotate([0, 90, 0]) cylinder();
-        cube();
-    }
+  difference() {
+    translate([0, 1, 0]) translate([1, 0, 0])
+    rotate([0, 90, 0]) cylinder();
+    cube();
+  }
 }
 
 // ================================================================================
 // Nested Items
 // ================================================================================
-module big_module(){ function inner_function() = undef;
-module inner_module()cube();
+module big_module() {
+  function inner_function() = undef;
+  module inner_module() cube();
 }
 
-// module extern_module() include <other_file.scad>
-//
-// for (i = [10:50])
-// {
-//     let (angle = i*360/20, r= i*2, distance = r*5)
-//     {
-//         rotate(angle, [1, 0, 0])
-//         translate([0, distance, 0])
-//         sphere(r = r);
-//     }
-// }
-//
-// if ($preview)
-//     if (false)
-//         sphere();
-//     else
-//         translate([2, 0, 0]) cube();
-//
-// for (i = [1:2:7]) {
-//     let (x = i ^ 2, y = x - 1) {
-//         translate([x, y, 0]) sphere(r = i);
-//     }
-// }
-//
-// intersection_for (i = [1, 2, 3]) {
-//     if (i > 1) {
-//         translate([0, i, 0]) cube();
-//     }
-// }
+module extern_module() include <other_file.scad>
+
+for (i = [10:50])
+{
+    let (angle = i*360/20, r= i*2, distance = r*5)
+    {
+        rotate(angle, [1, 0, 0])
+        translate([0, distance, 0])
+        sphere(r = r);
+    }
+}
+
+if ($preview)
+    if (false)
+        sphere();
+    else
+        translate([2, 0, 0]) cube();
+
+for (i = [1:2:7]) {
+    let (x = i ^ 2, y = x - 1)
+    {
+        translate([x, y, 0]) sphere(r = i);
+    }
+}
+
+intersection_for (i = [1, 2, 3]) {
+    if (i > 1) {
+        translate([0, i, 0]) cube();
+    } else {
+        translate([0, i, 0]) cube();
+            }
+}
 //
 // // ================================================================================
 // // Comments

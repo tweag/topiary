@@ -10,11 +10,10 @@
 ; Allow blank line before
 [
   (use_statement)
-  (include_statement)
-  (block_comment)
+  (statement)
   (line_comment)
+  (block_comment)
   (function_item)
-  (transform_chain)
   (module_item)
   (expression)
 ] @allow_blank_line_before
@@ -68,10 +67,9 @@
   [
     (var_declaration)
     (use_statement)
-    (include_statement)
     (function_item)
     (module_item)
-    (transform_chain)
+    (statement)
   ] @append_spaced_softline
   .
   [
@@ -91,31 +89,6 @@
   _ @prepend_input_softline
 )
 
-; indent the body of a function
-(function_item
-  (parameters)
-  .
-  "=" @append_spaced_softline @append_indent_start
-  (expression)
-  ";" @prepend_indent_end
-)
-
-(arguments
-  "(" @append_empty_softline @append_indent_start
-  "," @append_input_softline
-  ")" @prepend_indent_end
-)
-
-(arguments
-  (assignment
-    "=" @append_antispace @prepend_antispace
-  )
-)
-
-; (function_call
-;   "=" @prepend_antispace @append_antispace
-; )
-
 ; Append softlines, unless followed by comments.
 (
   [
@@ -132,14 +105,68 @@
 )
 
 ; Don't insert spaces between the operator and their expression operand
-(unary_expression
-  _ @append_antispace
+; '-x' v.s. '- x'
+(unary_expression _ @append_antispace . (expression))
+
+; ================================================================================
+; functions & modules
+; ================================================================================
+
+; indent the body of a function
+(function_item
+  (parameters)
   .
+  "=" @append_spaced_softline @append_indent_start
   (expression)
+  ";" @prepend_indent_end
 )
 
-; Don't insert spaces between the starting '[' and ending ']' of an index expression
-; (index_expression
-;   value: _ @append_antispace
-;   index: _ @prepend_antispace @append_antispace
+; module calls in a transformation chain will follow each other
+; sometimes staying on the same line and sometimes having a linebreak,
+; each linebreak typically also starts an indent scope
+(transform_chain) @prepend_input_softline
+(transform_chain
+  (module_call) @append_indent_start
+  (transform_chain) @append_indent_end
+)
+; (function_call
+;   "=" @prepend_antispace @append_antispace
 ; )
+
+; ================================================================================
+; blocks & expressions
+; ================================================================================
+(arguments
+  "(" @append_empty_softline @append_indent_start
+  "," @append_input_softline
+  ")" @prepend_indent_end
+)
+
+; differentiate parameter definitions from parameter invocation,
+; module/function definitions have param separation while
+; module/function calls have none, this space on chained function/module calls
+; and provides visual distinction between definitions and calls
+(arguments
+  (assignment
+    "=" @append_antispace @prepend_antispace
+  )
+)
+
+(union_block
+  .
+  "{" @append_spaced_softline @append_indent_start @prepend_space
+  _
+  "}" @prepend_spaced_softline @prepend_indent_end
+  .
+)
+
+; everything except `union_block` after a for/if/else statement should be a spaced_softline
+; but a union
+(if_block
+  condition: (_) @prepend_space @append_spaced_softline @append_indent_start
+  consequence: (_) @append_spaced_softline @append_indent_end
+)
+(if_block
+  "else" @append_spaced_softline @append_indent_start
+  alternative: (_) @append_spaced_softline @append_indent_end
+)
