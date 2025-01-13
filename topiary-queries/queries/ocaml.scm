@@ -31,8 +31,6 @@
   ]
 ) @leaf
 
-(comment) @multi_line_indent_all
-
 ; line number directives must be alone on their line, and can't be indented
 (line_number_directive) @single_line_no_indent
 
@@ -41,7 +39,6 @@
   (class_definition)
   (class_initializer)
   (class_type_definition)
-  (comment)
   (exception_definition)
   (external)
   (floating_attribute)
@@ -84,9 +81,7 @@
   "and" @allow_blank_line_before
 )
 
-; Append line breaks. If there is a comment following, we don't add anything,
-; because the input softlines and spaces above will already have sorted out the
-; formatting.
+; Append line breaks.
 (
   [
     (exception_definition)
@@ -97,8 +92,6 @@
   ] @append_spaced_softline
   .
   "in"? @do_nothing
-  .
-  (comment)* @do_nothing
 )
 ; Also append line breaks after open_module, except when it's
 ; preceded by "let", because in this case it's in a let_open_expression.
@@ -106,17 +99,14 @@
   "let"? @do_nothing
   .
   (open_module) @append_hardline
-  .
-  (comment)* @do_nothing
 )
 
 ; Append line break after module include, except if it's alone in a single-lined struct
 (
   [
-    ; start equivalence class
+    ; both elements are in an equivalence class
     (include_module)
     (include_module_type)
-    ; end equivalence class
   ] @append_hardline
   .
   "end"? @do_nothing
@@ -125,10 +115,9 @@
   "struct"
   .
   [
-    ; start equivalence class
+    ; both elements are in an equivalence class
     (include_module)
     (include_module_type)
-    ; end equivalence class
   ] @append_spaced_softline
   .
   "end"
@@ -432,7 +421,7 @@
 )
 
 ; Softlines. These become either a space or a newline, depending on whether we
-; format their node as single-line or multi-line. If there is a comment
+; format their node as single-line or multi-line. If there is an attribute
 ; following, we don't add anything, because they will have their own line break
 ; processing applied to them.
 ;
@@ -452,7 +441,6 @@
   .
   [
     (attribute)
-    (comment)
     "%"
   ]* @do_nothing
 )
@@ -472,18 +460,13 @@
   "%"
   .
   (attribute_id) @append_spaced_softline
-  .
-  (comment)* @do_nothing
 )
 
 ; only add softlines after "else" if it's not part of an "else if" construction
 (
   "else" @append_spaced_softline
   .
-  [
-    (comment)
-    (if_expression)
-  ]? @do_nothing
+  (if_expression)? @do_nothing
 )
 
 ; ":" must not always be followed by a softline, we explicitly enumerate
@@ -740,10 +723,9 @@
     (module_definition)
     (value_specification)
     (type_definition)
-    ; start equivalence class
+    ; the following two elements are in an equivalence class
     (include_module)
     (include_module_type)
-    ; end equivalence class
   ] @append_spaced_softline
 )
 
@@ -794,10 +776,7 @@
 (record_declaration
   (field_declaration) @append_delimiter
   .
-  [
-    (comment)
-    (attribute)
-  ]*
+  (attribute)*
   .
   ";" @delete
   (#delimiter! ";")
@@ -821,7 +800,6 @@
   [
     (field_declaration)
     (attribute)
-    (comment)
   ]? @append_end_scope
   .
   (field_declaration) @prepend_begin_scope
@@ -831,7 +809,6 @@
   [
     (field_declaration)
     (attribute)
-    (comment)
   ] @append_end_scope
   .
   "}"
@@ -845,10 +822,7 @@
 (record_expression
   (field_expression) @append_delimiter
   .
-  [
-    (comment)
-    (attribute)
-  ]*
+  (attribute)*
   .
   ";" @delete
   (#delimiter! ";")
@@ -863,7 +837,6 @@
   [
     (field_expression)
     (attribute)
-    (comment)
   ]? @append_end_scope
   .
   (field_expression) @prepend_begin_scope
@@ -873,7 +846,6 @@
   [
     (field_expression)
     (attribute)
-    (comment)
   ] @append_end_scope
   .
   "}"
@@ -937,8 +909,8 @@
   ":" @append_indent_start
   (_) @append_indent_end
   .
-  ; just doing _ above doesn't work, because it matches the final named node as
-  ; well as the final non-named node, causing double indentation.
+; just doing _ above doesn't work, because it matches the final named node as
+; well as the final non-named node, causing double indentation.
 )
 
 (value_specification
@@ -1806,16 +1778,4 @@
   ":" @append_spaced_softline @append_indent_start
   ")" @prepend_indent_end @prepend_empty_softline
   .
-)
-
-; Input softlines before and after all comments. This means that the input
-; decides if a comment should have line breaks before or after. But don't put a
-; softline directly in front of commas or semicolons.
-
-(comment) @prepend_input_softline
-
-(
-  (comment) @append_input_softline
-  .
-  ["," ";"]* @do_nothing
 )

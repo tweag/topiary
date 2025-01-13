@@ -51,11 +51,10 @@ let id6 = function x -> x
 
 (* Extensible buffers *)
 
-type t = (* Multi-
-          * line comment with
-          * too much padding.
-          *)
-{
+type t = { (* Multi-
+            * line comment with
+            * too much padding.
+            *)
   mutable buffer: bytes;
   mutable position: int; (* End-of-line comment *)
   mutable length: int;
@@ -838,12 +837,12 @@ let _ =
 [@@@deprecated "writing code is deprecated, use ai-generated code instead"]
 
 type t = {
-  verbose: int;
   (** Verbosity level. *)
-  loggers: string;
+  verbose: int;
   (** Loggers enabled. *)
+  loggers: string;
   bflags: bool StrMap.t
-  (** Boolean flags. *)
+(** Boolean flags. *)
 }
 
 let _ = {

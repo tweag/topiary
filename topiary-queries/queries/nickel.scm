@@ -11,7 +11,6 @@
 
 ; Allow a blank line before the following nodes
 [
-  (comment)
   (record_field)
   (record_last_field)
 ] @allow_blank_line_before
@@ -208,10 +207,6 @@
   (pattern_fun)
 )
 
-;; Comments
-
-(comment) @prepend_input_softline @append_hardline
-
 ;; Bound Expressions
 ; i.e., Let expressions and record fields
 
@@ -279,16 +274,6 @@
       ]? @do_nothing
     )
   ) @append_indent_end
-)
-
-; If the RHS starts with a comment, which itself is followed by a hard
-; line, then we apply the normal indent block formatting in a multi-line
-; context (i.e., no exceptions)
-(_
-  "=" @append_indent_start
-  .
-  (comment)
-  (term) @append_indent_end
 )
 
 ; A let expression looks like:
@@ -654,8 +639,6 @@
   ]
   .
   ["," ";"] @append_spaced_scoped_softline
-  .
-  (comment)? @do_nothing
 )
 
 ; Enums and records can have a `;` at the very beginning; allow spaces after
@@ -664,6 +647,4 @@
   (#scope_id! "container")
   .
   ";" @append_spaced_scoped_softline
-  .
-  (comment)? @do_nothing
 )

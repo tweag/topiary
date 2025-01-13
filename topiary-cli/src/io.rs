@@ -113,6 +113,7 @@ pub struct InputFile<'cfg> {
     source: InputSource,
     language: &'cfg topiary_config::language::Language,
     query: QuerySource,
+    comment_query: Option<QuerySource>,
 }
 
 impl<'cfg> InputFile<'cfg> {
@@ -125,9 +126,21 @@ impl<'cfg> InputFile<'cfg> {
         };
         let query = TopiaryQuery::new(&grammar, &contents)?;
 
+        // Can't use `map` because of closures, async, and Result.
+        let comment_contents = match &self.comment_query {
+            Some(QuerySource::Path(query)) => Some(tokio::fs::read_to_string(query).await?),
+            Some(QuerySource::BuiltIn(contents)) => Some(contents.to_owned()),
+            None => None,
+        };
+        let comment_query = match comment_contents {
+            Some(c) => Some(TopiaryQuery::new(&grammar, &c)?),
+            None => None,
+        };
+
         Ok(Language {
             name: self.language.name.clone(),
             query,
+            comment_query,
             grammar,
             indent: self.language().config.indent.clone(),
         })
@@ -178,9 +191,9 @@ impl<'cfg, 'i> Inputs<'cfg> {
             InputFrom::Stdin(language_name, query) => {
                 vec![(|| {
                     let language = config.get_language(&language_name)?;
-                    let query_source: QuerySource = match query {
+                    let (query, comment_query) = match query {
                         // The user specified a query file
-                        Some(p) => p,
+                        Some(p) => (p, None),
                         // The user did not specify a file, try the default locations
                         None => to_query_from_language(language)?,
                     };
@@ -188,7 +201,8 @@ impl<'cfg, 'i> Inputs<'cfg> {
                     Ok(InputFile {
                         source: InputSource::Stdin,
                         language,
-                        query: query_source,
+                        query,
+                        comment_query,
                     })
                 })()]
             }
@@ -197,12 +211,13 @@ impl<'cfg, 'i> Inputs<'cfg> {
                 .into_iter()
                 .map(|path| {
                     let language = config.detect(&path)?;
-                    let query: QuerySource = to_query_from_language(language)?;
+                    let (query, comment_query) = to_query_from_language(language)?;
 
                     Ok(InputFile {
                         source: InputSource::Disk(path, None),
                         language,
                         query,
+                        comment_query,
                     })
                 })
                 .collect(),
@@ -212,16 +227,21 @@ impl<'cfg, 'i> Inputs<'cfg> {
     }
 }
 
-fn to_query_from_language(language: &topiary_config::language::Language) -> CLIResult<QuerySource> {
-    let query: QuerySource = match language.find_query_file() {
-        Ok(p) => p.into(),
+fn to_query_from_language(
+    language: &topiary_config::language::Language,
+) -> CLIResult<(QuerySource, Option<QuerySource>)> {
+    let query: (QuerySource, Option<QuerySource>) = match language.find_query_file() {
+        Ok((path, comment_path)) => (path.into(), comment_path.map(|p| p.into())),
         // For some reason, Topiary could not find any
         // matching file in a default location. As a final attempt, try the
         // builtin ones. Store the error, return that if we
         // fail to find anything, because the builtin error might be unexpected.
         Err(e) => {
             log::warn!("No query files found in any of the expected locations. Falling back to compile-time included files.");
-            to_query(&language.name).map_err(|_| e)?
+            (
+                to_query(&language.name).map_err(|_| e)?,
+                to_comment_query(&language.name)?,
+            )
         }
     };
     Ok(query)
@@ -357,6 +377,48 @@ where
 
         #[cfg(feature = "tree_sitter_query")]
         "tree_sitter_query" => Ok(topiary_queries::tree_sitter_query().into()),
+
+        name => Err(TopiaryError::Bin(
+            format!("The specified language is unsupported: {}", name),
+            Some(CLIError::UnsupportedLanguage(name.to_string())),
+        )),
+    }
+}
+
+fn to_comment_query<T>(name: T) -> CLIResult<Option<QuerySource>>
+where
+    T: AsRef<str> + fmt::Display,
+{
+    match name.as_ref() {
+        #[cfg(feature = "bash")]
+        "bash" => Ok(Some(topiary_queries::bash_comment().into())),
+
+        #[cfg(feature = "css")]
+        "css" => Ok(Some(topiary_queries::css_comment().into())),
+
+        #[cfg(feature = "json")]
+        "json" => Ok(None),
+
+        #[cfg(feature = "nickel")]
+        "nickel" => Ok(Some(topiary_queries::nickel_comment().into())),
+
+        #[cfg(feature = "ocaml")]
+        "ocaml" => Ok(Some(topiary_queries::ocaml_comment().into())),
+
+        #[cfg(feature = "ocaml_interface")]
+        "ocaml_interface" => Ok(Some(topiary_queries::ocaml_interface_comment().into())),
+
+        #[cfg(feature = "ocamllex")]
+        "ocamllex" => Ok(Some(topiary_queries::ocamllex_comment().into())),
+
+        #[cfg(feature = "rust")]
+        "rust" => Ok(Some(topiary_queries::rust_comment().into())),
+
+        #[cfg(feature = "toml")]
+        "toml" => Ok(Some(topiary_queries::toml_comment().into())),
+
+        #[cfg(feature = "tree_sitter_query")]
+        "tree_sitter_query" => Ok(Some(topiary_queries::tree_sitter_query_comment().into())),
 
         name => Err(TopiaryError::Bin(
             format!("The specified language is unsupported: {}", name),

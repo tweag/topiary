@@ -7,13 +7,15 @@ use std::{collections::HashSet, fmt::Display};
 use serde::Serialize;
 
 use topiary_tree_sitter_facade::{
-    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate, Tree,
+    Node, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate, Tree,
 };
 
 use streaming_iterator::StreamingIterator;
 
 use crate::{
     atom_collection::{AtomCollection, QueryPredicates},
+    comments::{extract_comments, AnchoredComment, SeparatedInput},
+    common::{parse, Position},
     error::FormatterError,
     FormatterResult,
 };
@@ -23,21 +25,6 @@ use crate::{
 pub enum Visualisation {
     GraphViz,
     Json,
-}
-
-/// Refers to a position within the code. Used for error reporting, and for
-/// comparing input with formatted output. The numbers are 1-based, because that
-/// is how editors usually refer to a position. Derived from tree_sitter::Point.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
-pub struct Position {
-    pub row: u32,
-    pub column: u32,
-}
-
-impl Display for Position {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "({},{})", self.row, self.column)
-    }
 }
 
 /// Topiary often needs both the tree-sitter `Query` and the original content
@@ -94,15 +81,6 @@ impl TopiaryQuery {
     #[cfg(target_arch = "wasm32")]
     pub fn pattern_position(&self, _pattern_index: usize) -> Position {
         unimplemented!()
-    }
-}
-
-impl From<Point> for Position {
-    fn from(point: Point) -> Self {
-        Self {
-            row: point.row() + 1,
-            column: point.column() + 1,
-        }
     }
 }
 
@@ -217,6 +195,30 @@ pub struct CoverageData {
     pub missing_patterns: Vec<String>,
 }
 
+/// Run a tree-sitter query to identify comments in the tree, then return their IDs
+pub fn collect_comment_ids(
+    tree: &Tree,
+    input_content: &str,
+    query: &TopiaryQuery,
+) -> HashSet<usize> {
+    let mut cursor = QueryCursor::new();
+    let mut query_matches =
+        query
+            .query
+            .matches(&tree.root_node(), input_content.as_bytes(), &mut cursor);
+    let capture_names = query.query.capture_names();
+    let mut ids = HashSet::new();
+    #[allow(clippy::while_let_on_iterator)] // This is not a normal iterator
+    while let Some(query_match) = query_matches.next() {
+        for capture in query_match.captures() {
+            if capture.name(capture_names.as_slice()) == "comment" {
+                ids.insert(capture.node().id());
+            }
+        }
+    }
+    ids
+}
+
 /// Applies a query to an input content and returns a collection of atoms.
 ///
 /// # Errors
@@ -230,12 +232,45 @@ pub struct CoverageData {
 pub fn apply_query(
     input_content: &str,
     query: &TopiaryQuery,
+    comment_query: &Option<TopiaryQuery>,
     grammar: &topiary_tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<AtomCollection> {
-    let tree = parse(input_content, grammar, tolerate_parsing_errors)?;
-    let root = tree.root_node();
-    let source = input_content.as_bytes();
+    let tree = parse(input_content, grammar, tolerate_parsing_errors, None)?;
+
+    // Remove comments in a separate stream before applying queries, if applicable
+    let SeparatedInput {
+        input_string,
+        input_tree,
+        comments,
+    } = match comment_query {
+        Some(comment_query) => {
+            let comment_ids = collect_comment_ids(&tree, input_content, comment_query);
+            extract_comments(
+                &tree,
+                input_content,
+                comment_ids,
+                grammar,
+                tolerate_parsing_errors,
+            )?
+        }
+        None => SeparatedInput {
+            input_string: input_content.to_string(),
+            input_tree: tree,
+            comments: Vec::new(),
+        },
+    };
+    let root = input_tree.root_node();
+    let source = input_string.as_bytes();
+
+    for AnchoredComment {
+        comment_text,
+        commented,
+        ..
+    } in comments.iter()
+    {
+        log::debug!("Found comment \"{comment_text}\" with anchor {commented:?}");
+    }
 
     // Match queries
     let mut cursor = QueryCursor::new();
@@ -258,9 +293,9 @@ pub fn apply_query(
     let specified_leaf_nodes: HashSet<usize> = collect_leaf_ids(&matches, capture_names.clone());
 
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
-    let mut atoms = AtomCollection::collect_leafs(&root, source, specified_leaf_nodes)?;
+    let mut atoms = AtomCollection::collect_leafs(&root, source, specified_leaf_nodes, comments)?;
 
-    log::debug!("List of atoms before formatting: {atoms:?}");
+    log::debug!("List of atoms before formatting: {atoms:#?}");
 
     // Memoization of the pattern positions
     let mut pattern_positions: Vec<Option<Position>> = Vec::new();
@@ -330,50 +365,6 @@ pub fn apply_query(
     atoms.apply_prepends_and_appends();
 
     Ok(atoms)
-}
-
-/// Parses some string into a syntax tree, given a tree-sitter grammar.
-pub fn parse(
-    content: &str,
-    grammar: &topiary_tree_sitter_facade::Language,
-    tolerate_parsing_errors: bool,
-) -> FormatterResult<Tree> {
-    let mut parser = Parser::new()?;
-    parser.set_language(grammar).map_err(|_| {
-        FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
-    })?;
-
-    let tree = parser
-        .parse(content, None)?
-        .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))?;
-
-    // Fail parsing if we don't get a complete syntax tree.
-    if !tolerate_parsing_errors {
-        check_for_error_nodes(&tree.root_node())?;
-    }
-
-    Ok(tree)
-}
-
-fn check_for_error_nodes(node: &Node) -> FormatterResult<()> {
-    if node.kind() == "ERROR" {
-        let start = node.start_position();
-        let end = node.end_position();
-
-        // Report 1-based lines and columns.
-        return Err(FormatterError::Parsing {
-            start_line: start.row() + 1,
-            start_column: start.column() + 1,
-            end_line: end.row() + 1,
-            end_column: end.column() + 1,
-        });
-    }
-
-    for child in node.children(&mut node.walk()) {
-        check_for_error_nodes(&child)?;
-    }
-
-    Ok(())
 }
 
 /// Collects the IDs of all leaf nodes in a set of query matches.
@@ -526,7 +517,7 @@ pub fn check_query_coverage(
     original_query: &TopiaryQuery,
     grammar: &topiary_tree_sitter_facade::Language,
 ) -> FormatterResult<CoverageData> {
-    let tree = parse(input_content, grammar, false)?;
+    let tree = parse(input_content, grammar, false, None)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
     let mut missing_patterns = Vec::new();

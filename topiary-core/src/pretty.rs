@@ -41,7 +41,7 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
 
             Atom::Leaf {
                 content,
-                original_position,
+                original_column,
                 single_line_no_indent,
                 multi_line_indent_all,
                 ..
@@ -56,9 +56,6 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
 
                 let content = if *multi_line_indent_all {
                     let cursor = current_column(&buffer) as i32;
-
-                    // original_position is 1-based
-                    let original_column = original_position.column as i32 - 1;
 
                     let indenting = cursor - original_column;
 

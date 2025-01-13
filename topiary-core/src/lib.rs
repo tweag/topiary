@@ -14,20 +14,22 @@ use std::io;
 
 use itertools::Itertools;
 use pretty_assertions::StrComparison;
-use tree_sitter::Position;
 
 pub use crate::{
+    common::{parse, Position},
     error::{FormatterError, IoError},
     language::Language,
     tree_sitter::{apply_query, CoverageData, SyntaxNode, TopiaryQuery, Visualisation},
 };
 
 mod atom_collection;
+pub mod comments;
+pub mod common;
 mod error;
 mod graphviz;
 mod language;
 mod pretty;
-mod tree_sitter;
+pub mod tree_sitter;
 
 #[doc(hidden)]
 pub mod test_utils;
@@ -63,7 +65,7 @@ pub enum Atom {
     Leaf {
         content: String,
         id: usize,
-        original_position: Position,
+        original_column: i32,
         // marks the leaf to be printed on a single line, with no indentation
         single_line_no_indent: bool,
         // if the leaf is multi-line, each line will be indented, not just the first
@@ -197,6 +199,7 @@ pub enum Operation {
 /// let language: Language = Language {
 ///     name: "json".to_owned(),
 ///     query: TopiaryQuery::new(&json.clone().into(), &query_content).unwrap(),
+///     comment_query: None,
 ///     grammar: json.into(),
 ///     indent: None,
 /// };
@@ -238,6 +241,7 @@ pub fn formatter(
             let mut atoms = tree_sitter::apply_query(
                 &content,
                 &language.query,
+                &language.comment_query,
                 &language.grammar,
                 tolerate_parsing_errors,
             )?;
@@ -262,7 +266,7 @@ pub fn formatter(
         }
 
         Operation::Visualise { output_format } => {
-            let tree = tree_sitter::parse(&content, &language.grammar, false)?;
+            let tree = parse(&content, &language.grammar, false, None)?;
             let root: SyntaxNode = tree.root_node().into();
 
             match output_format {
@@ -393,6 +397,7 @@ mod tests {
         let language = Language {
             name: "json".to_owned(),
             query: TopiaryQuery::new(&grammar, query_content).unwrap(),
+            comment_query: None,
             grammar,
             indent: None,
         };
@@ -429,6 +434,7 @@ mod tests {
         let language = Language {
             name: "json".to_owned(),
             query: TopiaryQuery::new(&grammar, &query_content).unwrap(),
+            comment_query: None,
             grammar,
             indent: None,
         };

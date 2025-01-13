@@ -437,8 +437,7 @@ module Gas : sig
 
   val pp_cost_as_gas : Format.formatter -> cost -> unit
 
-  type error += Operation_quota_exceeded
-  (* `Temporary *)
+  type error += Operation_quota_exceeded (* `Temporary *)
 
   (** [consume ctxt cost] subtracts [cost] to the current operation
      gas level in [ctxt]. This operation may fail with
@@ -453,11 +452,9 @@ module Gas : sig
       would fall below [0]. *)
   val consume_from : Arith.fp -> cost -> Arith.fp tzresult
 
-  type error += Block_quota_exceeded
-  (* `Temporary *)
+  type error += Block_quota_exceeded (* `Temporary *)
 
-  type error += Gas_limit_too_high
-  (* `Permanent *)
+  type error += Gas_limit_too_high (* `Permanent *)
 
   (** See {!Raw_context.consume_gas_limit_in_block}. *)
   val consume_limit_in_block : context -> 'a Arith.t -> context tzresult
@@ -1398,11 +1395,9 @@ module Sapling : sig
 
     val rpc_arg : t RPC_arg.arg
 
-    val parse_z : Z.t -> t
-    (* To be used in parse_data only *)
+    val parse_z : Z.t -> t (* To be used in parse_data only *)
 
-    val unparse_to_z : t -> Z.t
-    (* To be used in unparse_data only *)
+    val unparse_to_z : t -> Z.t (* To be used in unparse_data only *)
   end
 
   (** Create a fresh sapling state in the context. *)
@@ -4925,11 +4920,9 @@ module Operation : sig
 
   val compare_by_passes : packed_operation -> packed_operation -> int
 
-  type error += Missing_signature
-  (* `Permanent *)
+  type error += Missing_signature (* `Permanent *)
 
-  type error += Invalid_signature
-  (* `Permanent *)
+  type error += Invalid_signature (* `Permanent *)
 
   val check_signature : public_key -> Chain_id.t -> _ operation -> unit tzresult
 
@@ -5458,14 +5451,11 @@ module Fees : sig
     Z.t ->
     (context * Z.t * Receipt.balance_updates) tzresult Lwt.t
 
-  type error += Cannot_pay_storage_fee
-  (* `Temporary *)
+  type error += Cannot_pay_storage_fee (* `Temporary *)
 
-  type error += Operation_quota_exceeded
-  (* `Temporary *)
+  type error += Operation_quota_exceeded (* `Temporary *)
 
-  type error += Storage_limit_too_high
-  (* `Permanent *)
+  type error += Storage_limit_too_high (* `Permanent *)
 
   val check_storage_limit : context -> storage_limit: Z.t -> unit tzresult
 end

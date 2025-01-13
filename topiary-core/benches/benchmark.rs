@@ -7,6 +7,8 @@ use topiary_core::{formatter, Language, Operation, TopiaryQuery};
 async fn format() {
     let input = fs::read_to_string("../topiary-cli/tests/samples/input/ocaml.ml").unwrap();
     let query_content = fs::read_to_string("../topiary-queries/queries/ocaml.scm").unwrap();
+    let comment_query_content =
+        fs::read_to_string("../topiary-queries/queries/ocaml.comment.scm").unwrap();
     let ocaml = tree_sitter_ocaml::LANGUAGE_OCAML;
 
     let mut input = input.as_bytes();
@@ -15,6 +17,9 @@ async fn format() {
     let language: Language = Language {
         name: "ocaml".to_owned(),
         query: TopiaryQuery::new(&ocaml.clone().into(), &query_content).unwrap(),
+        comment_query: Some(
+            TopiaryQuery::new(&ocaml.clone().into(), &comment_query_content).unwrap(),
+        ),
         grammar: ocaml.into(),
         indent: None,
     };

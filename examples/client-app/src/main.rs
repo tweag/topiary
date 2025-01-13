@@ -26,6 +26,7 @@ async fn main() {
     let language: Language = Language {
         name: "json".to_owned(),
         query: TopiaryQuery::new(&grammar, query).unwrap(),
+        comment_query: None,
         grammar,
         indent: None,
     };

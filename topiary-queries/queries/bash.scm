@@ -6,7 +6,6 @@
 ; variable expansions (simple or otherwise)
 ; FIXME The first line of heredocs are affected by the indent level
 [
-  (comment)
   (expansion)
   (heredoc_redirect)
   (string)
@@ -39,7 +38,6 @@
   (case_item)
   (case_statement)
   (command)
-  (comment)
   (compound_statement)
   (declaration_command)
   (for_statement)
@@ -144,53 +142,6 @@
 [
   "in"
 ] @prepend_space
-
-;; Comments
-
-; Comments come in two flavours: standalone (i.e., it's the only thing
-; on a line, starting at the current indent level); and trailing (i.e.,
-; following some other statement on the same line, with a space
-; interposed). Bash does not have multi-line comments; they are all
-; single-line.
-;
-; The grammar parses all comments as the (comment) node, which are
-; siblings under a common parent.
-;
-; Formatting Rules:
-;
-; 1. A comment's contents must not be touched; some (namely the shebang)
-;    have a syntactic purpose.
-; 2. All comments must end with a new line.
-; 3. Comments can be interposed by blank lines, if they exist in the
-;    input (i.e., blank lines shouldn't be engineered elsewhere).
-; 4. A comment can never change flavour (i.e., standalone to trailing,
-;    or vice versa).
-; 5. Trailing comments should be interposed by a space.
-
-; Rule 1: See @leaf rule, above
-
-; Rule 2
-(comment) @append_hardline
-
-; Rule 3: See @allow_blank_line_before rule, above.
-; FIXME This doesn't quite get us what we want. It's close, but blank
-; lines between comments can get consumed.
-
-; Rule 4: We only have to protect against the case of a standalone
-; comment, after a statement, being slurped on to that statement's line
-; and becoming a trailing comment. That case is satisfied by Rule 5.
-
-; Rule 5
-(
-  (comment) @prepend_begin_scope @append_begin_measuring_scope
-  .
-  _ @prepend_end_measuring_scope @prepend_end_scope
-  (#scope_id! "line_break_after_comment")
-)
-(
-  (comment) @prepend_space
-  (#multi_line_scope_only! "line_break_after_comment")
-)
 
 ;; Compound Statements and Subshells
 

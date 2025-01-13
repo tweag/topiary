@@ -14,10 +14,10 @@ pub fn node_kind_for_id(&self, id: u16) -> &'static str {
 
 // More comments.
 
-enum OneLine { Leaf { content: String, /* comment */ id: usize /* another comment */, size: usize, }, Hardline { content: String, id: usize, }, Space, } // End of line comment
+enum OneLine { Leaf { content: String, id: usize, size: usize, }, Hardline { content: String, id: usize, }, Space, } /* comment */ /* another comment */ // End of line comment
 
 enum ExpandEnum {
-    Leaf { content: String, /* Comment between fields. */ id: usize, size: usize, },
+    Leaf { content: String, id: usize, size: usize, }, /* Comment between fields. */
     Hardline { content: String, id: usize, },
     Space,
 }
@@ -91,21 +91,25 @@ enum Mode6 {
 fn inline_let() { let hi = 1; }
 
 // While loop spacing
-while i == true {
-    let i = 42;
+fn my_while() {
+    while i == true {
+        let i = 42;
+    }
 }
 
 // Scoped blocks
-{
-    let i = 42;
-}
-{
-    let i = 43;
+fn foo() {
+    {
+        let i = 42;
+    }
+    {
+        let i = 43;
+    }
 }
 
 // Empty block inside of impl function
 impl MyTrait for MyStruct {
     fn foo() {
-        // ... logic ...
+    // ... logic ...
     }
 }
