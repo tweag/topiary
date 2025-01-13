@@ -2,8 +2,8 @@
 ; any which are encountered by Topiary will be forcibly collapsed on to
 ; a single line. (See Issue #172)
 
-; Don't modify strings, heredocs, comments, atomic "words" or variable
-; expansions (simple or otherwise)
+; Don't modify strings, heredocs, comments, atomic "words", variable
+; expansions or array indices.
 [
   (comment)
   (expansion)
