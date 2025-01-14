@@ -29,6 +29,7 @@
   "assign"
   "use"
   "each"
+  "else"
   "if"
   "||"
   "&&"
@@ -70,7 +71,7 @@
     (use_statement)
     (function_item)
     (module_item)
-    (statement)
+    (if_block)
   ] @append_spaced_softline
   .
   [
@@ -96,7 +97,7 @@
   [
     ","
     ";"
-  ] @append_spaced_softline
+  ]
   .
   [(block_comment) (line_comment)]* @do_nothing
 )
@@ -162,20 +163,37 @@
   .
 )
 
-((union_block) @append_space . "else")
+;{ ... } else {
+; ((union_block) @append_space . "else")
 
 ; everything except `union_block` after a for/if/else statement should be a spaced_softline
 ; but a union
 (if_block
   (parenthesized_expression) @append_spaced_softline @append_indent_start
   .
-  (union_block)? @do_nothing
-) @append_indent_end
+  [
+    (for_block)
+    (intersection_for_block)
+    (if_block)
+    (let_block)
+    (assign_block)
+    (modifier_chain)
+    (transform_chain)
+    (include_statement)
+    (assert_statement)
+  ] @append_indent_end @append_spaced_softline
+)
 (
-  "else" @append_spaced_softline
+  "else" @append_spaced_softline @append_indent_start
   .
   [
-    (union_block)
-    (if_block)
-  ]? @do_nothing
-)
+    (for_block)
+    (intersection_for_block)
+    (let_block)
+    (assign_block)
+    (modifier_chain)
+    (transform_chain)
+    (include_statement)
+    (assert_statement)
+  ] @append_indent_end
+) @prepend_spaced_softline
