@@ -18,6 +18,20 @@ jobs:
       - name: Run test suite
         shell: bash
         run: |
+          # Use GCC
           export CC="$(which gcc)"
           export CCX="${CC}"
+
+          # Use GNU Binutils
+          declare BINUTILS="$(dirname "$(which ld)")"
+          export PATH="${BINUTILS}:${PATH}"
+
+          cat <<EOF
+          **************************************************************
+          GCC:      ${CC}
+          Binutils: ${BINUTILS}
+          **************************************************************
+          EOF
+
+          # Build-and-test
           cargo test --all-features
