@@ -1513,7 +1513,7 @@
 ; Predicate parameter newline separatation and indentation
 ; ================================================================================
 
-(#any-of? @function.builtin
+(#any-of? @function.builtin @foo
   "union"
   "difference"
   "intersection"
