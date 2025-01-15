@@ -48,6 +48,7 @@ This name should be decided amongst the team before the release.
 - [#785](https://github.com/tweag/topiary/pull/785) Added the `coverage` command, that checks how much of the query file is used by the input.
 - [#786](https://github.com/tweag/topiary/pull/786) Re-introduce tests to check that all of the language queries are useful.
 - [#747](https://github.com/tweag/topiary/pull/747) Added support for specifying paths to prebuilt grammars in Topiary's configuration
+- [#747](https://github.com/tweag/topiary/pull/747) Added a `typos.toml` configuration file for `typos-cli` spellchecking
 
 ### Changed
 - [#794](https://github.com/tweag/topiary/pull/794) Bump the `tree-sitter` dependency to 0.24 @ZedThree
@@ -81,7 +82,7 @@ This name should be decided amongst the team before the release.
 ### Changed
 - [#704](https://github.com/tweag/topiary/pull/704) Refactors our postprocessing code to be more versatile.
 - [#711](https://github.com/tweag/topiary/pull/711) Feature gate all grammars, with supported and contributed languages built by default.
-- [#716](https://github.com/tweag/topiary/pull/716) Dynamicly fetch, compile, and load language grammars. Topiary now no longer ships with statically linked grammars.
+- [#716](https://github.com/tweag/topiary/pull/716) Dynamically fetch, compile, and load language grammars. Topiary now no longer ships with statically linked grammars.
 - [#732](https://github.com/tweag/topiary/pull/732) Change how function application and parenthesized expressions are treated in Nickel to reduce the overall noise and indentation
 - [#736](https://github.com/tweag/topiary/pull/668) Updates our Nickel grammar, and adds support for let blocks.
 - [#769](https://github.com/tweag/topiary/pull/769) Move the web playground to a separate branch

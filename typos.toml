@@ -1,6 +1,5 @@
 files.extend-exclude = [
-  "CHANGELOG.md",
-  "tests",
+  # "CHANGELOG.md",
 ]
 [default.extend-words]
 # french

@@ -248,7 +248,7 @@
 ; For those queries, we should not have multiple queries,
 ; however, due to a known bug in tree-sitter queries
 ; https://github.com/tree-sitter/tree-sitter/issues/1811
-; using an alternative after the starred parenthesis does not work as intented.
+; using an alternative after the starred parenthesis does not work as intended.
 ;
 (
   "("* @do_nothing
