@@ -166,7 +166,7 @@ pub enum Operation {
     },
     /// Visualises the parsed file's tree-sitter tree
     Visualise {
-        /// Choose the type of visualation Topiary should ouput
+        /// Choose the type of visualation Topiary should output
         output_format: Visualisation,
     },
 }

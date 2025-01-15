@@ -198,7 +198,7 @@ function App() {
                         Check idempotence (formatting twice is the same as formatting once)
                     </label>
                     <label>
-                        <input type="checkbox" id="tolerateParsingErros" checked={tolerateParsingErrors} onChange={handleTolerateParsingErrors} />
+                        <input type="checkbox" id="tolerateParsingErrors" checked={tolerateParsingErrors} onChange={handleTolerateParsingErrors} />
                         Tolerate parsing errors
                     </label>
                 </div>
