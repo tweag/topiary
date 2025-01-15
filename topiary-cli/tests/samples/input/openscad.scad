@@ -1,3 +1,6 @@
+// ================================================================================
+// Basic Items
+// ================================================================================
 include <my_path/my_lib.scad>
 use <my_path/my_lib.scad>
 // variables
@@ -23,37 +26,28 @@ function line(point1, point2, width = 1) =
 // Transformations
 // ================================================================================
 cylinder();
-cylinder(
-    d=5,
-    h=100,
-);
-rotate([90, 0, 0]) cylinder();
+cylinder( d = 5, h=100,);
+rotate([90, 0, 0])
+cylinder();
 translate([1, 0, 0]) {
-  difference() {
-    translate([0, 1, 0]) translate([1, 0, 0])
-    rotate([0, 90, 0]) cylinder();
-    cube();
-  }
-}
+    difference() { translate([0, 1, 0])
+        translate([1, 0, 0]) rotate([0, 90, 0])
+        cylinder(); cube(); } }
 
 // ================================================================================
 // Nested Items
 // ================================================================================
-module big_module() {
-  function inner_function() = undef;
-  module inner_module() cube();
+module big_module() { function inner_function() = undef; module inner_module() cube();
 }
 
 module extern_module() include <other_file.scad>
 
-for (i = [10:50])
-{
-    let (angle = i*360/20, r= i*2, distance = r*5)
-    {
-        rotate(angle, [1, 0, 0])
-        translate([0, distance, 0])
-        sphere(r = r);
-    }
+// ================================================================================
+// Control Flow
+// ================================================================================
+for (i = [10:50]) { let (angle = i*360/20, r= i*2, distance = r*5) {
+    rotate(angle, [1, 0, 0]) translate([0, distance, 0])
+    sphere(r = r); }
 }
 
 // newline indent propagates from innermost if_block
@@ -62,7 +56,7 @@ if ($preview) if(true) foo(); else if(true) if
 
 // format propagates from first union_block
 if (true) {
-    } else if (true) {  } else if (false) {foo();}else if (fn_foo(true)) {  } else { children(); }
+    } else if (fn(true)) { foo();} else if (false) { bar();} else { baz(); }
 
 
 for(i = [1:2:7]) { let (x = i ^ 2,y = x - 1) {
@@ -70,22 +64,32 @@ for(i = [1:2:7]) { let (x = i ^ 2,y = x - 1) {
 
 intersection_for(i = [1,2,3]) { if (i > 1) {
     translate([0,i,0]) cube(); } else { translate([0,i,0]) cube(); } }
-//
-// // ================================================================================
-// // Comments
-// // ================================================================================
-// /* ignored [Customizer Group] ignored */
-// /* Multiline
-// comment
-// here
-// */
-// my_parameter = 5;
-//
-// function math(x) = /*do math stuff*/ x + 2 // done with math
-// ;
-//
-// module my_cylinder() {
-//   // here we create a cylinder
-//   cylinder(); /* done ! */
-//   cube();
-// }
+
+// ================================================================================
+// Comments
+// ================================================================================
+
+/* ignored [Customizer Group] ignored */
+/* Multiline
+comment
+here
+*/
+my_parameter = /*inline block*/ 5;
+
+function math(x) = /*do math stuff*/ x + 2 // done with math
+;
+
+module my_cylinder() {
+  // here we create a cylinder
+  cylinder(); /* done ! */
+  cube();
+}
+
+// ================================================================================
+// Modifiers
+// ================================================================================
+! cylinder();
+* linear_extrude(4) text("Hello");
+rotate([0, 90, 0]) # cylinder();
+% cube();
+
