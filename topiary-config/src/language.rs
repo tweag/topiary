@@ -204,16 +204,17 @@ impl GitSource {
         // when dropped
         let tmp_dir = tempfile::tempdir()?;
 
-        self.fetch_and_compile_with_dir(name, library_path, tmp_dir.into_path())
+        self.fetch_and_compile_with_dir(name, library_path, false, tmp_dir.into_path())
     }
 
     pub fn fetch_and_compile_with_dir(
         &self,
         name: &str,
         library_path: PathBuf,
+        force: bool,
         tmp_dir: PathBuf,
     ) -> Result<(), TopiaryConfigFetchingError> {
-        if library_path.is_file() {
+        if !force && library_path.is_file() {
             log::info!("{}: Built grammar already exists; nothing to do", name);
             return Ok(());
         }

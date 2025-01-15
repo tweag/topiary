@@ -379,6 +379,7 @@ Prefetch all languages in the configuration
 Usage: topiary prefetch [OPTIONS]
 
 Options:
+  -f, --force                          Re-fetch existing grammars if they already exist
   -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
   -M, --merge-configuration            Enable merging for configuration files
   -v, --verbose...                     Logging verbosity (increased per occurrence)

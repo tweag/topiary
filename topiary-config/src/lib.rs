@@ -97,6 +97,7 @@ impl Configuration {
     /// If any grammar could not build, a `TopiaryConfigFetchingError` is returned.
     fn fetch_language(
         language: &Language,
+        force: bool,
         tmp_dir: &Path,
     ) -> Result<(), TopiaryConfigFetchingError> {
         match &language.config.grammar.source {
@@ -114,6 +115,7 @@ impl Configuration {
                 git_source.fetch_and_compile_with_dir(
                     &language.name,
                     library_path,
+                    force,
                     tmp_dir.to_path_buf(),
                 )
             }
@@ -143,7 +145,7 @@ impl Configuration {
     ///
     /// If any Grammar could not be build, a `TopiaryConfigError` is returned.
     #[cfg(not(target_arch = "wasm32"))]
-    pub fn prefetch_languages(&self) -> TopiaryConfigResult<()> {
+    pub fn prefetch_languages(&self, force: bool) -> TopiaryConfigResult<()> {
         let tmp_dir = tempdir()?;
         let tmp_dir_path = tmp_dir.path().to_owned();
 
@@ -153,7 +155,7 @@ impl Configuration {
             use rayon::prelude::*;
             self.languages
                 .par_iter()
-                .map(|l| Configuration::fetch_language(l, &tmp_dir_path))
+                .map(|l| Configuration::fetch_language(l, force, &tmp_dir_path))
                 .collect::<Result<Vec<_>, TopiaryConfigFetchingError>>()?;
         }
 
@@ -161,7 +163,7 @@ impl Configuration {
         {
             self.languages
                 .iter()
-                .map(|l| Configuration::fetch_language(l, &tmp_dir_path))
+                .map(|l| Configuration::fetch_language(l, force, &tmp_dir_path))
                 .collect::<Result<Vec<_>, TopiaryConfigFetchingError>>()?;
         }
 
