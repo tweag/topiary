@@ -15,34 +15,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Build using the native toolchain
-      - name: Build
-        shell: bash
-        run: |
-          cargo build --all-features
-
       - name: Run test suite
         shell: bash
-        run: |
-          # Use GCC and GNU Binutils
-          export CC="$(which gcc)"
-          export CXX="$(which g++)"
-          export LD="$(which ld)"
-
-          # Explicitly set the linker to ld
-          export CFLAGS="-fuse-ld=ld"
-          export CXXFLAGS="-fuse-ld=ld"
-
-          # Update PATH
-          export PATH="$(dirname "${CC}"):$(dirname "${CXX}"):$(dirname "${LD}"):${PATH}"
-
-          cat <<EOF
-          **************************************************************
-          CC:  ${CC}
-          CXX: ${CXX}
-          LD:  ${LD}
-          **************************************************************
-          EOF
-
-          # Run the test suite
-          cargo test --all-features
+        run: cargo test --all-features
