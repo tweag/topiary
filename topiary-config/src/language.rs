@@ -145,6 +145,7 @@ impl Language {
         }
 
         assert!(library_path.is_file());
+        log::debug!("Loading grammar from {}", library_path.to_string_lossy());
 
         use libloading::{Library, Symbol};
 
@@ -213,6 +214,7 @@ impl GitSource {
         tmp_dir: PathBuf,
     ) -> Result<(), TopiaryConfigFetchingError> {
         if library_path.is_file() {
+            log::info!("{}: Built grammar already exists; nothing to do", name);
             return Ok(());
         }
         let tmp_dir = tmp_dir.join(name);
