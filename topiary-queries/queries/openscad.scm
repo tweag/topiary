@@ -197,3 +197,36 @@
     (assert_statement)
   ] @append_indent_end
 ) @prepend_spaced_softline
+
+; scope is triggered by the presence of a (union_block) consequce on the intersection_for_block;
+; and extends to the "else if" and "else" portions
+(
+  "else"? @do_nothing
+  (if_block
+    (#scope_id! "if_union")
+    (#query_name! "if_union scope")
+  ) @prepend_begin_scope @append_end_scope
+)
+
+(if_block
+  (#scope_id! "if_union")
+  (#query_name! "if_union outer")
+  (_
+    .
+    "{" @append_spaced_scoped_softline
+    "}" @prepend_spaced_scoped_softline
+    .
+  )
+)
+(if_block
+  (#query_name! "if_union inner")
+  (#scope_id! "if_union")
+  (if_block
+    (_
+      .
+      "{" @append_spaced_scoped_softline
+      "}" @prepend_spaced_scoped_softline
+      .
+    )
+  )
+)

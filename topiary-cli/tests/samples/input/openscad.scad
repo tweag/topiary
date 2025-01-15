@@ -56,50 +56,20 @@ for (i = [10:50])
     }
 }
 
-if ($preview)
-    if (false)
-        sphere();
-    else
-        translate([2, 0, 0]) cube();
+// newline indent propagates from innermost if_block
+if ($preview) if(true) foo(); else if(true) if
+    (false) foo(false); else translate([2,0,0]) foo(); else bar();
+
+// format propagates from first union_block
+if (true) {
+    } else if (true) {  } else if (false) {foo();}else if (fn_foo(true)) {  } else { children(); }
 
 
-            if (len(bevel) > 0) {
-         offset = (centroid(bevpaths[0]));
-     }
-     else if (is_vector(shape)){
-         attachable(anchor = anchor) {
-             down(ht/2)
-                 linear_extrude(height = ht, convexity=8) {
-                     _honeycomb(shp, spacing = spacing, hex_wall = strut);
-                     offset_stroke(shp, width=[-frame, 0], closed=true);
-                 }
-             children();
-         }
-    }
-    else {
-         anchors = [
-           named_anchor("zcenter", [0,0,0], UP),
-           named_anchor("base", [0,0,-ht/2], UP),
-           named_anchor("top", [0,0,ht/2], UP)
-         ];
-             children();
-         }
+for(i = [1:2:7]) { let (x = i ^ 2,y = x - 1) {
+    translate([x,y,0]) sphere(r=i); } }
 
-
-for (i = [1:2:7]) {
-    let (x = i ^ 2, y = x - 1)
-    {
-        translate([x, y, 0]) sphere(r = i);
-    }
-}
-
-intersection_for (i = [1, 2, 3]) {
-    if (i > 1) {
-        translate([0, i, 0]) cube();
-    } else {
-        translate([0, i, 0]) cube();
-            }
-}
+intersection_for(i = [1,2,3]) { if (i > 1) {
+    translate([0,i,0]) cube(); } else { translate([0,i,0]) cube(); } }
 //
 // // ================================================================================
 // // Comments
