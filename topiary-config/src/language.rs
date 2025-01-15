@@ -223,6 +223,7 @@ impl GitSource {
         log::info!("{}: cloning from {}", name, self.git);
         Command::new("git")
             .arg("clone")
+            .arg("--filter=blob:none")
             .arg(&self.git)
             .arg(&tmp_dir)
             .status()
