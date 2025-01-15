@@ -71,7 +71,15 @@
     (use_statement)
     (function_item)
     (module_item)
-    (statement)
+    (intersection_for_block)
+    (for_block)
+    (if_block)
+    (let_block)
+    (assign_block)
+    (union_block)
+    (transform_chain)
+    (include_statement)
+    (assert_statement)
   ] @append_spaced_softline
   .
   [
