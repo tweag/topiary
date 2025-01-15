@@ -72,9 +72,6 @@
     (_) @prepend_space
   )
 )
-(predicate
-  (predicate_type) @append_space
-)
 
 ; Line breaks and indentation in multi-line lists and nodes
 (list
