@@ -129,6 +129,7 @@
 ; each linebreak typically also starts an indent scope
 (transform_chain) @prepend_input_softline
 (transform_chain
+  (modifier)*
   (module_call) @append_indent_start
   (transform_chain) @append_indent_end
 )
@@ -177,7 +178,6 @@
     (if_block)
     (let_block)
     (assign_block)
-    (modifier_chain)
     (transform_chain)
     (include_statement)
     (assert_statement)
@@ -191,7 +191,6 @@
     (intersection_for_block)
     (let_block)
     (assign_block)
-    (modifier_chain)
     (transform_chain)
     (include_statement)
     (assert_statement)
@@ -216,3 +215,8 @@
     .
   )
 )
+
+; modifiers
+(modifier) @append_antispace
+; (transform_chain
+;   (modifier)+

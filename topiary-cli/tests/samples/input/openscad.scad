@@ -88,8 +88,13 @@ module my_cylinder() {
 // ================================================================================
 // Modifiers
 // ================================================================================
-! cylinder();
+!cylinder();
 * linear_extrude(4) text("Hello");
-rotate([0, 90, 0]) # cylinder();
-% cube();
-
+rotate([0,90,0])# cylinder();
+%cube();
+// multi modifier
+translate(1) # ! cube();
+rotate([90]) %
+translate()
+#
+cube();
