@@ -109,15 +109,14 @@ impl Language {
                 library_path.push(self.name.clone());
                 std::fs::create_dir_all(&library_path)?;
 
-                // Set the output path as the revision of the grammar
+                // Set the output path as the revision of the grammar,
+                // with a platform-appropriate extension
                 library_path.push(git_source.rev.clone());
-
-                // TODO: Windows Support
-                // On both MacOS and Linux, .so is a valid file extension for shared objects.
-                library_path.set_extension("so");
+                library_path.set_extension(std::env::consts::DLL_EXTENSION);
 
                 Ok(library_path)
             }
+
             GrammarSource::Path(path) => Ok(path.to_path_buf()),
         }
     }
