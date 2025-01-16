@@ -112,7 +112,7 @@ impl MyTrait for MyStruct {
 }
 
 fn main() {
-    self.append(Atom::ScopeEnd(scope_information_append()?),
+    self.append(Atom::Empty,
         node,
         predicates
     );
