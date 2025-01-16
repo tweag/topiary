@@ -29,6 +29,7 @@ topiary-web-tree-sitter-sys.workspace = true
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
 clap = { workspace = true, features = ["derive"] }
+tree-sitter-loader.workspace = true
 cc.workspace = true
 libloading.workspace = true
 
