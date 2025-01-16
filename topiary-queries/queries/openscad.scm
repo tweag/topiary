@@ -10,7 +10,15 @@
 ; Allow blank line before
 [
   (use_statement)
-  (statement)
+  (intersection_for_block)
+  (for_block)
+  (if_block)
+  (let_block)
+  (assign_block)
+  (union_block)
+  (transform_chain)
+  (include_statement)
+  (assert_statement)
   (line_comment)
   (block_comment)
   (function_item)
@@ -77,7 +85,7 @@
     (let_block)
     (assign_block)
     (union_block)
-    (transform_chain)
+    (transform_chain ";" .)
     (include_statement)
     (assert_statement)
   ] @append_spaced_softline
@@ -101,11 +109,18 @@
 )
 
 ; Append softlines, unless followed by comments.
+; When binding multiple values in a let block, allow new lines between the bindings.
+(list
+  "[" @append_indent_start @append_empty_softline
+  "]" @prepend_indent_end @prepend_empty_softline
+)
+(list
+  "," @append_spaced_softline
+  .
+  [(block_comment) (line_comment)]* @do_nothing
+)
 (
-  [
-    ","
-    ";"
-  ]
+  ";" @append_spaced_softline
   .
   [(block_comment) (line_comment)]* @do_nothing
 )
@@ -130,6 +145,16 @@
   "=" @append_spaced_softline @append_indent_start
   (expression)
   ";" @prepend_indent_end
+)
+; indent the body of a function
+(var_declaration
+  (assignment
+    .
+    _
+    "=" @append_indent_start @append_spaced_softline
+  )
+  ";" @prepend_indent_end
+  .
 )
 
 ; module calls in a transformation chain will follow each other
@@ -224,7 +249,25 @@
   )
 )
 
+(for_block
+  (assignments) @append_spaced_softline @append_indent_start
+  .
+  [
+    (for_block)
+    (intersection_for_block)
+    (if_block)
+    (let_block)
+    (assign_block)
+    (transform_chain)
+    (include_statement)
+    (assert_statement)
+  ] @append_indent_end @append_spaced_softline
+)
+
 ; modifiers
 (modifier) @append_antispace
 ; (transform_chain
 ;   (modifier)+
+
+(assert_expression expression: (_) @prepend_spaced_softline)
+(assert_statement statement: (_) @prepend_spaced_softline)

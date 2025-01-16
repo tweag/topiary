@@ -102,9 +102,11 @@ cube();
 // ================================================================================
 // Assertions
 // ================================================================================
-x = 10;
-assert(x < 20) cube();
-for (y = [3:5])
-    assert(assert() y < x, "message")
-        cylinder();
-
+assert();
+assert(10 < 20) cube();
+for(y = [3:5]) assert(assert() y < x, "message")
+  cylinder();
+assert(true) assert() cylinder();
+val = assert(true, "strut must be positive")
+assert(true, "frame must be nonnegative")
+undef;
