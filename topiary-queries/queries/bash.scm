@@ -556,10 +556,11 @@
   "]]" @prepend_space
 )
 
-(test_command
-  "((" @append_space
-  "))" @prepend_space
-)
+; NOTE (arithmetic_expansion) seems to take higher priority
+; (test_command
+;   "((" @append_space
+;   "))" @prepend_space
+; )
 
 (arithmetic_expansion
   "$[" @delete @append_delimiter

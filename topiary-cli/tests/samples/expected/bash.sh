@@ -142,13 +142,26 @@ export xyzzy=$(
   another_thing --foo
 )
 
-an_array=(a b c)
+declare {a,b,c}=1
+declare -a an_array=(a b c)
+echo "${an_array[@]}"
 
 multi_line_array=(
   a
   b
   [1]+=foo
 )
+
+[[ ! "foo" ]] && echo foo
+(( 0 )) && echo foo
+
+echo $( ( foo ); ( bar ) )
+
+# Rewrite testing
+echo $(date)
+[[ "foo" ]] && bar
+echo $(( 1 + 2 ))
+foo() { :; }
 
 # NOTE This MUST be on the last line of this file
 foo # bar
