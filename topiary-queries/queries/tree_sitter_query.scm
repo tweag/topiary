@@ -48,9 +48,6 @@
 (anonymous_node
   (capture) @prepend_space
 )
-; (grouping
-;   (capture) @prepend_space
-; )
 
 ; The grammar always includes a (parameters) child node under
 ; (predicate), even when there are none. Topiary will deal with the
@@ -58,15 +55,22 @@
 ; Add softlines and indentation after parameter capture groups and identifiers.
 (predicate
   (parameters
-    [(identifier) (capture)]+ @append_spaced_softline @append_indent_start
-    (_)* @append_spaced_softline
+    [(identifier) (capture)] @append_spaced_softline @append_indent_start
     .
-    (_) @append_indent_end @append_empty_softline
-    .
+    (string)
+  ) @append_indent_end
+)
+
+(predicate
+  (parameters
+    (string) @append_empty_softline
   )
 )
+
 (predicate
-  (predicate_type) @append_space
+  (parameters
+    (_) @prepend_space
+  )
 )
 
 ; Line breaks and indentation in multi-line lists and nodes
@@ -93,7 +97,6 @@
 (
   [
     (anonymous_node)
-    (grouping)
     (field_definition)
     (list)
     (named_node)
@@ -103,7 +106,6 @@
   .
   [
     (anonymous_node)
-    (grouping)
     (field_definition)
     (list)
     (named_node)

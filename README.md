@@ -1231,8 +1231,8 @@ This Tree-sitter query:
 (#language! ocaml)
 
 (parenthesized_expression
-  "(" @begin_scope @append_empty_softline @append_indent_start
-  ")" @end_scope @prepend_empty_softline @prepend_indent_end
+  "(" @append_begin_scope @append_empty_softline @append_indent_start
+  ")" @append_end_scope @prepend_empty_softline @prepend_indent_end
   (#scope_id! "tuple")
 )
 
