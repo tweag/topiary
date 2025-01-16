@@ -110,3 +110,10 @@ impl MyTrait for MyStruct {
         // ... logic ...
     }
 }
+
+fn main() {
+    self.append(Atom::ScopeEnd(scope_information_append()?),
+        node,
+        predicates
+    );
+}

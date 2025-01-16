@@ -109,3 +109,10 @@ impl MyTrait for MyStruct {
         // ... logic ...
     }
 }
+
+fn main() {
+    self.append(Atom::Empty,
+        node,
+        predicates,
+    );
+}

@@ -205,3 +205,14 @@
 (
   "," @prepend_antispace
 )
+
+; append trailing comman to newline delimited arguments
+(arguments
+  (#delimiter! ",")
+  (_) @append_multiline_delimiter
+  .
+  ","? @do_nothing
+  .
+  ")"
+  .
+)
