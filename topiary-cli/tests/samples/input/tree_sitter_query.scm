@@ -1509,3 +1509,14 @@
   .
   [ "," ";" ]* @do_nothing
 )
+
+; ================================================================================
+; Predicate parameter newline separatation and indentation
+; ================================================================================
+
+(#any-of? @function.builtin @foo "union" "difference" "intersection"
+"circle")
+
+(#set! 
+injection.language
+"doxygen")
