@@ -104,3 +104,8 @@ opt-level = 3
 
 [profile.release.package.lalrpop]
 opt-level = 3
+
+[workspace.metadata.typos]
+files.extend-exclude = [
+  "/topiary-cli/tests/samples",
+]
