@@ -10,7 +10,7 @@ pub struct Language {
     /// the Configuration, and to convert from a language to the respective tree-sitter
     /// grammar.
     pub name: String,
-    /// The Query Topiary will use to get the formating captures, must be
+    /// The Query Topiary will use to get the formatting captures, must be
     /// present. The topiary engine does not include any formatting queries.
     pub query: TopiaryQuery,
     /// The tree-sitter Language. Topiary will use this Language for parsing.

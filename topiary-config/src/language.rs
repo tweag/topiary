@@ -240,7 +240,7 @@ impl GitSource {
             Some(subdir) => tmp_dir.join(subdir),
             None => tmp_dir,
         }
-        // parser.c and potenial scanners are always in src/
+        // parser.c and potential scanners are always in src/
         .join("src");
 
         self.build_tree_sitter_library(name, &path, library_path)
@@ -345,7 +345,7 @@ impl GitSource {
             )));
         }
 
-        log::info!("{}: succesfully compiled", name);
+        log::info!("{}: successfully compiled", name);
         Ok(())
     }
 }

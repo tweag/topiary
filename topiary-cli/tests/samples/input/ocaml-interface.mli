@@ -3155,7 +3155,7 @@ module Dal_errors : sig
         commitment : Dal.Slot.Commitment.t;
         commitment_proof : Dal.Slot.Commitment_proof.t;
       }
-    | Dal_data_availibility_attestor_not_in_committee of {
+    | Dal_data_availability_attestor_not_in_committee of {
         attestor : Signature.Public_key_hash.t;
         level : Level.t;
       }

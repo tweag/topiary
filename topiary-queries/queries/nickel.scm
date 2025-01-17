@@ -381,7 +381,7 @@
 
 ; Start a new scope for annotations, used to properly indent any content coming
 ; after the annotations. We use Topiary's measuring scope feature: the
-; multi-liness of this scope is entirely decided by the annotations only, but
+; multi-lineness of this scope is entirely decided by the annotations only, but
 ; what we want to affect is larger, namely the content of the binding coming
 ; after the `=`.
 (
@@ -429,7 +429,7 @@
 ; Indent the bound expression of a let-binding (or a field definition) in
 ; presence of multi-line annotations. That's where we use the measuring scope of
 ; "annotations_with_content": we want this rule to fire only when (annot) is
-; multi-line, regardless of the multi-liness of the ("=" (term)) part.
+; multi-line, regardless of the multi-lineness of the ("=" (term)) part.
 (_
   (#multi_line_scope_only! "annotations_with_content")
   (annot) @append_indent_start
@@ -471,7 +471,7 @@
 ; In the case of unary applications, we always lay out the function application
 ; on one line (the argument might still span multiple lines, but the separation
 ; between the function and the operand is a space), and we don't add
-; indentation. Doing otherwise would often add unncessary indentation when the
+; indentation. Doing otherwise would often add unnecessary indentation when the
 ; argument is e.g. a function, a record or an array literal, etc.
 
 ; The multi-line character of an application depends on both the function and
@@ -481,7 +481,7 @@
   (applicative) @prepend_begin_scope
 ) @append_end_scope
 
-; In the the mutli-ary application case, we add a softline before each argument,
+; In the the multi-ary application case, we add a softline before each argument,
 ; and we indent it.
 ;
 ; Note that this pattern won't match the very last argument of an applicative

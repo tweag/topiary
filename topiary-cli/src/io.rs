@@ -287,7 +287,7 @@ impl OutputFile {
 impl fmt::Display for OutputFile {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Stdout => write!(f, "standard ouput"),
+            Self::Stdout => write!(f, "standard output"),
             Self::Disk { output, .. } => write!(f, "{}", output.to_string_lossy()),
         }
     }
