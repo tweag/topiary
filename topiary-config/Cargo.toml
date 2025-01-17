@@ -49,6 +49,7 @@ ocamllex = []
 rust = []
 toml = []
 tree_sitter_query = []
+sql = []
 
 # This a convenience for the sake of downstream applications which don't
 # wish to cherry-pick grammars (e.g., the playground)
@@ -62,5 +63,5 @@ all = [
   "ocamllex",
   "rust",
   "toml",
-  "tree_sitter_query"
+  "tree_sitter_query",
 ]

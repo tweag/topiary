@@ -4,7 +4,7 @@
 
 use std::fmt::Write;
 
-use crate::{Atom, FormatterError, FormatterResult};
+use crate::{Atom, FormatterError, FormatterResult, HowCapitalize};
 
 /// Renders a slice of Atoms into an owned string.
 /// The indent &str is used when an `Atom::IdentStart` is encountered.
@@ -44,6 +44,7 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                 original_position,
                 single_line_no_indent,
                 multi_line_indent_all,
+                how_capitalize,
                 ..
             } => {
                 if *single_line_no_indent {
@@ -51,10 +52,9 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                     // as a `Hardline` in the atom stream.
                     writeln!(buffer)?;
                 }
-
                 let content = content.trim_end_matches('\n');
 
-                let content = if *multi_line_indent_all {
+                let mut content = if *multi_line_indent_all {
                     let cursor = current_column(&buffer) as i32;
 
                     // original_position is 1-based
@@ -71,7 +71,15 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                 } else {
                     content.into()
                 };
-
+                match how_capitalize {
+                    HowCapitalize::UpperCase => {
+                        content = content.to_uppercase();
+                    }
+                    HowCapitalize::LowerCase => {
+                        content = content.to_lowercase();
+                    }
+                    _ => {}
+                }
                 write!(buffer, "{}", content)?;
             }
 

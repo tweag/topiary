@@ -1,5 +1,6 @@
 use std::{
     borrow::Cow,
+    cmp::max,
     collections::{HashMap, HashSet},
     mem,
     ops::Deref,
@@ -8,7 +9,8 @@ use std::{
 use topiary_tree_sitter_facade::Node;
 
 use crate::{
-    tree_sitter::NodeExt, Atom, FormatterError, FormatterResult, ScopeCondition, ScopeInformation,
+    tree_sitter::NodeExt, Atom, FormatterError, FormatterResult, HowCapitalize, ScopeCondition,
+    ScopeInformation,
 };
 
 /// A struct that holds sets of node IDs that have line breaks before or after them.
@@ -278,6 +280,14 @@ impl AtomCollection {
                 self.prepend(Atom::DeleteBegin, node, predicates);
                 self.append(Atom::DeleteEnd, node, predicates);
             }
+            "upper_case" => {
+                self.prepend(Atom::CaseBegin(HowCapitalize::UpperCase), node, predicates);
+                self.append(Atom::CaseEnd, node, predicates);
+            }
+            "lower_case" => {
+                self.prepend(Atom::CaseBegin(HowCapitalize::LowerCase), node, predicates);
+                self.append(Atom::CaseEnd, node, predicates);
+            }
             // Scope manipulation
             "prepend_begin_scope" => {
                 self.prepend(
@@ -538,6 +548,7 @@ impl AtomCollection {
                 original_position: node.start_position().into(),
                 single_line_no_indent: false,
                 multi_line_indent_all: false,
+                how_capitalize: HowCapitalize::Pass,
             });
             // Mark all sub-nodes as having this node as a "leaf parent"
             self.mark_leaf_parent(node, node.id());
@@ -591,6 +602,7 @@ impl AtomCollection {
         self.append.entry(target_node.id()).or_default().push(atom);
     }
 
+    // fn capitalize(&mut self,
     /// Expands a softline atom to a hardline, space or empty atom depending on
     /// if we are in a multiline context or not.
     ///
@@ -883,6 +895,63 @@ impl AtomCollection {
         }
     }
 
+    fn post_process_capitalization(&mut self) {
+        let mut case_context: Vec<HowCapitalize> = Vec::new();
+        for atom in &mut self.atoms {
+            match atom {
+                Atom::CaseBegin(case) => {
+                    match case {
+                        HowCapitalize::UpperCase => {
+                            case_context.push(HowCapitalize::UpperCase);
+                            *atom = Atom::Empty;
+                            /*
+                            if lower_case_level > 0 {
+                                panic!("Cannot use @lower_case inside of a node captured by @upper_case!");
+                            }*/
+                        }
+                        HowCapitalize::LowerCase => {
+                            case_context.push(HowCapitalize::LowerCase);
+                            *atom = Atom::Empty;
+                            /*
+                            if upper_case_level > 0 {
+                                panic!("Cannot use @upper_case inside of a node captured by @lower_case!");
+                            }*/
+                        }
+                        _ => {}
+                    }
+                }
+                Atom::CaseEnd => {
+                    case_context.pop();
+                    *atom = Atom::Empty;
+                }
+                _ => match atom {
+                    Atom::Leaf {
+                        content,
+                        id,
+                        original_position,
+                        single_line_no_indent,
+                        multi_line_indent_all,
+                        ..
+                    } => {
+                        // TODO don't be stupid with derefs
+                        *atom = Atom::Leaf {
+                            content: (*content).to_string(),
+                            id: *id,
+                            original_position: *original_position,
+                            single_line_no_indent: *single_line_no_indent,
+                            multi_line_indent_all: *multi_line_indent_all,
+                            how_capitalize: case_context
+                                .last()
+                                .unwrap_or(&HowCapitalize::Pass)
+                                .clone(),
+                        }
+                    }
+                    _ => {}
+                },
+            }
+        }
+    }
+
     /// This function merges the spaces, new lines and blank lines.
     /// If there are several tokens of different kind one after the other,
     /// the blank line is kept over the new line which itself is kept over the space.
@@ -890,6 +959,7 @@ impl AtomCollection {
     pub fn post_process(&mut self) {
         self.post_process_scopes();
         self.post_process_deletes();
+        self.post_process_capitalization();
         self.post_process_inner();
 
         // We have taken care of spaces following an antispace. Now fix the

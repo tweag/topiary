@@ -38,6 +38,13 @@ pub struct ScopeInformation {
     scope_id: String,
 }
 
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub enum HowCapitalize {
+    UpperCase,
+    LowerCase,
+    #[default]
+    Pass,
+}
 /// An atom represents a small piece of the output. We turn Tree-sitter nodes
 /// into atoms, and we add white-space atoms where appropriate. The final list
 /// of atoms is rendered to the output.
@@ -68,6 +75,7 @@ pub enum Atom {
         single_line_no_indent: bool,
         // if the leaf is multi-line, each line will be indented, not just the first
         multi_line_indent_all: bool,
+        how_capitalize: HowCapitalize,
     },
     /// Represents a literal string, such as a semicolon.
     Literal(String),
@@ -86,6 +94,9 @@ pub enum Atom {
     // it might happen that it contains several leaves.
     DeleteBegin,
     DeleteEnd,
+
+    CaseBegin(HowCapitalize),
+    CaseEnd,
     /// Indicates the beginning of a scope, use in combination with the
     /// ScopedSoftlines and ScopedConditionals below.
     ScopeBegin(ScopeInformation),
