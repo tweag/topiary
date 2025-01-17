@@ -581,10 +581,10 @@ nickel = {
 },
 ```
 
-:bulb: If you want to link to a grammar file that has already been compiled by Topiary itself, those look like `<GIT_HASH>.so`.
-
-[!WARNING]
-As of Topiary version 0.5.1, the option to directly specify a compiled grammar isn't available on Windows.
+> [!NOTE]
+> If you want to link to a grammar file that has already been compiled
+> by Topiary itself, those look like `<GIT_HASH>.so` (or the appropriate
+> dynamic library extension for your platform).
 
 For usage in Nix, a `languages_nix.ncl` file is provided that specifies the
 paths of every language using the `@nickel@` syntax. These can easily be
