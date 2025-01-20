@@ -110,3 +110,19 @@ assert(true) assert() cylinder();
 val = assert(true, "strut must be positive")
 assert(true, "frame must be nonnegative")
 undef;
+
+// ================================================================================
+// Assignments
+// ================================================================================
+  list1 = [
+    1,
+    2, 3
+  ];
+  my_fn = fn1([
+      1,
+      2,
+      3,
+    ],
+    true
+  );
+

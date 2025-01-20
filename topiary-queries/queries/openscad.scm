@@ -48,12 +48,11 @@
   "<="
   ">="
   "+"
-  "-"
+  (binary_expression "-")
   "*"
   "/"
   "%"
   "^"
-  "!"
   "="
   "?"
   ":"
@@ -111,21 +110,19 @@
 ; Append softlines, unless followed by comments.
 ; When binding multiple values in a let block, allow new lines between the bindings.
 (list
-  "[" @append_indent_start @append_empty_softline
-  "]" @prepend_indent_end @prepend_empty_softline
+  "[" @append_indent_start @append_empty_softline @append_antispace
+  "]" @prepend_indent_end @prepend_empty_softline @prepend_antispace
 )
-(list
-  "," @append_spaced_softline
-  .
-  [(block_comment) (line_comment)]* @do_nothing
+(range
+  "[" @append_antispace
+  "]" @prepend_antispace
 )
-(
-  ";" @append_spaced_softline
-  .
-  [(block_comment) (line_comment)]* @do_nothing
-)
+(list "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
+(assignments "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
+(parameters "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
+(";" @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 
-; Never put a space before a comma
+; Never put a space before a comma or square bracket
 (
   "," @prepend_antispace
 )
@@ -146,16 +143,6 @@
   (expression)
   ";" @prepend_indent_end
 )
-; indent the body of a function
-(var_declaration
-  (assignment
-    .
-    _
-    "=" @append_indent_start @append_spaced_softline
-  )
-  ";" @prepend_indent_end
-  .
-)
 
 ; module calls in a transformation chain will follow each other
 ; sometimes staying on the same line and sometimes having a linebreak,
@@ -166,17 +153,62 @@
   (module_call) @append_indent_start
   (transform_chain) @append_indent_end
 )
-; (function_call
-;   "=" @prepend_antispace @append_antispace
-; )
 
 ; ================================================================================
-; blocks & expressions
+; blocks/expressions/statements
 ; ================================================================================
+(assignments) @append_space
+; indent variable newlines
+; (var_declaration
+;   .
+;   (assignment . (identifier) . "=" @append_indent_start @append_input_softline)
+;   ";" @prepend_indent_end
+;   .
+; )
+
+(arguments "," @append_input_softline)
+(arguments "," @delete . ")" . (#single_line_only!))
+(list "," @delete . "]" . (#single_line_only!))
+(list
+  (_) @append_delimiter
+  .
+  ","? @do_nothing
+  .
+  "]"
+  .
+  (#delimiter! ",")
+  (#multi_line_only!)
+)
 (arguments
+  .
   "(" @append_empty_softline @append_indent_start
-  "," @append_input_softline
-  ")" @prepend_indent_end
+  ")" @prepend_indent_end @prepend_empty_softline
+  .
+)
+(arguments
+  (#delimiter! ",")
+  (_) @append_multiline_delimiter
+  .
+  ","? @do_nothing
+  .
+  ")"
+  .
+)
+
+(parameters "," @append_input_softline)
+(parameters "," @delete . ")" . (#single_line_only!))
+(parameters
+  .
+  "(" @append_empty_softline @append_indent_start
+  ")" @prepend_indent_end @prepend_empty_softline
+  .
+)
+
+(parenthesized_expression
+  .
+  "(" @append_empty_softline @append_indent_start
+  ")" @prepend_indent_end @prepend_empty_softline
+  .
 )
 
 ; differentiate parameter definitions from parameter invocation,
@@ -196,9 +228,6 @@
   "}" @prepend_spaced_softline @prepend_indent_end
   .
 )
-
-;{ ... } else {
-; ((union_block) @append_space . "else")
 
 ; everything except `union_block` after a for/if/else statement should be a spaced_softline
 ; but a union
@@ -263,11 +292,14 @@
     (assert_statement)
   ] @append_indent_end @append_spaced_softline
 )
-
 ; modifiers
 (modifier) @append_antispace
-; (transform_chain
-;   (modifier)+
 
 (assert_expression expression: (_) @prepend_spaced_softline)
 (assert_statement statement: (_) @prepend_spaced_softline)
+(echo_expression expression: (_) @prepend_spaced_softline)
+
+; ternary expressions
+(ternary_expression
+  ":" @prepend_spaced_softline
+)
