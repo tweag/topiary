@@ -1,6 +1,5 @@
 use std::{
     borrow::Cow,
-    cmp::max,
     collections::{HashMap, HashSet},
     mem,
     ops::Deref,
@@ -605,7 +604,6 @@ impl AtomCollection {
         self.append.entry(target_node.id()).or_default().push(atom);
     }
 
-    // fn capitalize(&mut self,
     /// Expands a softline atom to a hardline, space or empty atom depending on
     /// if we are in a multiline context or not.
     ///

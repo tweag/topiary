@@ -1411,7 +1411,7 @@ The example below solves the problem of indenting function application in OCaml 
 ```
 
 ### `@lower_case`/`@upper_case`
-(Don't) Capitalize all of the text in the matched node.
+Set the capitalization of all text in the matched node and its children.
 Use this with care in languages that are case sensitive.
 
 ```scheme
@@ -1420,12 +1420,10 @@ Use this with care in languages that are case sensitive.
 ; https://github.com/DerekStride/tree-sitter-sql/tree/main
 
 ; make keywords select,from lowercase.
-(
- [
-  (keyword_select)
-  (keyword_from)
- ] @lower_case
-)
+[
+ (keyword_select)
+ (keyword_from)
+] @lower_case
 ; make keyword WHERE uppercase
 (keyword_where) @upper_case
 ```
