@@ -9,7 +9,7 @@ use std::{
 use topiary_tree_sitter_facade::Node;
 
 use crate::{
-    tree_sitter::NodeExt, Atom, FormatterError, FormatterResult, HowCapitalize, ScopeCondition,
+    tree_sitter::NodeExt, Atom, Capitalisation, FormatterError, FormatterResult, ScopeCondition,
     ScopeInformation,
 };
 
@@ -274,18 +274,21 @@ impl AtomCollection {
                 self.prepend(Atom::Softline { spaced: true }, node, predicates);
             }
             // Skip over leaves
-            "leaf" => {}
+            "leaf" => {
+                self.prepend(Atom::CaseBegin(Capitalisation::Pass), node, predicates);
+                self.append(Atom::CaseEnd, node, predicates);
+            }
             // Deletion
             "delete" => {
                 self.prepend(Atom::DeleteBegin, node, predicates);
                 self.append(Atom::DeleteEnd, node, predicates);
             }
             "upper_case" => {
-                self.prepend(Atom::CaseBegin(HowCapitalize::UpperCase), node, predicates);
+                self.prepend(Atom::CaseBegin(Capitalisation::UpperCase), node, predicates);
                 self.append(Atom::CaseEnd, node, predicates);
             }
             "lower_case" => {
-                self.prepend(Atom::CaseBegin(HowCapitalize::LowerCase), node, predicates);
+                self.prepend(Atom::CaseBegin(Capitalisation::LowerCase), node, predicates);
                 self.append(Atom::CaseEnd, node, predicates);
             }
             // Scope manipulation
@@ -548,7 +551,7 @@ impl AtomCollection {
                 original_position: node.start_position().into(),
                 single_line_no_indent: false,
                 multi_line_indent_all: false,
-                how_capitalize: HowCapitalize::Pass,
+                capitalisation: Capitalisation::Pass,
             });
             // Mark all sub-nodes as having this node as a "leaf parent"
             self.mark_leaf_parent(node, node.id());
@@ -895,31 +898,25 @@ impl AtomCollection {
         }
     }
 
+    /// Separate post processing of capitalisation, to avoid confusion around whitespacing.
     fn post_process_capitalization(&mut self) {
-        let mut case_context: Vec<HowCapitalize> = Vec::new();
+        let mut case_context: Vec<Capitalisation> = Vec::new();
         for atom in &mut self.atoms {
             match atom {
-                Atom::CaseBegin(case) => {
-                    match case {
-                        HowCapitalize::UpperCase => {
-                            case_context.push(HowCapitalize::UpperCase);
-                            *atom = Atom::Empty;
-                            /*
-                            if lower_case_level > 0 {
-                                panic!("Cannot use @lower_case inside of a node captured by @upper_case!");
-                            }*/
-                        }
-                        HowCapitalize::LowerCase => {
-                            case_context.push(HowCapitalize::LowerCase);
-                            *atom = Atom::Empty;
-                            /*
-                            if upper_case_level > 0 {
-                                panic!("Cannot use @upper_case inside of a node captured by @lower_case!");
-                            }*/
-                        }
-                        _ => {}
+                Atom::CaseBegin(case) => match case {
+                    Capitalisation::UpperCase => {
+                        case_context.push(Capitalisation::UpperCase);
+                        *atom = Atom::Empty;
                     }
-                }
+                    Capitalisation::LowerCase => {
+                        case_context.push(Capitalisation::LowerCase);
+                        *atom = Atom::Empty;
+                    }
+                    Capitalisation::Pass => {
+                        case_context.push(Capitalisation::Pass);
+                        *atom = Atom::Empty;
+                    }
+                },
                 Atom::CaseEnd => {
                     case_context.pop();
                     *atom = Atom::Empty;
@@ -940,9 +937,9 @@ impl AtomCollection {
                             original_position: *original_position,
                             single_line_no_indent: *single_line_no_indent,
                             multi_line_indent_all: *multi_line_indent_all,
-                            how_capitalize: case_context
+                            capitalisation: case_context
                                 .last()
-                                .unwrap_or(&HowCapitalize::Pass)
+                                .unwrap_or(&Capitalisation::Pass)
                                 .clone(),
                         }
                     }

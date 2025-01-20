@@ -39,7 +39,7 @@ pub struct ScopeInformation {
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub enum HowCapitalize {
+pub enum Capitalisation {
     UpperCase,
     LowerCase,
     #[default]
@@ -75,7 +75,7 @@ pub enum Atom {
         single_line_no_indent: bool,
         // if the leaf is multi-line, each line will be indented, not just the first
         multi_line_indent_all: bool,
-        how_capitalize: HowCapitalize,
+        capitalisation: Capitalisation,
     },
     /// Represents a literal string, such as a semicolon.
     Literal(String),
@@ -95,7 +95,7 @@ pub enum Atom {
     DeleteBegin,
     DeleteEnd,
 
-    CaseBegin(HowCapitalize),
+    CaseBegin(Capitalisation),
     CaseEnd,
     /// Indicates the beginning of a scope, use in combination with the
     /// ScopedSoftlines and ScopedConditionals below.
