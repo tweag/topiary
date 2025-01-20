@@ -95,6 +95,7 @@ impl Configuration {
     /// # Errors
     ///
     /// If any grammar could not build, a `TopiaryConfigFetchingError` is returned.
+    #[cfg(not(target_arch = "wasm32"))]
     fn fetch_language(
         language: &Language,
         force: bool,
