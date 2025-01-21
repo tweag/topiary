@@ -1,8 +1,8 @@
 // ================================================================================
 // Basic Items
 // ================================================================================
-include <my_path/my_lib.scad>
-use <my_path/my_lib.scad>
+include <my_path/my_lib.scad>;
+use <my_path/my_lib.scad>; include <my_path/my_lib.scad> use <my_path/my_lib.scad>
 // variables
 rr = a_vector[2]; // member of vector
 range1 = [-1.5:0.5:3]; // for() loop range

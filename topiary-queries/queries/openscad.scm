@@ -75,7 +75,6 @@
 (
   [
     (var_declaration)
-    (use_statement)
     (function_item)
     (module_item)
     (intersection_for_block)
@@ -84,7 +83,7 @@
     (let_block)
     (assign_block)
     (union_block)
-    (transform_chain ";" .)
+    (use_statement)
     (include_statement)
     (assert_statement)
   ] @append_spaced_softline
@@ -139,10 +138,9 @@
 (parameters "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 (";" @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 
-; Never put a space before a comma or square bracket
-(
-  "," @prepend_antispace
-)
+; Never put a space before a comma
+("," @prepend_antispace)
+(";" @prepend_antispace)
 
 ; Don't insert spaces between the operator and their expression operand
 ; '-x' v.s. '- x'
@@ -174,35 +172,33 @@
 ; ================================================================================
 ; blocks/expressions/statements
 ; ================================================================================
+; Let child nodes handle indentation
+(var_declaration . (assignment . (identifier) . "=" @append_input_softline))
+
 (assignments) @append_space
+(assignments
+  (#delimiter! ",")
+  (assignment) @append_delimiter
+  .
+  ","? @do_nothing
+  .
+  (line_comment)*
+  .
+  ")"
+  .
+  (#multi_line_only!)
+)
 (assignments
   .
   "(" @append_empty_softline @append_indent_start
   ")" @prepend_indent_end @prepend_empty_softline
   .
 )
+(assignments "," @delete . ")" . (#single_line_only!))
 (assignments "," @append_spaced_softline)
-; indent variable newlines
-(var_declaration
-  .
-  (assignment . (identifier) . "=" @append_indent_start @append_input_softline)
-  ";" @prepend_indent_end
-  .
-)
 
 (arguments "," @append_input_softline)
 (arguments "," @delete . ")" . (#single_line_only!))
-(list "," @delete . "]" . (#single_line_only!))
-(list
-  (_) @append_delimiter
-  .
-  ","? @do_nothing
-  .
-  "]"
-  .
-  (#delimiter! ",")
-  (#multi_line_only!)
-)
 (arguments
   .
   "(" @append_empty_softline @append_indent_start
@@ -211,12 +207,15 @@
 )
 (arguments
   (#delimiter! ",")
-  (_) @append_multiline_delimiter
+  (_) @append_delimiter
   .
   ","? @do_nothing
   .
+  (line_comment)*
+  .
   ")"
   .
+  (#multi_line_only!)
 )
 
 (parameters "," @append_input_softline)
@@ -233,6 +232,17 @@
   "(" @append_empty_softline @append_indent_start
   ")" @prepend_indent_end @prepend_empty_softline
   .
+)
+(list "," @delete . "]" . (#single_line_only!))
+(list
+  (#delimiter! ",")
+  (_) @append_delimiter
+  .
+  ","? @do_nothing
+  .
+  "]"
+  .
+  (#multi_line_only!)
 )
 
 ; differentiate parameter definitions from parameter invocation,
