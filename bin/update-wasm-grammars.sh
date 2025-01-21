@@ -153,7 +153,20 @@ css() {
   echo -e "${GREEN}CSS: Done${NC}"
 }
 
+openscad() {
+  echo -e "${BLUE}OpenSCAD: Fetching${NC}"
+  REPO=$(repo_for_language "openscad")
+  git clone "${REPO}" "${WORKDIR}/tree-sitter-openscad" &> /dev/null
+  REV=$(ref_for_language "opescad")
+  pushd "${WORKDIR}/tree-sitter-openscad" &> /dev/null
+    git checkout "$REV" &> /dev/null
+  popd &> /dev/null
+  echo -e "${ORANGE}OpenSCAD: Building${NC}"
+  tree-sitter build --wasm "${WORKDIR}/tree-sitter-openscad"
+  echo -e "${GREEN}OpenSCAD: Done${NC}"
+}
 
-(trap 'kill 0' SIGINT; json & nickel & ocaml & ocamllex & bash & rust & toml & tree-sitter-query & css & wait)
+
+(trap 'kill 0' SIGINT; json & nickel & ocaml & ocamllex & bash & rust & toml & tree-sitter-query & css & openscad & wait)
 
 echo -e "${GREEN}Done! All grammars have been updated${NC}"
