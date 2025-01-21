@@ -106,7 +106,11 @@
       });
 
       checks = forAllSystems ({ system, pkgs, topiaryPkgs, ... }: {
-        inherit (topiaryPkgs) clippy/* clippy-wasm */ fmt topiary-core/* topiary-playground */ audit benchmark;
+        # NOTE: The following checks have been removed as WASM
+        # and playground development has moved to the playground branch:
+        # - clippy-wasm
+        # - topiary-playground
+        inherit (topiaryPkgs) clippy fmt topiary-core audit benchmark;
         topiary-cli = self.packages.${system}.topiary-cli;
 
         ## Check that the `lib.pre-commit-hook` output builds/evaluates
