@@ -48,7 +48,7 @@
   "<="
   ">="
   "+"
-  (binary_expression "-")
+  "-"
   "*"
   "/"
   "%"
@@ -158,13 +158,20 @@
 ; blocks/expressions/statements
 ; ================================================================================
 (assignments) @append_space
+(assignments
+  .
+  "(" @append_empty_softline @append_indent_start
+  ")" @prepend_indent_end @prepend_empty_softline
+  .
+)
+(assignments "," @append_spaced_softline)
 ; indent variable newlines
-; (var_declaration
-;   .
-;   (assignment . (identifier) . "=" @append_indent_start @append_input_softline)
-;   ";" @prepend_indent_end
-;   .
-; )
+(var_declaration
+  .
+  (assignment . (identifier) . "=" @append_indent_start @append_input_softline)
+  ";" @prepend_indent_end
+  .
+)
 
 (arguments "," @append_input_softline)
 (arguments "," @delete . ")" . (#single_line_only!))

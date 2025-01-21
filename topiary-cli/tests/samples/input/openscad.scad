@@ -126,3 +126,28 @@ undef;
     true
   );
 
+
+// ================================================================================
+// Ternary
+// ================================================================================
+function affine3d_rot_from_to(from, to) =
+  assert(is_vector(from))
+  assert(is_vector(to))
+  assert(len(from) == len(to))
+  let (
+    from = unit(point3d(from)),
+    to = unit(point3d(to))
+  ) approx(from, to) ? affine3d_identity()
+  : from.z == 0 && to.z == 0 ? affine3d_zrot(v_theta(point2d(to)) - v_theta(point2d(from)))
+  : let (
+    u = vector_axis(from, to),
+    ang = vector_angle(from, to),
+    c = cos(ang),
+    c2 = 1 - c,
+    s = sin(ang)
+  ) [
+    [1, 0, 0, 0],
+    [0, 1, 0, 0],
+    [0, 0, 1, 0],
+    [0, 0, 0, 1],
+  ];
