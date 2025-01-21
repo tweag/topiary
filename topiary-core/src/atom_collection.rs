@@ -64,7 +64,7 @@ pub struct AtomCollection {
 
 impl AtomCollection {
     /// Returns a basic AtomCollection with the supplied atoms. Only used for
-    /// testing. Normally you should use `AtomCollection::collect_leafs`
+    /// testing. Normally you should use `AtomCollection::collect_leaves`
     /// instead.
     #[cfg(test)]
     pub fn new(atoms: Vec<Atom>) -> Self {
@@ -83,7 +83,7 @@ impl AtomCollection {
     }
 
     /// Use this to create an initial `AtomCollection`
-    pub fn collect_leafs(
+    pub fn collect_leaves(
         root: &Node,
         source: &[u8],
         specified_leaf_nodes: HashSet<usize>,
@@ -109,7 +109,7 @@ impl AtomCollection {
             counter: 0,
         };
 
-        atoms.collect_leafs_inner(root, source, &Vec::new(), 0)?;
+        atoms.collect_leaves_inner(root, source, &Vec::new(), 0)?;
 
         Ok(atoms)
     }
@@ -289,7 +289,7 @@ impl AtomCollection {
             "prepend_spaced_softline" => {
                 self.prepend(Atom::Softline { spaced: true }, node, predicates);
             }
-            // Skip over leafs
+            // Skip over leaves
             "leaf" => {}
             // Deletion
             "delete" => {
@@ -523,7 +523,7 @@ impl AtomCollection {
     /// # Errors
     ///
     /// This function returns an error if it fails to convert the source code belonging to the node to UTF-8.
-    fn collect_leafs_inner(
+    fn collect_leaves_inner(
         &mut self,
         node: &Node,
         source: &[u8],
@@ -544,7 +544,7 @@ impl AtomCollection {
             log::debug!("Skipping zero-byte node: {}", node.display_one_based());
         } else if node.child_count() == 0
             || self.specified_leaf_nodes.contains(&node.id())
-            // We treat error nodes as leafs when `tolerate_parsing_errors` is set to true.
+            // We treat error nodes as leaves when `tolerate_parsing_errors` is set to true.
             // This ensures Topiary does not try to further apply transformations on them.
             // If `tolerate_parsing_errors` is set to false, this part of the code is only reached if the tree contains no ERROR nodes,
             // and as such the check below would be redundant.
@@ -561,7 +561,7 @@ impl AtomCollection {
             self.mark_leaf_parent(node, node.id());
         } else {
             for child in node.children(&mut node.walk()) {
-                self.collect_leafs_inner(&child, source, &parent_ids, level + 1)?;
+                self.collect_leaves_inner(&child, source, &parent_ids, level + 1)?;
             }
         }
 

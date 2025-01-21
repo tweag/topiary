@@ -256,8 +256,8 @@ Note: `fmt` is a recognised alias of the `format` subcommand.
 `topiary visualise` converts the input's Tree-sitter parse tree to a graph
 representation in the selected format. By default, Topiary outputs a DOT file,
 which can be rendered using a visualisation tool such as the Graphviz suite. For
-example, using Graphviz's `dot`: `topiary visualise input.ocaml | dot -Tpng
--ooutput.png`.
+example, using Graphviz's `dot`: `topiary visualise input.ocaml | dot -T png
+-o output.png`.
 
 <!-- DO NOT REMOVE THE "usage" COMMENTS -->
 <!-- usage:start:visualise -->
@@ -380,6 +380,7 @@ Prefetch all languages in the configuration
 Usage: topiary prefetch [OPTIONS]
 
 Options:
+  -f, --force                          Re-fetch existing grammars if they already exist
   -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
   -M, --merge-configuration            Enable merging for configuration files
   -v, --verbose...                     Logging verbosity (increased per occurrence)
@@ -581,10 +582,10 @@ nickel = {
 },
 ```
 
-:bulb: If you want to link to a grammar file that has already been compiled by Topiary itself, those look like `<GIT_HASH>.so`.
-
-[!WARNING]
-As of Topiary version 0.5.1, the option to directly specify a compiled grammar isn't available on Windows.
+> [!NOTE]
+> If you want to link to a grammar file that has already been compiled
+> by Topiary itself, those look like `<GIT_HASH>.so` (or the appropriate
+> dynamic library extension for your platform).
 
 For usage in Nix, a `languages_nix.ncl` file is provided that specifies the
 paths of every language using the `@nickel@` syntax. These can easily be

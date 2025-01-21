@@ -90,6 +90,55 @@ impl Configuration {
             .ok_or(TopiaryConfigError::UnknownLanguage(name.to_string()))
     }
 
+    /// Prefetch a language per its configuration
+    ///
+    /// # Errors
+    ///
+    /// If any grammar could not build, a `TopiaryConfigFetchingError` is returned.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn fetch_language(
+        language: &Language,
+        force: bool,
+        tmp_dir: &Path,
+    ) -> Result<(), TopiaryConfigFetchingError> {
+        match &language.config.grammar.source {
+            language::GrammarSource::Git(git_source) => {
+                let library_path = language.library_path()?;
+
+                log::info!(
+                    "Fetch \"{}\": Configured via Git ({} ({})); to {}",
+                    language.name,
+                    git_source.git,
+                    git_source.rev,
+                    library_path.to_string_lossy()
+                );
+
+                git_source.fetch_and_compile_with_dir(
+                    &language.name,
+                    library_path,
+                    force,
+                    tmp_dir.to_path_buf(),
+                )
+            }
+
+            language::GrammarSource::Path(path) => {
+                log::info!(
+                    "Fetch \"{}\": Configured via filesystem ({}); nothing to do",
+                    language.name,
+                    path.to_string_lossy(),
+                );
+
+                if !path.exists() {
+                    Err(TopiaryConfigFetchingError::GrammarFileNotFound(
+                        path.to_path_buf(),
+                    ))
+                } else {
+                    Ok(())
+                }
+            }
+        }
+    }
+
     /// Prefetches and builds all known languages.
     /// This can be beneficial to speed up future startup time.
     ///
@@ -97,7 +146,7 @@ impl Configuration {
     ///
     /// If any Grammar could not be build, a `TopiaryConfigError` is returned.
     #[cfg(not(target_arch = "wasm32"))]
-    pub fn prefetch_languages(&self) -> TopiaryConfigResult<()> {
+    pub fn prefetch_languages(&self, force: bool) -> TopiaryConfigResult<()> {
         let tmp_dir = tempdir()?;
         let tmp_dir_path = tmp_dir.path().to_owned();
 
@@ -107,23 +156,7 @@ impl Configuration {
             use rayon::prelude::*;
             self.languages
                 .par_iter()
-                .map(|l| match &l.config.grammar.source {
-                    language::GrammarSource::Git(git_source) => git_source
-                        .fetch_and_compile_with_dir(
-                            &l.name,
-                            l.library_path()?,
-                            tmp_dir_path.clone(),
-                        ),
-                    language::GrammarSource::Path(path) => {
-                        if !path.exists() {
-                            Err(TopiaryConfigFetchingError::GrammarFileNotFound(
-                                path.to_path_buf(),
-                            ))
-                        } else {
-                            Ok(())
-                        }
-                    }
-                })
+                .map(|l| Configuration::fetch_language(l, force, &tmp_dir_path))
                 .collect::<Result<Vec<_>, TopiaryConfigFetchingError>>()?;
         }
 
@@ -131,7 +164,7 @@ impl Configuration {
         {
             self.languages
                 .iter()
-                .map(|l| l.fetch_and_compile_with_dir(l.library_path()?, tmp_dir_path.clone()))
+                .map(|l| Configuration::fetch_language(l, force, &tmp_dir_path))
                 .collect::<Result<Vec<_>, TopiaryConfigFetchingError>>()?;
         }
 

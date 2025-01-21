@@ -2,9 +2,8 @@
 ; any which are encountered by Topiary will be forcibly collapsed on to
 ; a single line. (See Issue #172)
 
-; Don't modify string literals, heredocs, comments, atomic "words" or
-; variable expansions (simple or otherwise)
-; FIXME The first line of heredocs are affected by the indent level
+; Don't modify strings, heredocs, comments, atomic "words", variable
+; expansions or array indices.
 [
   (comment)
   (expansion)
@@ -18,17 +17,9 @@
   .
   (_) @leaf
 )
-(simple_expansion
-  (#delimiter! "{")
-  "$"
-  .
-  (_) @prepend_delimiter
-)
-(simple_expansion
-  (#delimiter! "}")
-  "$"
-  .
-  (_) @append_delimiter
+
+(subscript
+  index: (_) @leaf
 )
 
 ;; Spacing
@@ -140,6 +131,8 @@
   "while"
 ] @append_space
 
+";" @prepend_antispace
+
 ; Prepend a space to intra-statement keywords
 [
   "in"
@@ -165,7 +158,8 @@
 ;    input (i.e., blank lines shouldn't be engineered elsewhere).
 ; 4. A comment can never change flavour (i.e., standalone to trailing,
 ;    or vice versa).
-; 5. Trailing comments should be interposed by a space.
+; 5. Trailing comments must be interposed by a space (unless they follow
+;    a semicolon, but we still insert the space).
 
 ; Rule 1: See @leaf rule, above
 
@@ -181,16 +175,7 @@
 ; and becoming a trailing comment. That case is satisfied by Rule 5.
 
 ; Rule 5
-(
-  (comment) @prepend_begin_scope @append_begin_measuring_scope
-  .
-  _ @prepend_end_measuring_scope @prepend_end_scope
-  (#scope_id! "line_break_after_comment")
-)
-(
-  (comment) @prepend_space
-  (#multi_line_scope_only! "line_break_after_comment")
-)
+(comment) @prepend_space
 
 ;; Compound Statements and Subshells
 
@@ -267,13 +252,10 @@
 ; * Multi-line command substitutions
 ;
 ; We address each context individually, as there's no way to isolate the
-; exceptional contexts, where no line spacing is required. We use custom scopes
-; to detect cases where a "command" is followed by a newline in the input, because
-; modifications to the grammar since v0.19.0 no longer add anonymous '\n' nodes to the tree.
-;
-; FIXME Adding @delete to the \n anonymous nodes removes the errant
-; trailing space. However, doing so breaks inter-block spacing and
-; (weirdly) de-indentation at the end of a non-terminated case branch.
+; exceptional contexts, where no line spacing is required. We use custom
+; scopes to detect cases where a "command" is followed by a newline in
+; the input, because modifications to the grammar since v0.19.0 no
+; longer add anonymous '\n' nodes to the tree.
 
 (program
   [
@@ -431,18 +413,23 @@
 )
 
 (pipeline
-  [(_) "|" "|&"] @append_space
-  .
-  _
+  ["|" "|&"] @prepend_space @append_spaced_softline
 )
 
+(pipeline
+  .
+  (_)
+  .
+  ["|" "|&"] @append_indent_start
+) @append_indent_end
+
 ; Prepend the asynchronous operator with a space
-; NOTE If I'm not mistaken, this can interpose two "commands" -- like a
-; delimiter -- but I've never seen this form in the wild
+; NOTE This can interpose two "commands", but it's rare to see it in the
+; wild. As such, we also append a spaced softline
 (_
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)]
   .
-  "&" @prepend_space
+  "&" @prepend_space @append_spaced_softline
 )
 
 ; Spaces between command and its arguments
@@ -463,22 +450,37 @@
   "!" @prepend_space @append_space
 )
 
-; Multi-line command substitutions become an indent block
-; NOTE This is a bit of a hack! We _have_ to append softlines,
-; otherwise command substitutions enclosed within a string will force
-; that new line to the start of the string, which can result in
-; syntactically incorrect output (see Issue 201). Thus we target the
-; node immediately before the closing parenthesis.
-; FIXME If there is only a single named child within a multi-line
-; command substitution, then -- for reasons -- the new line will not be
-; appended after the $(. The output remains syntactically correct.
 (command_substitution
   .
-  "$(" @append_empty_softline @append_indent_start
-  _
-  (_) @append_empty_softline @append_indent_end
+  "`" @delete @append_delimiter
   .
-  ")"
+  _ @prepend_empty_softline @prepend_indent_start
+  (#delimiter! "$(")
+)
+
+(command_substitution
+  _ @append_empty_softline @append_indent_end
+  .
+  "`" @delete @append_delimiter
+  .
+  (#delimiter! ")")
+)
+
+; Multi-line command substitutions become an indent block
+(command_substitution
+  "$(" @append_empty_softline @append_indent_start
+  ")" @prepend_empty_softline @prepend_indent_end
+)
+
+; Ensure a space interposes command substitutions containing subshells
+; This is to remove the ambiguity with $(( ... ))
+(command_substitution
+  .
+  (subshell) @prepend_space
+)
+
+(command_substitution
+  (subshell) @append_space
   .
 )
 
@@ -528,29 +530,64 @@
 
 ; Keep the "if"/"elif" and the "then" on the same line,
 ; inserting a spaced delimiter when necessary
-; FIXME Why does the space need to be explicitly inserted?
 (_
   ";"* @do_nothing
   .
-  "then" @prepend_delimiter @prepend_space
-  (#delimiter! ";")
+  "then" @prepend_delimiter
+  (#delimiter! "; ")
 )
 
 ;; Test Commands
 
+; Convert sh-style [ ... ] tests to Bash-style [[ ... ]]
+; FIXME This breaks _sometimes_, but I don't know why :(
 (test_command
-  .
-  (unary_expression
-    _ @prepend_space
-  ) @append_space
+  "[" @append_delimiter
+  (#delimiter! "[ ")
 )
 
-; FIXME The binary_expression node is not being returned by Tree-Sitter
-; in the context of a (test_command); it does work in other contexts
-; See https://github.com/tweag/topiary/pull/155#issuecomment-1364143677
+(test_command
+  "]" @prepend_delimiter
+  (#delimiter! " ]")
+)
+
+(test_command
+  "[[" @append_space
+  "]]" @prepend_space
+)
+
+; NOTE (arithmetic_expansion) seems to take higher priority
+; (test_command
+;   "((" @append_space
+;   "))" @prepend_space
+; )
+
+(arithmetic_expansion
+  "$[" @delete @append_delimiter
+  (#delimiter! "$(( ")
+)
+
+(arithmetic_expansion
+  "]" @delete @append_delimiter
+  (#delimiter! " ))")
+)
+
+(arithmetic_expansion
+  ["$((" "(("] @append_space
+  ["))"] @prepend_space
+)
+
+(unary_expression
+  "!" @append_space
+)
+
+(unary_expression
+  (test_operator) @append_space
+)
+
 (binary_expression
-  left: _ @append_space
-  right: _ @prepend_space
+  left: (_) @append_space
+  right: (_) @prepend_space
 )
 
 ;; Case Statements
@@ -612,12 +649,11 @@
 
 ; Keep the loop construct and the "do" on the same line,
 ; inserting a spaced delimiter when necessary
-; FIXME Why does the space need to be explicitly inserted?
 (_
   ";"* @do_nothing
   .
-  (do_group) @prepend_delimiter @prepend_space
-  (#delimiter! ";")
+  (do_group) @prepend_delimiter
+  (#delimiter! "; ")
 )
 
 ;; Function Definitions
@@ -638,19 +674,29 @@
 ; statements and test commands as function bodies.
 
 (function_definition
-  body: _ @prepend_space @append_hardline
+  body: (_) @prepend_space @append_hardline
 )
 
+(function_definition
+  .
+  (word) @append_delimiter
+  .
+  (
+    "("
+    ")"
+  )? @do_nothing
+
+  (#delimiter! "()")
+)
+
+; NOTE This rule must appear after the above, where the "()" are
+; appended, if necessary
 (function_definition
   .
   "function" @delete
 )
 
 ;; Variable Declaration, Assignment and Expansion
-
-; NOTE It would be nice to convert (simple_expansion) nodes into
-; (expansion) nodes by inserting "delimiters" in appropriate places.
-; This doesn't appear to currently be possible (see Issue #187).
 
 ; NOTE Assignment only gets a new line when not part of a declaration;
 ; that is, all the contexts in which units of execution can appear.
@@ -664,14 +710,57 @@
   (_) @prepend_hardline
 )
 
-; Multiple variables can be exported (and assigned) at once
+; All declaration arguments must be separated by whitespace
 (declaration_command
+  (word) @append_space
+)
+
+; Multiple variables can be declared (and assigned) at once
+(declaration_command
+  [
+    (variable_name)
+    (variable_assignment)
+  ] @prepend_space
+)
+
+(declaration_command
+  (variable_name)? @do_nothing
   .
-  "export"
-  [(variable_name) (variable_assignment)] @prepend_space
+  (concatenation) @prepend_space
 )
 
 ; Environment variables assigned to commands inline need to be spaced
 (command
   (variable_assignment) @append_space
+)
+
+; Multi-line arrays start an indentation block
+(array
+  "(" @append_empty_softline @append_indent_start
+  ")" @prepend_empty_softline @prepend_indent_end
+)
+
+; Array elements need to be spaced
+(array
+  (_) @append_spaced_softline
+  .
+  (_)
+)
+
+; Convert (simple_expansion) into (expansion)s
+; NOTE Only convert $word, not special forms like $0, $@, etc.
+(simple_expansion
+  (#delimiter! "{")
+  "$"
+  .
+  (variable_name) @prepend_delimiter
+  (#not-match? @prepend_delimiter "[0-9]")
+)
+
+(simple_expansion
+  (#delimiter! "}")
+  "$"
+  .
+  (variable_name) @append_delimiter
+  (#not-match? @append_delimiter "[0-9]")
 )
