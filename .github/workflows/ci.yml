@@ -107,8 +107,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run test suite
-        run: cargo test --all-features
+      # DEBUG
+      - name: DEBUG
+        shell: bash
+        run: |
+          mkdir artefacts
+          cp topiary-cli/tests/samples/input/bash.sh artefacts/formatted.sh
+          cp topiary-cli/tests/samples/expected/bash.sh artefacts/expected.sh
+
+          cargo run -- format \
+            -vvvv \
+            artefacts/formatted.sh \
+            2>&1 \
+          | tee artefacts/format.log
+
+      - name: DEBUG ARTEFACT
+        uses: actions/upload-artifact@v4
+        with:
+          name: DEBUG
+          path: artefacts
+
+      #- name: Run test suite
+      #  run: cargo test --all-features
 
   deploy:
     needs: build
