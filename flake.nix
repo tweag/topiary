@@ -106,7 +106,7 @@
       });
 
       checks = forAllSystems ({ system, pkgs, topiaryPkgs, ... }: {
-        inherit (topiaryPkgs) clippy clippy-wasm fmt topiary-core topiary-playground audit benchmark;
+        inherit (topiaryPkgs) clippy/* clippy-wasm */ fmt topiary-core/* topiary-playground */ audit benchmark;
         topiary-cli = self.packages.${system}.topiary-cli;
 
         ## Check that the `lib.pre-commit-hook` output builds/evaluates

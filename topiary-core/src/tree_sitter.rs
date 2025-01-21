@@ -41,7 +41,7 @@ impl Display for Position {
 }
 
 /// Topiary often needs both the tree-sitter `Query` and the original content
-/// beloging to the file from which the query was parsed. This struct is a simple
+/// belonging to the file from which the query was parsed. This struct is a simple
 /// convenience wrapper that combines the `Query` with its original string.
 #[derive(Debug)]
 pub struct TopiaryQuery {
@@ -254,11 +254,11 @@ pub fn apply_query(
     }
 
     // Find the ids of all tree-sitter nodes that were identified as a leaf
-    // We want to avoid recursing into them in the collect_leafs function.
+    // We want to avoid recursing into them in the collect_leaves function.
     let specified_leaf_nodes: HashSet<usize> = collect_leaf_ids(&matches, capture_names.clone());
 
     // The Flattening: collects all terminal nodes of the tree-sitter tree in a Vec
-    let mut atoms = AtomCollection::collect_leafs(&root, source, specified_leaf_nodes)?;
+    let mut atoms = AtomCollection::collect_leaves(&root, source, specified_leaf_nodes)?;
 
     log::debug!("List of atoms before formatting: {atoms:?}");
 

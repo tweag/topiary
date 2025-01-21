@@ -26,7 +26,7 @@ pub enum TopiaryConfigError {
 #[cfg(not(target_arch = "wasm32"))]
 pub enum TopiaryConfigFetchingError {
     Git(io::Error),
-    Subprocess(String),
+    Build(anyhow::Error),
     Io(io::Error),
     LibLoading(libloading::Error),
     GrammarFileNotFound(path::PathBuf),
@@ -57,7 +57,7 @@ impl fmt::Display for TopiaryConfigFetchingError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             TopiaryConfigFetchingError::Git(e) => write!(f, "Git error: {:?}", e),
-            TopiaryConfigFetchingError::Subprocess(e) => {
+            TopiaryConfigFetchingError::Build(e) => {
                 write!(f, "Compilation error: {e},")
             }
             TopiaryConfigFetchingError::Io(error) => {

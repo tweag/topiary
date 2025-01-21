@@ -1,2 +1,5 @@
+# Ensure all text is checked out with Unix EOL
+* text eol=lf
+
 # Hide our tests from language detection so GitHub correctly detects Topiary as a Rust project
 topiary-cli/tests/samples/** linguist-vendored

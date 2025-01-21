@@ -101,7 +101,7 @@
 )
 
 (lexer_case
-  ; The anonymouse child of the lexer_case is the regexp
+  ; The anonymous child of the lexer_case is the regexp
   (_) @prepend_space @append_space
   (action) @prepend_space @prepend_indent_start @append_indent_end
 )

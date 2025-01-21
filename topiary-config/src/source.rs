@@ -37,8 +37,8 @@ impl Source {
         // We always include the built-in configuration, as a fallback
         let mut res: Vec<Self> = vec![Self::Builtin];
 
-        for candiate in candidates {
-            if let Some(path) = Self::find(&candiate) {
+        for candidate in candidates {
+            if let Some(path) = Self::find(&candidate) {
                 res.push(Self::File(path));
             }
         }

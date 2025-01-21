@@ -150,7 +150,11 @@ pub enum Commands {
 
     /// Prefetch all languages in the configuration
     #[command(display_order = 4)]
-    Prefetch,
+    Prefetch {
+        /// Re-fetch existing grammars if they already exist
+        #[arg(short, long)]
+        force: bool,
+    },
 
     /// Checks how much of the tree-sitter query is used
     #[command(display_order = 5)]
@@ -190,7 +194,7 @@ pub fn get_args() -> CLIResult<Cli> {
     let mut args = Cli::parse();
 
     // When doing prefetching, we should always output at at least verbosity level two
-    if matches!(args.command, Commands::Prefetch) && args.global.verbose < 2 {
+    if matches!(args.command, Commands::Prefetch { .. }) && args.global.verbose < 2 {
         args.global.verbose = 2;
     }
 
