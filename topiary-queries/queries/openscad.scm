@@ -113,6 +113,23 @@
   "[" @append_indent_start @append_empty_softline @append_antispace
   "]" @prepend_indent_end @prepend_empty_softline @prepend_antispace
 )
+; to avoid having a list that directly follows a let_expression look visually unindented,
+; add another level of indentation:
+; let (
+;   u = true,
+; )[
+;  [1, 0, 0, 0],
+;  [0, 1, 0, 0],
+;  [0, 0, 1, 0],
+;  [0, 0, 0, 1],
+; ];
+(let_expression
+  (list
+    "[" @append_indent_start
+    "]" @prepend_indent_end
+  )
+)
+
 (range
   "[" @append_antispace
   "]" @prepend_antispace
@@ -309,4 +326,9 @@
 ; ternary expressions
 (ternary_expression
   ":" @prepend_spaced_softline
+)
+; Prettier style ternaries https://prettier.io/blog/2023/11/13/curious-ternaries
+(ternary_expression
+  "?" @append_input_softline @append_indent_start
+  ":" @prepend_indent_end
 )

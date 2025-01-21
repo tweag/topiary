@@ -112,7 +112,7 @@ assert(true, "frame must be nonnegative")
 undef;
 
 // ================================================================================
-// Assignments
+// Lists/Ternaries
 // ================================================================================
   list1 = [
     1,
@@ -126,10 +126,6 @@ undef;
     true
   );
 
-
-// ================================================================================
-// Ternary
-// ================================================================================
 function affine3d_rot_from_to(from, to) =
   assert(is_vector(from))
   assert(is_vector(to))
@@ -139,15 +135,20 @@ function affine3d_rot_from_to(from, to) =
     to = unit(point3d(to))
   ) approx(from, to) ? affine3d_identity()
   : from.z == 0 && to.z == 0 ? affine3d_zrot(v_theta(point2d(to)) - v_theta(point2d(from)))
-  : let (
-    u = vector_axis(from, to),
+  : let (u = vector_axis(from, to),
     ang = vector_angle(from, to),
     c = cos(ang),
     c2 = 1 - c,
     s = sin(ang)
+    // double indent a list preceded by list expression
   ) [
     [1, 0, 0, 0],
     [0, 1, 0, 0],
     [0, 0, 1, 0],
     [0, 0, 0, 1],
   ];
+// Prettier style ternaries https://prettier.io/blog/2023/11/13/curious-ternaries
+x = foo() ? bar()
+  : baz() ?
+  qux()
+  : true;

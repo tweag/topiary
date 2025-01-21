@@ -8,6 +8,6 @@ insert_final_newline = true
 indent_style = space
 indent_size = 4
 
-[*.{json,nix,scm}]
+[*.{json,nix,scm,scad}]
 indent_style = space
 indent_size = 2
