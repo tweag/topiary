@@ -152,3 +152,20 @@ x = foo() ? bar()
   : baz() ?
   qux()
   : true;
+
+// ================================================================================
+// Comprehensions
+// ================================================================================
+conditionless = [for (x = [1:10]) x];
+conditioned = [for (x = [1:10]) if ($preview) x];
+ifelse = [for (x = [1:10]) if ($preview) x else ln(x)];
+if_for_ifelse = [for (x = 0) if (x < 0) for (y = 2) if (y == 2) y else x];
+complex_condition = [
+    for (x = [1:10]) if (x % 2 == 0) x else if (x < 5) x - 1 else 0
+];
+spliced = [for (x = [1:10]) x, for (y = [1, 2, 3]) y, for (z = [4, 5, 6]) z];
+nested = [for (x = [1:10]) for (y = [1, 2, 3]) for (z = [4, 5, 6]) x * y * z];
+grouped = [if (x < 7) (for (y = [1:10]) if (y > x) y) else x];
+let_each = [for(i = [0:1]) let(a=90) each arc(angle=a)];
+let_for = [let (i=[0:1]) for(i = i) let(a=90) each arc(angle=a)];
+let_if = [for(i = [0:1]) let(a=360) if (is_def(isect)) isect];
