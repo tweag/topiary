@@ -66,18 +66,26 @@ async fn run() -> CLIResult<()> {
                                     output
                                 );
 
-                                let mut buf_input = BufReader::new(input);
                                 let mut buf_output = BufWriter::new(output);
 
-                                formatter(
-                                    &mut buf_input,
-                                    &mut buf_output,
-                                    &language,
-                                    Operation::Format {
-                                        skip_idempotence,
-                                        tolerate_parsing_errors,
-                                    },
-                                )?;
+                                {
+                                    // NOTE This newly opened scope is important! `buf_input` takes
+                                    // ownership of `input`, which -- upon reading -- contains an
+                                    // open file handle. We need to close this file, by dropping
+                                    // `buf_input`, before we attempt to persist our output.
+                                    // Otherwise, we get an exclusive lock problem on Windows.
+                                    let mut buf_input = BufReader::new(input);
+
+                                    formatter(
+                                        &mut buf_input,
+                                        &mut buf_output,
+                                        &language,
+                                        Operation::Format {
+                                            skip_idempotence,
+                                            tolerate_parsing_errors,
+                                        },
+                                    )?;
+                                }
 
                                 buf_output.into_inner()?.persist()?;
 
