@@ -919,30 +919,27 @@ impl AtomCollection {
                     case_context.pop();
                     *atom = Atom::Empty;
                 }
-                _ => match atom {
-                    Atom::Leaf {
-                        content,
-                        id,
-                        original_position,
-                        single_line_no_indent,
-                        multi_line_indent_all,
-                        ..
-                    } => {
-                        // TODO don't be stupid with derefs
-                        *atom = Atom::Leaf {
-                            content: (*content).to_string(),
-                            id: *id,
-                            original_position: *original_position,
-                            single_line_no_indent: *single_line_no_indent,
-                            multi_line_indent_all: *multi_line_indent_all,
-                            capitalisation: case_context
-                                .last()
-                                .unwrap_or(&Capitalisation::Pass)
-                                .clone(),
-                        }
+                Atom::Leaf {
+                    content,
+                    id,
+                    original_position,
+                    single_line_no_indent,
+                    multi_line_indent_all,
+                    ..
+                } => {
+                    *atom = Atom::Leaf {
+                        content: (*content).to_string(),
+                        id: *id,
+                        original_position: *original_position,
+                        single_line_no_indent: *single_line_no_indent,
+                        multi_line_indent_all: *multi_line_indent_all,
+                        capitalisation: case_context
+                            .last()
+                            .unwrap_or(&Capitalisation::Pass)
+                            .clone(),
                     }
-                    _ => {}
-                },
+                }
+                _ => {}
             }
         }
     }
