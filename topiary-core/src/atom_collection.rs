@@ -901,43 +901,16 @@ impl AtomCollection {
         let mut case_context: Vec<Capitalisation> = Vec::new();
         for atom in &mut self.atoms {
             match atom {
-                Atom::CaseBegin(case) => match case {
-                    Capitalisation::UpperCase => {
-                        case_context.push(Capitalisation::UpperCase);
-                        *atom = Atom::Empty;
-                    }
-                    Capitalisation::LowerCase => {
-                        case_context.push(Capitalisation::LowerCase);
-                        *atom = Atom::Empty;
-                    }
-                    Capitalisation::Pass => {
-                        case_context.push(Capitalisation::Pass);
-                        *atom = Atom::Empty;
-                    }
-                },
+                Atom::CaseBegin(case) => {
+                    case_context.push(case.clone());
+                    *atom = Atom::Empty;
+                }
                 Atom::CaseEnd => {
                     case_context.pop();
                     *atom = Atom::Empty;
                 }
-                Atom::Leaf {
-                    content,
-                    id,
-                    original_position,
-                    single_line_no_indent,
-                    multi_line_indent_all,
-                    ..
-                } => {
-                    *atom = Atom::Leaf {
-                        content: (*content).to_string(),
-                        id: *id,
-                        original_position: *original_position,
-                        single_line_no_indent: *single_line_no_indent,
-                        multi_line_indent_all: *multi_line_indent_all,
-                        capitalisation: case_context
-                            .last()
-                            .unwrap_or(&Capitalisation::Pass)
-                            .clone(),
-                    }
+                Atom::Leaf { capitalisation, .. } => {
+                    *capitalisation = case_context.last().unwrap_or(&Capitalisation::Pass).clone()
                 }
                 _ => {}
             }

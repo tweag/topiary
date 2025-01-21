@@ -45,7 +45,7 @@ This name should be decided amongst the team before the release.
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.5.1...HEAD)
 
 ### Added
-- [#838](https://github.com/tweag/topiary/pull/838) Added `@upper_case` and `@lower_case` captures by [@ctdunc](https://github.com/ctdunc/).
+- [#838](https://github.com/tweag/topiary/pull/838) Added `@upper_case` and `@lower_case` captures, thanks to @ctdunc
 - [#785](https://github.com/tweag/topiary/pull/785) Added the `coverage` command, that checks how much of the query file is used by the input.
 - [#786](https://github.com/tweag/topiary/pull/786) Re-introduce tests to check that all of the language queries are useful.
 - [#747](https://github.com/tweag/topiary/pull/747) Added support for specifying paths to prebuilt grammars in Topiary's configuration
