@@ -24,6 +24,7 @@
   (function_item)
   (module_item)
   (expression)
+  (var_declaration)
 ] @allow_blank_line_before
 
 ; Keywords
@@ -31,7 +32,6 @@
 ; Surround spaces
 [
   "module"
-  "function"
   "let"
   "include"
   "assign"
@@ -56,6 +56,8 @@
   "="
   "?"
   ":"
+  (parenthesized_expression)
+  (assignments)
 ] @prepend_space @append_space
 
 ; Colon should have whitespace trimmed in a range delimiter
@@ -149,6 +151,7 @@
 ; ================================================================================
 ; functions & modules
 ; ================================================================================
+(function_item "function" @append_space)
 
 ; indent the body of a function
 (function_item
@@ -342,3 +345,7 @@
   "?" @append_input_softline @append_indent_start
   ":" @prepend_indent_end
 )
+
+; function literals
+(function_lit (parameters) @append_spaced_softline)
+(function_call (parenthesized_expression) @append_antispace (arguments))

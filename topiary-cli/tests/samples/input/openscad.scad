@@ -11,6 +11,9 @@ $fn = 360; // special variable
 E = 2.71828182845904523536028747135266249775724709369995; // constant
 cond_var = "is_true" ? true : false;
 
+// ================================================================================
+// Functions
+// ================================================================================
 function line(point1, point2, width = 1) =
 
   let (angle = 90 - atan((point2[1] - point1[1]) / (point2[0] - point1[0])))
@@ -21,6 +24,8 @@ function line(point1, point2, width = 1) =
 
   // [P1a, P2a, P2b, P1b]
   [point1 + offset1, point2 + offset1, point2 + offset2, point1 + offset2];
+
+eager = (function(z) identity)(4);
 
 // ================================================================================
 // Transformations
@@ -100,7 +105,7 @@ translate()
 cube();
 
 // ================================================================================
-// Assertions
+// Assertions/Echoes
 // ================================================================================
 assert();
 assert(10 < 20) cube();
@@ -110,6 +115,14 @@ assert(true) assert() cylinder();
 val = assert(true, "strut must be positive")
 assert(true, "frame must be nonnegative")
 undef;
+
+function foo() =
+echo("this can precede an expression") true;
+
+
+fn = function(x) echo("this is x") x;
+echo(fn ? "truthy" : "falsey");
+echo(function(y) y ? "first" : "second");
 
 // ================================================================================
 // Lists/Ternaries
@@ -169,3 +182,4 @@ grouped = [if (x < 7) (for (y = [1:10]) if (y > x) y) else x];
 let_each = [for(i = [0:1]) let(a=90) each arc(angle=a)];
 let_for = [let (i=[0:1]) for(i = i) let(a=90) each arc(angle=a)];
 let_if = [for(i = [0:1]) let(a=360) if (is_def(isect)) isect];
+fn_list = [each function ()10];
