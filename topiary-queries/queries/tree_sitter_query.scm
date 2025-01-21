@@ -14,6 +14,8 @@
   _ @allow_blank_line_before @prepend_hardline
 )
 
+(predicate) @allow_blank_line_before
+
 ; There is a large category of nodes that must be separated by spaces
 (
   [
@@ -45,6 +47,7 @@
     "_"
   ]
 )
+
 (anonymous_node
   (capture) @prepend_space
 )
@@ -98,6 +101,7 @@
   [
     (anonymous_node)
     (field_definition)
+    (grouping)
     (list)
     (named_node)
     (predicate)
@@ -107,6 +111,7 @@
   [
     (anonymous_node)
     (field_definition)
+    (grouping)
     (list)
     (named_node)
     (predicate)
