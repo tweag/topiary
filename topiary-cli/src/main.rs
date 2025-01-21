@@ -149,8 +149,8 @@ async fn run() -> CLIResult<()> {
             println!("{nickel_config}")
         }
 
-        Commands::Prefetch => {
-            config.prefetch_languages()?;
+        Commands::Prefetch { force } => {
+            config.prefetch_languages(force)?;
         }
 
         Commands::Coverage { input } => {
