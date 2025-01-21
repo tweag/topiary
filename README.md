@@ -103,6 +103,7 @@ external contributors. They are built in, by default, so are exposed in
 the same way as supported languages.
 
 * [CSS] by @lavigneer
+* [OpenSCAD] by @mkatychev
 
 #### Experimental
 
@@ -1736,6 +1737,7 @@ of choice open in another.
 [ocamlformat]: https://github.com/ocaml-ppx/ocamlformat
 [ocamllex]: https://v2.ocaml.org/manual/lexyacc.html
 [ocp-indent]: https://www.typerex.org/ocp-indent.html
+[openscad]: https://en.wikipedia.org/wiki/OpenSCAD
 [ormolu]: https://github.com/tweag/ormolu
 [prettier]: https://prettier.io/
 [rust]: https://www.rust-lang.org

@@ -1,5 +1,5 @@
 // ================================================================================
-// Basic Items
+// Variables/Imports
 // ================================================================================
 include <my_path/my_lib.scad>;
 use <my_path/my_lib.scad>; include <my_path/my_lib.scad> use <my_path/my_lib.scad>

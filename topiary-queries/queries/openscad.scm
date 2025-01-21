@@ -162,6 +162,10 @@
   ";" @prepend_indent_end
 )
 
+; function literals
+(function_lit (parameters) @append_spaced_softline)
+(function_call (parenthesized_expression) @append_antispace (arguments))
+
 ; module calls in a transformation chain will follow each other
 ; sometimes staying on the same line and sometimes having a linebreak,
 ; each linebreak typically also starts an indent scope
@@ -175,6 +179,7 @@
 ; ================================================================================
 ; blocks/expressions/statements
 ; ================================================================================
+
 ; Let child nodes handle indentation
 (var_declaration . (assignment . (identifier) . "=" @append_input_softline))
 
@@ -332,6 +337,19 @@
 ; modifiers
 (modifier) @append_antispace
 
+; echo/assert statements can often be chained, use indentation on assignment
+(var_declaration
+  (assignment
+    "=" @append_spaced_softline
+    value: [
+      (assert_expression)
+      (echo_expression)
+    ] @prepend_indent_start
+  )
+  ";" @prepend_indent_end
+  .
+)
+
 (assert_expression expression: (_) @prepend_spaced_softline)
 (assert_statement statement: (_) @prepend_spaced_softline)
 (echo_expression expression: (_) @prepend_spaced_softline)
@@ -345,7 +363,3 @@
   "?" @append_input_softline @append_indent_start
   ":" @prepend_indent_end
 )
-
-; function literals
-(function_lit (parameters) @append_spaced_softline)
-(function_call (parenthesized_expression) @append_antispace (arguments))

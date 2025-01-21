@@ -75,7 +75,10 @@
 
     openscad = {
       extensions = ["scad"],
-      grammar.source.path = "/Users/mkatychev/Documents/tree-sitter/openscad/parser.so",
+      grammar.source.git = {
+        git = "https://github.com/mkatychev/tree-sitter-openscad.git",
+        rev = "1b3e5fd00245c097f501532611f349c88d5b334b",
+      },
     },
 
     rust = {
