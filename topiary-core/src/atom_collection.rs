@@ -8,7 +8,8 @@ use std::{
 use topiary_tree_sitter_facade::Node;
 
 use crate::{
-    tree_sitter::NodeExt, Atom, FormatterError, FormatterResult, ScopeCondition, ScopeInformation,
+    tree_sitter::NodeExt, Atom, Capitalisation, FormatterError, FormatterResult, ScopeCondition,
+    ScopeInformation,
 };
 
 /// A struct that holds sets of node IDs that have line breaks before or after them.
@@ -272,11 +273,22 @@ impl AtomCollection {
                 self.prepend(Atom::Softline { spaced: true }, node, predicates);
             }
             // Skip over leaves
-            "leaf" => {}
+            "leaf" => {
+                self.prepend(Atom::CaseBegin(Capitalisation::Pass), node, predicates);
+                self.append(Atom::CaseEnd, node, predicates);
+            }
             // Deletion
             "delete" => {
                 self.prepend(Atom::DeleteBegin, node, predicates);
                 self.append(Atom::DeleteEnd, node, predicates);
+            }
+            "upper_case" => {
+                self.prepend(Atom::CaseBegin(Capitalisation::UpperCase), node, predicates);
+                self.append(Atom::CaseEnd, node, predicates);
+            }
+            "lower_case" => {
+                self.prepend(Atom::CaseBegin(Capitalisation::LowerCase), node, predicates);
+                self.append(Atom::CaseEnd, node, predicates);
             }
             // Scope manipulation
             "prepend_begin_scope" => {
@@ -538,6 +550,7 @@ impl AtomCollection {
                 original_position: node.start_position().into(),
                 single_line_no_indent: false,
                 multi_line_indent_all: false,
+                capitalisation: Capitalisation::Pass,
             });
             // Mark all sub-nodes as having this node as a "leaf parent"
             self.mark_leaf_parent(node, node.id());
@@ -883,6 +896,27 @@ impl AtomCollection {
         }
     }
 
+    /// Separate post processing of capitalisation, to avoid confusion around whitespacing.
+    fn post_process_capitalization(&mut self) {
+        let mut case_context: Vec<Capitalisation> = Vec::new();
+        for atom in &mut self.atoms {
+            match atom {
+                Atom::CaseBegin(case) => {
+                    case_context.push(case.clone());
+                    *atom = Atom::Empty;
+                }
+                Atom::CaseEnd => {
+                    case_context.pop();
+                    *atom = Atom::Empty;
+                }
+                Atom::Leaf { capitalisation, .. } => {
+                    *capitalisation = case_context.last().unwrap_or(&Capitalisation::Pass).clone()
+                }
+                _ => {}
+            }
+        }
+    }
+
     /// This function merges the spaces, new lines and blank lines.
     /// If there are several tokens of different kind one after the other,
     /// the blank line is kept over the new line which itself is kept over the space.
@@ -890,6 +924,7 @@ impl AtomCollection {
     pub fn post_process(&mut self) {
         self.post_process_scopes();
         self.post_process_deletes();
+        self.post_process_capitalization();
         self.post_process_inner();
 
         // We have taken care of spaces following an antispace. Now fix the

@@ -1411,6 +1411,24 @@ The example below solves the problem of indenting function application in OCaml 
 )
 ```
 
+### `@lower_case`/`@upper_case`
+Set the capitalization of all text in the matched node and its children.
+Use this with care in languages that are case sensitive.
+
+```scheme
+; example for SQL, since that's where this makes sense.
+; I am using the grammar linked below
+; https://github.com/DerekStride/tree-sitter-sql/tree/main
+
+; make keywords select,from lowercase.
+[
+ (keyword_select)
+ (keyword_from)
+] @lower_case
+; make keyword WHERE uppercase
+(keyword_where) @upper_case
+```
+
 ### `#query_name!`
 
 When the logging verbosity is set to `-vv` or higher, Topiary outputs information about which queries are matched, for instance:
