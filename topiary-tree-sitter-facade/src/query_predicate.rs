@@ -6,7 +6,7 @@ mod native {
         pub(crate) inner: &'query tree_sitter::QueryPredicate,
     }
 
-    impl<'query> QueryPredicate<'query> {
+    impl QueryPredicate<'_> {
         #[inline]
         pub fn operator(&self) -> Cow<str> {
             Cow::Borrowed(&self.inner.operator)
@@ -30,7 +30,7 @@ mod native {
         }
     }
 
-    impl<'query> std::fmt::Debug for QueryPredicate<'query> {
+    impl std::fmt::Debug for QueryPredicate<'_> {
         fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
             std::fmt::Debug::fmt(&self.inner, fmt)
         }
@@ -43,11 +43,11 @@ mod native {
         }
     }
 
-    impl<'query> std::panic::RefUnwindSafe for QueryPredicate<'query> {}
+    impl std::panic::RefUnwindSafe for QueryPredicate<'_> {}
 
-    impl<'query> Unpin for QueryPredicate<'query> {}
+    impl Unpin for QueryPredicate<'_> {}
 
-    impl<'query> std::panic::UnwindSafe for QueryPredicate<'query> {}
+    impl std::panic::UnwindSafe for QueryPredicate<'_> {}
 }
 
 #[cfg(not(target_arch = "wasm32"))]

@@ -115,7 +115,7 @@ pub struct InputFile<'cfg> {
     query: QuerySource,
 }
 
-impl<'cfg> InputFile<'cfg> {
+impl InputFile<'_> {
     /// Convert our `InputFile` into language definition values that Topiary can consume
     pub async fn to_language(&self) -> CLIResult<Language> {
         let grammar = self.language().grammar()?;
@@ -149,7 +149,7 @@ impl<'cfg> InputFile<'cfg> {
     }
 }
 
-impl<'cfg> Read for InputFile<'cfg> {
+impl Read for InputFile<'_> {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         match &mut self.source {
             InputSource::Stdin => stdin().lock().read(buf),
@@ -312,7 +312,7 @@ impl Write for OutputFile {
 // Convenience conversion:
 // * stdin maps to stdout
 // * Files map to themselves (i.e., for in-place updates)
-impl<'cfg> TryFrom<&InputFile<'cfg>> for OutputFile {
+impl TryFrom<&InputFile<'_>> for OutputFile {
     type Error = TopiaryError;
 
     fn try_from(input: &InputFile) -> CLIResult<Self> {
