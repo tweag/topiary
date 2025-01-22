@@ -6,7 +6,7 @@ mod native {
         pub(crate) inner: tree_sitter::LanguageRef<'a>,
     }
 
-    impl<'a> LanguageRef<'a> {
+    impl LanguageRef<'_> {
         pub fn field_count(&self) -> usize {
             self.inner.field_count()
         }

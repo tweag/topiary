@@ -61,11 +61,11 @@ mod native {
         }
     }
 
-    impl<'a> std::panic::RefUnwindSafe for TreeCursor<'a> {}
+    impl std::panic::RefUnwindSafe for TreeCursor<'_> {}
 
-    impl<'a> Unpin for TreeCursor<'a> {}
+    impl Unpin for TreeCursor<'_> {}
 
-    impl<'a> std::panic::UnwindSafe for TreeCursor<'a> {}
+    impl std::panic::UnwindSafe for TreeCursor<'_> {}
 }
 
 #[cfg(not(target_arch = "wasm32"))]
