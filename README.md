@@ -1461,7 +1461,7 @@ The two following steps are enough to jumpstart the formatting of a new language
 ```nickel
     c = {
       extensions = ["c", "h"],
-      grammar = {
+      grammar.source.git = {
         git = "https://github.com/tree-sitter/tree-sitter-c.git",
         rev = "6c7f459ddc0bcf78b615d3a3f4e8fed87b8b3b1b",
       },

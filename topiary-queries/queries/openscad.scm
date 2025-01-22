@@ -162,9 +162,29 @@
   ";" @prepend_indent_end
 )
 
+; ===
 ; function literals
+; ===
 (function_lit (parameters) @append_spaced_softline)
 (function_call (parenthesized_expression) @append_antispace (arguments))
+
+; ===
+; module_item, module_call, and transform_chain
+; ===
+
+; everything except `union_block` after a for/if/else statement should be a spaced_softline
+(module_item
+  body: [
+    (for_block)
+    (intersection_for_block)
+    (if_block)
+    (let_block)
+    (assign_block)
+    (transform_chain)
+    (include_statement)
+    (assert_statement)
+  ] @prepend_indent_start @append_indent_end
+)
 
 ; module calls in a transformation chain will follow each other
 ; sometimes staying on the same line and sometimes having a linebreak,
@@ -272,7 +292,6 @@
 )
 
 ; everything except `union_block` after a for/if/else statement should be a spaced_softline
-; but a union
 (if_block
   (parenthesized_expression) @append_spaced_softline @append_indent_start
   .
@@ -344,6 +363,7 @@
     value: [
       (assert_expression)
       (echo_expression)
+      (ternary_expression)
     ] @prepend_indent_start
   )
   ";" @prepend_indent_end
