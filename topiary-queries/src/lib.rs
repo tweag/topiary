@@ -40,7 +40,7 @@ pub fn ocamllex() -> &'static str {
     include_str!("../queries/ocamllex.scm")
 }
 
-/// Returns the Topiary-compatible query file for Ocamllex.
+/// Returns the Topiary-compatible query file for OpenSCAD.
 #[cfg(feature = "openscad")]
 pub fn openscad() -> &'static str {
     include_str!("../queries/openscad.scm")
