@@ -77,7 +77,7 @@ contributed = [
 
 # Excluded by default
 experimental = [
-  "rust",
+  "rust"
 ]
 
 bash = ["topiary-config/bash", "topiary-queries/bash"]

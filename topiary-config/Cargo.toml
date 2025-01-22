@@ -65,5 +65,5 @@ all = [
   "openscad",
   "rust",
   "toml",
-  "tree_sitter_query"
+  "tree_sitter_query",
 ]
