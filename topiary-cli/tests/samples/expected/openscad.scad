@@ -195,10 +195,11 @@ function affine3d_rot_from_to(from, to) =
   ];
 
 // Prettier style ternaries https://prettier.io/blog/2023/11/13/curious-ternaries
-x = foo() ? bar()
-: baz() ?
-  qux()
-: true;
+x =
+  foo() ? bar()
+  : baz() ?
+    qux()
+  : true;
 
 // ================================================================================
 // Comprehensions
