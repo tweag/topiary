@@ -226,15 +226,6 @@ impl AtomCollection {
                 node,
                 predicates,
             ),
-            "append_multiline_delimiter" => {
-                if self.in_multiline_context(node) {
-                    self.append(
-                        Atom::Literal(requires_delimiter()?.to_string()),
-                        node,
-                        predicates,
-                    )
-                }
-            }
             "append_empty_softline" => {
                 self.append(Atom::Softline { spaced: false }, node, predicates);
             }
@@ -260,15 +251,6 @@ impl AtomCollection {
                 node,
                 predicates,
             ),
-            "prepend_multiline_delimiter" => {
-                if self.in_multiline_context(node) {
-                    self.prepend(
-                        Atom::Literal(requires_delimiter()?.to_string()),
-                        node,
-                        predicates,
-                    )
-                }
-            }
             "prepend_empty_softline" => {
                 self.prepend(Atom::Softline { spaced: false }, node, predicates);
             }
@@ -609,22 +591,6 @@ impl AtomCollection {
         self.append.entry(target_node.id()).or_default().push(atom);
     }
 
-    /// Indicates whether we are in a multiline context or not.
-    /// # Arguments
-    ///
-    /// * `node` - The node to which the atom applies.
-    /// # Returns
-    ///
-    /// A boolean indicating whether a given node has a a parent  labelled as multi-line.
-    /// If the provided node has no parent, the function returns `false`.
-    fn in_multiline_context(&self, node: &Node) -> bool {
-        let parent_id = node.parent().map(|p| p.id());
-
-        parent_id
-            .map(|pid| self.multi_line_nodes.contains(&pid))
-            .unwrap_or(false)
-    }
-
     /// Expands a softline atom to a hardline, space or empty atom depending on
     /// if we are in a multiline context or not.
     ///
@@ -646,32 +612,34 @@ impl AtomCollection {
     ///
     /// A new atom after expanding the softline if applicable.
     fn expand_multiline(&self, atom: Atom, node: &Node) -> Atom {
-        let Atom::Softline { spaced } = atom else {
-            return atom;
-        };
-        let Some(parent) = node.parent() else {
-            return Atom::Empty;
-        };
-        let parent_id = parent.id();
+        if let Atom::Softline { spaced } = atom {
+            if let Some(parent) = node.parent() {
+                let parent_id = parent.id();
 
-        if self.multi_line_nodes.contains(&parent_id) {
-            log::debug!(
-                parent_id;
-                "Expanding softline to hardline in node {}: {}",
-                node.display_one_based(),
-                parent.display_one_based()
-            );
-            Atom::Hardline
-        } else if spaced {
-            log::debug!(
-                parent_id;
-                "Expanding softline to space in node {}: {}",
-                node.display_one_based(),
-                parent.display_one_based()
-            );
-            Atom::Space
+                if self.multi_line_nodes.contains(&parent_id) {
+                    log::debug!(
+                        "Expanding softline to hardline in node {} with parent {}: {}",
+                        node.display_one_based(),
+                        parent_id,
+                        parent.display_one_based()
+                    );
+                    Atom::Hardline
+                } else if spaced {
+                    log::debug!(
+                        "Expanding softline to space in node {} with parent {}: {}",
+                        node.display_one_based(),
+                        parent_id,
+                        parent.display_one_based()
+                    );
+                    Atom::Space
+                } else {
+                    Atom::Empty
+                }
+            } else {
+                Atom::Empty
+            }
         } else {
-            Atom::Empty
+            atom
         }
     }
 
