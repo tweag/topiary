@@ -756,33 +756,6 @@ not activate.
 Note that `@append_delimiter` is the same as `@append_space` when the
 delimiter is set to `" "` (i.e., a space).
 
-### `@append_multiline_delimiter` / `@prepend_multiline_delimiter`
-
-The matched nodes will have a multi-line-only delimiter appended to
-them. It will be printed only in multi-line nodes, and omitted in
-single-line nodes. The delimiter must be specified using the predicate
-`#delimiter!`.
-
-#### Example
-
-```scheme
-; Add a semicolon at the end of lists only if they are multi-line, to avoid [1; 2; 3;].
-(list_expression
-  (#delimiter! ";")
-  (_) @append_multiline_delimiter
-  .
-  ";"? @do_nothing
-  .
-  "]"
-  .
-)
-```
-
-If there is already a semicolon, the `@do_nothing` instruction will be
-activated and prevent the other instructions in the query (the
-`@append_multiline_delimiter`, here) from applying. Likewise, if the
-node is single-line, the delimiter will not be appended either.
-
 ### `@append_empty_softline` / `@prepend_empty_softline`
 
 The matched nodes will have an empty softline appended or prepended to
