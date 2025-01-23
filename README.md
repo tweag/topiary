@@ -713,6 +713,23 @@ This, on the other hand, will not work:
 @append_space (infix_operator)
 ```
 
+### `@leaf`
+
+Some nodes should not have their contents formatted at all; the classic
+example being string literals. The `@leaf` capture will mark such nodes
+as leaves -- even if they admit their own structure -- and leave them
+unformatted.
+
+#### Example
+
+```scheme
+; Don't format strings or comments
+[
+  (string)
+  (comment)
+] @leaf
+```
+
 ### `@allow_blank_line_before`
 
 The matched nodes will be allowed to have a blank line before them, if
@@ -755,33 +772,6 @@ not activate.
 
 Note that `@append_delimiter` is the same as `@append_space` when the
 delimiter is set to `" "` (i.e., a space).
-
-### `@append_multiline_delimiter` / `@prepend_multiline_delimiter`
-
-The matched nodes will have a multi-line-only delimiter appended to
-them. It will be printed only in multi-line nodes, and omitted in
-single-line nodes. The delimiter must be specified using the predicate
-`#delimiter!`.
-
-#### Example
-
-```scheme
-; Add a semicolon at the end of lists only if they are multi-line, to avoid [1; 2; 3;].
-(list_expression
-  (#delimiter! ";")
-  (_) @append_multiline_delimiter
-  .
-  ";"? @do_nothing
-  .
-  "]"
-  .
-)
-```
-
-If there is already a semicolon, the `@do_nothing` instruction will be
-activated and prevent the other instructions in the query (the
-`@append_multiline_delimiter`, here) from applying. Likewise, if the
-node is single-line, the delimiter will not be appended either.
 
 ### `@append_empty_softline` / `@prepend_empty_softline`
 
@@ -1463,6 +1453,65 @@ Then the log line will become:
 [2024-10-08T15:48:13Z INFO  topiary_core::tree_sitter] Processing match of query "comma spacing": LocalQueryMatch { pattern_index: 17, captures: [ {Node "," (1,3) - (1,4)} ] } at location (286,1)
 ```
 
+### Query and capture precedence
+
+Formatting is not necessarily invariant over the order of queries. For
+example, queries that add delimiters or remove nodes can have a
+different effect on the formatted output depending on the order in which
+they appear in the query file.
+
+Consider, say, the following two queries for the Bash grammar:
+
+```scheme
+; Query A: Append semicolon
+(
+  (word) @append_delimiter
+  .
+  ";"? @do_nothing
+
+  (#delimiter! ";")
+)
+
+; Query B: Surround with quotes
+(
+  "\""? @do_nothing
+  .
+  (word) @prepend_delimiter @append_delimiter
+  .
+  "\""? @do_nothing
+
+  (#delimiter! "\"")
+)
+```
+
+In the order presented above (`A`, then `B`), then the input `foo` will
+be formatted as:
+
+```
+"foo;"
+```
+
+In the opposite order (`B`, then `A`), Topiary will however produce the
+following output:
+
+```
+"foo";
+```
+
+A similar consideration exists for captures. That is, while most
+captures do not meaningfully affect one another, there are three notable
+exceptions:
+
+1. `@do_nothing` will cancel all other captures in a matched query. This
+   takes the highest priority.
+
+2. `@delete` will delete any matched node, providing the matching query
+   is not cancelled.
+
+3. `@leaf` will suppress formatting within that node, even if it admits
+   some internal structure. However, leaf nodes are still subject to
+   deletion.
+
 ## Add a new language
 
 This section illustrates how to add a supported language to Topiary, provided it already has a tree-sitter grammar.
@@ -1680,13 +1729,14 @@ debugging output's 0-based position.)
 
 ### Terminal-Based Playground
 
-Nix users may also find the `playground.sh` script to be helpful in
+Nix users may also find the `bin/playground.sh` script to be helpful in
 aiding the interactive development of query files. When run in a
-terminal, it will format the given source input with the requested query
-file, updating the output on any inotify event against those files.
+terminal, inside the Nix development shell, it will format the given
+source input with the requested query file, updating the output on any
+inotify event against those files.
 
 ```
-Usage: ${PROGNAME} LANGUAGE [QUERY_FILE] [INPUT_SOURCE]
+Usage: playground LANGUAGE [QUERY_FILE] [INPUT_SOURCE]
 
 LANGUAGE can be one of the supported languages (e.g., "ocaml", "rust",
 etc.). The packaged formatting queries for this language can be
@@ -1698,6 +1748,9 @@ to find the bundled integration test input file for the given language.
 
 For example, the playground can be run in a tmux pane, with your editor
 of choice open in another.
+
+> [!WARNING]
+> The use of inotify limits this tool to Linux systems, only.
 
 ## Related Tools
 
