@@ -1453,6 +1453,65 @@ Then the log line will become:
 [2024-10-08T15:48:13Z INFO  topiary_core::tree_sitter] Processing match of query "comma spacing": LocalQueryMatch { pattern_index: 17, captures: [ {Node "," (1,3) - (1,4)} ] } at location (286,1)
 ```
 
+### Query and capture precedence
+
+Formatting is not necessarily invariant over the order of queries. For
+example, queries that add delimiters or remove nodes can have a
+different effect on the formatted output depending on the order in which
+they appear in the query file.
+
+Consider, say, the following two queries for the Bash grammar:
+
+```scheme
+; Query A: Append semicolon
+(
+  (word) @append_delimiter
+  .
+  ";"? @do_nothing
+
+  (#delimiter! ";")
+)
+
+; Query B: Surround with quotes
+(
+  "\""? @do_nothing
+  .
+  (word) @prepend_delimiter @append_delimiter
+  .
+  "\""? @do_nothing
+
+  (#delimiter! "\"")
+)
+```
+
+In the order presented above (`A`, then `B`), then the input `foo` will
+be formatted as:
+
+```
+"foo;"
+```
+
+In the opposite order (`B`, then `A`), Topiary will however produce the
+following output:
+
+```
+"foo";
+```
+
+A similar consideration exists for captures. That is, while most
+captures do not meaningfully affect one another, there are three notable
+exceptions:
+
+1. `@do_nothing` will cancel all other captures in a matched query. This
+   takes the highest priority.
+
+2. `@delete` will delete any matched node, providing the matching query
+   is not cancelled.
+
+3. `@leaf` will suppress formatting within that node, even if it admits
+   some internal structure. However, leaf nodes are still subject to
+   deletion.
+
 ## Add a new language
 
 This section illustrates how to add a supported language to Topiary, provided it already has a tree-sitter grammar.
