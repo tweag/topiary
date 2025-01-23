@@ -713,6 +713,23 @@ This, on the other hand, will not work:
 @append_space (infix_operator)
 ```
 
+### `@leaf`
+
+Some nodes should not have their contents formatted at all; the classic
+example being string literals. The `@leaf` capture will mark such nodes
+as leaves -- even if they admit their own structure -- and leave them
+unformatted.
+
+#### Example
+
+```scheme
+; Don't format strings or comments
+[
+  (string)
+  (comment)
+] @leaf
+```
+
 ### `@allow_blank_line_before`
 
 The matched nodes will be allowed to have a blank line before them, if
