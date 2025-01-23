@@ -1680,13 +1680,14 @@ debugging output's 0-based position.)
 
 ### Terminal-Based Playground
 
-Nix users may also find the `playground.sh` script to be helpful in
+Nix users may also find the `bin/playground.sh` script to be helpful in
 aiding the interactive development of query files. When run in a
-terminal, it will format the given source input with the requested query
-file, updating the output on any inotify event against those files.
+terminal, inside the Nix development shell, it will format the given
+source input with the requested query file, updating the output on any
+inotify event against those files.
 
 ```
-Usage: ${PROGNAME} LANGUAGE [QUERY_FILE] [INPUT_SOURCE]
+Usage: playground LANGUAGE [QUERY_FILE] [INPUT_SOURCE]
 
 LANGUAGE can be one of the supported languages (e.g., "ocaml", "rust",
 etc.). The packaged formatting queries for this language can be
@@ -1698,6 +1699,9 @@ to find the bundled integration test input file for the given language.
 
 For example, the playground can be run in a tmux pane, with your editor
 of choice open in another.
+
+> [!WARNING]
+> The use of inotify limits this tool to Linux systems, only.
 
 ## Related Tools
 
