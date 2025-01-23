@@ -243,7 +243,7 @@ mod native {
         }
     }
 
-    impl<'tree> std::fmt::Debug for Node<'tree> {
+    impl std::fmt::Debug for Node<'_> {
         fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
             std::fmt::Debug::fmt(&self.inner, fmt)
         }
@@ -256,7 +256,7 @@ mod native {
         }
     }
 
-    impl<'a> Ord for Node<'a> {
+    impl Ord for Node<'_> {
         fn cmp(&self, that: &Self) -> std::cmp::Ordering {
             let this = self.id();
             let that = that.id();
@@ -270,11 +270,11 @@ mod native {
         }
     }
 
-    impl<'a> std::panic::RefUnwindSafe for Node<'a> {}
+    impl std::panic::RefUnwindSafe for Node<'_> {}
 
-    impl<'a> Unpin for Node<'a> {}
+    impl Unpin for Node<'_> {}
 
-    impl<'a> std::panic::UnwindSafe for Node<'a> {}
+    impl std::panic::UnwindSafe for Node<'_> {}
 }
 
 #[cfg(not(target_arch = "wasm32"))]

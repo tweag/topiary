@@ -8,7 +8,7 @@ mod native {
         pub(crate) inner: tree_sitter::QueryCapture<'a>,
     }
 
-    impl<'a> QueryCapture<'a> {
+    impl QueryCapture<'_> {
         #[inline]
         pub fn node(&self) -> Node {
             self.inner.node.into()
@@ -21,7 +21,7 @@ mod native {
         }
     }
 
-    impl<'a> std::fmt::Debug for QueryCapture<'a> {
+    impl std::fmt::Debug for QueryCapture<'_> {
         fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
             std::fmt::Debug::fmt(&self.inner, fmt)
         }
@@ -41,11 +41,11 @@ mod native {
         }
     }
 
-    impl<'a> std::panic::RefUnwindSafe for QueryCapture<'a> {}
+    impl std::panic::RefUnwindSafe for QueryCapture<'_> {}
 
-    impl<'a> Unpin for QueryCapture<'a> {}
+    impl Unpin for QueryCapture<'_> {}
 
-    impl<'a> std::panic::UnwindSafe for QueryCapture<'a> {}
+    impl std::panic::UnwindSafe for QueryCapture<'_> {}
 }
 
 #[cfg(not(target_arch = "wasm32"))]

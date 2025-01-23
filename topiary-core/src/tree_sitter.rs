@@ -154,7 +154,7 @@ pub trait NodeExt {
     fn display_one_based(&self) -> String;
 }
 
-impl<'a> NodeExt for Node<'a> {
+impl NodeExt for Node<'_> {
     fn display_one_based(&self) -> String {
         format!(
             "{{Node {:?} {} - {}}}",
@@ -166,7 +166,7 @@ impl<'a> NodeExt for Node<'a> {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-impl<'a> NodeExt for tree_sitter::Node<'a> {
+impl NodeExt for tree_sitter::Node<'_> {
     fn display_one_based(&self) -> String {
         format!(
             "{{Node {:?} {} - {}}}",
@@ -189,7 +189,7 @@ struct LocalQueryMatch<'a> {
     captures: Vec<QueryCapture<'a>>,
 }
 
-impl<'a> Display for LocalQueryMatch<'a> {
+impl Display for LocalQueryMatch<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
