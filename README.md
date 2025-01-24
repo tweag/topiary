@@ -250,7 +250,14 @@ the input files' extensions. To format standard input, you must specify
 the `--language` and, optionally, `--query` arguments, omitting any
 input files.
 
-Note: `fmt` is a recognised alias of the `format` subcommand.
+> [!TIP]
+> `fmt` is a recognised alias of the `format` subcommand.
+
+> [!WARNING]
+> Topiary performs in-place file formatting by writing the formatted
+> output to a temporary file and then replacing that with the original
+> input file. For files with multiple links, on filesystems where that
+> makes sense, this will break the link.
 
 #### Visualise
 
@@ -313,8 +320,9 @@ the input file's extension. To visualise standard input, you must
 specify the `--language` and, optionally, `--query` arguments, omitting
 the input file. The visualisation output is written to standard out.
 
-Note: `vis`, `visualize` and `view` are recognised aliases of the
-`visualise` subcommand.
+> [!TIP]
+> `vis`, `visualize` and `view` are recognised aliases of the
+> `visualise` subcommand.
 
 #### Configuration
 
@@ -333,7 +341,8 @@ Options:
 ```
 <!-- usage:end:config -->
 
-Note: `cfg` is a recognised alias of the `config` subcommand.
+> [!TIP]
+> `cfg` is a recognised alias of the `config` subcommand.
 
 #### Shell Completion
 
@@ -1660,18 +1669,20 @@ suggested way to work:
    CST output that starts with a line like this: `CST node: {Node
    compilation_unit (0, 0) - (5942, 0)} - Named: true`.
 
-   :bulb: As an alternative to using the debugging output, the
-   `vis` visualisation subcommand line option exists to output the
-   Tree-sitter syntax tree in a variety of formats.
+> [!TIP]
+> As an alternative to using the debugging output, the `vis`
+> visualisation subcommand line option exists to output the Tree-sitter
+> syntax tree in a variety of formats.
 
 5. The test run will output all the differences between the actual
    output and the expected output, e.g. missing spaces between tokens.
    Pick a difference you would like to fix, and find the line number and
    column in the input file.
 
-   :bulb: Keep in mind that the CST output uses 0-based line and column
-   numbers, so if your editor reports line 40, column 37, you probably
-   want line 39, column 36.
+> [!NOTE]
+> Keep in mind that the CST output uses 0-based line and column numbers,
+> so if your editor reports line 40, column 37, you probably want line
+> 39, column 36.
 
 6. In the CST debug or visualisation output, find the nodes in this
    region, such as the following:
