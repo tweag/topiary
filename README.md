@@ -211,8 +211,7 @@ Arguments:
   [FILES]...
           Input files and directories (omit to read from stdin)
 
-          Language detection and query selection is automatic, mapped from file extensions defined
-          in the Topiary configuration.
+          Language detection and query selection is automatic, mapped from file extensions defined in the Topiary configuration.
 
 Options:
   -t, --tolerate-parsing-errors
@@ -222,10 +221,13 @@ Options:
           Do not check that formatting twice gives the same output
 
   -l, --language <LANGUAGE>
-          Topiary language identifier (for formatting stdin)
+          Topiary language identifier (when formatting stdin)
 
   -q, --query <QUERY>
           Topiary query file override (when formatting stdin)
+
+  -L, --follow-symlinks
+          Follow symlinks (when formatting files)
 
   -C, --configuration <CONFIGURATION>
           Configuration file
@@ -263,8 +265,8 @@ example, using Graphviz's `dot`: `topiary visualise input.ocaml | dot -T png
 ```
 Visualise the input's Tree-sitter parse tree
 
-Visualise generates a graph representation of the parse tree that can be rendered by external
-visualisation tools, such as Graphviz. By default, the output is in the DOT format.
+Visualise generates a graph representation of the parse tree that can be rendered by external visualisation tools, such as
+Graphviz. By default, the output is in the DOT format.
 
 Usage: topiary visualise [OPTIONS] <--language <LANGUAGE>|FILE>
 
@@ -272,8 +274,7 @@ Arguments:
   [FILE]
           Input file (omit to read from stdin)
 
-          Language detection and query selection is automatic, mapped from file extensions defined
-          in the Topiary configuration.
+          Language detection and query selection is automatic, mapped from file extensions defined in the Topiary configuration.
 
 Options:
   -f, --format <FORMAT>
@@ -286,7 +287,7 @@ Options:
           - json: JSON serialisation
 
   -l, --language <LANGUAGE>
-          Topiary language identifier (for formatting stdin)
+          Topiary language identifier (when formatting stdin)
 
   -q, --query <QUERY>
           Topiary query file override (when formatting stdin)
@@ -348,8 +349,7 @@ Generate shell completion script
 Usage: topiary completion [OPTIONS] [SHELL]
 
 Arguments:
-  [SHELL]  Shell (omit to detect from the environment) [possible values: bash, elvish, fish,
-           powershell, zsh]
+  [SHELL]  Shell (omit to detect from the environment) [possible values: bash, elvish, fish, powershell, zsh]
 
 Options:
   -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
@@ -404,12 +404,11 @@ Arguments:
   [FILE]
           Input file (omit to read from stdin)
 
-          Language detection and query selection is automatic, mapped from file extensions defined
-          in the Topiary configuration.
+          Language detection and query selection is automatic, mapped from file extensions defined in the Topiary configuration.
 
 Options:
   -l, --language <LANGUAGE>
-          Topiary language identifier (for formatting stdin)
+          Topiary language identifier (when formatting stdin)
 
   -q, --query <QUERY>
           Topiary query file override (when formatting stdin)
