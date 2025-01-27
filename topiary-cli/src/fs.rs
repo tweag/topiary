@@ -19,9 +19,10 @@ enum FileType {
     SomethingElse,
 }
 
+#[allow(dead_code)]
 enum Hardlink {
     Links(u64),
-    Unknown,
+    AtLeastOne,
 }
 
 struct FileMeta {
@@ -49,15 +50,17 @@ impl FileMeta {
             }
         };
 
-        let hardlink = if cfg!(unix) {
-            Hardlink::Links(meta.nlink())
-        } else if cfg!(windows) {
-            // TODO Windows has fs::MetadataExt::number_of_links, but this is experimental as of
-            // writing (see https://github.com/rust-lang/rust/issues/63010)
-            Hardlink::Unknown
-        } else {
-            Hardlink::Unknown
-        };
+        #[cfg(unix)]
+        let hardlink = Hardlink::Links(meta.nlink());
+
+        // TODO Windows has fs::MetadataExt::number_of_links, but this is experimental as of
+        // writing (see https://github.com/rust-lang/rust/issues/63010)
+        #[cfg(windows)]
+        let hardlink = Hardlink::AtLeastOne;
+
+        // Everything else
+        #[cfg(not(any(unix, windows)))]
+        let hardlink = Hardlink::AtLeastOne;
 
         Ok(Self {
             filetype,
