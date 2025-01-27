@@ -7,6 +7,10 @@ use std::{
 #[cfg(unix)]
 use std::os::unix::fs::MetadataExt;
 
+// TODO See FileMeta::new, below
+// #[cfg(windows)]
+// use std::os::windows::fs::MetadataExt;
+
 enum FileType {
     /// Regular file
     File,
@@ -21,8 +25,12 @@ enum FileType {
 
 #[allow(dead_code)]
 enum Hardlink {
-    Links(u64),
+    // We know there's at least one link, but cannot say more than that
     AtLeastOne,
+
+    // We know exactly how many links there are
+    // NOTE While technically possible, I would worry about a file that had 2^64 links
+    Exactly(u64),
 }
 
 struct FileMeta {
@@ -51,7 +59,7 @@ impl FileMeta {
         };
 
         #[cfg(unix)]
-        let hardlink = Hardlink::Links(meta.nlink());
+        let hardlink = Hardlink::Exactly(meta.nlink());
 
         // TODO Windows has fs::MetadataExt::number_of_links, but this is experimental as of
         // writing (see https://github.com/rust-lang/rust/issues/63010)
@@ -77,12 +85,16 @@ impl FileMeta {
         matches!(self.filetype, FileType::Directory)
     }
 
+    fn is_file(&self) -> bool {
+        matches!(self.filetype, FileType::File)
+    }
+
     fn is_symlink(&self) -> bool {
         self.symlink
     }
 
     fn has_multiple_links(&self) -> bool {
-        matches!(self.hardlink, Hardlink::Links(n) if n > 1)
+        matches!(self.hardlink, Hardlink::Exactly(n) if n > 1)
     }
 }
 
@@ -118,7 +130,7 @@ pub fn traverse(files: &mut Vec<PathBuf>, follow_symlinks: bool) -> CLIResult<()
             let mut subfiles = file.read_dir()?.flatten().map(|f| f.path()).collect();
             traverse(&mut subfiles, follow_symlinks)?;
             expanded.append(&mut subfiles);
-        } else {
+        } else if meta.is_file() {
             if meta.is_symlink() && !follow_symlinks {
                 log::debug!(
                     "{} is a symlink; use --follow-symlinks to follow",
