@@ -66,12 +66,13 @@ default = [
   "ocaml_interface",
   "ocamllex",
   "toml",
-  "tree_sitter_query"
+  "tree_sitter_query",
 ]
 
 # Included by default
 contributed = [
-  "css"
+  "css",
+  "openscad",
 ]
 
 # Excluded by default
@@ -86,6 +87,7 @@ nickel = ["topiary-config/nickel", "topiary-queries/nickel"]
 ocaml = ["topiary-config/ocaml", "topiary-queries/ocaml"]
 ocaml_interface = ["topiary-config/ocaml_interface", "topiary-queries/ocaml_interface"]
 ocamllex = ["topiary-config/ocamllex", "topiary-queries/ocamllex"]
+openscad = ["topiary-config/openscad", "topiary-queries/openscad"]
 rust = ["topiary-config/rust", "topiary-queries/rust"]
 toml = ["topiary-config/toml", "topiary-queries/toml"]
 tree_sitter_query = ["topiary-config/tree_sitter_query", "topiary-queries/tree_sitter_query"]

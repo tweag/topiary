@@ -4,11 +4,13 @@
 , crane
 , rust-overlay
 , craneLib
-# tree-sitter-Nickel is packaged in Nixpkgs, but it's an older version at the
+# tree-sitter-nickel is packaged in Nixpkgs, but it's an older version at the
 # time of writing. Since updating it seems non trivial, and we need Topiary to
 # be compatible with Nickel urgently (it is currently blocking for the CI), we
 # use the tree-sitter-nickel flake directly.
 , tree-sitter-nickel
+# tree-sitter-openscad is not in nixpkgs so use flake directly
+, tree-sitter-openscad
 }:
 let
   inherit (pkgs.lib) fileset;
@@ -120,7 +122,7 @@ in
 
     preConfigurePhases = pkgs.lib.optional nixSupport "useNixConfiguration";
 
-    # ocamllex is not (yet) packaged in nixpkgs
+    # ocamllex is not (yet) packaged in nixpkgs:
     # ocamllex="${pkgs.tree-sitter-grammars.tree-sitter-ocamllex}/parser" \
     useNixConfiguration = ''
       bash="${pkgs.tree-sitter-grammars.tree-sitter-bash}/parser" \
@@ -129,6 +131,7 @@ in
       nickel="${tree-sitter-nickel}/parser" \
       ocaml="${pkgs.tree-sitter-grammars.tree-sitter-ocaml}/parser" \
       ocaml_interface="${pkgs.tree-sitter-grammars.tree-sitter-ocaml-interface}/parser" \
+      openscad="${tree-sitter-openscad}/parser" \
       rust="${pkgs.tree-sitter-grammars.tree-sitter-rust}/parser" \
       toml="${pkgs.tree-sitter-grammars.tree-sitter-toml}/parser" \
       tree_sitter_query="${pkgs.tree-sitter-grammars.tree-sitter-query}/parser" \

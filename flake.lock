@@ -69,7 +69,8 @@
         "crane": "crane",
         "nixpkgs": "nixpkgs",
         "rust-overlay": "rust-overlay",
-        "tree-sitter-nickel": "tree-sitter-nickel"
+        "tree-sitter-nickel": "tree-sitter-nickel",
+        "tree-sitter-openscad": "tree-sitter-openscad"
       }
     },
     "rust-overlay": {
@@ -107,6 +108,26 @@
       "original": {
         "owner": "nickel-lang",
         "repo": "tree-sitter-nickel",
+        "type": "github"
+      }
+    },
+    "tree-sitter-openscad": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1737584789,
+        "narHash": "sha256-j/DordcjrrVZ9ZI2p46z4TULyf2A+4mNjcM9btowyQU=",
+        "owner": "mkatychev",
+        "repo": "tree-sitter-openscad",
+        "rev": "270e5ff749edfacc84a6e4a434abd4e8b0f70bbe",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mkatychev",
+        "repo": "tree-sitter-openscad",
         "type": "github"
       }
     }
