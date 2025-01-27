@@ -8,7 +8,7 @@ use log::LevelFilter;
 
 use crate::{
     error::{CLIResult, TopiaryError},
-    visualisation,
+    fs, visualisation,
 };
 
 #[derive(Debug, Parser)]
@@ -175,42 +175,6 @@ pub enum Commands {
     },
 }
 
-/// Given a vector of paths, recursively expand those that identify as directories, in place
-fn traverse_fs(files: &mut Vec<PathBuf>, follow_symlinks: bool) -> CLIResult<()> {
-    let mut expanded = vec![];
-
-    for file in &mut *files {
-        let is_dir = if follow_symlinks {
-            file.is_dir()
-        } else {
-            file.is_dir() && !file.is_symlink()
-        };
-
-        if is_dir {
-            // Descend into directory, symlink-aware as required
-            let mut subfiles = file.read_dir()?.flatten().map(|f| f.path()).collect();
-            traverse_fs(&mut subfiles, follow_symlinks)?;
-            expanded.append(&mut subfiles);
-        } else {
-            if file.is_symlink() && !follow_symlinks {
-                log::debug!(
-                    "{} is a symlink, which we're not following",
-                    file.to_string_lossy()
-                );
-                continue;
-            }
-
-            // Only push the file if the canonicalisation succeeds (i.e., skip broken symlinks)
-            if let Ok(candidate) = file.canonicalize() {
-                expanded.push(candidate.to_path_buf());
-            }
-        }
-    }
-
-    *files = expanded;
-    Ok(())
-}
-
 /// Parse CLI arguments and normalise them for the caller
 pub fn get_args() -> CLIResult<Cli> {
     let mut args = Cli::parse();
@@ -253,7 +217,7 @@ pub fn get_args() -> CLIResult<Cli> {
             // (potential) files, as input sources. This is finally deduplicated to avoid
             // formatting the same file multiple times (e.g., in the case that a symlink points to
             // a file within the set, or if the same file is specified twice at the command line).
-            traverse_fs(files, *follow_symlinks)?;
+            fs::traverse(files, *follow_symlinks)?;
             files.sort_unstable();
             files.dedup();
         }

@@ -253,11 +253,22 @@ input files.
 > [!TIP]
 > `fmt` is a recognised alias of the `format` subcommand.
 
-> [!WARNING]
-> Topiary performs in-place file formatting by writing the formatted
-> output to a temporary file and then replacing that with the original
-> input file. For files with multiple links, on filesystems where that
-> makes sense, this will break the link.
+> [!TIP]
+> Topiary will not accept a process substitution (or any other named
+> pipe) as formatting input. Instead, arrange for a redirection into
+> Topiary's standard input:
+>
+> ```bash
+> # This won't work
+> topiary format <(some_command)
+>
+> # Do this instead
+> some_command | topiary format --language LANGUAGE
+> ```
+
+> [!NOTE]
+> Topiary will skip over files that have multiple (hard) links to avoid
+> breaking said links. A warning will be logged to indicate this.
 
 #### Visualise
 
