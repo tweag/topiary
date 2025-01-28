@@ -266,7 +266,8 @@ impl OutputFile {
     pub fn persist(self) -> CLIResult<()> {
         if let Self::Disk { mut staged, output } = self {
             // Rewind to the beginning of the staged output
-            staged.seek(io::SeekFrom::Start(0))?;
+            staged.flush()?;
+            staged.rewind()?;
 
             // Open the actual output for writing and copy the staged contents
             let mut writer = File::create(&output)?;
