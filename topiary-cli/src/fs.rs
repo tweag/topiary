@@ -109,13 +109,15 @@ pub fn traverse(files: &mut Vec<PathBuf>, follow_symlinks: bool) -> CLIResult<()
         let meta = match FileMeta::new(file) {
             Ok(meta) => meta,
             Err(_) => {
-                log::warn!("Skipping {}: cannot access", file.to_string_lossy());
+                log::error!("Skipping {}: Cannot access", file.to_string_lossy());
                 continue;
             }
         };
 
         // Skip over everything we don't care about
         if meta.ignore() {
+            // This isn't such an important message, so only warn
+            log::warn!("Skipping {}: Not a regular file", file.to_string_lossy());
             continue;
         }
 
@@ -132,16 +134,17 @@ pub fn traverse(files: &mut Vec<PathBuf>, follow_symlinks: bool) -> CLIResult<()
             expanded.append(&mut subfiles);
         } else if meta.is_file() {
             if meta.is_symlink() && !follow_symlinks {
-                log::debug!(
-                    "{} is a symlink; use --follow-symlinks to follow",
+                // This isn't such an important message, so only warn
+                log::warn!(
+                    "Skipping {}: File is a symlink; use --follow-symlinks to follow",
                     file.to_string_lossy()
                 );
                 continue;
             }
 
             if meta.has_multiple_links() {
-                log::warn!(
-                    "Skipping {} as it has multiple links, which Topiary would break",
+                log::error!(
+                    "Skipping {}: File has multiple links, which Topiary would break",
                     file.to_string_lossy()
                 );
                 continue;
@@ -150,6 +153,11 @@ pub fn traverse(files: &mut Vec<PathBuf>, follow_symlinks: bool) -> CLIResult<()
             // Only push the file if the canonicalisation succeeds (i.e., skip broken symlinks)
             if let Ok(candidate) = file.canonicalize() {
                 expanded.push(candidate);
+            } else {
+                log::error!(
+                    "Skipping {}: File does not exist (e.g., broken symlink)",
+                    file.to_string_lossy()
+                );
             }
         }
     }

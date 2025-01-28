@@ -268,8 +268,16 @@ input files.
 > ```
 
 > [!NOTE]
-> Topiary will skip over files that have multiple (hard) links to avoid
-> breaking said links. A warning will be logged to indicate this.
+> Topiary will skip over some input files under certain conditions,
+> which are logged at varying levels:
+>
+> | Condition                                     | Level   |
+> | :-------------------------------------------- | :------ |
+> | Cannot access file                            | Error   |
+> | Not a regular file (e.g., FIFO, socket, etc.) | Warning |
+> | A symlink without `--follow-symlinks`         | Warning |
+> | File with multiple (hard) links               | Error   |
+> | File does not exist (e.g., broken symlink)    | Error   |
 
 #### Visualise
 
