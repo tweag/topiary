@@ -29,16 +29,21 @@ impl Source {
     /// 4. Built-in configuration (per `Self::builtin_nickel()`)
     pub fn fetch_all(file: &Option<PathBuf>) -> Vec<Self> {
         let candidates = [
-            Some(find_os_configuration_dir_config()),
-            find_workspace_configuration_dir_config(),
-            file.clone(),
+            ("OS", Some(find_os_configuration_dir_config())),
+            ("workspace", find_workspace_configuration_dir_config()),
+            ("CLI", file.clone()),
         ];
 
         // We always include the built-in configuration, as a fallback
+        log::info!("Adding built-in configuration to merge");
         let mut res: Vec<Self> = vec![Self::Builtin];
 
-        for candidate in candidates {
+        for (hint, candidate) in candidates {
             if let Some(path) = Self::find(&candidate) {
+                log::info!(
+                    "Adding {hint}-specified configuration to merge: {}",
+                    path.to_string_lossy()
+                );
                 res.push(Self::File(path));
             }
         }
@@ -54,25 +59,21 @@ impl Source {
     /// 3. `~/.config/topiary/languages.ncl` (or equivalent)
     /// 4. Built-in configuration (per `Self::builtin_nickel()`)
     pub fn fetch_one(file: &Option<PathBuf>) -> Self {
-        let cli_specified = Self::find(&file.clone()).map(Self::File);
-        let workspace_specified =
-            Self::find(&find_workspace_configuration_dir_config()).map(Self::File);
-        let os_config_specified =
-            Self::find(&Some(find_os_configuration_dir_config())).map(Self::File);
+        let candidates = [
+            ("CLI", file.clone()),
+            ("workspace", find_workspace_configuration_dir_config()),
+            ("OS", Some(find_os_configuration_dir_config())),
+        ];
 
-        if let Some(res) = cli_specified {
-            log::info!("Using CLI-specified configuration: {res}");
-            res
-        } else if let Some(res) = workspace_specified {
-            log::info!("Using workspace-specified configuration: {res}");
-            res
-        } else if let Some(res) = os_config_specified {
-            log::info!("Using global os-specified configuration: {res}");
-            res
-        } else {
-            log::info!("Using built-in configuration");
-            Self::Builtin
+        for (hint, candidate) in candidates {
+            if let Some(source) = Self::find(&candidate).map(Self::File) {
+                log::info!("Using {hint}-specified configuration: {source}");
+                return source;
+            }
         }
+
+        log::info!("Using built-in configuration");
+        Self::Builtin
     }
 
     /// Attempts to find a configuration file, given a `path` parameter. If `path` is `None`, then
@@ -95,7 +96,7 @@ impl Source {
                     Some(candidate)
                 } else {
                     log::info!(
-                        "Could not find configuration file: {}. Defaulting to built-in configuration.",
+                        "Could not find configuration file: {}.",
                         candidate.to_string_lossy()
                     );
                     None
