@@ -2,11 +2,11 @@ use std::{
     ffi::OsString,
     fmt::{self, Display},
     fs::File,
-    io::{stdin, stdout, ErrorKind, Read, Result, Write},
-    path::{Path, PathBuf},
+    io::{self, Read, Result, Seek, Write},
+    path::PathBuf,
 };
 
-use tempfile::NamedTempFile;
+use tempfile::tempfile;
 use topiary_config::Configuration;
 use topiary_core::{Language, TopiaryQuery};
 
@@ -152,7 +152,7 @@ impl InputFile<'_> {
 impl Read for InputFile<'_> {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         match &mut self.source {
-            InputSource::Stdin => stdin().lock().read(buf),
+            InputSource::Stdin => io::stdin().lock().read(buf),
 
             InputSource::Disk(path, fd) => {
                 if fd.is_none() {
@@ -246,7 +246,7 @@ pub enum OutputFile {
     Disk {
         // NOTE We stage to a file, rather than writing
         // to memory (e.g., Vec<u8>), to ensure atomicity
-        staged: NamedTempFile,
+        staged: File,
         output: OsString,
     },
 }
@@ -255,29 +255,24 @@ impl OutputFile {
     pub fn new(path: &str) -> CLIResult<Self> {
         match path {
             "-" => Ok(Self::Stdout),
-            file => {
-                // `canonicalize` if the given path exists, otherwise fallback to what was given
-                let path = Path::new(file).canonicalize().or_else(|e| match e.kind() {
-                    ErrorKind::NotFound => Ok(file.into()),
-                    _ => Err(e),
-                })?;
-
-                // The call to `parent` will only return `None` if `path` is the root directory,
-                // but that doesn't make sense as an output file, so unwrapping is safe
-                let parent = path.parent().unwrap();
-
-                Ok(Self::Disk {
-                    staged: NamedTempFile::new_in(parent)?,
-                    output: file.into(),
-                })
-            }
+            file => Ok(Self::Disk {
+                staged: tempfile()?,
+                output: file.into(),
+            }),
         }
     }
 
     // This function must be called to persist the output to disk
     pub fn persist(self) -> CLIResult<()> {
-        if let Self::Disk { staged, output } = self {
-            staged.persist(output)?;
+        if let Self::Disk { mut staged, output } = self {
+            // Rewind to the beginning of the staged output
+            staged.seek(io::SeekFrom::Start(0))?;
+
+            // Open the actual output for writing and copy the staged contents
+            let mut writer = File::create(&output)?;
+            let bytes = io::copy(&mut staged, &mut writer)?;
+
+            log::debug!("Wrote {bytes} bytes to {}", &output.to_string_lossy());
         }
 
         Ok(())
@@ -296,14 +291,14 @@ impl fmt::Display for OutputFile {
 impl Write for OutputFile {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         match self {
-            Self::Stdout => stdout().lock().write(buf),
+            Self::Stdout => io::stdout().lock().write(buf),
             Self::Disk { staged, .. } => staged.write(buf),
         }
     }
 
     fn flush(&mut self) -> Result<()> {
         match self {
-            Self::Stdout => stdout().lock().flush(),
+            Self::Stdout => io::stdout().lock().flush(),
             Self::Disk { staged, .. } => staged.flush(),
         }
     }
