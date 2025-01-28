@@ -124,9 +124,13 @@ impl fmt::Display for Source {
             Self::Builtin => write!(f, "Built-in configuration"),
 
             Self::File(path) => {
-                // We only stringify the path when we know it exists, so the call to `canonicalize`
-                // is safe to unwrap. (All bets are off, if called from elsewhere.)
-                write!(f, "{}", path.canonicalize().unwrap().to_string_lossy())
+                // If the configuration is provided through a file, then we know by this point that
+                // it must exist and so the call to `canonicalize` will succeed. However, special
+                // cases -- such as process substitution, which creates a temporary FIFO -- may
+                // fail if the shell has cleaned things up from under us; in which case, we
+                // fallback to the original `path`.
+                let config = path.canonicalize().unwrap_or(path.clone());
+                write!(f, "{}", config.to_string_lossy())
             }
         }
     }
