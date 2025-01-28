@@ -211,8 +211,8 @@ Arguments:
   [FILES]...
           Input files and directories (omit to read from stdin)
 
-          Language detection and query selection is automatic, mapped from file extensions defined
-          in the Topiary configuration.
+          Language detection and query selection is automatic, mapped from file extensions
+          defined in the Topiary configuration.
 
 Options:
   -t, --tolerate-parsing-errors
@@ -292,8 +292,9 @@ example, using Graphviz's `dot`: `topiary visualise input.ocaml | dot -T png
 ```
 Visualise the input's Tree-sitter parse tree
 
-Visualise generates a graph representation of the parse tree that can be rendered by external
-visualisation tools, such as Graphviz. By default, the output is in the DOT format.
+Visualise generates a graph representation of the parse tree that can be rendered by
+external visualisation tools, such as Graphviz. By default, the output is in the DOT
+format.
 
 Usage: topiary visualise [OPTIONS] <--language <LANGUAGE>|FILE>
 
@@ -301,8 +302,8 @@ Arguments:
   [FILE]
           Input file (omit to read from stdin)
 
-          Language detection and query selection is automatic, mapped from file extensions defined
-          in the Topiary configuration.
+          Language detection and query selection is automatic, mapped from file extensions
+          defined in the Topiary configuration.
 
 Options:
   -f, --format <FORMAT>
@@ -379,8 +380,8 @@ Generate shell completion script
 Usage: topiary completion [OPTIONS] [SHELL]
 
 Arguments:
-  [SHELL]  Shell (omit to detect from the environment) [possible values: bash, elvish, fish,
-           powershell, zsh]
+  [SHELL]  Shell (omit to detect from the environment) [possible values: bash, elvish,
+           fish, powershell, zsh]
 
 Options:
   -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
@@ -435,8 +436,8 @@ Arguments:
   [FILE]
           Input file (omit to read from stdin)
 
-          Language detection and query selection is automatic, mapped from file extensions defined
-          in the Topiary configuration.
+          Language detection and query selection is automatic, mapped from file extensions
+          defined in the Topiary configuration.
 
 Options:
   -l, --language <LANGUAGE>
