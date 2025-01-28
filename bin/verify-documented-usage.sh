@@ -4,6 +4,12 @@
 
 set -euo pipefail
 
+# Set TTY width to 90 columns
+ORIGINAL_WIDTH="$(stty size | cut -d' ' -f2)"
+readonly ORIGINAL_WIDTH
+trap 'stty cols "${ORIGINAL_WIDTH}"' EXIT
+stty cols 90
+
 readonly FENCE='```'
 
 get-cli-usage() {
