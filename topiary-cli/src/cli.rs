@@ -8,7 +8,7 @@ use log::LevelFilter;
 
 use crate::{
     error::{CLIResult, TopiaryError},
-    visualisation,
+    fs, visualisation,
 };
 
 #[derive(Debug, Parser)]
@@ -58,7 +58,7 @@ pub struct GlobalArgs {
 // NOTE This abstraction is largely to workaround clap-rs/clap#4707
 #[derive(Args, Debug)]
 pub struct FromStdin {
-    /// Topiary language identifier (for formatting stdin)
+    /// Topiary language identifier (when formatting stdin)
     #[arg(short, long)]
     pub language: String,
 
@@ -109,6 +109,10 @@ pub struct AtLeastOneInput {
     /// Language detection and query selection is automatic, mapped from file extensions defined in
     /// the Topiary configuration.
     pub files: Vec<PathBuf>,
+
+    /// Follow symlinks (when formatting files)
+    #[arg(short = 'L', long)]
+    pub follow_symlinks: bool,
 }
 
 // NOTE When changing the subcommands, please update verify-documented-usage.sh respectively.
@@ -171,24 +175,6 @@ pub enum Commands {
     },
 }
 
-/// Given a vector of paths, recursively expand those that identify as directories, in place
-fn traverse_fs(files: &mut Vec<PathBuf>) -> CLIResult<()> {
-    let mut expanded = vec![];
-
-    for file in &mut *files {
-        if file.is_dir() {
-            let mut subfiles = file.read_dir()?.flatten().map(|f| f.path()).collect();
-            traverse_fs(&mut subfiles)?;
-            expanded.append(&mut subfiles);
-        } else {
-            expanded.push(file.to_path_buf());
-        }
-    }
-
-    *files = expanded;
-    Ok(())
-}
-
 /// Parse CLI arguments and normalise them for the caller
 pub fn get_args() -> CLIResult<Cli> {
     let mut args = Cli::parse();
@@ -217,17 +203,23 @@ pub fn get_args() -> CLIResult<Cli> {
 
     match &mut args.command {
         Commands::Format {
-            inputs: AtLeastOneInput { files, .. },
+            inputs:
+                AtLeastOneInput {
+                    files,
+                    follow_symlinks,
+                    ..
+                },
             ..
         } => {
             // If we're given a list of FILES... then we assume them to all be on disk, even if "-"
             // is passed as an argument (i.e., interpret this as a valid filename, rather than as
-            // stdin). We deduplicate this list to avoid formatting the same file multiple times
-            // and recursively expand directories until we're left with a list of unique
-            // (potential) files as input sources.
+            // stdin). We recursively expand directories until we're left with a list of
+            // (potential) files, as input sources. This is finally deduplicated to avoid
+            // formatting the same file multiple times (e.g., in the case that a symlink points to
+            // a file within the set, or if the same file is specified twice at the command line).
+            fs::traverse(files, *follow_symlinks)?;
             files.sort_unstable();
             files.dedup();
-            traverse_fs(files)?;
         }
 
         Commands::Visualise {
