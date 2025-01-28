@@ -66,6 +66,7 @@ This name should be decided amongst the team before the release.
 - [#822](https://github.com/tweag/topiary/pull/822) Various Bash fixes and improvements
 - [#813](https://github.com/tweag/topiary/pull/813) In-place writing on Windows (also introduced a minimal Windows CI)
 - [#826](https://github.com/tweag/topiary/pull/826) Various Tree-sitter query fixes, thanks to @mkatychev
+- [#853](https://github.com/tweag/topiary/pull/853) Small fixes to CLI logging and IO
 
 ## v0.5.1 - Fragrant Frangipani - 2024-10-22
 
