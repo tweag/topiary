@@ -1,5 +1,6 @@
 mod cli;
 mod error;
+mod fs;
 mod io;
 mod language;
 mod visualisation;

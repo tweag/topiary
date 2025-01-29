@@ -223,10 +223,13 @@ Options:
           Do not check that formatting twice gives the same output
 
   -l, --language <LANGUAGE>
-          Topiary language identifier (for formatting stdin)
+          Topiary language identifier (when formatting stdin)
 
   -q, --query <QUERY>
           Topiary query file override (when formatting stdin)
+
+  -L, --follow-symlinks
+          Follow symlinks (when formatting files)
 
   -C, --configuration <CONFIGURATION>
           Configuration file
@@ -249,7 +252,33 @@ the input files' extensions. To format standard input, you must specify
 the `--language` and, optionally, `--query` arguments, omitting any
 input files.
 
-Note: `fmt` is a recognised alias of the `format` subcommand.
+> [!TIP]
+> `fmt` is a recognised alias of the `format` subcommand.
+
+> [!TIP]
+> Topiary will not accept a process substitution (or any other named
+> pipe) as formatting input. Instead, arrange for a redirection into
+> Topiary's standard input:
+>
+> ```bash
+> # This won't work
+> topiary format <(some_command)
+>
+> # Do this instead
+> some_command | topiary format --language LANGUAGE
+> ```
+
+> [!NOTE]
+> Topiary will skip over some input files under certain conditions,
+> which are logged at varying levels:
+>
+> | Condition                                     | Level   |
+> | :-------------------------------------------- | :------ |
+> | Cannot access file                            | Error   |
+> | Not a regular file (e.g., FIFO, socket, etc.) | Warning |
+> | A symlink without `--follow-symlinks`         | Warning |
+> | File with multiple (hard) links               | Error   |
+> | File does not exist (e.g., broken symlink)    | Error   |
 
 #### Visualise
 
@@ -287,7 +316,7 @@ Options:
           - json: JSON serialisation
 
   -l, --language <LANGUAGE>
-          Topiary language identifier (for formatting stdin)
+          Topiary language identifier (when formatting stdin)
 
   -q, --query <QUERY>
           Topiary query file override (when formatting stdin)
@@ -313,8 +342,9 @@ the input file's extension. To visualise standard input, you must
 specify the `--language` and, optionally, `--query` arguments, omitting
 the input file. The visualisation output is written to standard out.
 
-Note: `vis`, `visualize` and `view` are recognised aliases of the
-`visualise` subcommand.
+> [!TIP]
+> `vis`, `visualize` and `view` are recognised aliases of the
+> `visualise` subcommand.
 
 #### Configuration
 
@@ -333,7 +363,8 @@ Options:
 ```
 <!-- usage:end:config -->
 
-Note: `cfg` is a recognised alias of the `config` subcommand.
+> [!TIP]
+> `cfg` is a recognised alias of the `config` subcommand.
 
 #### Shell Completion
 
@@ -410,7 +441,7 @@ Arguments:
 
 Options:
   -l, --language <LANGUAGE>
-          Topiary language identifier (for formatting stdin)
+          Topiary language identifier (when formatting stdin)
 
   -q, --query <QUERY>
           Topiary query file override (when formatting stdin)
@@ -1662,18 +1693,20 @@ suggested way to work:
    CST output that starts with a line like this: `CST node: {Node
    compilation_unit (0, 0) - (5942, 0)} - Named: true`.
 
-   :bulb: As an alternative to using the debugging output, the
-   `vis` visualisation subcommand line option exists to output the
-   Tree-sitter syntax tree in a variety of formats.
+> [!TIP]
+> As an alternative to using the debugging output, the `vis`
+> visualisation subcommand line option exists to output the Tree-sitter
+> syntax tree in a variety of formats.
 
 5. The test run will output all the differences between the actual
    output and the expected output, e.g. missing spaces between tokens.
    Pick a difference you would like to fix, and find the line number and
    column in the input file.
 
-   :bulb: Keep in mind that the CST output uses 0-based line and column
-   numbers, so if your editor reports line 40, column 37, you probably
-   want line 39, column 36.
+> [!NOTE]
+> Keep in mind that the CST output uses 0-based line and column numbers,
+> so if your editor reports line 40, column 37, you probably want line
+> 39, column 36.
 
 6. In the CST debug or visualisation output, find the nodes in this
    region, such as the following:
