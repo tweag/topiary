@@ -50,6 +50,7 @@ This name should be decided amongst the team before the release.
 - [#786](https://github.com/tweag/topiary/pull/786) Re-introduce tests to check that all of the language queries are useful.
 - [#747](https://github.com/tweag/topiary/pull/747) Added support for specifying paths to prebuilt grammars in Topiary's configuration
 - [#832](https://github.com/tweag/topiary/pull/832) Added `typos-cli` to workspace `Cargo.toml` for spellchecking @mkatychev
+- [#845](https://github.com/tweag/topiary/pull/747) Added support for OpenSCAD, @mkatychev
 - [#851](https://github.com/tweag/topiary/pull/851) Added support for following symlinks when specifying input files for formatting
 
 ### Changed

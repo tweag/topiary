@@ -10,6 +10,11 @@
       grammar.source.path = "@css@",
     },
 
+    openscad = {
+      extensions = ["scad"],
+      grammar.source.path = "@openscad@",
+    },
+
     json = {
       extensions = [
         "json",

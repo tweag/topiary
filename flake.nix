@@ -26,6 +26,11 @@
       url = "github:nickel-lang/tree-sitter-nickel";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    tree-sitter-openscad = {
+      url = "github:mkatychev/tree-sitter-openscad";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
@@ -44,7 +49,7 @@
 
         topiaryPkgs = pkgs.callPackage ./default.nix {
           inherit (inputs) advisory-db crane rust-overlay;
-          inherit (pkgs.tree-sitter-grammars) tree-sitter-nickel;
+          inherit (pkgs.tree-sitter-grammars) tree-sitter-nickel tree-sitter-openscad;
           craneLib = inputs.crane.mkLib pkgs;
         };
 
@@ -64,6 +69,7 @@
           # Nickel *should* have an overlay like this already
           tree-sitter-grammars = prev.tree-sitter-grammars // {
             tree-sitter-nickel = inputs.tree-sitter-nickel.packages.${prev.system}.default;
+            tree-sitter-openscad = inputs.tree-sitter-openscad.packages.${prev.system}.default;
           };
         };
 

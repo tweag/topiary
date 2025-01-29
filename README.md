@@ -103,6 +103,7 @@ external contributors. They are built in, by default, so are exposed in
 the same way as supported languages.
 
 * [CSS] by @lavigneer
+* [OpenSCAD] by @mkatychev
 
 #### Experimental
 
@@ -1558,7 +1559,7 @@ The two following steps are enough to jumpstart the formatting of a new language
 ```nickel
     c = {
       extensions = ["c", "h"],
-      grammar = {
+      grammar.source.git = {
         git = "https://github.com/tree-sitter/tree-sitter-c.git",
         rev = "6c7f459ddc0bcf78b615d3a3f4e8fed87b8b3b1b",
       },
@@ -1841,6 +1842,7 @@ of choice open in another.
 [ocamlformat]: https://github.com/ocaml-ppx/ocamlformat
 [ocamllex]: https://v2.ocaml.org/manual/lexyacc.html
 [ocp-indent]: https://www.typerex.org/ocp-indent.html
+[openscad]: https://en.wikipedia.org/wiki/OpenSCAD
 [ormolu]: https://github.com/tweag/ormolu
 [prettier]: https://prettier.io/
 [rust]: https://www.rust-lang.org

@@ -87,6 +87,9 @@ fn input_output_tester() {
     #[cfg(feature = "ocamllex")]
     io_test("ocamllex.mll");
 
+    #[cfg(feature = "openscad")]
+    io_test("openscad.scad");
+
     #[cfg(feature = "rust")]
     io_test("rust.rs");
 
