@@ -68,7 +68,7 @@ jobs:
             --proto '=https' \
             --tlsv1.2 \
             -LsSf \
-            https://github.com/axodotdev/cargo-dist/releases/latest/download/cargo-dist-installer.sh \
+            https://github.com/axodotdev/cargo-dist/releases/download/v0.28.0/cargo-dist-installer.sh \
           | sh
 
       - name: Cache cargo-dist
