@@ -45,39 +45,56 @@ on:
 jobs:
   # Run 'cargo dist plan' (or host) to determine what tasks we need to do
   plan:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
+
     outputs:
-      val: ${{ steps.plan.outputs.manifest }}
+      manifest: ${{ steps.plan.outputs.manifest }}
       tag: ${{ !github.event.pull_request && github.ref_name || '' }}
       tag-flag: ${{ !github.event.pull_request && format('--tag={0}', github.ref_name) || '' }}
       publishing: ${{ !github.event.pull_request }}
+
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Install cargo-dist
-        # we specify bash to get pipefail; it guards against the `curl` command
-        # failing. otherwise `sh` won't catch that `curl` returned non-0
-        shell: bash
-        run: "curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.19.1/cargo-dist-installer.sh | sh"
+        run: |
+          set -eo pipefail
+
+          curl \
+            --proto '=https' \
+            --tlsv1.2 \
+            -LsSf \
+            https://github.com/axodotdev/cargo-dist/releases/latest/download/cargo-dist-installer.sh \
+          | sh
+
       - name: Cache cargo-dist
         uses: actions/upload-artifact@v4
         with:
           name: cargo-dist-cache
           path: ~/.cargo/bin/cargo-dist
+
       # sure would be cool if github gave us proper conditionals...
       # so here's a doubly-nested ternary-via-truthiness to try to provide the best possible
       # functionality based on whether this is a pull_request, and whether it's from a fork.
       # (PRs run on the *source* but secrets are usually on the *target* -- that's *good*
       # but also really annoying to build CI around when it needs secrets to work right.)
-      - id: plan
+      - name: Create release manifest
+        id: plan
         run: |
-          cargo dist ${{ (!github.event.pull_request && format('host --steps=create --tag={0}', github.ref_name)) || 'plan' }} --output-format=json > plan-dist-manifest.json
+          cargo dist \
+            ${{ (!github.event.pull_request && format('host --steps=create --tag={0}', github.ref_name)) || 'plan' }} \
+            --output-format=json \
+            > plan-dist-manifest.json
+
           echo "cargo dist ran successfully"
           cat plan-dist-manifest.json
+
           echo "manifest=$(jq -c "." plan-dist-manifest.json)" >> "$GITHUB_OUTPUT"
+
       - name: "Upload dist-manifest.json"
         uses: actions/upload-artifact@v4
         with:
@@ -90,7 +107,7 @@ jobs:
     # Let the initial task tell us to not run (currently very blunt)
     needs:
       - plan
-    if: ${{ fromJson(needs.plan.outputs.val).ci.github.artifacts_matrix.include != null && (needs.plan.outputs.publishing == 'true' || fromJson(needs.plan.outputs.val).ci.github.pr_run_mode == 'upload') }}
+    if: ${{ fromJson(needs.plan.outputs.manifest).ci.github.artifacts_matrix.include != null && (needs.plan.outputs.publishing == 'true' || fromJson(needs.plan.outputs.manifest).ci.github.pr_run_mode == 'upload') }}
     strategy:
       fail-fast: false
       # Target platforms/runners are computed by cargo-dist in create-release.
@@ -103,7 +120,7 @@ jobs:
       # Typically there will be:
       # - 1 "global" task that builds universal installers
       # - N "local" tasks that build each platform's binaries and platform-specific installers
-      matrix: ${{ fromJson(needs.plan.outputs.val).ci.github.artifacts_matrix }}
+      matrix: ${{ fromJson(needs.plan.outputs.manifest).ci.github.artifacts_matrix }}
     runs-on: ${{ matrix.runner }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -158,7 +175,7 @@ jobs:
     needs:
       - plan
       - build-local-artifacts
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       BUILD_MANIFEST_NAME: target/distrib/global-dist-manifest.json
@@ -208,7 +225,7 @@ jobs:
     if: ${{ always() && needs.plan.outputs.publishing == 'true' && (needs.build-global-artifacts.result == 'skipped' || needs.build-global-artifacts.result == 'success') && (needs.build-local-artifacts.result == 'skipped' || needs.build-local-artifacts.result == 'success') }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
     outputs:
       val: ${{ steps.host.outputs.manifest }}
     steps:
@@ -272,7 +289,7 @@ jobs:
     # still allowing individual publish jobs to skip themselves (for prereleases).
     # "host" however must run to completion, no skipping allowed!
     if: ${{ always() && needs.host.result == 'success' }}
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
