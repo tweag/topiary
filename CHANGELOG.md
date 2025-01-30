@@ -44,27 +44,24 @@ This name should be decided amongst the team before the release.
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.6.0...HEAD)
 
-<!--
 
-### Added
-- <New feature>
+<!-- ### Added -->
+<!-- - <New feature> -->
 
 ### Changed
-- <Changes in existing functionality>
+- [#859](https://github.com/tweag/topiary/pull/859) Break up integration tests per language, thanks to @mkatychev
 
-### Deprecated
-- <Soon-to-be removed features>
+<!-- ### Deprecated -->
+<!-- - <Soon-to-be removed features> -->
 
-### Removed
-- <Removed features>
+<!-- ### Removed -->
+<!-- - <Removed features> -->
 
-### Fixed
-- <Bug fixes>
+<!-- ### Fixed -->
+<!-- - <Bug fixes> -->
 
-### Security
-- <Vulnerabilities>
-
--->
+<!-- ### Security -->
+<!-- - <Vulnerabilities> -->
 
 ## v0.6.0 - Gilded Ginkgo - 2025-01-30
 
@@ -85,6 +82,7 @@ This name should be decided amongst the team before the release.
 - [#794](https://github.com/tweag/topiary/pull/794) Bump the `tree-sitter` dependency to 0.24, thanks to @ZedThree
 - [#801](https://github.com/tweag/topiary/pull/801) Improved documentation of the `visualise` subcommand
 - [#811](https://github.com/tweag/topiary/pull/811) The `config` subcommand now outputs a Nickel file instead of some inner representation
+- [#830](https://github.com/tweag/topiary/pull/830) Use `tree-sitter-loader` to build grammars, rather than rolling our own
 - [#830](https://github.com/tweag/topiary/pull/830) Use `tree-sitter-loader` to build grammars, rather than rolling our own
 
 ### Fixed
