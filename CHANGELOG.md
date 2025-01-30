@@ -49,6 +49,7 @@ This name should be decided amongst the team before the release.
 <!-- - <New feature> -->
 
 ### Changed
+<!-- - <Changes in existing functionality> -->
 - [#859](https://github.com/tweag/topiary/pull/859) Break up integration tests per language, thanks to @mkatychev
 
 <!-- ### Deprecated -->
@@ -83,7 +84,7 @@ This name should be decided amongst the team before the release.
 - [#801](https://github.com/tweag/topiary/pull/801) Improved documentation of the `visualise` subcommand
 - [#811](https://github.com/tweag/topiary/pull/811) The `config` subcommand now outputs a Nickel file instead of some inner representation
 - [#830](https://github.com/tweag/topiary/pull/830) Use `tree-sitter-loader` to build grammars, rather than rolling our own
-- [#830](https://github.com/tweag/topiary/pull/830) Use `tree-sitter-loader` to build grammars, rather than rolling our own
+- [#859](https://github.com/tweag/topiary/pull/859) Break up integration tests per language, thanks to @mkatychev
 
 ### Fixed
 - [#779](https://github.com/tweag/topiary/pull/779) Load relevant grammars before CLI tests
