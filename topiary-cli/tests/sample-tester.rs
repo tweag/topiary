@@ -93,6 +93,9 @@ fn input_output_tester() {
     #[cfg(feature = "rust")]
     io_test("rust.rs");
 
+    #[cfg(feature = "sdml")]
+    io_test("sdml.sdml");
+
     #[cfg(feature = "toml")]
     io_test("toml.toml");
 
@@ -127,6 +130,9 @@ fn coverage_tester() {
 
     #[cfg(feature = "rust")]
     coverage_test("rust.rs");
+
+    #[cfg(feature = "sdml")]
+    coverage_test("sdml.sdml");
 
     #[cfg(feature = "toml")]
     coverage_test("toml.toml");
