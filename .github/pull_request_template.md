@@ -1,10 +1,37 @@
-# NAME OF PR
-<!-- Please refer to an issue, or remove this line if the PR is unrelated to an issue -->
-Issue: #
+# [PR Name]
+
+<!----------------------------------------------------------------------
+If this PR is related to, or resolves an issue, please reference it
+here.
+
+- For issues that are fixed by this PR, use GitHub's automatic closing
+  feature by writing "Resolves #XXX", for example.
+
+- If multiple issues are implicated, please list them out, with an
+  appropriate byline for each issue, with one issue per line.
+
+- You may also use this section to reference other PRs and discussion
+  items, following the same pattern outlined here for issues.
+
+Below is an example; please update as appropriate. If no issue, etc. is
+implicated in this PR, please remove this section.
+----------------------------------------------------------------------->
+Resolves #XXX
+References #YYY
+Depends on #ZZZ
 
 ## Description
 
+[PR Description]
+
 ## Checklist
-Checklist before merging:
-- [ ] CHANGELOG.md updated
-- [ ] README.md up-to-date
+
+<!----------------------------------------------------------------------
+See MAINTAINERS.md for more details.
+This is particularly important if this PR is preparing a release.
+----------------------------------------------------------------------->
+
+Checklist before merging, wherever relevant:
+
+- [ ] [`CHANGELOG.md`](/CHANGELOG.md) updated
+- [ ] [`README.md`](/README.md) up-to-date
