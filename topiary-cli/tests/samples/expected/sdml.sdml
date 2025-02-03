@@ -1,0 +1,13 @@
+module sdml is
+  ; Sample module for Topiary formatter.
+
+  import [ dc rdf skos xsd ]
+
+  @dc:description = "A sample SDML module"
+
+  structure DateRange is
+    start_date -> xsd:date
+    end_date -> xsd:date
+  end
+
+end

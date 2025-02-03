@@ -49,6 +49,7 @@ ocaml_interface = []
 ocamllex = []
 openscad = []
 rust = []
+sdml = []
 toml = []
 tree_sitter_query = []
 
@@ -64,6 +65,7 @@ all = [
   "ocamllex",
   "openscad",
   "rust",
+  "sdml",
   "toml",
   "tree_sitter_query",
 ]
