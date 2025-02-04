@@ -18,8 +18,8 @@
 
 ### 1. Create a release preparation branch from `main`
 
-If necessary, cherry-pick the commits that should be included in the
-release. (This should only be done in exceptional circumstances.)
+- If necessary, cherry-pick the commits that should be included in the
+  release. (This should only be done in exceptional circumstances.)
 
 - Update the [`CHANGELOG`], if necessary. This is used in the release
   announcement, so ensure it conforms to the correct format.
