@@ -22,7 +22,8 @@
   release. (This should only be done in exceptional circumstances.)
 
 - Update the [`CHANGELOG`], if necessary. This is used in the release
-  announcement, so ensure it conforms to the correct format.
+  announcement, so ensure it conforms to the correct format (as
+  described in the `CHANGELOG` introduction).
 
   - By convention, this should be up-to-date as part of the PR process,
     but it ought to be double-checked. (See [below][changelog-refresh]
