@@ -2,12 +2,28 @@
 
 ## Cutting a New Release
 
+> [!CAUTION]
+> Cutting a release, end-to-end, takes a reasonable amount of time --
+> mostly waiting on the CI -- and also requires the availability of
+> colleagues to properly review and approve.
+>
+> **Plan for it to take an entire working day.**
+>
+> Do not rush the process and avoid days on which you and colleagues
+> have limited availability. Don't release on the last working day
+> before a weekend or holiday, etc. If something goes awry before the
+> point of no return, keep calm and _don't_ carry on: Better to revert
+> and try again the next day than having a broken release (and a
+> stressful evening)!
+
 ### 1. Create a release preparation branch from `main`
 
-If necessary, cherry-pick the commits that should be included in the
-release. (This should only be done in exceptional circumstances.)
+- If necessary, cherry-pick the commits that should be included in the
+  release. (This should only be done in exceptional circumstances.)
 
-- Update the [`CHANGELOG`], if necessary.
+- Update the [`CHANGELOG`], if necessary. This is used in the release
+  announcement, so ensure it conforms to the correct format (as
+  described in the `CHANGELOG` introduction).
 
   - By convention, this should be up-to-date as part of the PR process,
     but it ought to be double-checked. (See [below][changelog-refresh]
@@ -28,9 +44,10 @@ release. (This should only be done in exceptional circumstances.)
 > [!IMPORTANT]
 > Point releases (i.e., not patch releases) should also be given a name,
 > taking the form "[ADJECTIVE] [TREE]", incrementing alphabetically from
-> the previous release (e.g., "Archetypal Aspen"). Both parts are
-> relatively loose, particularly when it comes to botanical correctness,
-> and a degree of assonance has become traditional.
+> the previous release (e.g., "Archetypal Aspen", "Benevolent Beech",
+> etc.). Both parts are relatively loose, particularly when it comes to
+> botanical correctness, and a degree of assonance has become
+> traditional.
 >
 > The name should be decided amongst the team before release.
 
@@ -52,29 +69,39 @@ release. (This should only be done in exceptional circumstances.)
     - Run `dist init`. This should update the `dist-workspace.toml`
       configuration and the release workflow (`.github/workflows/release.yml`)
 
-- Push these changes and wait for green CI and peer approval. Upon both,
-  squash and merge the PR into `main`.
+- Push these changes and wait for green CI across all workflows and peer
+  approval. Upon both, squash-and-merge the PR into `main`.
 
 ### 2. Make the release
 
 - Tag the merged commit in `main` with the release version, prefixed
-  with a `v` (e.g., `v0.1.0`). The version number must match the one
-  in `Cargo.toml`, otherwise `cargo dist` will fail during CI.
+  with a `v` (e.g., `v0.1.0`), and push it to GitHub. The version number
+  must match the one in `Cargo.toml`, otherwise `dist` will fail during
+  CI.
 
   ```bash
   git tag v0.1.0
   git push --tags
   ```
 
-- Let the `dist` release workflow create a new [draft
-  release][releases]. Once this has completed:
+> [!CAUTION]
+> Pushing the tag will trigger the release workflow (described below).
+> If that succeeds, the release is finalised. **This is the point of no
+> return.** Only push the tag if you are sure everything is ready for
+> the release.
 
-  - Verify the draft release.
-  - Publish the draft release.
+- Let the `dist` release workflow create a new [release]. That is:
+
+  - Build binary artefacts for a variety of targets (currently: Apple
+    Silicon macOS, Intel macOS, x64 Windows, ARM64 Linux and x64 Linux).
+    This can take some time; the best part of an hour.
+
+  - Publish a release announcement, featuring the relevant section from
+    the `CHANGELOG` for this version.
 
 > [!WARNING]
-> This step can fail. If it does, delete the new release tag as quickly
-> as possible from GitHub and start over:
+> If this step fails, delete the new release tag as quickly as possible
+> from GitHub and start over:
 >
 > ```bash
 > git push --delete origin vX.Y.Z
@@ -86,8 +113,8 @@ release. (This should only be done in exceptional circumstances.)
   something like:
 
   ```bash
-  cargo publish --package topiary-tree-sitter-facade
   cargo publish --package topiary-web-tree-sitter-sys
+  cargo publish --package topiary-tree-sitter-facade
   cargo publish --package topiary-core
   cargo publish --package topiary-queries
   cargo publish --package topiary-config
@@ -113,7 +140,7 @@ release. (This should only be done in exceptional circumstances.)
 - Share amongst other social networks (e.g., Reddit, Hacker News,
   Mastodon, etc.), under personal accounts, at your discretion.
 
-## Generating the PR List for the CHANGELOG
+## Generating the PR List for the `CHANGELOG`
 
 If the unreleased changes in the [`CHANGELOG`] have become stale, the
 list of merged PRs can be fetched from:
@@ -144,12 +171,12 @@ gh pr list \
 ```
 
 > [!TIP]
-> The `--limit 500` is an arbitrary "large number" limit of PRs to
+> The `--limit 500` is an arbitrary "large number" :tm: limit of PRs to
 > fetch, overriding the low default. As of writing, there's no way to
 > set this to "unlimited"; adjust as necessary.
 
 <!-- Links -->
-[changelog-refresh]: #generating-the-pr-list-for-the-changelog
 [`CHANGELOG`]: /CHANGELOG.md
 [`dist`]: https://opensource.axo.dev/cargo-dist/
-[releases]: https://github.com/tweag/topiary/releases
+[changelog-refresh]: #generating-the-pr-list-for-the-changelog
+[release]: https://github.com/tweag/topiary/releases
