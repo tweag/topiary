@@ -58,23 +58,32 @@ release. (This should only be done in exceptional circumstances.)
 ### 2. Make the release
 
 - Tag the merged commit in `main` with the release version, prefixed
-  with a `v` (e.g., `v0.1.0`). The version number must match the one
-  in `Cargo.toml`, otherwise `cargo dist` will fail during CI.
+  with a `v` (e.g., `v0.1.0`), and push it to GitHub. The version number
+  must match the one in `Cargo.toml`, otherwise `cargo dist` will fail
+  during CI.
 
   ```bash
   git tag v0.1.0
   git push --tags
   ```
 
-- Let the `dist` release workflow create a new [draft
-  release][releases]. Once this has completed:
+> [!CAUTION]
+> Pushing the tag will trigger the release workflow (described below).
+> If that succeeds, the release is finalised. Only push the tag if you
+> are sure everything is ready for the release.
 
-  - Verify the draft release.
-  - Publish the draft release.
+- Let the `dist` release workflow create a new [release]. That is:
+
+  - Build binary artefacts for a variety of targets (currently: Apple
+    Silicon macOS, Intel macOS, x64 Windows, ARM64 Linux and x64 Linux).
+    This can take some time.
+
+  - Publish a release announcement, featuring the relevant section from
+    the `CHANGELOG` for this version.
 
 > [!WARNING]
-> This step can fail. If it does, delete the new release tag as quickly
-> as possible from GitHub and start over:
+> If this step fails, delete the new release tag as quickly as possible
+> from GitHub and start over:
 >
 > ```bash
 > git push --delete origin vX.Y.Z
@@ -86,8 +95,8 @@ release. (This should only be done in exceptional circumstances.)
   something like:
 
   ```bash
-  cargo publish --package topiary-tree-sitter-facade
   cargo publish --package topiary-web-tree-sitter-sys
+  cargo publish --package topiary-tree-sitter-facade
   cargo publish --package topiary-core
   cargo publish --package topiary-queries
   cargo publish --package topiary-config
@@ -113,7 +122,7 @@ release. (This should only be done in exceptional circumstances.)
 - Share amongst other social networks (e.g., Reddit, Hacker News,
   Mastodon, etc.), under personal accounts, at your discretion.
 
-## Generating the PR List for the CHANGELOG
+## Generating the PR List for the `CHANGELOG`
 
 If the unreleased changes in the [`CHANGELOG`] have become stale, the
 list of merged PRs can be fetched from:
@@ -144,12 +153,12 @@ gh pr list \
 ```
 
 > [!TIP]
-> The `--limit 500` is an arbitrary "large number" limit of PRs to
+> The `--limit 500` is an arbitrary "large number":tm: limit of PRs to
 > fetch, overriding the low default. As of writing, there's no way to
 > set this to "unlimited"; adjust as necessary.
 
 <!-- Links -->
-[changelog-refresh]: #generating-the-pr-list-for-the-changelog
 [`CHANGELOG`]: /CHANGELOG.md
 [`dist`]: https://opensource.axo.dev/cargo-dist/
-[releases]: https://github.com/tweag/topiary/releases
+[changelog-refresh]: #generating-the-pr-list-for-the-changelog
+[release]: https://github.com/tweag/topiary/releases
