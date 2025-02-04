@@ -2,12 +2,27 @@
 
 ## Cutting a New Release
 
+> [!CAUTION]
+> Cutting a release, end-to-end, takes a reasonable amount of time --
+> mostly waiting on the CI -- and also requires the availability of
+> colleagues to properly review and approve.
+>
+> **Plan for it to take an entire working day.**
+>
+> Do not rush the process and avoid days on which you and colleagues
+> have limited availability. Don't release on the last working day
+> before a weekend or holiday, etc. If something goes awry before the
+> point of no return, keep calm and _don't_ carry on: Better to revert
+> and try again the next day than having a broken release (and a
+> stressful evening)!
+
 ### 1. Create a release preparation branch from `main`
 
 If necessary, cherry-pick the commits that should be included in the
 release. (This should only be done in exceptional circumstances.)
 
-- Update the [`CHANGELOG`], if necessary.
+- Update the [`CHANGELOG`], if necessary. This is used in the release
+  announcement, so ensure it conforms to the correct format.
 
   - By convention, this should be up-to-date as part of the PR process,
     but it ought to be double-checked. (See [below][changelog-refresh]
@@ -28,9 +43,10 @@ release. (This should only be done in exceptional circumstances.)
 > [!IMPORTANT]
 > Point releases (i.e., not patch releases) should also be given a name,
 > taking the form "[ADJECTIVE] [TREE]", incrementing alphabetically from
-> the previous release (e.g., "Archetypal Aspen"). Both parts are
-> relatively loose, particularly when it comes to botanical correctness,
-> and a degree of assonance has become traditional.
+> the previous release (e.g., "Archetypal Aspen", "Benevolent Beech",
+> etc.). Both parts are relatively loose, particularly when it comes to
+> botanical correctness, and a degree of assonance has become
+> traditional.
 >
 > The name should be decided amongst the team before release.
 
@@ -52,8 +68,8 @@ release. (This should only be done in exceptional circumstances.)
     - Run `dist init`. This should update the `dist-workspace.toml`
       configuration and the release workflow (`.github/workflows/release.yml`)
 
-- Push these changes and wait for green CI and peer approval. Upon both,
-  squash and merge the PR into `main`.
+- Push these changes and wait for green CI across all workflows and peer
+  approval. Upon both, squash-and-merge the PR into `main`.
 
 ### 2. Make the release
 
@@ -76,7 +92,7 @@ release. (This should only be done in exceptional circumstances.)
 
   - Build binary artefacts for a variety of targets (currently: Apple
     Silicon macOS, Intel macOS, x64 Windows, ARM64 Linux and x64 Linux).
-    This can take some time.
+    This can take some time; the best part of an hour.
 
   - Publish a release announcement, featuring the relevant section from
     the `CHANGELOG` for this version.
