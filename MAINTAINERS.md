@@ -75,8 +75,8 @@ release. (This should only be done in exceptional circumstances.)
 
 - Tag the merged commit in `main` with the release version, prefixed
   with a `v` (e.g., `v0.1.0`), and push it to GitHub. The version number
-  must match the one in `Cargo.toml`, otherwise `cargo dist` will fail
-  during CI.
+  must match the one in `Cargo.toml`, otherwise `dist` will fail during
+  CI.
 
   ```bash
   git tag v0.1.0
@@ -85,8 +85,9 @@ release. (This should only be done in exceptional circumstances.)
 
 > [!CAUTION]
 > Pushing the tag will trigger the release workflow (described below).
-> If that succeeds, the release is finalised. Only push the tag if you
-> are sure everything is ready for the release.
+> If that succeeds, the release is finalised. **This is the point of no
+> return.** Only push the tag if you are sure everything is ready for
+> the release.
 
 - Let the `dist` release workflow create a new [release]. That is:
 
