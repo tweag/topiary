@@ -170,7 +170,7 @@ gh pr list \
 ```
 
 > [!TIP]
-> The `--limit 500` is an arbitrary "large number":tm: limit of PRs to
+> The `--limit 500` is an arbitrary "large number" :tm: limit of PRs to
 > fetch, overriding the low default. As of writing, there's no way to
 > set this to "unlimited"; adjust as necessary.
 
