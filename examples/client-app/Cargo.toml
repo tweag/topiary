@@ -3,6 +3,9 @@ name = "client-app"
 version.workspace = true
 edition = "2021"
 
+# Don't publish this as part of a Topiary release
+publish = false
+
 [dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 topiary-core.workspace = true
