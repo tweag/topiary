@@ -58,8 +58,12 @@ This name should be decided amongst the team before the release.
 ### Removed
 - <Removed features>
 
+-->
+
 ### Fixed
-- <Bug fixes>
+- [#867](https://github.com/tweag/topiary/pull/867) Enable coverage check and add code samples for OpenSCAD
+
+<!-->
 
 ### Security
 - <Vulnerabilities>
