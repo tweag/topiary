@@ -10,6 +10,7 @@ xx = [0:5]; // alternate for() loop range
 $fn = 360; // special variable
 E = 2.71828182845904523536028747135266249775724709369995; // constant
 cond_var = "is_true" ? true : false;
+let (a = 1, b = 2,) {};
 
 // ================================================================================
 // Functions
@@ -26,6 +27,8 @@ function line(point1, point2, width = 1) =
   [point1 + offset1, point2 + offset1, point2 + offset2, point1 + offset2];
 
 eager = (function(z) identity)(4);
+
+function null(a, b,) = 0;
 
 // ================================================================================
 // Transformations

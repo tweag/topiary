@@ -125,6 +125,9 @@ fn coverage_tester() {
     #[cfg(feature = "ocamllex")]
     coverage_test("ocamllex.mll");
 
+    #[cfg(feature = "openscad")]
+    coverage_test("openscad.scad");
+
     #[cfg(feature = "rust")]
     coverage_test("rust.rs");
 
