@@ -150,8 +150,11 @@ impl Configuration {
         let tmp_dir = tempdir()?;
         let tmp_dir_path = tmp_dir.path().to_owned();
 
-        // When "parallel" is enabled, we use rayon to fetch and compile all found grammars in parallel.
-        #[cfg(feature = "parallel")]
+        // When the `parallel` feature is enabled (which it is by default), we use Rayon to fetch
+        // and compile all found grammars concurrently.
+        // NOTE The MSVC linker does not seem to like concurrent builds, so concurrency is disabled
+        // on Windows (see https://github.com/tweag/topiary/issues/868)
+        #[cfg(all(feature = "parallel", not(windows)))]
         {
             use rayon::prelude::*;
             self.languages
@@ -160,7 +163,7 @@ impl Configuration {
                 .collect::<Result<Vec<_>, TopiaryConfigFetchingError>>()?;
         }
 
-        #[cfg(not(feature = "parallel"))]
+        #[cfg(any(not(feature = "parallel"), windows))]
         {
             self.languages
                 .iter()
