@@ -80,11 +80,11 @@
             wasmBindgenVersion = assert builtins.length wasmBindgenCargoVersions == 1; builtins.elemAt wasmBindgenCargoVersions 0;
           in
           {
-            wasm-bindgen-cli = prev.wasm-bindgen-cli.overrideAttrs (oldAttrs: { # Use overrideAttrs
+            wasm-bindgen-cli = prev.wasm-bindgen-cli.overrideAttrs {
               version = wasmBindgenVersion;
               hash = "sha256-3RJzK7mkYFrs7C/WkhW9Rr4LdP5ofb2FdYGz1P7Uxog=";
               cargoHash = "sha256-tD0OY2PounRqsRiFh8Js5nyknQ809ZcHMvCOLrvYHRE=";
-            });
+            };
           };
       };
 
