@@ -107,6 +107,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Prefetch grammars
+        run: cargo run --all-features -- prefetch
+
       - name: Run test suite
         run: cargo test --all-features
 
