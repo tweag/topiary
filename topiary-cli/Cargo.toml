@@ -73,12 +73,12 @@ default = [
 contributed = [
   "css",
   "openscad",
+  "sdml",
 ]
 
 # Excluded by default
 experimental = [
   "rust",
-  "sdml"
 ]
 
 bash = ["topiary-config/bash", "topiary-queries/bash"]
