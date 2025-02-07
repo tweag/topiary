@@ -2,13 +2,124 @@ module sdml is
 ; Sample module for Topiary formatter.
 
     import [dc rdf skos  xsd]
+    import  dc:issued as issued
+    import  rdfs      as schema
 
     @dc:description = "A sample SDML module"
+    @issued =  xsd:date( "2025-02-06" )
+
+    @magic:jpegFile= #[ff d8 ff e0]
+
+  class Ordered is
+
+    def length() -> unsigned
+ 
+    def drop(count → unsigned) → Self
+    def get(index → unsigned) → {0..1} Self
+
+    def reverse → Self
+
+    def slice(start → unsigned count → unsigned) → Self := take(drop(start) count)
+
+    def take(count → unsigned) → Self is
+      assert count_subset is count <= self.length end end
+
+end
+
+  datatype Vin <-
+    opaque string
+  is
+    @xsd:minLength = 12
+    @xsd:maxLength = 16
+  end
+
+  dimension VehicleDimensions is
+    source Vehicle with [
+      vin
+    manufacturer
+    brand
+    model
+    modelYear
+    trim
+    color
+    tires
+    ]
+    seatingRows -> unsigned
+    seatingCapacity -> unsigned
+    safetyRating -> unsigned
+  end
+
+  entity Vehicle is
+  @skos:prefLabel = [
+    "Vehicle"@en
+    ""@fr
+  ]
+    identity vin -> Vin
+    manufacturer -> Manufacturer
+    brand -> Brand is
+      assert manufacturer_brand is
+        forall self, self.brand.manufacturer = self.manufacturer
+      end
+    end
+    model -> Model
+  modelYear -> xsd:gYear is
+  assert model_year_bounds is
+  forall self, self.modelYear >= 1910 and self.modelYear < now.year.plus_1
+  end
+  end
+    trim -> string is
+    assert model_trim is 
+    forall self, exists t in self.model.trims, self.trim = t end
+  end
+    color -> string
+    tires
+      -> {ordered nonunique 0..} Tire
+  end
+
+  entity VehicleTitle is
+    identity number -> Sequence
+    ref vehicle
+    registeredOwner -> LegalPerson
+    ownerSince -> xsd:dateTime
+  end
+
+  enum T_Shirt of Small Medium Large end
+
+  event VehicleTitleOwnerChanged is
+    source VehicleTitle with [ number
+    vehicle registeredOwner ownerSince ]
+  end
+
+event Foo is source Bar with boo end
+
+property vehicle -> {1} Vehicle
+
+property maybeVehicle -> {0..1} Vehicle
+
+  rdf Thing
+  type schema:Class is
+    @dc:description = "?"
+  end
+
+  rdf Another
+  type [ schema:Class Thing ] is
+    @dc:description = "??"
+end
 
   structure DateRange
   is
+    assert
+    ends_after_starts
+    = "end_date > start_date"
     start_date -> xsd:date
     end_date -> xsd:date
+  end
+
+  union ThisOrThat
+  of
+    This
+    This as
+    That
   end
 
 end

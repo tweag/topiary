@@ -9,6 +9,7 @@
 (module
   "module" @append_space
   name: (identifier) @append_space
+  base: (iri)? @append_space
   "version"? @append_space
   version_info: (quoted_string)? @append_space
   version_uri: (iri)? @append_space
@@ -36,8 +37,8 @@
 
 [(member_import) (module_import)] @append_space
 
-(member_import "as" @append_space)
-(module_import "as" @append_space)
+(member_import "as" @prepend_space @append_space)
+(module_import "as" @prepend_space @append_space)
 
 ;; -----------------------------------------------------------------------------
 ;; Annotations
@@ -197,6 +198,22 @@
   name: (identifier) @append_space
 ) @allow_blank_line_before
 
+(source_entity
+  "source" @append_space
+  entity: (identifier_reference) @append_space
+  (
+    "with" @append_space
+    [
+      (
+        "[" @append_indent_start @append_space
+        (identifier) @append_space
+        "]" @prepend_indent_end
+      )
+      (identifier) @append_space
+    ]
+  )?
+) @allow_blank_line_before @append_hardline
+
 ;; -----------------------------------------------------------------------------
 ;; Definitions >> Entity
 ;; -----------------------------------------------------------------------------
@@ -225,6 +242,10 @@
 ;; Definitions >> Property [[ nothing required, uses member_def rules ]]
 ;; -----------------------------------------------------------------------------
 
+(property_def
+  "property" @append_space
+) @allow_blank_line_before
+
 ;; -----------------------------------------------------------------------------
 ;; Definitions >> RDF
 ;; -----------------------------------------------------------------------------
@@ -234,9 +255,15 @@
 ) @allow_blank_line_before
 
 (rdf_types
-  "[" @append_indent_start @append_space
-  type: (identifier_reference) @append_space
-  "]" @prepend_indent_end
+  "type" @append_space
+  [
+    (
+      "[" @append_indent_start @append_space
+      (identifier_reference) @append_space
+      "]" @prepend_indent_end @append_space
+    )
+    (identifier_reference) @append_space
+  ]
 )
 
 ;; -----------------------------------------------------------------------------
