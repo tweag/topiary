@@ -157,11 +157,11 @@
 ) @append_hardline @allow_blank_line_before
 
 (function_signature
- "(" @append_indent_start
+  "(" @append_indent_start
   [
     ((function_parameter) . ")" @do_nothing)
     ((function_parameter) . (function_parameter) @prepend_spaced_softline)
-    ]
+  ]
   ")" @prepend_indent_end
 )
 
@@ -367,9 +367,9 @@
     "}" @append_space
   )?
   (
-  "[" @append_indent_start @append_spaced_softline
-  element: (_)* @append_spaced_softline
-  "]" @prepend_indent_end
+    "[" @append_indent_start @append_spaced_softline
+    element: (_)* @append_spaced_softline
+    "]" @prepend_indent_end
   )
 )
 
