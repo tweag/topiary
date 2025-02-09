@@ -4,11 +4,20 @@ module sdml is
   import [ dc rdf skos xsd ]
   import dc:issued as issued
   import rdfs as schema
+  import [
+    magic
+  ]
 
   @dc:description = "A sample SDML module"
   @issued = xsd:date("2025-02-06")
 
   @magic:jpegFile= #[ ff d8 ff e0 ]
+
+  @magic:map = {unique} [
+    0 -> "zero"
+    1 -> "one"
+    2 -> "two" ;; ...
+  ]
 
   class Ordered is
 
@@ -59,6 +68,8 @@ module sdml is
     ]
     identity vin -> Vin
     manufacturer -> Manufacturer
+    manufacturedLocation -> Location
+    manufacturedDate -> xds:date
     brand -> Brand is
       assert manufacturer_brand is
         forall self, self.brand.manufacturer = self.manufacturer
@@ -83,9 +94,12 @@ module sdml is
     identity number -> Sequence
     ref vehicle
     registeredOwner -> LegalPerson
-    ownerSince -> xsd:dateTime
+    ownerSince -> xsd:dateTime is
+      assert owned_after_made is
+        not self.ownerSince < self.vehicle.manufacturedDate
+      end
+    end
   end
-
   event VehicleTitleOwnerChanged is
     source VehicleTitle with [ number vehicle registeredOwner ownerSince ]
   end

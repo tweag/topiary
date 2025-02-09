@@ -13,7 +13,7 @@
   "version"? @append_space
   version_info: (quoted_string)? @append_space
   version_uri: (iri)? @append_space
-) @allow_blank_line_before
+)
 
 (module_body) @prepend_space
 
@@ -31,11 +31,11 @@
 ) @allow_blank_line_before @append_hardline
 
 (import_statement
-  "[" @append_indent_start @append_space
-  "]" @prepend_space @prepend_indent_end
+  "[" @append_indent_start @append_spaced_softline
+  "]" @prepend_indent_end
 )
 
-[(member_import) (module_import)] @append_space
+[(member_import) (module_import)] @append_spaced_softline
 
 (member_import "as" @prepend_space @append_space)
 (module_import "as" @prepend_space @append_space)
@@ -109,6 +109,11 @@
 
 (constant_def [":=" "≔"] @prepend_space @append_space)
 
+(function_signature
+  "(" @append_indent_start
+  ")" @prepend_indent_end
+)
+
 (function_parameter
   name: (identifier) @append_space
   ["->" "→"] @append_space
@@ -119,14 +124,23 @@
   uniqueness: (_)? @append_space
 ) @append_space
 
-(sequence_builder "|" @prepend_space @append_space)
+(sequence_builder
+  "{" @append_space @append_indent_start
+  "|" @prepend_space @prepend_indent_end @append_indent_start @append_space
+  "}" @prepend_indent_end @prepend_space
+)
 
-(mapping_variable ["->" "→"] @prepend_space @append_space)
+(mapping_variable
+  "(" @append_antispace
+  domain: (identifier) @append_space
+  range: (identifier) @prepend_space
+  ")" @prepend_antispace
+)
 
 ;; -----------------------------------------------------------------------------
 ;; Definitions
 ;; -----------------------------------------------------------------------------
-(definition) @allow_blank_line_before
+(definition) @append_hardline @allow_blank_line_before
 
 ;; -----------------------------------------------------------------------------
 ;; Definitions >> Class
@@ -143,10 +157,12 @@
 ) @append_hardline @allow_blank_line_before
 
 (function_signature
+ "(" @append_indent_start
   [
     ((function_parameter) . ")" @do_nothing)
-    ((function_parameter) . (function_parameter) @prepend_space)
-  ]
+    ((function_parameter) . (function_parameter) @prepend_spaced_softline)
+    ]
+  ")" @prepend_indent_end
 )
 
 (function_parameter ["->" "→"] @prepend_space @append_space)
@@ -196,23 +212,20 @@
 (dimension_def
   "dimension" @append_space
   name: (identifier) @append_space
-) @allow_blank_line_before
+)
 
 (source_entity
   "source" @append_space
   entity: (identifier_reference) @append_space
   (
     "with" @append_space
-    [
-      (
-        "[" @append_indent_start @append_space
-        (identifier) @append_space
-        "]" @prepend_indent_end
-      )
-      (identifier) @append_space
-    ]
+    (
+      "[" @append_indent_start @append_spaced_softline
+      (identifier)* @append_spaced_softline
+      "]" @prepend_indent_end
+    )?
   )?
-) @allow_blank_line_before @append_hardline
+) @append_hardline @allow_blank_line_before
 
 ;; -----------------------------------------------------------------------------
 ;; Definitions >> Entity
@@ -220,7 +233,7 @@
 (entity_def
   "entity" @append_space
   name: (identifier) @append_space
-) @allow_blank_line_before
+)
 
 ;; -----------------------------------------------------------------------------
 ;; Definitions >> Enum
@@ -228,7 +241,7 @@
 (enum_def
   "enum" @append_space
   name: (identifier) @append_space
-) @allow_blank_line_before
+)
 
 ;; -----------------------------------------------------------------------------
 ;; Definitions >> Event
@@ -236,15 +249,14 @@
 (event_def
   "event" @append_space
   name: (identifier) @append_space
-) @allow_blank_line_before
+)
 
 ;; -----------------------------------------------------------------------------
 ;; Definitions >> Property [[ nothing required, uses member_def rules ]]
 ;; -----------------------------------------------------------------------------
-
 (property_def
   "property" @append_space
-) @allow_blank_line_before
+)
 
 ;; -----------------------------------------------------------------------------
 ;; Definitions >> RDF
@@ -252,15 +264,15 @@
 (rdf_def
   "rdf" @append_space
   name: (identifier) @append_space
-) @allow_blank_line_before
+)
 
 (rdf_types
   "type" @append_space
   [
     (
-      "[" @append_indent_start @append_space
-      (identifier_reference) @append_space
-      "]" @prepend_indent_end @append_space
+      "[" @append_indent_start @append_spaced_softline
+      (identifier_reference)* @append_spaced_softline
+      "]" @prepend_indent_end
     )
     (identifier_reference) @append_space
   ]
@@ -272,7 +284,7 @@
 (structure_def
   "structure" @append_space
   name: (identifier) @append_space
-) @allow_blank_line_before
+)
 
 ;; -----------------------------------------------------------------------------
 ;; Definitions >> Union
@@ -280,64 +292,41 @@
 (union_def
   "union" @append_space
   name: (identifier) @append_space
-) @allow_blank_line_before
+)
 
 ;; -----------------------------------------------------------------------------
 ;; Members
 ;; -----------------------------------------------------------------------------
 (entity_identity "identity" @append_space)
 
+(member) @append_hardline @allow_blank_line_before
+
 (member_def
   name: (identifier) @append_space
   ["->" "→"] @append_space
+  cardinality: (cardinality_expression)? @append_space
   target: (type_reference) @append_space
-) @allow_blank_line_before
-
-(member_def
-  [
-    (type_reference)
-    (annotation_only_body)
-  ] @append_hardline
-  .
 )
 
 (cardinality_expression
   ordering: (_)? @append_space
   uniqueness: (_)? @append_space
-) @append_space
+)
 
-(property_ref
-  "ref" @append_space
-  property: (identifier_reference) @append_space
-) @allow_blank_line_before
+(property_ref "ref" @append_space)
 
 ;; -----------------------------------------------------------------------------
 ;; Variants
 ;; -----------------------------------------------------------------------------
-(value_variant body: (annotation_only_body)? @prepend_space)
-
 (value_variant
-  [
-    (identifier)
-    (annotation_only_body)
-  ] @append_hardline
-  .
-)
+  body: (annotation_only_body)? @prepend_space
+) @append_hardline @allow_blank_line_before
 
 (type_variant
   "as"? @prepend_space
   rename: (identifier)? @prepend_space
   body: (annotation_only_body)? @prepend_space
-)
-
-(type_variant
-  [
-    (identifier_reference)
-    (identifier)
-    (annotation_only_body)
-  ] @append_hardline
-  .
-)
+) @append_hardline @allow_blank_line_before
 
 ;; -----------------------------------------------------------------------------
 ;; Values
@@ -360,12 +349,14 @@
     (sequence_ordering)? @append_space
     .
     (sequence_uniqueness)
-    "}"? @append_space
-  )
-  (
-    "[" @append_space
-    element: (_)* @append_space
-  )
+    "}" @append_space
+  )?
+  "[" @append_indent_start @append_spaced_softline
+  element: (_)* @append_spaced_softline
+  "]" @prepend_indent_end
+)
+
+(sequence_of_values
 )
 
 (sequence_of_predicate_values
@@ -373,11 +364,12 @@
     (sequence_ordering)? @append_space
     .
     (sequence_uniqueness)
-    "}"? @append_space
-  )
+    "}" @append_space
+  )?
   (
-    "[" @append_space
-    element: (_)* @append_space
+  "[" @append_indent_start @append_spaced_softline
+  element: (_)* @append_spaced_softline
+  "]" @prepend_indent_end
   )
 )
 
