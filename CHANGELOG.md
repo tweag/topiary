@@ -98,6 +98,7 @@ This name should be decided amongst the team before the release.
 - [#822](https://github.com/tweag/topiary/pull/822) Various Bash fixes and improvements
 - [#826](https://github.com/tweag/topiary/pull/826) Various Tree-sitter query fixes, thanks to @mkatychev
 - [#853](https://github.com/tweag/topiary/pull/853) Small fixes to CLI logging and IO
+- [#870](https://github.com/tweag/topiary/pull/870) Remove extra spaces around arguments in OpenSCAD, thanks to @dzhu
 
 ## v0.5.1 - Fragrant Frangipani - 2024-10-22
 
@@ -110,7 +111,7 @@ This name should be decided amongst the team before the release.
 - [#760](https://github.com/tweag/topiary/pull/760) Introduce optional `query_name` predicate, to help with query logging and debugging.
 
 ### Fixed
-- [#720](https://github.com/tweag/topiary/pull/720) [#722](https://github.com/tweag/topiary/pull/722) [#723](https://github.com/tweag/topiary/pull/723) [#724](https://github.com/tweag/topiary/pull/724) [#735](https://github.com/tweag/topiary/pull/735) [#738](https://github.com/tweag/topiary/pull/738) [#739](https://github.com/tweag/topiary/pull/739) [#745](https://github.com/tweag/topiary/pull/745) [#755](https://github.com/tweag/topiary/pull/755) [#759](https://github.com/tweag/topiary/pull/759) [#764](https://github.com/tweag/topiary/pull/764 Various OCaml improvements
+- [#720](https://github.com/tweag/topiary/pull/720) [#722](https://github.com/tweag/topiary/pull/722) [#723](https://github.com/tweag/topiary/pull/723) [#724](https://github.com/tweag/topiary/pull/724) [#735](https://github.com/tweag/topiary/pull/735) [#738](https://github.com/tweag/topiary/pull/738) [#739](https://github.com/tweag/topiary/pull/739) [#745](https://github.com/tweag/topiary/pull/745) [#755](https://github.com/tweag/topiary/pull/755) [#759](https://github.com/tweag/topiary/pull/759) [#764](https://github.com/tweag/topiary/pull/764) Various OCaml improvements
 - [#762](https://github.com/tweag/topiary/pull/762) Various Rust improvements
 - [#744](https://github.com/tweag/topiary/pull/744) [#768](https://github.com/tweag/topiary/pull/768) Nickel: fix the formatting of annotated multiline let-bindings
 - [#763](https://github.com/tweag/topiary/pull/763) Various Bash fixes and improvements
