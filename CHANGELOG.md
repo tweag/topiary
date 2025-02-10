@@ -62,8 +62,9 @@ This name should be decided amongst the team before the release.
 
 ### Fixed
 - [#867](https://github.com/tweag/topiary/pull/867) Enable coverage check and add code samples for OpenSCAD
+- [#869](https://github.com/tweag/topiary/pull/869) Disable parallel grammar building on Windows
 
-<!-->
+<!--
 
 ### Security
 - <Vulnerabilities>
