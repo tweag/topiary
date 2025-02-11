@@ -44,32 +44,27 @@ This name should be decided amongst the team before the release.
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.6.0...HEAD)
 
-<!--
 
-### Added
-- <New feature>
+<!-- ### Added -->
+<!-- - <New feature> -->
 
 ### Changed
-- <Changes in existing functionality>
+<!-- - <Changes in existing functionality> -->
+- [#859](https://github.com/tweag/topiary/pull/859) Break up integration tests per language, thanks to @mkatychev
 
-### Deprecated
-- <Soon-to-be removed features>
+<!-- ### Deprecated -->
+<!-- - <Soon-to-be removed features> -->
 
-### Removed
-- <Removed features>
-
--->
+<!-- ### Removed -->
+<!-- - <Removed features> -->
 
 ### Fixed
+<!-- - <Bug fixes> -->
 - [#867](https://github.com/tweag/topiary/pull/867) Enable coverage check and add code samples for OpenSCAD
 - [#869](https://github.com/tweag/topiary/pull/869) Disable parallel grammar building on Windows
 
-<!--
-
-### Security
-- <Vulnerabilities>
-
--->
+<!-- ### Security -->
+<!-- - <Vulnerabilities> -->
 
 ## v0.6.0 - Gilded Ginkgo - 2025-01-30
 
