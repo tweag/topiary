@@ -17,6 +17,7 @@ craneLib.devShell
         cargo-dist
         cargo-flamegraph
         rust-analyzer
+        mold-wrapped
 
         pkg-config
         openssl.dev
