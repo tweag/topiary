@@ -16,6 +16,7 @@ craneLib.devShell
       packages = with pkgs; with binPkgs; [
         cargo-dist
         cargo-flamegraph
+        cargo-nextest
         rust-analyzer
         mold-wrapped
 

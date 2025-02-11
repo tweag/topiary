@@ -33,7 +33,6 @@ criterion = { workspace = true, features = ["async_futures"] }
 env_logger = { workspace = true }
 test-log = { workspace = true }
 tree-sitter-json.workspace = true
-tree-sitter-ocaml.workspace = true
 tokio-test = { workspace = true }
 
 [[bench]]
