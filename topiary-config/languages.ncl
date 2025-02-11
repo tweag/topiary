@@ -94,7 +94,7 @@
       extensions = ["sdm", "sdml"],
       grammar.source.git = {
         git = "https://github.com/sdm-lang/tree-sitter-sdml",
-        rev = "22264a87e7a263d4ac36eaeec730db5030a1d43b"
+        rev = "7d35c7b0ee06c4e14c15790da589a7549f49ebc2"
       },
     },
 

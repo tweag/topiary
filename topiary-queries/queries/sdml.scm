@@ -65,30 +65,44 @@
 ;; -----------------------------------------------------------------------------
 (formal_constraint "end" @prepend_hardline)
 
+(constraint_environment
+  "with" @append_indent_start @append_hardline
+) @append_indent_end
+
 (equation "=" @prepend_space @append_space)
 
-[
-  (less_than)
-  (greater_than)
-  (less_than_or_equal)
-  (greater_than_or_equal)
-] @prepend_space @append_space
+(inequation
+  [
+    (op_inequality)
+    (op_less_than)
+    (op_greater_than)
+    (op_less_than_or_equal)
+    (op_greater_than_or_equal)
+  ] @prepend_space @append_space
+)
 
-[
-  (conjunction)
-  (disjunction)
-  (exclusive_disjunction)
-  (implication)
-  (biconditional)
-] @prepend_space @append_space
+(binary_boolean_sentence
+  [
+    (logical_op_conjunction)
+    (logical_op_disjunction)
+    (logical_op_exclusive_disjunction)
+    (logical_op_implication)
+    (logical_op_biconditional)
+  ] @prepend_space @append_space
+)
 
-(negation) @append_space
+(logical_op_negation) @append_space
 
 (quantified_sentence "," @prepend_antispace @append_space)
 
-[(universal) (existential)] @append_space
+(quantified_variable_binding
+  [
+    (logical_quantifier_universal)
+    (logical_quantifier_existential)
+  ] @append_space
+)
 
-(quantified_variable ["in" "∈"] @prepend_space @append_space)
+(quantified_variable (set_op_membership) @prepend_space @append_space)
 
 (actual_arguments
   [
@@ -97,20 +111,19 @@
   ]
 )
 
-(environment_def
+(function_def) @allow_blank_line_before @append_hardline
+
+(function_signature
   "def" @append_space
   name: (identifier) @append_space
-) @allow_blank_line_before @append_hardline
-
-(constraint_environment_end
-) @prepend_indent_end @append_indent_start @append_hardline
-
-(function_body [":=" "≔"] @prepend_space @append_space)
-
-(constant_def [":=" "≔"] @prepend_space @append_space)
+)
 
 (function_signature
   "(" @append_indent_start
+  [
+    ((function_parameter) . ")" @do_nothing)
+    ((function_parameter) . (function_parameter) @prepend_spaced_softline)
+  ]
   ")" @prepend_indent_end
 )
 
@@ -119,23 +132,31 @@
   ["->" "→"] @append_space
 )
 
+(function_signature
+  ["->" "→"] @prepend_space @append_space
+  (function_type_reference) @append_space
+)
+
 (function_cardinality_expression
   ordering: (_)? @append_space
   uniqueness: (_)? @append_space
 ) @append_space
 
+(function_body
+  (function_op_by_definition) @append_spaced_softline
+)
+
+(function_body
+  (function_op_by_definition) @prepend_space @append_spaced_softline
+) @prepend_indent_start @append_indent_end
+
 (sequence_builder
   "{" @append_space @append_indent_start
-  "|" @prepend_space @prepend_indent_end @append_indent_start @append_space
+  (set_op_builder) @prepend_space @prepend_indent_end @append_indent_start @append_space
   "}" @prepend_indent_end @prepend_space
 )
 
-(mapping_variable
-  "(" @append_antispace
-  domain: (identifier) @append_space
-  range: (identifier) @prepend_space
-  ")" @prepend_antispace
-)
+(sequence_builder (variable) @append_space)
 
 ;; -----------------------------------------------------------------------------
 ;; Definitions
@@ -150,32 +171,13 @@
   name: (identifier) @append_space
 ) @allow_blank_line_before
 
+(method_def) @allow_blank_line_before @append_hardline
+
 (method_def
-  "def" @append_space
-  name: (identifier) @append_space
-  signature: (function_signature) @append_space
-) @append_hardline @allow_blank_line_before
-
-(function_signature
-  "(" @append_indent_start
-  [
-    ((function_parameter) . ")" @do_nothing)
-    ((function_parameter) . (function_parameter) @prepend_spaced_softline)
-  ]
-  ")" @prepend_indent_end
+  (function_body)
+  .
+  (annotation_only_body) @prepend_space
 )
-
-(function_parameter ["->" "→"] @prepend_space @append_space)
-
-(function_signature
-  ["->" "→"] @prepend_space @append_space
-  (function_cardinality_expression)? @append_space
-  (function_type_reference) @append_space
-)
-
-(function_body
-  [":=" "≔"] @append_hardline
-) @prepend_indent_start @append_indent_end @append_space
 
 ;; -----------------------------------------------------------------------------
 ;; Definitions >> Datatype
@@ -195,16 +197,33 @@
 ;; rest: (_) @append_space
 ;; "]" @append_space)
 
-;;(data_type_restriction
-;; "{" @append_indent_start @append_hardline
-;; "}" @prepend_indent_end)
+(datatype_def_restriction
+  "{" @append_indent_start @append_hardline
+  "}" @prepend_indent_end
+)
 
-;;(length_restriction_facet "=" @prepend_space @append_space)
-;;(digit_restriction_facet "=" @prepend_space @append_space)
-;;(value_restriction_facet "=" @prepend_space @append_space)
-;;(tz_restriction_facet "=" @prepend_space @append_space)
-;;(pattern_restriction_facet "=" @prepend_space @append_space)
-;;(is_fixed) @append_space
+(length_restriction_facet "=" @prepend_space @append_space)
+(digit_restriction_facet "=" @prepend_space @append_space)
+(value_restriction_facet "=" @prepend_space @append_space)
+(tz_restriction_facet "=" @prepend_space @append_space)
+(pattern_restriction_facet "=" @prepend_space @append_space)
+(kw_is_fixed) @append_space
+
+(datatype_def_restriction
+  [
+    (length_restriction_facet)
+    (digit_restriction_facet)
+    (value_restriction_facet)
+    (tz_restriction_facet)
+    (pattern_restriction_facet)
+  ] @append_hardline
+)
+
+(data_type_def
+  (datatype_def_restriction)
+  .
+  (annotation_only_body) @prepend_space
+)
 
 ;; -----------------------------------------------------------------------------
 ;; Definitions >> Dimension

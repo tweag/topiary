@@ -19,6 +19,23 @@ module sdml is
     2 -> "two" ;; ...
   ]
 
+  assert some_sequence_builder_silliness with
+    def map -> {ordered unique} (unsigned -> string) := [
+        0 -> "zero"
+        1 -> "one"
+        2 -> "two"
+        3 -> "; TODO: hree"
+      ]
+    def odd_names -> {} string :=
+      {
+        name
+      |
+        forall pair in map, right(pair) iff pair.left.is_odd
+      }
+    is
+      odd_names.length = 2
+  end
+
   class Ordered is
 
     def length() -> unsigned
@@ -29,7 +46,9 @@ module sdml is
     def reverse → Self
 
     def slice(start → unsigned count → unsigned) → Self
-      := take(drop(start) count)
+      := take(drop(start) count) is
+      @dc:description = "return a slice of this list"
+    end
 
     def take(count → unsigned) → Self is
       assert count_subset is
@@ -40,9 +59,38 @@ module sdml is
 
   end
 
-  datatype Vin <- opaque string is
-    @xsd:minLength = 12
-    @xsd:maxLength = 16
+  datatype Vin <- opaque string {
+    minLength = 12
+    maxLength = 16
+  } is
+    @dc:description = "an example"
+  end
+
+  datatype Money <- decimal {
+    fractionDigits = 3
+    totalDigits = 9
+  }
+
+  datatype Stars <- unsigned {
+    minInclusive = fixed 1
+    maxInclusive = fixed 5
+  }
+
+  datatype DateModified <- dateTime {
+    explicitTimezone = required
+  }
+
+  datatype uuid <- string {
+    pattern = [
+      "^(?:[[:xdigit:]]{32})$"
+      "^(?:[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12})$"
+      "^(?:\\{[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12}\\})$"
+      "^(?:\\([[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12}\\))$"
+      "^(?:\\{0x[[:xdigit:]]{8},(?:0x[[:xdigit:]]{4},){2}\\{(?:0x[[:xdigit:]]{2},){7}0x[[:xdigit:]]{2}\\}\\})$"
+    ]
+  } is
+    @skos:prefLabel = "UUID"@en
+    @dc:description = "The string form of a UUID, conforming to one of 5 standard patterns."@en
   end
 
   dimension VehicleDimensions is
