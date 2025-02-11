@@ -5,7 +5,7 @@ use topiary_core::test_utils::pretty_assert_eq;
 
 use tempfile::TempDir;
 
-fn get_file_stem(language: &str) -> &str {
+fn get_file_extension(language: &str) -> &str {
     match language {
         "bash" => "sh",
         "css" => "css",
@@ -41,7 +41,7 @@ mod test_fmt {
     use super::*;
 
     fn fmt_input(lang: &str) {
-        let file = format!("{lang}.{}", get_file_stem(lang));
+        let file = format!("{lang}.{}", get_file_extension(lang));
         let input = PathBuf::from(format!("tests/samples/input/{file}"));
         let expected = PathBuf::from(format!("tests/samples/expected/{file}"));
 
@@ -132,7 +132,7 @@ mod test_coverage {
     use super::*;
 
     fn coverage_input(lang: &str) {
-        let file = format!("{lang}.{}", get_file_stem(lang));
+        let file = format!("{lang}.{}", get_file_extension(lang));
         let input = PathBuf::from(format!("tests/samples/input/{file}"));
 
         // Make sure our test makes sense
