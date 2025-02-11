@@ -19,7 +19,7 @@ let (a = 1, b = 2) {};
 // ================================================================================
 function line(point1, point2, width = 1) =
 
-  let (angle = 90 - atan( (point2[1] - point1[1]) / (point2[0] - point1[0]) ))
+  let (angle = 90 - atan((point2[1] - point1[1]) / (point2[0] - point1[0])))
 
   let (offset_x = 0.5 * width * cos(angle), offset_y = 0.5 * width * sin(angle))
 
@@ -31,6 +31,9 @@ function line(point1, point2, width = 1) =
 eager = (function(z) identity)(4);
 
 function null(a, b) = 0;
+
+echo(-a);
+scale(-z){}
 
 // ================================================================================
 // Transformations
