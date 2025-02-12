@@ -66,7 +66,13 @@ let
       ];
   };
 
-  cargoArtifacts = craneLib.buildDepsOnly compilationArgs;
+  cargoArtifacts = craneLib.buildDepsOnly compilationArgs
+    // (if !release then {
+      # don't run `cargo check` in the buildPhase if it's not a release run
+      # NOTE: doCheck = false; does not disable this
+      buildPhaseCargoCommand = "${craneLib.cargoBuildCommand} ${craneLib.cargoExtraArgs}";
+    } else {}
+  );
   commonArgs = compilationArgs // { inherit cargoArtifacts; };
 
   # NB: we don't need to overlay our custom toolchain for the *entire*
