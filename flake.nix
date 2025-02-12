@@ -46,19 +46,21 @@
             inputs.rust-overlay.overlays.default
           ];
         };
-
-        topiaryPkgs = pkgs.callPackage ./default.nix {
+        topiaryArgs = {
           inherit (inputs) advisory-db crane rust-overlay;
           inherit (pkgs.tree-sitter-grammars) tree-sitter-nickel tree-sitter-openscad;
           craneLib = inputs.crane.mkLib pkgs;
         };
+
+        topiaryPkgs = pkgs.callPackage ./default.nix topiaryArgs;
+        topiaryPkgsDev = pkgs.callPackage ./default.nix (topiaryArgs // { release = false; });
 
         binPkgs = pkgs.callPackage ./bin/default.nix { };
       });
 
       forAllSystems = fn: nixpkgs.lib.genAttrs supportedSystems (system: fn rec {
         inherit system;
-        inherit (pkgsFor.${system}) pkgs topiaryPkgs binPkgs;
+        inherit (pkgsFor.${system}) pkgs topiaryPkgs topiaryPkgsDev binPkgs;
         inherit (pkgs) lib;
         craneLib = inputs.crane.mkLib pkgs;
       });
@@ -88,13 +90,16 @@
           };
       };
 
-      packages = forAllSystems ({ system, pkgs, topiaryPkgs, binPkgs, ... }: {
+      packages = forAllSystems ({ system, pkgs, topiaryPkgs, topiaryPkgsDev, binPkgs, ... }: {
         inherit (topiaryPkgs)
           topiary-playground
           topiary-queries
+          benchmark
           client-app;
 
-        topiary-cli = topiaryPkgs.topiary-cli { };
+        client-app-dev = topiaryPkgsDev.client-app;
+        topiary-cli =  topiaryPkgs.topiary-cli { };
+        topiary-cli-dev = topiaryPkgsDev.topiary-cli { };
         topiary-cli-nix = topiaryPkgs.topiary-cli { nixSupport = true; };
 
         inherit (binPkgs)
@@ -108,13 +113,13 @@
         default = self.packages.${system}.topiary-cli;
       });
 
-      checks = forAllSystems ({ system, pkgs, topiaryPkgs, ... }: {
+      checks = forAllSystems ({ system, pkgs, topiaryPkgsDev, ... }: {
         # NOTE: The following checks have been removed as WASM
         # and playground development has moved to the playground branch:
         # - clippy-wasm
         # - topiary-playground
-        inherit (topiaryPkgs) clippy fmt topiary-core audit benchmark;
-        topiary-cli = self.packages.${system}.topiary-cli;
+        inherit (topiaryPkgsDev) clippy fmt topiary-core audit;
+        topiary-cli = self.packages.${system}.topiary-cli-dev;
 
         ## Check that the `lib.pre-commit-hook` output builds/evaluates
         ## correctly. `deepSeq e1 e2` evaluates `e1` strictly in depth before

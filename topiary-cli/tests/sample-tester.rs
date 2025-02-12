@@ -1,3 +1,6 @@
+// this logic will not be used with the `--no-default-features` flag
+#![allow(unused)]
+
 use assert_cmd::Command;
 use std::fs;
 use std::path::PathBuf;

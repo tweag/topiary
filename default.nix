@@ -11,6 +11,7 @@
 , tree-sitter-nickel
 # tree-sitter-openscad is not in nixpkgs so use flake directly
 , tree-sitter-openscad
+, release ? true
 }:
 let
   inherit (pkgs.lib) fileset;
@@ -21,8 +22,12 @@ let
     targets = [ wasmTarget ];
   };
 
-  commonArgs = {
+
+  compilationArgs = {
+    CARGO_PROFILE = if release then "release" else "dev";
     pname = "topiary";
+
+    doCheck = if release then true else false;
 
     src = fileset.toSource {
       root = ./.;
@@ -61,7 +66,8 @@ let
       ];
   };
 
-  cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+  cargoArtifacts = craneLib.buildDepsOnly compilationArgs;
+  commonArgs = compilationArgs // { inherit cargoArtifacts; };
 
   # NB: we don't need to overlay our custom toolchain for the *entire*
   # pkgs (which would require rebuilding anything else which uses rust).
@@ -76,48 +82,41 @@ in
 
   clippy = craneLib.cargoClippy (commonArgs
     // {
-    inherit cargoArtifacts;
-    cargoClippyExtraArgs = "-- --deny warnings";
+
+    cargoClippyExtraArgs = if release then "-- --deny warnings" else "--no-deps -- --deny warnings";
   });
 
   clippy-wasm = craneLibWasm.cargoClippy (commonArgs
     // {
-    inherit cargoArtifacts;
     cargoClippyExtraArgs = "-p topiary-playground --target ${wasmTarget} -- --deny warnings";
   });
 
   fmt = craneLib.cargoFmt commonArgs;
-
-  audit = craneLib.cargoAudit (commonArgs
-    // {
-    inherit advisory-db;
-  });
+  audit = craneLib.cargoAudit (commonArgs // { inherit advisory-db; });
 
   benchmark = craneLib.buildPackage (commonArgs
     // {
-    inherit cargoArtifacts;
-    cargoTestCommand = "cargo bench --profile release";
+    cargoTestCommand = "cargo bench --profile ${commonArgs.CARGO_PROFILE}";
   });
 
   client-app = craneLib.buildPackage (commonArgs // {
-    inherit cargoArtifacts;
     pname = "client-app";
     cargoExtraArgs = "-p client-app";
   });
 
   topiary-core = craneLib.buildPackage (commonArgs
     // {
-    inherit cargoArtifacts;
     pname = "topiary-core";
     cargoExtraArgs = "-p topiary-core";
   });
 
   topiary-cli = { nixSupport ? false }: craneLib.buildPackage (commonArgs
     // {
-    inherit cargoArtifacts;
     pname = "topiary";
     cargoExtraArgs = "-p topiary-cli";
     cargoTestExtraArgs = "--no-default-features";
+
+
 
 
     preConfigurePhases = pkgs.lib.optional nixSupport "useNixConfiguration";
