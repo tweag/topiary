@@ -42,13 +42,13 @@ jobs:
 
       - name: Build and test executable
         run: |
-          echo '{ "foo": "bar" }' | nix run .#topiary-cli.dev -- fmt -l json
+          echo '{ "foo": "bar" }' | nix run .#topiary-cli-dev -- fmt -l json
 
       - name: Build the topiary-cli and test those tests that cannot be performed in Nix
         run: nix develop --command bash -c "cargo test -p topiary-cli --features experimental"
 
       - name: Build client-app example
-        run: nix build .#client-app.dev
+        run: nix build .#client-app-dev
 
       - name: Verify that usage in README.md matches CLI output
         run: nix run .#verify-documented-usage
