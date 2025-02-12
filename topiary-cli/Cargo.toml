@@ -44,6 +44,7 @@ topiary-tree-sitter-facade.workspace = true
 
 # tree-sitter-json = { workspace = true, optional = true }
 # tree-sitter-css = { workspace = true, optional = true }
+# tree-sitter-cfml = { workspace = true, optional = true }
 # tree-sitter-rust = { workspace = true, optional = true }
 # tree-sitter-toml = { workspace = true, optional = true }
 # tree-sitter-bash = { workspace = true, optional = true }
@@ -78,11 +79,13 @@ contributed = [
 
 # Excluded by default
 experimental = [
-  "rust"
+  "rust",
+  "cfml"
 ]
 
 bash = ["topiary-config/bash", "topiary-queries/bash"]
 css = ["topiary-config/css", "topiary-queries/css"]
+cfml = ["topiary-config/cfml", "topiary-queries/cfml"]
 json = ["topiary-config/json", "topiary-queries/json"]
 nickel = ["topiary-config/nickel", "topiary-queries/nickel"]
 ocaml = ["topiary-config/ocaml", "topiary-queries/ocaml"]
