@@ -17,6 +17,7 @@ description = """
 [features]
 bash = []
 css = []
+cfml = []
 json = []
 nickel = []
 ocaml = []

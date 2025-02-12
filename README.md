@@ -114,6 +114,7 @@ by their individual name). Once included, they can be accessed in
 Topiary in the usual way.
 
 * [Rust]
+* [Cfml]
 
 ## Getting Started
 

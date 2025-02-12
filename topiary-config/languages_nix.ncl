@@ -9,6 +9,11 @@
       extensions = ["css"],
       grammar.source.path = "@css@",
     },
+    
+    cfml = {
+      extensions = ["cfm"],
+      grammar.source.path = "@cfml@",
+    },
 
     openscad = {
       extensions = ["scad"],

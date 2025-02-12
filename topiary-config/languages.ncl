@@ -16,6 +16,15 @@
       },
     },
 
+    cfml = {
+      extensions = ["cfm"],
+      grammar.source.git = {
+        git = "https://github.com/cfmleditor/tree-sitter-cfml.git",
+        rev = "9d99e25084a79d9e53b2afe064a103cf1a297ace",
+        subdir = "cfml",
+      },
+    },
+
     json = {
       extensions = [
         "json",
