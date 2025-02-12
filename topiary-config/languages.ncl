@@ -16,15 +16,6 @@
       },
     },
 
-    cfml = {
-      extensions = ["cfm"],
-      grammar.source.git = {
-        git = "https://github.com/cfmleditor/tree-sitter-cfml.git",
-        rev = "9d99e25084a79d9e53b2afe064a103cf1a297ace",
-        subdir = "cfml",
-      },
-    },
-
     json = {
       extensions = [
         "json",
@@ -53,6 +44,15 @@
       grammar.source.git = {
         git = "https://github.com/nickel-lang/tree-sitter-nickel",
         rev = "88d836a24b3b11c8720874a1a9286b8ae838d30a",
+      },
+    },
+
+    cfml = {
+      extensions = ["cfm"],
+      grammar.source.git = {
+        git = "https://github.com/cfmleditor/tree-sitter-cfml.git",
+        rev = "f4e97998ca1ecb11cc1a721ab61593e7a185c05f",
+        subdir = "cfml",
       },
     },
 

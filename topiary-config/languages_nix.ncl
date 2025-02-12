@@ -9,11 +9,6 @@
       extensions = ["css"],
       grammar.source.path = "@css@",
     },
-    
-    cfml = {
-      extensions = ["cfm"],
-      grammar.source.path = "@cfml@",
-    },
 
     openscad = {
       extensions = ["scad"],
@@ -43,6 +38,11 @@
     nickel = {
       extensions = ["ncl"],
       grammar.source.path = "@nickel@",
+    },
+
+    cfml = {
+      extensions = ["cfm"],
+      grammar.source.path = "@cfml@",
     },
 
     ocaml = {

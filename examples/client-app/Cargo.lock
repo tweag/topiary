@@ -807,6 +807,7 @@ dependencies = [
  "tree-sitter-bash",
  "tree-sitter-json",
  "tree-sitter-nickel",
+ "tree-sitter-cfml",
  "tree-sitter-ocaml",
  "tree-sitter-ocamllex",
  "tree-sitter-query",
@@ -888,6 +889,15 @@ dependencies = [
 name = "tree-sitter-nickel"
 version = "0.1.0"
 source = "git+https://github.com/nickel-lang/tree-sitter-nickel?rev=091b5dcc7d138901bcc162da9409c0bb626c0d27#091b5dcc7d138901bcc162da9409c0bb626c0d27"
+dependencies = [
+ "cc",
+ "tree-sitter",
+]
+
+[[package]]
+name = "tree-sitter-cfml"
+version = "0.4.0"
+source = "git+https://github.com/cfmleditor/tree-sitter-cfml.git#f4e97998ca1ecb11cc1a721ab61593e7a185c05f"
 dependencies = [
  "cc",
  "tree-sitter",
