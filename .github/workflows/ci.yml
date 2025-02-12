@@ -38,20 +38,20 @@ jobs:
 
       - name: Clippy, test, and benchmark
         if: matrix.os == 'ubuntu-latest'
-        run: export GC_DONT_GC=1; nix -L flake check --accept-flake-config
+        run: export GC_DONT_GC=1; nix -L flake check
 
       - name: Build and test executable
         run: |
-          echo '{ "foo": "bar" }' | nix run .#topiary-cli.dev -- fmt -l json --accept-flake-config
+          echo '{ "foo": "bar" }' | nix run .#topiary-cli.dev -- fmt -l json
 
       - name: Build the topiary-cli and test those tests that cannot be performed in Nix
-        run: nix develop --accept-flake-config --command bash -c "cargo test -p topiary-cli --features experimental"
+        run: nix develop --command bash -c "cargo test -p topiary-cli --features experimental"
 
       - name: Build client-app example
-        run: nix build .#client-app.dev --accept-flake-config
+        run: nix build .#client-app.dev
 
       - name: Verify that usage in README.md matches CLI output
-        run: nix run .#verify-documented-usage --accept-flake-config
+        run: nix run .#verify-documented-usage
 
       - name: Build web playground Wasm app
         if: success() && matrix.os == 'ubuntu-latest' && github.ref == 'refs/heads/playground'
