@@ -16,9 +16,12 @@ craneLib.devShell
       packages = with pkgs; with binPkgs; [
         cargo-dist
         cargo-flamegraph
-        cargo-nextest
+        # https://crane.dev/API.html?highlight=mold#cranelibcargonextest
+        # cargo-nextest
         rust-analyzer
-        mold-wrapped
+        # # Look into mold-wrapped or `pkgs.stdenvAdapters.useMoldLinker`
+        # # https://crane.dev/API.html?highlight=mold#cranelibdevshell
+        # mold-wrapped
 
         pkg-config
         openssl.dev
