@@ -12,10 +12,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v4
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v22
+        uses: cachix/install-nix-action@v30
         with:
           nix_path: nixpkgs=channel:nixpkgs-unstable
 
@@ -23,7 +23,7 @@ jobs:
         uses: rui314/setup-mold@v1
 
       - name: Set up Nix cache
-        uses: cachix/cachix-action@v12
+        uses: cachix/cachix-action@v15
         with:
           name: tweag-topiary
           authToken: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
