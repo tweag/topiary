@@ -1,3 +1,6 @@
+// this logic will not be used with the `--no-default-features` flag
+#![allow(unused)]
+
 use std::{fmt, fs, fs::File, io::Write, path::PathBuf, sync::Once};
 
 use assert_cmd::Command;

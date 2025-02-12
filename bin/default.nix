@@ -17,7 +17,7 @@
   playground = writeShellApplication {
     name = "playground";
 
-    runtimeInputs = with pkgs; [
+    runtimeInputs = with pkgs; pkgs.lib.optionals (!stdenv.isDarwin) [
       inotify-tools
     ];
 

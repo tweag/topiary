@@ -11,8 +11,8 @@ get-cli-usage() {
   local subcommand="${1-ROOT}"
 
   case "${subcommand}" in
-    "ROOT") nix run . -- --help;;
-    *)      nix run . -- "${subcommand}" --help;;
+    "ROOT") nix run .#topiary-cli-dev -- --help;;
+    *)      nix run .#topiary-cli-dev -- "${subcommand}" --help;;
   esac
 }
 
