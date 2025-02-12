@@ -70,7 +70,7 @@ cfml() {
     git checkout "$REV" &> /dev/null
   popd &> /dev/null
   echo -e "${ORANGE}CFML: Building${NC}"
-  tree-sitter build --wasm "${WORKDIR}/tree-sitter-cfml"
+  tree-sitter build --wasm "${WORKDIR}/tree-sitter-cfml/cfml"
   echo -e "${GREEN}CFML: Done${NC}"
 }
 

@@ -42,9 +42,9 @@ parallel = [ "dep:rayon" ]
 
 bash = []
 css = []
-cfml = []
 json = []
 nickel = []
+cfml = []
 ocaml = []
 ocaml_interface = []
 ocamllex = []
@@ -58,9 +58,9 @@ tree_sitter_query = []
 all = [
   "bash",
   "css",
-  "cfml",
   "json",
   "nickel",
+  "cfml",
   "ocaml",
   "ocaml_interface",
   "ocamllex",
