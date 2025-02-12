@@ -1,0 +1,132 @@
+on:
+  push:
+    branches: cfml
+  pull_request:
+    branches: cfml
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.1.0
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v22
+        with:
+          nix_path: nixpkgs=channel:nixpkgs-unstable
+
+      - name: Set up Nix cache
+        uses: cachix/cachix-action@v12
+        with:
+          name: tweag-topiary
+          authToken: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
+
+      - name: Set up frontend cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            ~/.cache/puppeteer
+          key: frontend_${{ matrix.os }}_${{ hashFiles('**/package-lock.json') }}
+
+      - name: Clippy, test, and benchmark
+        if: matrix.os == 'ubuntu-latest'
+        run: export GC_DONT_GC=1; nix -L flake check
+
+      - name: Build and test executable
+        run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- fmt -l json'
+
+      - name: Build the topiary-cli and test those tests that cannot be performed in Nix
+        run: nix develop --command bash -c "cargo test -p topiary-cli -F experimental"
+
+      - name: Build client-app example
+        run: nix build .#client-app
+
+      - name: Verify that usage in README.md matches CLI output
+        run: nix run .#verify-documented-usage
+
+      - name: Build web playground Wasm app
+        if: success() && matrix.os == 'ubuntu-latest' && github.ref == 'refs/heads/playground'
+        run: nix build .#topiary-playground
+
+      - name: Copy web playground Wasm app into playground frontend
+        if: success() && matrix.os == 'ubuntu-latest' && github.ref == 'refs/heads/playground'
+        run: |
+          mkdir -p web-playground/src/wasm-app
+          cp -r result/* web-playground/src/wasm-app/
+
+      - name: Move sample input and queries into playground frontend
+        if: success() && matrix.os == 'ubuntu-latest' && github.ref == 'refs/heads/playground'
+        run: |
+          mkdir -p web-playground/src/samples
+          mv web-playground/src/wasm-app/languages_export.ts web-playground/src/samples/
+
+      - name: Install web playground frontend dependencies
+        if: success() && matrix.os == 'ubuntu-latest' && github.ref == 'refs/heads/playground'
+        run: npm install --prefix web-playground
+
+      - name: Start web playground frontend
+        if: success() && matrix.os == 'ubuntu-latest' && github.ref == 'refs/heads/playground'
+        run: |
+          npm run dev --prefix web-playground &
+          # Loop until there's a response
+          while [[ "$(curl --silent --output /dev/null --write-out "%{http_code}" http://localhost:5173/playground)" != "200" ]]; do
+            sleep 2
+          done
+
+      - name: Test web playground frontend
+        if: success() && matrix.os == 'ubuntu-latest' && github.ref == 'refs/heads/playground'
+        run: npm run e2e --prefix web-playground
+
+      - name: Make web playground frontend release build
+        if: success() && matrix.os == 'ubuntu-latest' && github.ref == 'refs/heads/playground'
+        run: npm run build --prefix web-playground
+
+      - name: Copy playground into website
+        if: success() && matrix.os == 'ubuntu-latest' && github.ref == 'refs/heads/playground'
+        run: |
+          rm -rf website/playground
+          cp -r web-playground/dist website/playground
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v1.0.7
+        if: success() && matrix.os == 'ubuntu-latest' && github.ref == 'refs/heads/playground'
+        with:
+          path: 'website'
+
+  build-windows:
+    # Note: GitHub's Windows runners have a Rust toolchain installed
+    # https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prefetch grammars
+        run: cargo run --all-features -- prefetch
+
+      - name: Run test suite
+        run: cargo test --all-features
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/playground'
+
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
