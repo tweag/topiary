@@ -143,8 +143,7 @@ is @dc:description = "an example" end
 
   enum T_Shirt of Small Medium Large end
 event VehicleTitleOwnerChanged is
-    source VehicleTitle with [ number
-    vehicle registeredOwner ownerSince ]
+    source VehicleTitle with [ number vehicle registeredOwner ownerSince ]
   end
 
 event Foo is source Bar with boo end

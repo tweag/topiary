@@ -11,50 +11,51 @@ module sdml is
   @dc:description = "A sample SDML module"
   @issued = xsd:date("2025-02-06")
 
-  @magic:jpegFile= #[ ff d8 ff e0 ]
+  @magic:jpegFile = #[ ff d8 ff e0 ]
 
   @magic:map = {unique} [
     0 -> "zero"
     1 -> "one"
-    2 -> "two" ;; ...
+    2 -> "two"
+    ;; ...
   ]
 
   assert some_sequence_builder_silliness with
-    def map -> {ordered unique} (unsigned -> string) := [
+    def map -> {ordered unique} (unsigned -> string)
+      := [
         0 -> "zero"
         1 -> "one"
         2 -> "two"
-        3 -> "; TODO: hree"
+        3 -> "three"
       ]
-    def odd_names -> {} string :=
-      {
+    def odd_names -> {} string
+      := {
         name
       |
-        forall pair in map, right(pair) iff pair.left.is_odd
+        forall pair in map, right(pair) = pair.left.is_odd
       }
-    is
-      odd_names.length = 2
+  is
+    odd_names.length = 2
   end
 
   class Ordered is
 
-    def length() -> unsigned
+    def length -> unsigned
 
-    def drop(count → unsigned) → Self
-    def get(index → unsigned) → {0..1} Self
+    def drop (count → unsigned) → Self
+    def get (index → unsigned) → {0..1} Self
 
     def reverse → Self
 
-    def slice(start → unsigned count → unsigned) → Self
+    def slice (start → unsigned count → unsigned) → Self
       := take(drop(start) count) is
       @dc:description = "return a slice of this list"
     end
 
-    def take(count → unsigned) → Self is
+    def take (count → unsigned) → Self is
       assert count_subset is
         count <= self.length
       end
-
     end
 
   end
@@ -116,22 +117,29 @@ module sdml is
     ]
     identity vin -> Vin
     manufacturer -> Manufacturer
-    manufacturedLocation -> Location
+    manufacturedLocation -> Location is
+      assert a_constant with
+        def const -> unsigned
+          := 10
+      is
+        self /= const
+      end
+    end
     manufacturedDate -> xds:date
     brand -> Brand is
       assert manufacturer_brand is
-        forall self, self.brand.manufacturer = self.manufacturer
+        self.brand.manufacturer = self.manufacturer
       end
     end
     model -> Model
     modelYear -> xsd:gYear is
       assert model_year_bounds is
-        forall self, self.modelYear >= 1910 and self.modelYear < now.year.plus_1
+        self.modelYear >= 1910 and self.modelYear < now.year.plus_1
       end
     end
     trim -> string is
       assert model_trim is
-        forall self, exists t in self.model.trims, self.trim = t
+        exists t in self.model.trims, self.trim = t
       end
     end
     color -> string
@@ -147,6 +155,12 @@ module sdml is
         not self.ownerSince < self.vehicle.manufacturedDate
       end
     end
+  end
+
+  enum T_Shirt of
+    Small
+    Medium
+    Large
   end
   event VehicleTitleOwnerChanged is
     source VehicleTitle with [ number vehicle registeredOwner ownerSince ]
@@ -172,12 +186,6 @@ module sdml is
     assert ends_after_starts = "end_date > start_date"
     start_date -> xsd:date
     end_date -> xsd:date
-  end
-
-  enum T_Shirt of
-    Small
-    Medium
-    Large
   end
 
   union ThisOrThat of

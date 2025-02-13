@@ -1,7 +1,7 @@
 ;; -----------------------------------------------------------------------------
 ;; Comments
 ;; -----------------------------------------------------------------------------
-(line_comment) @prepend_input_softline @append_hardline @allow_blank_line_before
+(line_comment) @append_hardline @allow_blank_line_before
 
 ;; -----------------------------------------------------------------------------
 ;; Modules
@@ -111,8 +111,8 @@
   ]
 )
 
-(function_def) @allow_blank_line_before @append_hardline
-
+(function_def
+) @allow_blank_line_before @append_hardline @prepend_spaced_softline
 (function_signature
   "def" @append_space
   name: (identifier) @append_space
@@ -122,14 +122,9 @@
   "(" @append_indent_start
   [
     ((function_parameter) . ")" @do_nothing)
-    ((function_parameter) . (function_parameter) @prepend_spaced_softline)
+    ((function_parameter) . (function_parameter) @prepend_space)
   ]
   ")" @prepend_indent_end
-)
-
-(function_parameter
-  name: (identifier) @append_space
-  ["->" "→"] @append_space
 )
 
 (function_signature
@@ -137,26 +132,30 @@
   (function_type_reference) @append_space
 )
 
+(function_parameter
+  name: (identifier) @append_space
+  ["->" "→"] @append_space
+)
+(function_body
+  (function_op_by_definition) @prepend_space @append_space
+) @prepend_hardline @prepend_indent_start @append_indent_end
+
 (function_cardinality_expression
+  "{" @append_antispace
   ordering: (_)? @append_space
   uniqueness: (_)? @append_space
+  "}" @prepend_antispace
 ) @append_space
 
-(function_body
-  (function_op_by_definition) @append_spaced_softline
-)
-
-(function_body
-  (function_op_by_definition) @prepend_space @append_spaced_softline
-) @prepend_indent_start @append_indent_end
-
 (sequence_builder
-  "{" @append_space @append_indent_start
-  (set_op_builder) @prepend_space @prepend_indent_end @append_indent_start @append_space
-  "}" @prepend_indent_end @prepend_space
+  "{" @append_spaced_softline @append_indent_start
+  (set_op_builder) @prepend_spaced_softline @prepend_indent_end @append_indent_start
+  "}" @prepend_indent_end @prepend_spaced_softline
 )
 
 (sequence_builder (variable) @append_space)
+
+(sequence_builder_body) @prepend_spaced_softline
 
 ;; -----------------------------------------------------------------------------
 ;; Definitions
@@ -171,7 +170,8 @@
   name: (identifier) @append_space
 ) @allow_blank_line_before
 
-(method_def) @allow_blank_line_before @append_hardline
+(method_def
+) @allow_blank_line_before @append_hardline
 
 (method_def
   (function_body)
@@ -208,6 +208,12 @@
 (tz_restriction_facet "=" @prepend_space @append_space)
 (pattern_restriction_facet "=" @prepend_space @append_space)
 (kw_is_fixed) @append_space
+
+(pattern_restriction_facet
+  "[" @append_indent_start @append_spaced_softline
+  (quoted_string)* @append_spaced_softline
+  "]" @prepend_indent_end
+)
 
 (datatype_def_restriction
   [
@@ -291,7 +297,7 @@
     (
       "[" @append_indent_start @append_spaced_softline
       (identifier_reference)* @append_spaced_softline
-      "]" @prepend_indent_end
+      "]" @prepend_indent_end @append_space
     )
     (identifier_reference) @append_space
   ]
@@ -328,8 +334,10 @@
 )
 
 (cardinality_expression
+  "{" @append_antispace
   ordering: (_)? @append_space
   uniqueness: (_)? @append_space
+  "}" @prepend_antispace
 )
 
 (property_ref "ref" @append_space)
@@ -392,9 +400,19 @@
   )
 )
 
-;; no additional spacing: (value_constructor)
+(value_constructor
+  "(" @append_antispace
+  ")" @prepend_antispace
+)
 
 (mapping_value
-  domain: (simple_value) @append_space
-  range: (value) @prepend_space
+  ["->" "→"] @prepend_space @append_space
+)
+
+;; -----------------------------------------------------------------------------
+;; Misc
+;; -----------------------------------------------------------------------------
+
+(mapping_type
+  ["->" "→"] @prepend_space @append_space
 )
