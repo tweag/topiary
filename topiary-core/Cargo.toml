@@ -20,8 +20,8 @@ prettydiff = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 streaming-iterator = { workspace = true }
-topiary-tree-sitter-facade = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt"] }
+topiary-tree-sitter-facade = { workspace = true }
 tree-sitter = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
@@ -32,8 +32,9 @@ topiary-web-tree-sitter-sys.workspace = true
 criterion = { workspace = true, features = ["async_futures"] }
 env_logger = { workspace = true }
 test-log = { workspace = true }
-tree-sitter-json.workspace = true
 tokio-test = { workspace = true }
+tree-sitter-json.workspace = true
+tree-sitter-nickel.workspace = true
 
 [[bench]]
 name = "benchmark"
