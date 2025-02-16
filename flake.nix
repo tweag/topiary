@@ -106,9 +106,9 @@
         inherit (binPkgs)
           # FIXME: Broken
           # generate-coverage
-          # playground
-          # update-wasm-app
-          # update-wasm-grammars
+          playground
+          update-wasm-app
+          update-wasm-grammars
           verify-documented-usage;
 
         default = self.packages.${system}.topiary-cli;
