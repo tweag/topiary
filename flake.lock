@@ -99,11 +99,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1739483851,
-        "narHash": "sha256-8qA2XY/PgT/Hw1Tt6uOaMsfqyz3nxzIM+DfSl1hOQQg=",
+        "lastModified": 1739694114,
+        "narHash": "sha256-G457KJ418ckkj3N3Sq+8Bncjonuq6MobfgBeb/I/9NY=",
         "owner": "cfmleditor",
         "repo": "tree-sitter-cfml",
-        "rev": "30cf2f802dab79d149809208a9445dfb8ec3a864",
+        "rev": "979825d2e27ac9e65a217e5132c5c7eef4004b0e",
         "type": "github"
       },
       "original": {

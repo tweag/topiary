@@ -42,6 +42,7 @@
 
     cfml = {
       extensions = ["cfm"],
+      indent = "    ", # 4 spaces
       grammar.source.path = "@cfml@",
     },
 

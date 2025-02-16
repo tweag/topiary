@@ -49,9 +49,10 @@
 
     cfml = {
       extensions = ["cfm"],
+      indent = "    ", # 4 spaces
       grammar.source.git = {
         git = "https://github.com/cfmleditor/tree-sitter-cfml.git",
-        rev = "f4e97998ca1ecb11cc1a721ab61593e7a185c05f",
+        rev = "979825d2e27ac9e65a217e5132c5c7eef4004b0e",
         subdir = "cfml",
       },
     },

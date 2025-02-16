@@ -897,7 +897,7 @@ dependencies = [
 [[package]]
 name = "tree-sitter-cfml"
 version = "0.4.0"
-source = "git+https://github.com/cfmleditor/tree-sitter-cfml.git#f4e97998ca1ecb11cc1a721ab61593e7a185c05f"
+source = "git+https://github.com/cfmleditor/tree-sitter-cfml.git#979825d2e27ac9e65a217e5132c5c7eef4004b0e"
 dependencies = [
  "cc",
  "tree-sitter",
