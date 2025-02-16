@@ -3,7 +3,7 @@
 )
 
 (cf_set_tag) @append_hardline
-  
+
 (assignment_expression) @prepend_space @append_space
 
 (assignment_expression "=" @prepend_space @append_space)
