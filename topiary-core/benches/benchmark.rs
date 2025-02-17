@@ -5,17 +5,17 @@ use std::io;
 use topiary_core::{formatter, Language, Operation, TopiaryQuery};
 
 async fn format() {
-    let input = fs::read_to_string("../topiary-cli/tests/samples/input/ocaml.ml").unwrap();
-    let query_content = fs::read_to_string("../topiary-queries/queries/ocaml.scm").unwrap();
-    let ocaml = tree_sitter_ocaml::LANGUAGE_OCAML;
+    let input = fs::read_to_string("../topiary-cli/tests/samples/input/nickel.ncl").unwrap();
+    let query_content = fs::read_to_string("../topiary-queries/queries/nickel.scm").unwrap();
+    let nickel = tree_sitter_nickel::language();
 
     let mut input = input.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
 
     let language: Language = Language {
-        name: "ocaml".to_owned(),
-        query: TopiaryQuery::new(&ocaml.into(), &query_content).unwrap(),
-        grammar: ocaml.into(),
+        name: "nickel".to_owned(),
+        query: TopiaryQuery::new(&nickel.into(), &query_content).unwrap(),
+        grammar: tree_sitter_nickel::language().into(),
         indent: None,
     };
 
@@ -32,7 +32,7 @@ async fn format() {
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-    c.bench_function("format_ocaml", |b| {
+    c.bench_function("format_nickel", |b| {
         b.to_async(FuturesExecutor).iter(format);
     });
 }
