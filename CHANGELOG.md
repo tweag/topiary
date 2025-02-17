@@ -42,21 +42,48 @@ This name should be decided amongst the team before the release.
 
 ## Unreleased
 
-[Full list of changes](https://github.com/tweag/topiary/compare/v0.5.1...HEAD)
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.6.0...HEAD)
+
+
+<!-- ### Added -->
+<!-- - <New feature> -->
+
+### Changed
+<!-- - <Changes in existing functionality> -->
+- [#859](https://github.com/tweag/topiary/pull/859) Break up integration tests per language, thanks to @mkatychev
+- [#871](https://github.com/tweag/topiary/pull/859) Switch to `mold` linker for CI tests, thanks to @mkatychev
+
+<!-- ### Deprecated -->
+<!-- - <Soon-to-be removed features> -->
+
+<!-- ### Removed -->
+<!-- - <Removed features> -->
+
+### Fixed
+<!-- - <Bug fixes> -->
+- [#867](https://github.com/tweag/topiary/pull/867) Enable coverage check and add code samples for OpenSCAD
+- [#869](https://github.com/tweag/topiary/pull/869) Disable parallel grammar building on Windows
+
+<!-- ### Security -->
+<!-- - <Vulnerabilities> -->
+
+## v0.6.0 - Gilded Ginkgo - 2025-01-30
+
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.5.1...v0.6.0)
 
 ### Added
-- [#838](https://github.com/tweag/topiary/pull/838) Added `@upper_case` and `@lower_case` captures, thanks to @ctdunc
-- [#785](https://github.com/tweag/topiary/pull/785) Added the `coverage` command, that checks how much of the query file is used by the input.
-- [#786](https://github.com/tweag/topiary/pull/786) Re-introduce tests to check that all of the language queries are useful.
 - [#747](https://github.com/tweag/topiary/pull/747) Added support for specifying paths to prebuilt grammars in Topiary's configuration
-- [#832](https://github.com/tweag/topiary/pull/832) Added `typos-cli` to workspace `Cargo.toml` for spellchecking @mkatychev
-- [#845](https://github.com/tweag/topiary/pull/747) Added support for OpenSCAD, @mkatychev
+- [#785](https://github.com/tweag/topiary/pull/785) Added the `coverage` command, that checks how much of the query file is used by the input
+- [#786](https://github.com/tweag/topiary/pull/786) Re-introduce tests to check that all of the language queries are useful
+- [#832](https://github.com/tweag/topiary/pull/832) Added `typos-cli` configuration to workspace `Cargo.toml` for spellchecking, thanks to @mkatychev
+- [#838](https://github.com/tweag/topiary/pull/838) Added `@upper_case` and `@lower_case` captures, thanks to @ctdunc
+- [#845](https://github.com/tweag/topiary/pull/747) Added support for OpenSCAD, thanks to @mkatychev
 - [#851](https://github.com/tweag/topiary/pull/851) Added support for following symlinks when specifying input files for formatting
 
 ### Changed
-- [#794](https://github.com/tweag/topiary/pull/794) Bump the `tree-sitter` dependency to 0.24, thanks to @ZedThree
 - [#780](https://github.com/tweag/topiary/pull/780) Measuring scopes are now independent from captures order
-- [#790](https://github.com/tweag/topiary/pull/790) No longer merge config files by default, use priority instead.
+- [#790](https://github.com/tweag/topiary/pull/790) No longer merge config files by default, use priority instead
+- [#794](https://github.com/tweag/topiary/pull/794) Bump the `tree-sitter` dependency to 0.24, thanks to @ZedThree
 - [#801](https://github.com/tweag/topiary/pull/801) Improved documentation of the `visualise` subcommand
 - [#811](https://github.com/tweag/topiary/pull/811) The `config` subcommand now outputs a Nickel file instead of some inner representation
 - [#830](https://github.com/tweag/topiary/pull/830) Use `tree-sitter-loader` to build grammars, rather than rolling our own
@@ -64,9 +91,11 @@ This name should be decided amongst the team before the release.
 ### Fixed
 - [#779](https://github.com/tweag/topiary/pull/779) Load relevant grammars before CLI tests
 - [#799](https://github.com/tweag/topiary/pull/799) Line break after table-less pairs in TOML
-- [#822](https://github.com/tweag/topiary/pull/822) Various Bash fixes and improvements
 - [#813](https://github.com/tweag/topiary/pull/813) In-place writing on Windows (also introduced a minimal Windows CI)
+- [#822](https://github.com/tweag/topiary/pull/822) Various Bash fixes and improvements
 - [#826](https://github.com/tweag/topiary/pull/826) Various Tree-sitter query fixes, thanks to @mkatychev
+- [#853](https://github.com/tweag/topiary/pull/853) Small fixes to CLI logging and IO
+- [#870](https://github.com/tweag/topiary/pull/870) Remove extra spaces around arguments in OpenSCAD, thanks to @dzhu
 
 ## v0.5.1 - Fragrant Frangipani - 2024-10-22
 
@@ -79,7 +108,7 @@ This name should be decided amongst the team before the release.
 - [#760](https://github.com/tweag/topiary/pull/760) Introduce optional `query_name` predicate, to help with query logging and debugging.
 
 ### Fixed
-- [#720](https://github.com/tweag/topiary/pull/720) [#722](https://github.com/tweag/topiary/pull/722) [#723](https://github.com/tweag/topiary/pull/723) [#724](https://github.com/tweag/topiary/pull/724) [#735](https://github.com/tweag/topiary/pull/735) [#738](https://github.com/tweag/topiary/pull/738) [#739](https://github.com/tweag/topiary/pull/739) [#745](https://github.com/tweag/topiary/pull/745) [#755](https://github.com/tweag/topiary/pull/755) [#759](https://github.com/tweag/topiary/pull/759) [#764](https://github.com/tweag/topiary/pull/764 Various OCaml improvements
+- [#720](https://github.com/tweag/topiary/pull/720) [#722](https://github.com/tweag/topiary/pull/722) [#723](https://github.com/tweag/topiary/pull/723) [#724](https://github.com/tweag/topiary/pull/724) [#735](https://github.com/tweag/topiary/pull/735) [#738](https://github.com/tweag/topiary/pull/738) [#739](https://github.com/tweag/topiary/pull/739) [#745](https://github.com/tweag/topiary/pull/745) [#755](https://github.com/tweag/topiary/pull/755) [#759](https://github.com/tweag/topiary/pull/759) [#764](https://github.com/tweag/topiary/pull/764) Various OCaml improvements
 - [#762](https://github.com/tweag/topiary/pull/762) Various Rust improvements
 - [#744](https://github.com/tweag/topiary/pull/744) [#768](https://github.com/tweag/topiary/pull/768) Nickel: fix the formatting of annotated multiline let-bindings
 - [#763](https://github.com/tweag/topiary/pull/763) Various Bash fixes and improvements

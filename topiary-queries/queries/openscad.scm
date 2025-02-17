@@ -229,8 +229,8 @@
 (arguments "," @delete . ")" . (#single_line_only!))
 (arguments
   .
-  "(" @append_empty_softline @append_indent_start
-  ")" @prepend_indent_end @prepend_empty_softline
+  "(" @append_empty_softline @append_indent_start @append_antispace
+  ")" @prepend_indent_end @prepend_empty_softline @prepend_antispace
   .
 )
 (arguments

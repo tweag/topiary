@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.5.1"
+version = "0.6.0"
 edition = "2021"
 authors = ["Tweag"]
 homepage = "https://topiary.tweag.io"
@@ -31,23 +31,6 @@ opt-level = 's'
 inherits = "release"
 lto = "thin"
 
-# Config for 'cargo dist'
-[workspace.metadata.dist]
-# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
-cargo-dist-version = "0.19.1"
-# CI backends to support
-ci = "github"
-# The installers to generate for each app
-installers = ["shell"]
-# Target platforms to build apps for (Rust target-triple syntax)
-targets = ["aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]
-# Publish jobs to run in CI
-pr-run-mode = "plan"
-# Whether to install an updater program
-install-updater = false
-# Path that installers should place binaries in
-install-path = "CARGO_HOME"
-
 [workspace.dependencies]
 anyhow = "1.0"
 assert_cmd = "2.0"
@@ -64,9 +47,10 @@ js-sys = "0.3"
 libloading = "0.8.4"
 log = "0.4"
 nickel-lang-core = { version = "0.8.0", default-features = false }
+paste = "1.0.15"
 predicates = "3.0"
 pretty_assertions = "1.3"
-prettydiff = { version = "0.6.4", default-features = false }
+prettydiff = { version = "0.8.0", default-features = false }
 rayon = "1.10.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -78,27 +62,20 @@ tokio-test = "0.4"
 toml = "0.8"
 tree-sitter = "0.24"         # NOTE Update tree-sitter-loader to match
 tree-sitter-loader = "0.24"  # NOTE Align with tree-sitter
+tree-sitter-json = "0.24"
 tree-sitter-language = "0.1"
-# tree-sitter-bash = { git = "https://github.com/tree-sitter/tree-sitter-bash", rev = "1b0321ee85701d5036c334a6f04761cdc672e64c" }
-# tree-sitter-css = { git = "https://github.com/tree-sitter/tree-sitter-css.git", rev = "02b4ee757654b7d54fe35352fd8e53a8a4385d42" }
-tree-sitter-json = { git = "https://github.com/tree-sitter/tree-sitter-json.git", rev = "4d770d31f732d50d3ec373865822fbe659e47c75" }
-# tree-sitter-nickel = { git = "https://github.com/nickel-lang/tree-sitter-nickel", rev = "43433d8477b24cd13acaac20a66deda49b7e2547" }
-tree-sitter-ocaml = { git = "https://github.com/tree-sitter/tree-sitter-ocaml.git", rev = "98c2130c59ca7553b47086f91c5d22180151ad55" }
-# tree-sitter-ocamllex = { git = "https://github.com/314eter/tree-sitter-ocamllex.git", rev = "4b9898ccbf198602bb0dec9cd67cc1d2c0a4fad2" }
-# tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-query", rev = "a0ccc351e5e868ec1f8135e97aa3b53c663cf2df" }
-# tree-sitter-rust = { git = "https://github.com/tree-sitter/tree-sitter-rust.git", rev = "e0e8b6de6e4aa354749c794f5f36a906dcccda74" }
-# tree-sitter-toml = { git = "https://github.com/tree-sitter/tree-sitter-toml.git", rev = "342d9be207c2dba869b9967124c679b5e6fd0ebe" }
+tree-sitter-nickel = "0.3"
 unescape = "0.1"
-wasm-bindgen = "=0.2.91"
+wasm-bindgen = "=0.2.100"
 wasm-bindgen-futures = "0.4"
 wasm-bindgen-test = "0.3"
 web-sys = "0.3"
 
-topiary-web-tree-sitter-sys = { version = "0.5.1", path = "./topiary-web-tree-sitter-sys" }
-topiary-tree-sitter-facade = { version = "0.5.1", path = "./topiary-tree-sitter-facade" }
-topiary-core = { version = "0.5.1", path = "./topiary-core" }
-topiary-config = { version = "0.5.1", path = "./topiary-config" }
-topiary-queries = { version = "0.5.1", path = "./topiary-queries" }
+topiary-web-tree-sitter-sys = { version = "0.6.0", path = "./topiary-web-tree-sitter-sys" }
+topiary-tree-sitter-facade = { version = "0.6.0", path = "./topiary-tree-sitter-facade" }
+topiary-core = { version = "0.6.0", path = "./topiary-core" }
+topiary-config = { version = "0.6.0", path = "./topiary-config" }
+topiary-queries = { version = "0.6.0", path = "./topiary-queries" }
 
 [profile.dev.package.lalrpop]
 opt-level = 3
