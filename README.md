@@ -104,6 +104,7 @@ the same way as supported languages.
 
 * [CSS] by @lavigneer
 * [OpenSCAD] by @mkatychev
+* [SDML] by @johnstonskj
 
 #### Experimental
 
@@ -114,7 +115,6 @@ by their individual name). Once included, they can be accessed in
 Topiary in the usual way.
 
 * [Rust]
-* [SDML] by @johnstonskj
 
 ## Getting Started
 
