@@ -48,7 +48,6 @@ topiary-tree-sitter-facade.workspace = true
 # tree-sitter-toml = { workspace = true, optional = true }
 # tree-sitter-bash = { workspace = true, optional = true }
 # tree-sitter-nickel = { workspace = true, optional = true }
-# tree-sitter-cfml = { workspace = true, optional = true }
 # tree-sitter-query = { workspace = true, optional = true }
 # tree-sitter-ocaml = { workspace = true, optional = true }
 # tree-sitter-ocamllex = { workspace = true, optional = true }

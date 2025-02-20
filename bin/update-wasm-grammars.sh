@@ -61,19 +61,6 @@ nickel() {
   echo -e "${GREEN}Nickel: Done${NC}"
 }
 
-cfml() {
-  echo -e "${BLUE}CFML: Fetching${NC}"
-  REPO=$(repo_for_language "cfml")
-  git clone "${REPO}" "${WORKDIR}/tree-sitter-cfml" &> /dev/null
-  REV=$(ref_for_language "cfml")
-  pushd "${WORKDIR}/tree-sitter-cfml" &> /dev/null
-    git checkout "$REV" &> /dev/null
-  popd &> /dev/null
-  echo -e "${ORANGE}CFML: Building${NC}"
-  tree-sitter build --wasm "${WORKDIR}/tree-sitter-cfml/cfml"
-  echo -e "${GREEN}CFML: Done${NC}"
-}
-
 ocaml() {
   echo -e "${BLUE}OCaml: Fetching${NC}"
   REPO=$(repo_for_language "ocaml")

@@ -58,8 +58,6 @@ function toMode(language: string) {
         case "nickel":
             // Missing highlighting for Nickel, but we know.
             return "plain_text";
-        case "cfml":
-            return "cfml";
         case "rust":
             return "rust";
         case "toml":
