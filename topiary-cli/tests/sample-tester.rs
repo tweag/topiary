@@ -9,6 +9,7 @@ fn get_file_extension(language: &str) -> &str {
     match language {
         "bash" => "sh",
         "css" => "css",
+        "cfml" => "cfm",
         "json" => "json",
         "nickel" => "ncl",
         "ocaml" => "ml",
@@ -79,6 +80,7 @@ mod test_fmt {
     lang_test!(
         "bash",
         "css",
+        "cfml",
         "json",
         "nickel",
         "ocaml",
@@ -155,6 +157,7 @@ mod test_coverage {
     lang_test!(
         "bash",
         "css",
+        "cfml",
         "json",
         "nickel",
         "ocaml",

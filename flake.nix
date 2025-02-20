@@ -27,6 +27,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    tree-sitter-cfml = {
+      url = "github:cfmleditor/tree-sitter-cfml";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     tree-sitter-openscad = {
       url = "github:mkatychev/tree-sitter-openscad";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -49,7 +54,7 @@
 
         topiaryPkgs = pkgs.callPackage ./default.nix {
           inherit (inputs) advisory-db crane rust-overlay;
-          inherit (pkgs.tree-sitter-grammars) tree-sitter-nickel tree-sitter-openscad;
+          inherit (pkgs.tree-sitter-grammars) tree-sitter-nickel tree-sitter-cfml tree-sitter-openscad;
           craneLib = inputs.crane.mkLib pkgs;
         };
 
@@ -69,6 +74,7 @@
           # Nickel *should* have an overlay like this already
           tree-sitter-grammars = prev.tree-sitter-grammars // {
             tree-sitter-nickel = inputs.tree-sitter-nickel.packages.${prev.system}.default;
+            tree-sitter-cfml = inputs.tree-sitter-cfml.packages.${prev.system}.default;
             tree-sitter-openscad = inputs.tree-sitter-openscad.packages.${prev.system}.default;
           };
         };
