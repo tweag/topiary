@@ -35,7 +35,7 @@
       ],
       grammar.source.git = {
         git = "https://github.com/tree-sitter/tree-sitter-json.git",
-        rev = "94f5c527b2965465956c2000ed6134dd24daf2a7",
+        rev = "v0.24.8",
       },
     },
 
@@ -79,7 +79,7 @@
       extensions = ["mll"],
       grammar.source.git = {
         git = "https://github.com/314eter/tree-sitter-ocamllex.git",
-        rev = "4b9898ccbf198602bb0dec9cd67cc1d2c0a4fad2",
+        rev = "5da5bb7508ac9fd3317561670ef18c126a0fe2aa",
       },
     },
 
