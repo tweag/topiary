@@ -351,6 +351,9 @@ where
         #[cfg(feature = "rust")]
         "rust" => Ok(topiary_queries::rust().into()),
 
+        #[cfg(feature = "sdml")]
+        "sdml" => Ok(topiary_queries::sdml().into()),
+
         #[cfg(feature = "toml")]
         "toml" => Ok(topiary_queries::toml().into()),
 

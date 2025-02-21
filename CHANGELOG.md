@@ -44,9 +44,9 @@ This name should be decided amongst the team before the release.
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.6.0...HEAD)
 
-
-<!-- ### Added -->
+### Added
 <!-- - <New feature> -->
+- [#862](https://github.com/tweag/topiary/pull/862) Added support for the Simple Domain Modeling Language ([SDML](https://sdml.io)), thanks to @johnstonskj
 
 ### Changed
 <!-- - <Changes in existing functionality> -->
