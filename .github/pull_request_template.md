@@ -34,4 +34,4 @@ This is particularly important if this PR is preparing a release.
 Checklist before merging, wherever relevant:
 
 - [ ] [`CHANGELOG.md`](/CHANGELOG.md) updated
-- [ ] [`README.md`](/README.md) up-to-date
+- [ ] Documentation ([The Topiary Book](/docs/book), [`README.md`](/README.md), etc.) up-to-date
