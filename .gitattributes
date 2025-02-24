@@ -1,5 +1,9 @@
 # Ensure all text is checked out with Unix EOL
 * text eol=lf
 
+# Ensure binary files aren't considered as text
+*.png binary
+*.wasm binary
+
 # Hide our tests from language detection so GitHub correctly detects Topiary as a Rust project
 topiary-cli/tests/samples/** linguist-vendored
