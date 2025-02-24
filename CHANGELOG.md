@@ -47,11 +47,12 @@ This name should be decided amongst the team before the release.
 ### Added
 <!-- - <New feature> -->
 - [#862](https://github.com/tweag/topiary/pull/862) Added support for the Simple Domain Modeling Language ([SDML](https://sdml.io)), thanks to @johnstonskj
+- [#884](https://github.com/tweag/topiary/pull/884) The Topiary Book
 
 ### Changed
 <!-- - <Changes in existing functionality> -->
 - [#859](https://github.com/tweag/topiary/pull/859) Break up integration tests per language, thanks to @mkatychev
-- [#871](https://github.com/tweag/topiary/pull/859) Switch to `mold` linker for CI tests, thanks to @mkatychev
+- [#871](https://github.com/tweag/topiary/pull/871) Switch to `mold` linker for CI tests, thanks to @mkatychev
 - [#893](https://github.com/tweag/topiary/pull/893) Use `gix` lib instead of system `git`
 
 <!-- ### Deprecated -->
