@@ -807,6 +807,7 @@ dependencies = [
  "tree-sitter-bash",
  "tree-sitter-json",
  "tree-sitter-nickel",
+ "tree-sitter-cfml",
  "tree-sitter-ocaml",
  "tree-sitter-ocamllex",
  "tree-sitter-query",

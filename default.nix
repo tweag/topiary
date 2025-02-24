@@ -9,6 +9,8 @@
 # be compatible with Nickel urgently (it is currently blocking for the CI), we
 # use the tree-sitter-nickel flake directly.
 , tree-sitter-nickel
+# use the tree-sitter-cfml flake directly.
+, tree-sitter-cfml
 # tree-sitter-openscad is not in nixpkgs so use flake directly
 , tree-sitter-openscad
 }:
@@ -129,6 +131,7 @@ in
       css="${pkgs.tree-sitter-grammars.tree-sitter-css}/parser" \
       json="${pkgs.tree-sitter-grammars.tree-sitter-json}/parser" \
       nickel="${tree-sitter-nickel}/parser" \
+      cfml="${tree-sitter-cfml}/parser" \
       ocaml="${pkgs.tree-sitter-grammars.tree-sitter-ocaml}/parser" \
       ocaml_interface="${pkgs.tree-sitter-grammars.tree-sitter-ocaml-interface}/parser" \
       openscad="${tree-sitter-openscad}/parser" \

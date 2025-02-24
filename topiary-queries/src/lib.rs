@@ -10,6 +10,12 @@ pub fn css() -> &'static str {
     include_str!("../queries/css.scm")
 }
 
+/// Returns the Topiary-compatible query file for CFML.
+#[cfg(feature = "cfml")]
+pub fn cfml() -> &'static str {
+    include_str!("../queries/cfml.scm")
+}
+
 /// Returns the Topiary-compatible query file for Json.
 #[cfg(feature = "json")]
 pub fn json() -> &'static str {
