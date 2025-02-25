@@ -34,9 +34,18 @@ TODO: Documentation for the web-based playground; see issue #875
 - [TODO]()
 - [TTY playground](playground/tty.md)
 
+# Guides
+
 # Reference
 
 - [Language support](reference/language-support.md)
-- [Capture names]()
+- [Capture names](reference/capture-names/index.md)
+  - [Basics]()
+  - [Horizontal spacing]()
+  - [Vertical spacing]()
+    - [Scopes]()
+  - [Indentation]()
+  - [Insertion and deletion]()
+  - [Case]()
 - [Rust library](reference/library.md)
 - [Related tools](reference/related.md)
