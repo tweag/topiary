@@ -7,47 +7,6 @@
 * [Topiary web site][topiary-website]
 * [Topiary playground][topiary-playground]
 
-## Language Support
-<!-- Update this section as necessary on new developments/releases -->
-
-The formatting styles for these languages come in two levels of maturity:
-supported and experimental.
-
-#### Supported
-
-These formatting styles cover their target language and fulfil Topiary's
-stated design goals. They are exposed, in Topiary, through the
-`--language` command line flag, or language detection (based on file
-extension).
-
-* [Bash]
-* [JSON]
-* [Nickel]
-* [OCaml] (both implementations and interfaces)
-* [OCamllex]
-* [TOML]
-* [Tree Sitter Queries][tree-sitter-query]
-
-#### Contributed
-
-These languages' formatting styles have been generously provided by
-external contributors. They are built in, by default, so are exposed in
-the same way as supported languages.
-
-* [CSS] by @lavigneer
-* [OpenSCAD] by @mkatychev
-* [SDML] by @johnstonskj
-
-#### Experimental
-
-These languages' formatting styles are subject to change and/or not yet
-considered production-ready. They are _not_ built by default and are
-gated behind a feature flag (either `experimental`, for all of them, or
-by their individual name). Once included, they can be accessed in
-Topiary in the usual way.
-
-* [Rust]
-
 ## Design
 
 As long as there is a [Tree-sitter grammar][tree-sitter-parsers] defined
@@ -1140,76 +1099,6 @@ suggested way to work:
 8. Run `cargo test` again, to see if the output is better now, and then
    return to step 5.
 
-### Syntax Tree Visualisation
-
-To support the development of formatting queries, the Tree-sitter syntax
-tree for a given input can be produced using the `--visualise` CLI
-option.
-
-This currently supports JSON output, covering the same information as
-the debugging output, as well as GraphViz DOT output, which is useful
-for generating syntax diagrams. (Note that the text position
-serialisation in the visualisation output is 1-based, unlike the
-debugging output's 0-based position.)
-
-### Terminal-Based Playground
-
-Nix users may also find the `bin/playground.sh` script to be helpful in
-aiding the interactive development of query files. When run in a
-terminal, inside the Nix development shell, it will format the given
-source input with the requested query file, updating the output on any
-inotify event against those files.
-
-```
-Usage: playground LANGUAGE [QUERY_FILE] [INPUT_SOURCE]
-
-LANGUAGE can be one of the supported languages (e.g., "ocaml", "rust",
-etc.). The packaged formatting queries for this language can be
-overridden by specifying a QUERY_FILE.
-
-The INPUT_SOURCE is optional. If not specified, it defaults to trying
-to find the bundled integration test input file for the given language.
-```
-
-For example, the playground can be run in a tmux pane, with your editor
-of choice open in another.
-
-> [!WARNING]
-> The use of inotify limits this tool to Linux systems, only.
-
-## Related Tools
-
-### Tree-Sitter Specific
-
-* [Syntax Tree Playground][tree-sitter-playground]: An interactive,
-  online playground for experimenting with Tree-sitter and its query
-  language.
-* [Neovim Treesitter Playground][nvim-treesitter]: A Tree-sitter
-  playground plugin for Neovim.
-* [Difftastic]: A tool that utilises Tree-sitter to perform syntactic
-  diffing.
-
-### Meta and Multi-Language Formatters
-
-* [format-all]: A formatter orchestrator for Emacs.
-* [null-ls.nvim]: An LSP framework for Neovim that facilitates formatter
-  orchestration.
-* [prettier]: A formatter with support for multiple (web-development
-  related) languages.
-* [treefmt]: A general formatter orchestrator, which unifies formatters
-  under a common interface.
-
-### Related Formatters
-
-* [gofmt]: The de facto standard formatter for Go, and major source of
-  inspiration for the style of our formatters.
-* [ocamlformat]: A formatter for OCaml.
-* [ocp-indent]: A tool to indent OCaml code.
-* [Ormolu]: Our formatter for Haskell, which follows similar design
-  principles as Topiary.
-* [rustfmt]: The de facto standard formatter for Rust.
-* [shfmt]: A parser, formatter and interpreter for Bash et al.
-
 <!-- Links -->
 
 [badge-ci]: https://img.shields.io/github/actions/workflow/status/tweag/topiary/ci.yml?logo=github
@@ -1218,33 +1107,6 @@ of choice open in another.
 [badge-discord-link]: https://discord.gg/FSnkvNyyzC
 [badge-release]: https://img.shields.io/github/v/release/tweag/topiary?display_name=release&logo=github
 [badge-release-link]: https://github.com/tweag/topiary/releases/latest
-[bash]: https://www.gnu.org/software/bash
-[contributing]: CONTRIBUTING.md
-[css]: https://en.wikipedia.org/wiki/CSS
-[difftastic]: https://difftastic.wilfred.me.uk
-[format-all]: https://melpa.org/#/format-all
-[gofmt-slides]: https://go.dev/talks/2015/gofmt-en.slide#1
-[gofmt]: https://pkg.go.dev/cmd/gofmt
-[json]: https://www.json.org
-[nickel]: https://nickel-lang.org
-[null-ls.nvim]: https://github.com/jose-elias-alvarez/null-ls.nvim
-[nvim-treesitter]: https://github.com/nvim-treesitter/playground
-[ocaml]: https://ocaml.org
-[ocamlformat]: https://github.com/ocaml-ppx/ocamlformat
-[ocamllex]: https://v2.ocaml.org/manual/lexyacc.html
-[ocp-indent]: https://www.typerex.org/ocp-indent.html
-[openscad]: https://en.wikipedia.org/wiki/OpenSCAD
-[ormolu]: https://github.com/tweag/ormolu
-[prettier]: https://prettier.io/
-[rust]: https://www.rust-lang.org
-[rustfmt]: https://rust-lang.github.io/rustfmt
-[sdml]: https://sdml.io/
-[shfmt]: https://github.com/mvdan/sh
-[toml]: https://toml.io
 [topiary-playground]: https://topiary.tweag.io/playground
 [topiary-website]: https://topiary.tweag.io
 [tree-sitter-parsers]: https://tree-sitter.github.io/tree-sitter/#available-parsers
-[tree-sitter-playground]: https://tree-sitter.github.io/tree-sitter/playground
-[tree-sitter-query]: https://tree-sitter.github.io/tree-sitter/using-parsers#pattern-matching-with-queries
-[tree-sitter]: https://tree-sitter.github.io/tree-sitter
-[treefmt]: https://github.com/numtide/treefmt

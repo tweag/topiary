@@ -32,7 +32,11 @@ TODO: Documentation for the web-based playground; see issue #875
 ----------------------------------------------------------------------->
 
 - [TODO]()
+- [TTY playground](playground/tty.md)
 
 # Reference
 
+- [Language support](reference/language-support.md)
 - [Capture names]()
+- [Rust library](reference/library.md)
+- [Related tools](reference/related.md)
