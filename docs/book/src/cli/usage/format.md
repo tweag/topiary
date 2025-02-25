@@ -1,7 +1,7 @@
 # Format
 
-<!-- DO NOT REMOVE THE "usage" COMMENTS -->
-<!-- usage:start:format -->
+<!-- DO NOT REMOVE THE "usage:{start,end}" COMMENTS -->
+<!-- usage:start -->
 ```
 Format inputs
 
@@ -44,7 +44,7 @@ Options:
   -h, --help
           Print help (see a summary with '-h')
 ```
-<!-- usage:end:format -->
+<!-- usage:end -->
 
 > **Note**\
 > `fmt` is a recognised alias of the `format` subcommand.

@@ -5,8 +5,8 @@ process the input. Specifically, it checks the percentage of queries in
 the query file that match the given input, and prints the queries that
 don't match anything.
 
-<!-- DO NOT REMOVE THE "usage" COMMENTS -->
-<!-- usage:start:coverage-->
+<!-- DO NOT REMOVE THE "usage:{start,end}" COMMENTS -->
+<!-- usage:start -->
 ```
 Checks how much of the tree-sitter query is used
 
@@ -40,7 +40,7 @@ Options:
   -h, --help
           Print help (see a summary with '-h')
 ```
-<!-- usage:end:coverage -->
+<!-- usage:end -->
 
 The `coverage` subcommand will exit with error code `1` if the coverage
 is less than 100%.

@@ -6,8 +6,8 @@ a DOT file, which can be rendered using a visualisation tool such as the
 Graphviz suite. For example, using Graphviz's `dot`: `topiary visualise
 input.ocaml | dot -T png -o output.png`.
 
-<!-- DO NOT REMOVE THE "usage" COMMENTS -->
-<!-- usage:start:visualise -->
+<!-- DO NOT REMOVE THE "usage:{start,end}" COMMENTS -->
+<!-- usage:start -->
 ```
 Visualise the input's Tree-sitter parse tree
 
@@ -53,7 +53,7 @@ Options:
   -h, --help
           Print help (see a summary with '-h')
 ```
-<!-- usage:end:visualise -->
+<!-- usage:end -->
 
 > **Note**\
 > `vis`, `visualize` and `view` are recognised aliases of the

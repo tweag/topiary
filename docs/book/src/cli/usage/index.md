@@ -4,8 +4,8 @@ The Topiary CLI uses a number of subcommands to delineate functionality.
 These can be listed with `topiary --help`; each subcommand then has its
 own, dedicated help text.
 
-<!-- DO NOT REMOVE THE "usage" COMMENTS -->
-<!-- usage:start:index -->
+<!-- DO NOT REMOVE THE "usage:{start,end}" COMMENTS -->
+<!-- usage:start -->
 ```
 CLI app for Topiary, the universal code formatter.
 
@@ -27,7 +27,7 @@ Options:
   -h, --help                           Print help
   -V, --version                        Print version
 ```
-<!-- usage:end:index -->
+<!-- usage:end -->
 
 Please see the respective section for usage documentation on each
 subcommand:

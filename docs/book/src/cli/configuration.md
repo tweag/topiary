@@ -45,6 +45,8 @@ following order (highest to lowest):
 
 ### Configuration merging
 
+<!-- TODO: See issue #861 -->
+
 By default, Topiary only considers the configuration file with the
 [highest priority](../configuration.md). However, if
 the `-M` or `--merge-configuration` option is provided to the CLI, then

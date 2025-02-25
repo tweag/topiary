@@ -1,7 +1,7 @@
 # Configuration
 
-<!-- DO NOT REMOVE THE "usage" COMMENTS -->
-<!-- usage:start:config -->
+<!-- DO NOT REMOVE THE "usage:{start,end}" COMMENTS -->
+<!-- usage:start -->
 ```
 Print the current configuration
 
@@ -13,7 +13,7 @@ Options:
   -v, --verbose...                     Logging verbosity (increased per occurrence)
   -h, --help                           Print help
 ```
-<!-- usage:end:config -->
+<!-- usage:end -->
 
 > **Note**\
 > `cfg` is a recognised alias of the `config` subcommand.

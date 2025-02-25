@@ -4,8 +4,8 @@ Shell completion scripts for Topiary can be generated with the
 `completion` subcommand. The output of which can be sourced into your
 shell session or profile, as required.
 
-<!-- DO NOT REMOVE THE "usage" COMMENTS -->
-<!-- usage:start:completion -->
+<!-- DO NOT REMOVE THE "usage:{start,end}" COMMENTS -->
+<!-- usage:start -->
 ```
 Generate shell completion script
 
@@ -21,7 +21,7 @@ Options:
   -v, --verbose...                     Logging verbosity (increased per occurrence)
   -h, --help                           Print help
 ```
-<!-- usage:end:completion -->
+<!-- usage:end -->
 
 For example, in Bash:
 

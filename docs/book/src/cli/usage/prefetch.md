@@ -4,8 +4,8 @@ Topiary dynamically downloads, builds, and loads the Tree-sitter
 grammars. In order to ensure offline availability or speed up start up
 time, the grammars can be prefetched and compiled.
 
-<!-- DO NOT REMOVE THE "usage" COMMENTS -->
-<!-- usage:start:prefetch-->
+<!-- DO NOT REMOVE THE "usage:{start,end}" COMMENTS -->
+<!-- usage:start -->
 ```
 Prefetch all languages in the configuration
 
@@ -18,4 +18,4 @@ Options:
   -v, --verbose...                     Logging verbosity (increased per occurrence)
   -h, --help                           Print help
 ```
-<!-- usage:end:prefetch -->
+<!-- usage:end -->
