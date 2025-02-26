@@ -74,6 +74,7 @@ default = [
 contributed = [
   "css",
   "openscad",
+  "sdml",
 ]
 
 # Excluded by default
@@ -92,5 +93,6 @@ ocaml_interface = ["topiary-config/ocaml_interface", "topiary-queries/ocaml_inte
 ocamllex = ["topiary-config/ocamllex", "topiary-queries/ocamllex"]
 openscad = ["topiary-config/openscad", "topiary-queries/openscad"]
 rust = ["topiary-config/rust", "topiary-queries/rust"]
+sdml = ["topiary-config/sdml", "topiary-queries/sdml"]
 toml = ["topiary-config/toml", "topiary-queries/toml"]
 tree_sitter_query = ["topiary-config/tree_sitter_query", "topiary-queries/tree_sitter_query"]

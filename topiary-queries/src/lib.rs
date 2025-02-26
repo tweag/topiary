@@ -58,6 +58,12 @@ pub fn rust() -> &'static str {
     include_str!("../queries/rust.scm")
 }
 
+/// Returns the Topiary-compatible query file for SDML.
+#[cfg(feature = "sdml")]
+pub fn sdml() -> &'static str {
+    include_str!("../queries/sdml.scm")
+}
+
 /// Returns the Topiary-compatible query file for Toml.
 #[cfg(feature = "toml")]
 pub fn toml() -> &'static str {

@@ -104,6 +104,7 @@ the same way as supported languages.
 
 * [CSS] by @lavigneer
 * [OpenSCAD] by @mkatychev
+* [SDML] by @johnstonskj
 
 #### Experimental
 
@@ -1848,6 +1849,7 @@ of choice open in another.
 [prettier]: https://prettier.io/
 [rust]: https://www.rust-lang.org
 [rustfmt]: https://rust-lang.github.io/rustfmt
+[sdml]: https://sdml.io/
 [shfmt]: https://github.com/mvdan/sh
 [toml]: https://toml.io
 [topiary-playground]: https://topiary.tweag.io/playground

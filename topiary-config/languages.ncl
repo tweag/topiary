@@ -100,6 +100,14 @@
       },
     },
 
+    sdml = {
+      extensions = ["sdm", "sdml"],
+      grammar.source.git = {
+        git = "https://github.com/sdm-lang/tree-sitter-sdml",
+        rev = "056fc1d0b8624aa4e58967c67bb129ebdfa6d563"
+      },
+    },
+
     toml = {
       extensions = ["toml"],
       grammar.source.git = {

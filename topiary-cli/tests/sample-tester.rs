@@ -17,6 +17,7 @@ fn get_file_extension(language: &str) -> &str {
         "ocamllex" => "mll",
         "openscad" => "scad",
         "rust" => "rs",
+        "sdml" => "sdml",
         "toml" => "toml",
         "tree_sitter_query" => "scm",
         _ => panic!("Invalid language input: {language}"),
@@ -88,6 +89,7 @@ mod test_fmt {
         "ocamllex",
         "openscad",
         "rust",
+        "sdml",
         "toml",
         "tree_sitter_query",
         fmt_input
@@ -167,6 +169,7 @@ mod test_coverage {
         "ocamllex",
         "openscad",
         "rust",
+        "sdml",
         "toml",
         "tree_sitter_query",
         coverage_input
