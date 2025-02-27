@@ -7,8 +7,9 @@ tree. We can make use of that to define how a language should be
 formatted, by annotating nodes with "capture names" that define
 formatting directives.
 
-This chapter documents all the capture names recognised by Topiary to
-drive formatting.
+This chapter assumes you are already familiar with the [Tree-sitter
+query language][tree-sitter-query] and documents all the capture names
+recognised by Topiary to drive formatting.
 
 ## Example
 
@@ -45,4 +46,5 @@ and `true`, and we will still output `if true` with just one space
 between the words.
 
 <!-- Links -->
-[tree-sitter-parsers]: https://tree-sitter.github.io/tree-sitter/#available-parsers
+[tree-sitter-parsers]: https://github.com/tree-sitter/tree-sitter/wiki/List-of-parsers
+[tree-sitter-query]: https://tree-sitter.github.io/tree-sitter/using-parsers/queries/index.html
