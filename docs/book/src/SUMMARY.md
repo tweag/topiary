@@ -36,6 +36,9 @@ TODO: Documentation for the web-based playground; see issue #875
 
 # Guides
 
+- [Adding a new language](guides/adding-a-new-language.md)
+- [Suggested query development workflow](guides/suggested-workflow.md)
+
 # Reference
 
 - [Language support](reference/language-support.md)
