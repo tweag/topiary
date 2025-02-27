@@ -10,9 +10,6 @@
 
 ## Supported capture instructions
 
-
-
-
 ### `@allow_blank_line_before`
 
 The matched nodes will be allowed to have a blank line before them, if
@@ -149,42 +146,6 @@ of it in the input document, otherwise it is a space.
   .
   [ "," ";" ]* @do_nothing
 )
-```
-
-### `@append_space` / `@prepend_space`
-
-The matched nodes will have a space appended or prepended to them. Note
-that this is the same as `@append_delimiter` / `@prepend_delimiter`,
-with space as delimiter.
-
-#### Example
-
-```scheme
-[
-  (infix_operator)
-  "if"
-  ":"
-] @append_space
-```
-
-### `@append_antispace` / `@prepend_antispace`
-
-It is often the case that tokens need to be juxtaposed with spaces,
-except in a few isolated contexts. Rather than writing complicated rules
-that enumerate every exception, an "antispace" can be inserted with
-`@append_antispace` / `@prepend_antispace`; this will destroy any spaces
-(not newlines) from that node, including those added by other formatting
-rules.
-
-#### Example
-
-```scheme
-[
-  ","
-  ";"
-  ":"
-  "."
-] @prepend_antispace
 ```
 
 ### `@append_spaced_softline` / `@prepend_spaced_softline`

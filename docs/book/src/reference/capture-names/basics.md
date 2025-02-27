@@ -7,6 +7,9 @@ into a "Basics" section, by overviewing the query language, but the
 Tree-sitter documentation already does a good job of this.
 
 Suggestions...
+
+TODO: The order of sections is also completely random. This chapter
+needs a bit of an edit to make it coherent.
 ----------------------------------------------------------------------->
 
 ## `@leaf`
