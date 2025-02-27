@@ -9,7 +9,7 @@ vertical spacing chapter.
 
 The matched nodes will have a space appended or prepended to them. Note
 that this is the same as `@append_delimiter` / `@prepend_delimiter`,
-with a space as the delimiter (see [insertion and deletion](#append_delimiter--prepend_delimiter)).
+with a space as the delimiter (see [insertion and deletion](insertion-and-deletion.md#append_delimiter--prepend_delimiter)).
 
 ### Example
 

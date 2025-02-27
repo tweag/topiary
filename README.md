@@ -26,33 +26,6 @@ removed.
 ] @allow_blank_line_before
 ```
 
-### `@append_delimiter` / `@prepend_delimiter`
-
-The matched nodes will have a delimiter appended to them. The delimiter
-must be specified using the predicate `#delimiter!`.
-
-#### Example
-
-```scheme
-; Put a semicolon delimiter after field declarations, unless they already have
-; one, in which case we do nothing.
-(
-  (field_declaration) @append_delimiter
-  .
-  ";"* @do_nothing
-  (#delimiter! ";")
-)
-```
-
-If there is already a semicolon, the `@do_nothing` instruction will be
-activated and prevent the other instructions in the query (the
-`@append_delimiter`, here) from applying. Otherwise, the `";"*` captures
-nothing and in this case the associated instruction (`@do_nothing`) does
-not activate.
-
-Note that `@append_delimiter` is the same as `@append_space` when the
-delimiter is set to `" "` (i.e., a space).
-
 ### `@append_empty_softline` / `@prepend_empty_softline`
 
 The matched nodes will have an empty softline appended or prepended to
@@ -82,48 +55,6 @@ The matched nodes will have a newline appended or prepended to them.
   .
   (value_definition)
 )
-```
-
-### `@append_indent_start` / `@prepend_indent_start`
-
-The matched nodes will trigger indentation before or after them. This
-will only apply to lines following, until an indentation end is
-signalled. If indentation is started and ended on the same line, nothing
-will happen. This is useful, because we get the correct behaviour
-whether a node is formatted as single-line or multi-line. It is
-important that all indentation starts and ends are balanced.
-
-#### Example
-
-```scheme
-; Start an indented block after these
-[
-  "begin"
-  "else"
-  "then"
-  "{"
-] @append_indent_start
-```
-
-### `@append_indent_end` / `@prepend_indent_end`
-
-The matched nodes will trigger that indentation ends before or after
-them.
-
-#### Example
-
-```scheme
-; End the indented block before these
-[
-  "end"
-  "}"
-] @prepend_indent_end
-
-; End the indented block after these
-[
-  (else_clause)
-  (then_clause)
-] @append_indent_end
 ```
 
 ### `@append_input_softline` / `@prepend_input_softline`
@@ -170,47 +101,6 @@ space for single-line nodes.
   .
   (comment)* @do_nothing
 )
-```
-
-### `@delete`
-
-Remove the matched node from the output.
-
-#### Example
-
-```scheme
-; Move semicolon after comments.
-(
-  ";" @delete
-  .
-  (comment)+ @append_delimiter
-  (#delimiter! ";")
-)
-```
-
-
-### `@multi_line_indent_all`
-
-To be used on comments or other leaf nodes, to indicate that we should indent
-all its lines, not just the first.
-
-#### Example
-
-```scheme
-(#language! ocaml)
-(comment) @multi_line_indent_all
-```
-
-### `@single_line_no_indent`
-
-The matched node will be printed alone, on a single line, with no indentation.
-
-#### Example
-
-```scheme
-(#language! ocaml)
-; line number directives must be alone on their line, and can't be indented
-(line_number_directive) @single_line_no_indent
 ```
 
 ### Understanding the different newline captures
