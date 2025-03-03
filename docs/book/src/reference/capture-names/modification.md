@@ -1,4 +1,4 @@
-# Case
+# Modification
 
 ## `@lower_case` / `@upper_case`
 

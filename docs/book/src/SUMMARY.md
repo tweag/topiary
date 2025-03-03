@@ -49,6 +49,6 @@ TODO: Documentation for the web-based playground; see issue #875
     - [Scopes](reference/capture-names/scopes.md)
   - [Indentation](reference/capture-names/indentation.md)
   - [Insertion and deletion](reference/capture-names/insertion-and-deletion.md)
-  - [Case](reference/capture-names/case.md)
+  - [Modification](reference/capture-names/modification.md)
 - [Rust library](reference/library.md)
 - [Related tools](reference/related.md)
