@@ -44,7 +44,7 @@ TODO: Documentation for the web-based playground; see issue #875
 - [Language support](reference/language-support.md)
 - [Capture names](reference/capture-names/index.md)
   - [General advice](reference/capture-names/general.md)
-  - [Horizontal spacing](reference/capture-names/horizonal-spacing.md)
+  - [Horizontal spacing](reference/capture-names/horizontal-spacing.md)
   - [Vertical spacing](reference/capture-names/vertical-spacing.md)
     - [Scopes](reference/capture-names/scopes.md)
   - [Indentation](reference/capture-names/indentation.md)
