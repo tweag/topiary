@@ -3,11 +3,14 @@
 In order to work productively on query files, the following is one
 suggested way to work:
 
-1. If you're working on a new language, follow the steps in [the previous chapter](adding-a-new-language.md).
+1. If you're working on a new language, first follow the steps in [the
+   previous chapter](adding-a-new-language.md).
 
-2. Add a snippet of code you want to format to `topiary-cli/tests/samples/input/mylanguage.mlg`.
+2. Add a snippet of code you want to format to
+   `topiary-cli/tests/samples/input/mylanguage.code`.
 
-3. Add the properly formatted version of the code to `topiary-cli/tests/samples/expected/mylanguage.mlg`.
+3. Add the properly formatted version of the code to
+   `topiary-cli/tests/samples/expected/mylanguage.code`.
 
 4. Run:
 
@@ -27,19 +30,13 @@ suggested way to work:
 
 > **Note**\
 > As an alternative to using the debugging output, the [`visualise`
-> subcommand](../cli/usage/visualise.md) line option exists to output
-> the Tree-sitter syntax tree in a variety of formats.
+> subcommand](../cli/usage/visualise.md) exists to output the
+> Tree-sitter syntax tree in a variety of formats.
 
 5. The test run will output all the differences between the actual
    output and the expected output, e.g. missing spaces between tokens.
    Pick a difference you would like to fix, and find the line number and
    column in the input file.
-
-<!-- FIXME: Is this still true? I seem to remember this being changed to 1-based output -->
-> **Note**\
-> Keep in mind that the CST output uses 0-based line and column numbers,
-> so if your editor reports line 40, column 37, you probably want line
-> 39, column 36.
 
 6. In the CST debug or visualisation output, find the nodes in this
    region, such as the following:
@@ -79,5 +76,5 @@ suggested way to work:
    )
    ```
 
-8. Run `cargo test` again, to see if the output is better now, and then
+8. Run `cargo test` again, to see if the output has improved, then
    return to step 5.
