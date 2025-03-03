@@ -127,6 +127,12 @@ directory:
 cargo install --path topiary-cli
 ```
 
+Or it can be built without cloning the repository locally:
+
+```bash
+cargo install --git https://github.com/tweag/topiary topiary-cli
+```
+
 Topiary needs to find the language query files (`.scm`) to function properly. By
 default, `topiary` looks for a `languages` directory in the current working
 directory.
