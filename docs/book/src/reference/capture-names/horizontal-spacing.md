@@ -1,10 +1,5 @@
 # Horizontal spacing
 
-<!----------------------------------------------------------------------
-TODO: Mention spaced softlines, but these should be discussed in
-vertical spacing chapter.
------------------------------------------------------------------------>
-
 This chapter discusses horizontal spacing explicitly. However,
 horizontal spacing can also be introduced with softlines (see [vertical
 spacing](vertical-spacing.md#append_spaced_softline--prepend_spaced_softline))
