@@ -2,8 +2,17 @@
 
 ## `@append_delimiter` / `@prepend_delimiter`
 
-The matched nodes will have a delimiter appended to them. The delimiter
-must be specified using the predicate `#delimiter!`.
+The matched nodes will have a delimiter appended (or, respectively,
+prepended) to them. The delimiter must be specified using the predicate
+`#delimiter!`.
+
+Note that `@append_delimiter` is the same as `@append_space` -- and,
+respectively, for prepending -- with the delimiter is set to `" "`
+(i.e., a space); see [horizontal spacing](horizontal-spacing.md#append_space--prepend_space).
+
+> **Note**\
+> A delimiter can be any string; it is not limited to a single
+> character.
 
 ### Example
 
@@ -14,18 +23,16 @@ must be specified using the predicate `#delimiter!`.
   (field_declaration) @append_delimiter
   .
   ";"* @do_nothing
+
   (#delimiter! ";")
 )
 ```
 
-If there is already a semicolon, the `@do_nothing` instruction will be
-activated and prevent the other instructions in the query (the
-`@append_delimiter`, here) from applying. Otherwise, the `";"*` captures
-nothing and in this case the associated instruction (`@do_nothing`) does
-not activate.
-
-Note that `@append_delimiter` is the same as `@append_space` when the
-delimiter is set to `" "` (i.e., a space).
+If there is already a semicolon, the `@do_nothing` instruction (see
+[general advice](general.md#do_nothing)) will be activated and prevent
+the other instructions in the query (the `@append_delimiter`, here) from
+applying. Otherwise, the `";"*` captures nothing and, in this case, the
+associated instruction (`@do_nothing`) does not activate.
 
 ## `@delete`
 
@@ -39,6 +46,12 @@ Remove the matched node from the output.
   ";" @delete
   .
   (comment)+ @append_delimiter
+
   (#delimiter! ";")
 )
 ```
+
+> **Note**\
+> The above example uses a combination of `@delete` and
+> `@append_delimiter` (see [above](#append_delimiter--prepend_delimiter))
+> to effectively implement a rewrite rule.
