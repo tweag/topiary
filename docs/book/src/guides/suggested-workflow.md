@@ -94,5 +94,9 @@ suggested way to work:
    )
    ```
 
+> **Note**\
+> Using the [`#query_name!`](../reference/capture-names/general.md#query_name)
+> predicate will help identify which query does what.
+
 7. Run `cargo test` again, to see if the output has improved, then
    return to step 4.
