@@ -6,6 +6,15 @@ provided it already has a Tree-sitter grammar.
 We will use C as the running example. The following steps are enough to
 bootstrap the formatting of a new language.
 
+<div class="warning">
+
+This guide only discusses the _bare minimum_ steps to take to allow
+Topiary to recognise a new language and drive the test suite. It does
+not discuss the details of creating formatting queries for the
+language.
+
+</div>
+
 ## Register the grammar in `topiary-config/languages.ncl`:
 
 ```nickel
