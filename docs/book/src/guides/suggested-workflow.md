@@ -6,13 +6,31 @@ suggested way to work:
 1. If you're working on a new language, first follow the steps in [the
    previous chapter](adding-a-new-language.md).
 
-2. Add a snippet of code you want to format to
-   `topiary-cli/tests/samples/input/mylanguage.code`.
+2. Say you are working on formatting `mylanguage` code, then from the
+   previous step (or otherwise), there should be two files that drive
+   the test suite:
 
-3. Add the properly formatted version of the code to
-   `topiary-cli/tests/samples/expected/mylanguage.code`.
+   - `topiary-cli/tests/samples/input/mylanguage.code`
+   - `topiary-cli/tests/samples/expected/mylanguage.code`
 
-4. Run:
+   These respectively define the input, which will be formatted by
+   Topiary when under test, and the expected output, which will be
+   compared against the formatted input. (Note that the `.code`
+   extension here is arbitrary, for illustrative purposes, but an
+   appropriate extension is required.)
+
+   Add a snippet of code to each of these files that exhibit the
+   formatting you wish to implement as Tree-sitter queries. These
+   snippets can be identical, but it would be a better test if the input
+   version was intentionally misformatted.
+
+   <div class="warning">
+   If code already exists in these files, please ensure that the new
+   snippet is both syntactically valid, in the context of the other
+   code, and inserted at the same relative position in both files.
+   </div>
+
+3. Run:
 
    ```sh
    cargo test \
@@ -33,12 +51,12 @@ suggested way to work:
 > subcommand](../cli/usage/visualise.md) exists to output the
 > Tree-sitter syntax tree in a variety of formats.
 
-5. The test run will output all the differences between the actual
+4. The test run will output all the differences between the actual
    output and the expected output, e.g. missing spaces between tokens.
    Pick a difference you would like to fix, and find the line number and
    column in the input file.
 
-6. In the CST debug or visualisation output, find the nodes in this
+5. In the CST debug or visualisation output, find the nodes in this
    region, such as the following:
 
    ```
@@ -49,7 +67,7 @@ suggested way to work:
    [DEBUG atom_collection] CST node:       {Node type_constructor (39, 36) - (39, 42)} - Named: true
    ```
 
-7. This may indicate that you would like spaces after all
+6. This may indicate that you would like spaces after all
    `type_constructor_path` nodes:
 
    ```scheme
@@ -76,5 +94,5 @@ suggested way to work:
    )
    ```
 
-8. Run `cargo test` again, to see if the output has improved, then
+7. Run `cargo test` again, to see if the output has improved, then
    return to step 5.
