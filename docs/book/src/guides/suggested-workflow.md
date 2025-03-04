@@ -95,4 +95,4 @@ suggested way to work:
    ```
 
 7. Run `cargo test` again, to see if the output has improved, then
-   return to step 5.
+   return to step 4.
