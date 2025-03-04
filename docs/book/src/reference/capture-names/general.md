@@ -108,14 +108,22 @@ documentation][tree-sitter:predicates] and outlined here:
 - **`#match?`:** Checks a match against a regular expression.
 - **`#any-of?`:** Checks a match against a list of strings.
 - Prefixing **`not-`** negates any of the above predicates.
-- Prefixing **`any-`** to `eq` or `match` predicates will instead match
-  if any nodes match the predicate.
 
 > **Note**\
 > Topiary does not allow arbitrary capture names; just those it defines
 > for formatting. The Tree-sitter predicates expect a capture name and,
 > as such, this can make using them with Topiary a little unwieldy (see
 > [issue #824][topiary:#824]).
+
+<div class="warning">
+Topiary uses the Rust implementation of Tree-sitter which may lag behind
+the reference C implementation. The above predicates have been confirmed
+to work, but others mentioned in the Tree-sitter documentation may not.
+
+For example, as of writing, while the documented `any-` prefix for `eq`
+and `match` is recognised by Topiary's Tree-sitter, it doesn't appear to
+work as advertised.
+</div>
 
 ## Query and capture precedence
 
@@ -177,6 +185,11 @@ exceptions:
    node, even if it admits some internal structure. However, leaf nodes
    are still subject to deletion.
 
+> **Note**\
+> While not in the same league as the above, also note that antispaces
+> will cancel out all inserted spaces (see [horizontal
+> spacing](horizontal-spacing.md)).
+
 ## Captures are always postfix
 
 Note that a capture is put after the node it is associated with. If you
@@ -228,6 +241,34 @@ Or even implicitly:
   .
 )
 ```
+
+<div class="warning">
+
+Note that while anchors can be defined between anonymous nodes, if they
+are given as explicit terminals, anonymous nodes that _interpose_ an
+anchor's terminals (named or anonymous) will be skipped over.
+
+For example, in this Bash code:
+
+```bash
+if this; then that; fi
+```
+
+The following query matches the nodes indicated in the comments:
+
+```scheme
+(if_statement
+  (_)  ; will match "this"
+  .
+  (_)  ; will match "that"
+)
+```
+
+In the Bash grammar, `this` and `that` are named nodes, but are
+interposed by the `;` and `then` anonymous nodes, which are ignored by
+the anchor.
+
+</div>
 
 <div class="warning">
 

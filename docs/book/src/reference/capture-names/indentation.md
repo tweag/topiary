@@ -16,6 +16,10 @@ correct behaviour whether a node is formatted as single-line or
 multi-line. It is important that all indentation starts and ends are
 balanced.
 
+> **Note**\
+> If indentation is not balanced, the formatting will (probably) not
+> fail, but a warning will be logged.
+
 ### Example
 
 ```scheme
