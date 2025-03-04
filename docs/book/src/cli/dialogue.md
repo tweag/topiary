@@ -1,5 +1,39 @@
 # Runtime dialogue
 
+## Environment variables
+
+Topiary needs to find [language query files](../getting-started/on-tree-sitter.md)
+(`*.scm`) to function properly. By default, Topiary looks for a
+`languages` directory in the current working directory.
+
+This won't work if you are running Topiary from a directory other than
+its repository. In order to use Topiary without this restriction, **you
+must set the environment variable `TOPIARY_LANGUAGE_DIR` to point to the
+directory where Topiary's language query files are located**.
+
+By default, you should set it to `<local path of the topiary
+repository>/topiary-queries/queries`, for example:
+
+```sh
+export TOPIARY_LANGUAGE_DIR=/home/me/tools/topiary/topiary-queries/queries
+topiary format ./projects/helloworld/hello.ml
+```
+
+`TOPIARY_LANGUAGE_DIR` can alternatively be set at build time. Topiary
+will pick the correspond path up and embed it into the `topiary` binary.
+In that case, you don't have to worry about making
+`TOPIARY_LANGUAGE_DIR` available at runtime any more. When
+`TOPIARY_LANGUAGE_DIR` has been set at build time and is set at runtime
+as well, the runtime value takes precedence.
+
+<!----------------------------------------------------------------------
+TODO: Move CONTRIBUTING.md into the Topiary Book
+
+For a subsequent PR...
+----------------------------------------------------------------------->
+See [`CONTRIBUTING.md`](https://github.com/tweag/topiary/blob/main/CONTRIBUTING.md)
+for details on setting up a development environment.
+
 ## Logging
 
 By default, the Topiary CLI will only output error messages. You can

@@ -9,8 +9,7 @@
   - [Building from source](getting-started/installation/building-from-source.md)
   - [Using Nix](getting-started/installation/using-nix.md)
 
-- [Tree-sitter grammars](getting-started/tree-sitter-grammars.md)
-- [Language query files](getting-started/query-files.md)
+- [Tree-sitter and its queries](getting-started/on-tree-sitter.md)
 
 # The Topiary CLI
 
