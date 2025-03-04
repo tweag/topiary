@@ -39,9 +39,10 @@ as the first child. The query for this might look something like:
 ```
 
 The syntax for Tree-sitter queries is described in the [Tree-sitter
-documentation][tree-sitter:queries], which we won't go into here.
-However, there is one very important concept in Tree-sitter queries, as
-far as Topiary is concerned: what Tree-sitter calls "capture names".
+documentation][tree-sitter:queries],[^support] which we won't go into
+here. However, there is one very important concept in Tree-sitter
+queries, as far as Topiary is concerned: what Tree-sitter calls "capture
+names".
 
 When you write a query and you want to capture a specific node in that
 query, rather than the entire subtree, you can annotate the node with a
@@ -107,6 +108,13 @@ This can seem counter-intuitive, or even frustrating, to new-comers.
 However, it stands to reason and nudges the creation of suitably general
 rules to correct the spacing.
 </div>
+
+<!-- Footnotes -->
+
+[^support]:
+    Note that Topiary may not support the entirety of the Tree-sitter
+    query syntax, as it uses the Rust implementation of Tree-sitter,
+    which may lag behind the reference C implementation.
 
 <!-- Links -->
 [tree-sitter:intro]: https://tree-sitter.github.io/tree-sitter
