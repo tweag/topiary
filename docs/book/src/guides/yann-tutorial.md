@@ -1,4 +1,4 @@
-# Writing a formatter has never been so easy: A Topiary tutorial
+# Writing a formatter has never been so easy: a Topiary tutorial
 
 [Yann Hamdaoui](https://github.com/yannham) has written a step-by-step
 guide on how to write a new formatter for your own language, starting
