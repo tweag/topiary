@@ -1,17 +1,25 @@
 //! This module contains the `Language` struct, which represents a language configuration, and
 //! associated methods.
 
+#[cfg(not(target_arch = "wasm32"))]
+use anyhow::anyhow;
+#[cfg(not(target_arch = "wasm32"))]
+use gix::{
+    interrupt::IS_INTERRUPTED,
+    progress::Discard,
+    remote::{self, fetch, fetch::refmap, Direction},
+    worktree::state::checkout,
+    ObjectId,
+};
+use std::collections::HashSet;
+#[cfg(not(target_arch = "wasm32"))]
+use std::num::NonZero;
+#[cfg(not(target_arch = "wasm32"))]
+use std::path::PathBuf;
+
 use crate::error::TopiaryConfigResult;
 #[cfg(not(target_arch = "wasm32"))]
 use crate::error::{TopiaryConfigError, TopiaryConfigFetchingError};
-use std::collections::HashSet;
-
-#[cfg(not(target_arch = "wasm32"))]
-use std::env;
-#[cfg(not(target_arch = "wasm32"))]
-use std::path::PathBuf;
-#[cfg(not(target_arch = "wasm32"))]
-use std::process::Command;
 
 /// Language definitions, as far as the CLI and configuration are concerned, contain everything
 /// needed to configure formatting for that language.
@@ -183,6 +191,18 @@ impl Language {
     }
 }
 
+type Result<T, E = TopiaryConfigFetchingError> = std::result::Result<T, E>;
+
+trait GitResult<T> {
+    fn wrap_err(self) -> Result<T>;
+}
+
+impl<T, E: Into<anyhow::Error>> GitResult<T> for Result<T, E> {
+    fn wrap_err(self) -> Result<T> {
+        self.map_err(|e| TopiaryConfigFetchingError::Git(e.into()))
+    }
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 impl GitSource {
     fn fetch_and_compile(
@@ -203,6 +223,8 @@ impl GitSource {
         self.fetch_and_compile_with_dir(name, library_path, false, tmp_dir.into_path())
     }
 
+    /// This function is heavily inspired by the one used in Nickel:
+    /// https://github.com/tweag/nickel/blob/master/git/src/lib.rs
     pub fn fetch_and_compile_with_dir(
         &self,
         name: &str,
@@ -215,29 +237,63 @@ impl GitSource {
             return Ok(());
         }
         let tmp_dir = tmp_dir.join(name);
+        std::fs::create_dir_all(&tmp_dir)?;
 
-        // Clone the repository and checkout the configured revision
-        log::info!("{}: Cloning from {}", name, self.git);
-        Command::new("git")
-            .arg("clone")
-            .arg("--filter=blob:none")
-            .arg(&self.git)
-            .arg(&tmp_dir)
-            .status()
-            .map_err(TopiaryConfigFetchingError::Git)?;
+        // Fetch the git directory somewhere temporary.
+        let git_tempdir = tempfile::tempdir().wrap_err()?;
+        let repo = gix::init(git_tempdir.path()).wrap_err()?;
 
-        log::info!("{}: Checking out {}", name, self.rev);
-        let current_dir = env::current_dir().map_err(TopiaryConfigFetchingError::Io)?;
-        env::set_current_dir(&tmp_dir).map_err(TopiaryConfigFetchingError::Io)?;
-        Command::new("git")
-            .arg("checkout")
-            .arg(&self.rev)
-            .status()
-            .map_err(TopiaryConfigFetchingError::Git)?;
-        env::set_current_dir(current_dir).map_err(TopiaryConfigFetchingError::Io)?;
+        let remote = repo
+            .remote_at(self.git.as_str())
+            .wrap_err()?
+            .with_fetch_tags(fetch::Tags::None)
+            .with_refspecs(Some(self.rev.as_str()), Direction::Fetch)
+            .wrap_err()?;
+
+        // This does similar credentials stuff to the git CLI (e.g. it looks for ssh
+        // keys if it's a fetch over ssh, or it tries to run `askpass` if it needs
+        // credentials for https). Maybe we want to have explicit credentials
+        // configuration instead of or in addition to the default?
+        let connection = remote.connect(Direction::Fetch).wrap_err()?;
+        let outcome = connection
+            .prepare_fetch(&mut Discard, remote::ref_map::Options::default())
+            .wrap_err()?
+            // For now, we always fetch shallow. Maybe for the index it's more efficient to
+            // keep a single repo around and update it? But that might be in another method.
+            .with_shallow(fetch::Shallow::DepthAtRemote(NonZero::new(1).unwrap()))
+            .receive(&mut Discard, &IS_INTERRUPTED)
+            .wrap_err()?;
+
+        if outcome.ref_map.mappings.len() > 1 {
+            return Err(anyhow!("we only asked for 1 ref; why did we get more?")).wrap_err();
+        }
+        if outcome.ref_map.mappings.is_empty() {
+            return Err(anyhow!("Ref not found: {:?} {:?}", self.git, self.rev,)).wrap_err();
+        }
+
+        let object_id = source_object_id(&outcome.ref_map.mappings[0].remote)?;
+        let object = repo.find_object(object_id).wrap_err()?;
+        let tree_id = object.peel_to_tree().wrap_err()?.id();
+        let mut index = repo.index_from_tree(&tree_id).wrap_err()?;
+
+        log::info!("{}: Checking out {} {}", name, self.git, self.rev);
+        checkout(
+            &mut index,
+            &tmp_dir,
+            repo.objects.clone(),
+            &Discard,
+            &Discard,
+            &IS_INTERRUPTED,
+            checkout::Options {
+                overwrite_existing: true,
+                ..Default::default()
+            },
+        )
+        .wrap_err()?;
+        index.write(Default::default()).wrap_err()?;
 
         // Update the build path for grammars that are not defined at the repo root
-        let path = match self.subdir.clone() {
+        let grammar_path = match self.subdir.clone() {
             // Some grammars are in a subdirectory, go there
             Some(subdir) => tmp_dir.join(subdir),
             None => tmp_dir,
@@ -250,10 +306,25 @@ impl GitSource {
         loader.debug_build(false);
         loader.force_rebuild(true);
         loader
-            .compile_parser_at_path(&path, library_path, &[])
+            .compile_parser_at_path(&grammar_path, library_path, &[])
             .map_err(TopiaryConfigFetchingError::Build)?;
 
         log::info!("{name}: Grammar successfully compiled");
         Ok(())
+    }
+}
+
+fn source_object_id(source: &refmap::Source) -> Result<ObjectId> {
+    match source {
+        refmap::Source::ObjectId(id) => Ok(*id),
+        refmap::Source::Ref(r) => {
+            let (_name, id, peeled) = r.unpack();
+
+            Ok(peeled
+                .or(id)
+                .ok_or_else(|| anyhow!("unborn reference"))
+                .wrap_err()?
+                .to_owned())
+        }
     }
 }
