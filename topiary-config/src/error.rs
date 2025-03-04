@@ -25,7 +25,9 @@ pub enum TopiaryConfigError {
 /// Since fetching an compilation is something that can easily be parallelized, we create a special error that DOES implement Sync/Send.
 #[cfg(not(target_arch = "wasm32"))]
 pub enum TopiaryConfigFetchingError {
-    Git(io::Error),
+    GitClone(gix::clone::Error),
+    GitFetch(gix::clone::fetch::Error),
+    GitParse(gix::url::parse::Error),
     Build(anyhow::Error),
     Io(io::Error),
     LibLoading(libloading::Error),
@@ -56,7 +58,9 @@ impl fmt::Display for TopiaryConfigError {
 impl fmt::Display for TopiaryConfigFetchingError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            TopiaryConfigFetchingError::Git(e) => write!(f, "Git error: {:?}", e),
+            TopiaryConfigFetchingError::GitClone(e) => write!(f, "Git clone error: {:?}", e),
+            TopiaryConfigFetchingError::GitFetch(e) => write!(f, "Git fetch error: {:?}", e),
+            TopiaryConfigFetchingError::GitParse(e) => write!(f, "Git parse error: {:?}", e),
             TopiaryConfigFetchingError::Build(e) => {
                 write!(f, "Compilation error: {e},")
             }
@@ -102,6 +106,27 @@ impl From<io::Error> for TopiaryConfigError {
 impl From<io::Error> for TopiaryConfigFetchingError {
     fn from(e: io::Error) -> Self {
         Self::Io(e)
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl From<gix::clone::Error> for TopiaryConfigFetchingError {
+    fn from(e: gix::clone::Error) -> Self {
+        Self::GitClone(e)
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl From<gix::clone::fetch::Error> for TopiaryConfigFetchingError {
+    fn from(e: gix::clone::fetch::Error) -> Self {
+        Self::GitFetch(e)
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl From<gix::url::parse::Error> for TopiaryConfigFetchingError {
+    fn from(e: gix::url::parse::Error) -> Self {
+        Self::GitParse(e)
     }
 }
 
