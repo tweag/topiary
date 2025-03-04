@@ -8,10 +8,15 @@ bootstrap the formatting of a new language.
 
 <div class="warning">
 
-This guide only discusses the _bare minimum_ steps to take to allow
-Topiary to recognise a new language and drive the test suite. It does
-not discuss the details of creating formatting queries for the
-language.
+This guide discusses the steps needed to allow Topiary to recognise a
+new language and drive the test suite. It does not discuss the details
+of creating formatting queries for the language.
+
+The _bare minimum_ -- say, for example, if you only have access to a
+pre-compiled Topiary binary -- is covered in the first two steps:
+Registering the grammar in the configuration and creating the query
+file. It is not strictly necessary to update the test suite or bake in
+your query file to be able to iterate on formatting query writing.
 
 </div>
 
