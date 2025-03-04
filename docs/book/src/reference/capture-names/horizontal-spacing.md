@@ -2,8 +2,8 @@
 
 This chapter discusses horizontal spacing explicitly. However,
 horizontal spacing can also be introduced with softlines (see [vertical
-spacing](vertical-spacing.md#append_spaced_softline--prepend_spaced_softline))
-and indentation (see [indentation](indentation.md)).
+spacing](vertical-spacing.md#hardlines-and-softlines)) and indentation
+(see [indentation](indentation.md)).
 
 ## `@append_space` / `@prepend_space`
 
