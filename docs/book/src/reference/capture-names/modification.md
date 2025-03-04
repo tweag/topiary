@@ -1,9 +1,9 @@
-# Case
+# Modification
 
 ## `@lower_case` / `@upper_case`
 
 Set the capitalisation of all text in the matched node and its children
-(besides [designated leaf nodes](basics.md#leaf), which remain
+(besides [designated leaf nodes](general.md#leaf), which remain
 unchanged).
 
 <div class="warning">
