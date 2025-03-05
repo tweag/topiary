@@ -79,7 +79,7 @@ That is, iterating over each `@LINEBREAK` type, we apply the following:
 (array "," @LINEBREAK)
 ```
 
-The first two formatting queries are just for clarity's sake. The last
+The first four formatting queries are just for clarity's sake. The last
 query is what's important; the results of which are demonstrated below:
 
 ##### `@append_hardline`

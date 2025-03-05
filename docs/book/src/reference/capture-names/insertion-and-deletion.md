@@ -6,8 +6,8 @@ The matched nodes will have a delimiter appended (or, respectively,
 prepended) to them. The delimiter must be specified using the predicate
 `#delimiter!`.
 
-Note that `@append_delimiter` is the same as `@append_space` -- and,
-respectively, for prepending -- with the delimiter is set to `" "`
+Note that `@append_delimiter` is a generalisation of `@append_space`
+(and, respectively, for prepending) where the delimiter is set to `" "`
 (i.e., a space); see [horizontal spacing](horizontal-spacing.md#append_space--prepend_space).
 
 > **Note**\

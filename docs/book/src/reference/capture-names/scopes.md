@@ -1,7 +1,8 @@
 # Scopes
 
 So far, we've expanded softlines into line breaks depending on whether
-the CST node they are associated with is multi-line. Sometimes, CST
+the CST node they are associated with is multi-line (see [hardlines and
+softlines](vertical-spacing.md#hardlines-and-softlines)). Sometimes, CST
 nodes define scopes that are either too big or too small for our needs.
 For instance, consider this piece of OCaml code:
 
@@ -200,11 +201,11 @@ Measuring scopes behave as follows:
   with the same `#scope_id!`. There can't be two measuring scopes with
   the same `#scope_id!` inside the same regular custom scope.
 
-- If a regular custom scope contains a measuring scope, then all tags
-  contained in the regular scope that depend on its multi-line-ness will
-  instead depend on the multi-line-ness of the measuring scope (hence
-  the name: the inner, measuring scope measures the multi-line-ness of
-  the outer, regular scope).
+- If a regular custom scope contains a measuring scope, then all
+  captured nodes contained in the regular scope that depend on its
+  multi-line-ness will instead depend on the multi-line-ness of the
+  measuring scope (hence the name: the inner, measuring scope measures
+  the multi-line-ness of the outer, regular scope).
 
 #### Example
 
