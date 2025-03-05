@@ -1,25 +1,55 @@
 # Contributing to Topiary
 
-<!-- TODO: Nix devshell -->
+[Issues](https://github.com/tweag/topiary/issues), [pull
+requests](https://github.com/tweag/topiary/pulls) and
+[discussions](https://github.com/tweag/topiary/discussions) are all
+welcome. If you have any immediate questions, or just want to hang out,
+feel free to say "Hi!" on the [Topiary Discord
+channel](https://discord.gg/FSnkvNyyzC).
 
-## Performance
+## Nix devshell
 
-You can check performance before or after changes by running `cargo bench`.
+A Nix devshell is available, which includes all development
+dependencies, for contributing to Topiary. Enter this shell with:
 
-If you do `cargo install flamegraph`, you can generate a performance flamegraph
-like this:
-
-```bash
-CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph -- -l ocaml < topiary-cli/tests/samples/input/ocaml.ml > formatted.ml
+```sh
+nix develop
 ```
 
-## Code Coverage
+## Performance profiling
+
+You can check performance before or after changes by running `cargo
+bench`.
+
+If you have [`flamegraph`](https://github.com/flamegraph-rs/flamegraph)
+installed, you can also generate a performance flamegraph with, for
+example:
+
+```sh
+CARGO_PROFILE_RELEASE_DEBUG=true \
+cargo flamegraph -p topiary-cli -- \
+  format --language ocaml \
+  < topiary-cli/tests/samples/input/ocaml.ml \
+  > /dev/null
+```
+
+This will produce a `flamegraph.svg` plot.
+
+## Code coverage
+
+<div class="warning">
+This section has not been updated since December 2022. It may be
+out-dated or invalid.
+
+(See issues [#80](https://github.com/tweag/topiary/issues/80) and
+[#894](https://github.com/tweag/topiary/issues/894))
+</div>
 
 Code coverage metrics can be generated via LLVM profiling data generated
 by the build. These can be created by setting appropriate environment
 variables to `cargo test`:
 
-```bash
+```sh
 CARGO_INCREMENTAL=0 \
 RUSTFLAGS='-Cinstrument-coverage' \
 LLVM_PROFILE_FILE='cargo-test-%p-%m.profraw' \
@@ -28,79 +58,114 @@ cargo test
 
 This will build and run the test suite and output
 `cargo-test-*-*.profraw` files in the working directory. (Outside of the
-Nix development shell, you may need `binutils` installed.)
+Nix devshell, you may need `binutils` installed.)
 
 These files can be used by [`grcov`](https://github.com/mozilla/grcov)
 to render a variety of output reports. For example, the following
 renders HTML output in `target/coverage/html`:
 
-```bash
-grcov --branch \
-      --output-type html \
-      --source-dir src \
-      --binary-path target/debug/deps \
-      --output-path target/coverage/html \
-      .
+```sh
+grcov \
+  --branch \
+  --output-type html \
+  --source-dir topiary-cli/src \
+  --binary-path target/debug/deps \
+  --output-path target/coverage/html \
+  .
 ```
 
-:warning: `grcov` relies on the `llvm-tools-preview` component for
-`rustup`. For Nix users, `rustup` can interfere with the Rust toolchain
-that is provided by Nix, if you have both installed.
+<div class="warning">
 
-## Web site and web playground
+`grcov` relies on the `llvm-tools-preview` component from `rustup`. For
+Nix users, `rustup` can interfere with the Rust toolchain that is
+provided by Nix, if you have both installed.
 
-If you have [Deno](https://deno.land/) installed, you can start a local web
-server like this:
+</div>
 
-```bash
+## Website and web playground
+
+### Website
+
+If you have [Deno](https://deno.land/) installed, you can start a local
+web server like this:
+
+```sh
 deno run -A local-web-server.ts
 ```
 
-The web site should then be running on http://localhost:8080.
+The website should then be running on `http://localhost:8080`.
 
-In order to build or update the Wasm playground, you can run this:
+### Web playground WASM assets
 
-```bash
-./update-wasm-app.sh
+<div class="warning">
+
+The WASM-based web playground is currently _not_ under active
+development and has diverged from newer releases of Topiary. Building or
+updating the web playground and its associated WASM grammars is **not
+likely to function correctly** at this time.
+
+</div>
+
+In order to build or update the web playground, you can run the
+following within the Nix devshell:
+
+```sh
+update-wasm-app
 ```
 
-If you need to add or update Tree-sitter grammar Wasm files, the easiest way would be using Nix.
+Similarly, to update the Tree-sitter grammar WASM binaries, again within
+the Nix devshell, you can run:
 
-Simply enter our `devShell` with `nix develop`, and then run `update-wasm-grammars`.
-Alternatively, if you have `git`, `tree-sitter` and `emcc` in your `PATH`, you can run the `./update-wasm-grammars.sh` file.
+```sh
+update-wasm-grammars
+```
 
-To use docker instead, the legacy approach can still be used (using JSON as an example):
+Alternatively, if you have `git`, `tree-sitter` and `emcc` (Emscripten)
+in your `PATH`, you can run the `bin/update-wasm-grammars.sh` script
+directly.
 
-1. Make sure you have Docker running and that you are member of the `docker`
-   group so you can run it without being root.
-2. `npm install tree-sitter-cli` (or some other way)
-3. `npm install tree-sitter-json` (or by cloning the git repository)
-   - If you used npm, tree-sitter-json will be fetched under `node_modules/tree-sitter-json/`
-   - If you used git, it will be wherever you cloned the repository (most likely `tree-sitter-json/`)
+To use Docker instead, the legacy approach can still be used (using JSON
+as an example):
 
-   Whichever of these options you pick, we will assume `JSON_GRAMMAR` is the directory where the `grammar.js` can be found.
-4. Make sure you have a file at
-   `JSON_GRAMMAR/src/grammar.json`.
-5. Run `npx tree-sitter build-wasm JSON_GRAMMAR`. If you get a Docker permission
-   error, you may have to add yourself to the docker group.
-6. `mv tree-sitter-json.wasm web-playground/public/scripts/`
+1. Make sure you have Docker running and that you are member of the
+   `docker` group, so you can run it without being root.
 
-For OCaml, the process is slightly different because the tree-sitter-ocaml repository/package contains two grammars:
+2. `npm install tree-sitter-cli`, or via some other method.
 
-1. `npm install tree-sitter-cli`
-2. `npm install tree-sitter-ocaml` (or git, like above)
-3. Run `npx tree-sitter build-wasm OCAML_GRAMMAR/ocaml`.
-4. Run `npx tree-sitter build-wasm OCAML_GRAMMAR/ocaml_interface`.
-5. `mv tree-sitter-ocaml*.wasm web-playground/public/scripts/`
+3. `npm install tree-sitter-json` or Git clone the grammar repository.
 
-The playground frontend is a small React app. You can run a development server
-for that like this:
+   - If you used NPM, `tree-sitter-json` will be fetched under
+     `node_modules/tree-sitter-json`.
 
-```bash
+   - If you used Git, it will be wherever you cloned the repository
+     (most likely `tree-sitter-json`).
+
+   Whichever of these options you pick, we will use `GRAMMAR_PATH` as a
+   stand-in for the directory where `grammar.js` can be found.
+
+4. Run `npx tree-sitter build-wasm GRAMMAR_PATH`. If you get a Docker
+   permission error, you may need to add yourself to the `docker` group.
+
+5. `mv tree-sitter-json.wasm web-playground/public/scripts`
+
+> **Note**\
+> Some grammar repositories are slightly different because they can
+> contain multiple grammars or grammars under an unconventional path;
+> OCaml, for example. In such cases, step 4 (above) should be changed
+> such that `GRAMMAR_PATH` points to the directory containing the
+> appropriate `grammar.js` file.
+
+### Web playground frontend
+
+The playground frontend is a small React app. You can run a development
+server with the following:
+
+```sh
 cd web-playground
 npm install
 npm run dev
 ```
 
-If you want to build the playground so it works with the full website running
-with Deno as above, you can now just do `npm run build`.
+If you want to build the playground so it works with the full website
+running with Deno, as [above](#website), you can now just do `npm run
+build`.
