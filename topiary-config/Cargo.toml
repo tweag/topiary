@@ -16,6 +16,7 @@ license.workspace = true
 anyhow.workspace = true
 directories.workspace = true
 itertools.workspace = true
+gix.workspace = true
 log.workspace = true
 nickel-lang-core.workspace = true
 rayon = { workspace = true, optional = true }

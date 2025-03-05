@@ -10,8 +10,8 @@ use std::collections::HashSet;
 use std::env;
 #[cfg(not(target_arch = "wasm32"))]
 use std::path::PathBuf;
-#[cfg(not(target_arch = "wasm32"))]
-use std::process::Command;
+// #[cfg(not(target_arch = "wasm32"))]
+// use std::process::Command;
 
 /// Language definitions, as far as the CLI and configuration are concerned, contain everything
 /// needed to configure formatting for that language.
@@ -216,24 +216,43 @@ impl GitSource {
         }
         let tmp_dir = tmp_dir.join(name);
 
-        // Clone the repository and checkout the configured revision
-        log::info!("{}: Cloning from {}", name, self.git);
-        Command::new("git")
-            .arg("clone")
-            .arg("--filter=blob:none")
-            .arg(&self.git)
-            .arg(&tmp_dir)
-            .status()
-            .map_err(TopiaryConfigFetchingError::Git)?;
+        use gix::{
+            clone::PrepareFetch,
+            interrupt::{init_handler, IS_INTERRUPTED},
+            prepare_clone,
+            progress::Discard,
+            url::parse,
+        };
 
-        log::info!("{}: Checking out {}", name, self.rev);
+        // SAFETY: The closure doesn't use mutexes or memory allocation, so it should be safe to call from a signal handler.
+        unsafe {
+            init_handler(1, || {})?;
+        }
+
+        let url = parse(self.git.as_str().into())?;
+
+        let mut prepared_clone: PrepareFetch = prepare_clone(url, &tmp_dir)?;
+
+        let _prepare_checkout = prepared_clone.fetch_then_checkout(Discard, &IS_INTERRUPTED)?;
+
+        // Clone the repository and checkout the configured revision
+        // log::info!("{}: Cloning from {}", name, self.git);
+        // Command::new("git")
+        //     .arg("clone")
+        //     .arg("--filter=blob:none")
+        //     .arg(&self.git)
+        //     .arg(&tmp_dir)
+        //     .status()
+        //     .map_err(TopiaryConfigFetchingError::Git)?;
+
+        // log::info!("{}: Checking out {}", name, self.rev);
         let current_dir = env::current_dir().map_err(TopiaryConfigFetchingError::Io)?;
-        env::set_current_dir(&tmp_dir).map_err(TopiaryConfigFetchingError::Io)?;
-        Command::new("git")
-            .arg("checkout")
-            .arg(&self.rev)
-            .status()
-            .map_err(TopiaryConfigFetchingError::Git)?;
+        // env::set_current_dir(&tmp_dir).map_err(TopiaryConfigFetchingError::Io)?;
+        // Command::new("git")
+        //     .arg("checkout")
+        //     .arg(&self.rev)
+        //     .status()
+        //     .map_err(TopiaryConfigFetchingError::Git)?;
         env::set_current_dir(current_dir).map_err(TopiaryConfigFetchingError::Io)?;
 
         // Update the build path for grammars that are not defined at the repo root
