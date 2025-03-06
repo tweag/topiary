@@ -25,7 +25,7 @@ pub enum TopiaryConfigError {
 /// Since fetching an compilation is something that can easily be parallelized, we create a special error that DOES implement Sync/Send.
 #[cfg(not(target_arch = "wasm32"))]
 pub enum TopiaryConfigFetchingError {
-    Git(io::Error),
+    Git(anyhow::Error),
     Build(anyhow::Error),
     Io(io::Error),
     LibLoading(libloading::Error),

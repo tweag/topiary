@@ -52,6 +52,7 @@ This name should be decided amongst the team before the release.
 <!-- - <Changes in existing functionality> -->
 - [#859](https://github.com/tweag/topiary/pull/859) Break up integration tests per language, thanks to @mkatychev
 - [#871](https://github.com/tweag/topiary/pull/859) Switch to `mold` linker for CI tests, thanks to @mkatychev
+- [#893](https://github.com/tweag/topiary/pull/893) Use `gix` lib instead of system `git`
 
 <!-- ### Deprecated -->
 <!-- - <Soon-to-be removed features> -->
