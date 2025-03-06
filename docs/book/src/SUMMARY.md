@@ -39,7 +39,6 @@ TODO: Documentation for the web-based playground; see issue #875
 - [Suggested query development workflow](guides/suggested-workflow.md)
 - [Writing a formatter has never been so easy: a Topiary tutorial](guides/yann-tutorial.md)
 - [Contributing to Topiary](guides/contributing.md)
-  - [Formatting maturity policy](guides/maturity-policy.md)
 
 # Reference
 
