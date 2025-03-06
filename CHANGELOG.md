@@ -53,6 +53,7 @@ This name should be decided amongst the team before the release.
 - [#859](https://github.com/tweag/topiary/pull/859) Break up integration tests per language, thanks to @mkatychev
 - [#871](https://github.com/tweag/topiary/pull/859) Switch to `mold` linker for CI tests, thanks to @mkatychev
 - [#893](https://github.com/tweag/topiary/pull/893) Use `gix` lib instead of system `git`
+- [#896](https://github.com/tweag/topiary/pull/896) Use official grammar repo for OpenSCAD, thanks to @mkatychev
 
 <!-- ### Deprecated -->
 <!-- - <Soon-to-be removed features> -->

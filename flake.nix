@@ -28,7 +28,7 @@
     };
 
     tree-sitter-openscad = {
-      url = "github:mkatychev/tree-sitter-openscad";
+      url = "github:openscad/tree-sitter-openscad";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
