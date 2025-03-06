@@ -118,15 +118,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1739738314,
-        "narHash": "sha256-nnHtt0tWuJRjE5xw3zFJ6+hO/GKPmAfEaGkYIX30SjE=",
-        "owner": "mkatychev",
+        "lastModified": 1741276805,
+        "narHash": "sha256-wPLI5iUAkmv0CsJ5s9qeghFqIPxCvq6s9n3F9b2FKMk=",
+        "owner": "openscad",
         "repo": "tree-sitter-openscad",
-        "rev": "8c31270f69a7eaebbe70d59dc65363727afb4fae",
+        "rev": "654280c0ea7beaa81c402f199a13f25379535f89",
         "type": "github"
       },
       "original": {
-        "owner": "mkatychev",
+        "owner": "openscad",
         "repo": "tree-sitter-openscad",
         "type": "github"
       }
