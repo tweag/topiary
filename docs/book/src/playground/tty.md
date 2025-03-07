@@ -17,8 +17,10 @@ The INPUT_SOURCE is optional. If not specified, it defaults to trying
 to find the bundled integration test input file for the given language.
 ```
 
-For example, the playground can be run in a terminal emulator pane, with
-your editor of choice open in another.
+The script itself is very basic -- that cannot be overstated! -- but it
+provides a fast enough feedback loop to be useful. For example, the
+playground can be run in a terminal emulator/multiplexer pane, with your
+editor of choice open in another.
 
 <div class="warning">
 The use of inotify limits this tool to Linux systems, only.

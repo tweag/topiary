@@ -26,11 +26,7 @@
 
 # The Topiary Playground
 
-<!----------------------------------------------------------------------
-TODO: Documentation for the web-based playground; see issue #875
------------------------------------------------------------------------>
-
-- [TODO]()
+- [Web playground](playground/web.md)
 - [TTY playground](playground/tty.md)
 
 # Guides
