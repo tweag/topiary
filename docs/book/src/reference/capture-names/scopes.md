@@ -122,9 +122,9 @@ These predicates allow the query to trigger only if the associated custom scope
 containing the matched nodes are is single-line (resp. multi-line).
 
 > **Note**\
-> There are non-scoped equivalents to these predicates; please see
-> [vertical spacing](vertical-spacing.md#testing-context-with-predicates)
-> for details.
+> There are non-scoped equivalents to these predicates; see [vertical
+> spacing](vertical-spacing.md#testing-context-with-predicates) for
+> details.
 
 ##### Example
 

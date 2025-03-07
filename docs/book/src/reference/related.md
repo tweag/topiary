@@ -2,34 +2,34 @@
 
 ## Tree-Sitter Specific
 
-* [Syntax Tree Playground][tree-sitter-playground]: An interactive,
+- [Syntax Tree Playground][tree-sitter-playground]: An interactive,
   online playground for experimenting with Tree-sitter and its query
   language.
-* [Neovim Treesitter Playground][nvim-treesitter]: A Tree-sitter
+- [Neovim Treesitter Playground][nvim-treesitter]: A Tree-sitter
   playground plugin for Neovim.
-* [Difftastic]: A tool that utilises Tree-sitter to perform syntactic
+- [Difftastic]: A tool that utilises Tree-sitter to perform syntactic
   diffing.
 
 ## Meta and Multi-Language Formatters
 
-* [format-all]: A formatter orchestrator for Emacs.
-* [null-ls.nvim]: An LSP framework for Neovim that facilitates formatter
+- [format-all]: A formatter orchestrator for Emacs.
+- [null-ls.nvim]: An LSP framework for Neovim that facilitates formatter
   orchestration.
-* [Prettier]: A formatter with support for multiple (web-development
+- [Prettier]: A formatter with support for multiple (web-development
   related) languages.
-* [treefmt]: A general formatter orchestrator, which unifies formatters
+- [treefmt]: A general formatter orchestrator, which unifies formatters
   under a common interface.
 
 ## Related Formatters
 
-* [gofmt]: The de facto standard formatter for Go, and major source of
+- [gofmt]: The de facto standard formatter for Go, and major source of
   inspiration for the style of our formatters.
-* [ocamlformat]: A formatter for OCaml.
-* [ocp-indent]: A tool to indent OCaml code.
-* [Ormolu]: Our formatter for Haskell, which follows similar design
+- [ocamlformat]: A formatter for OCaml.
+- [ocp-indent]: A tool to indent OCaml code.
+- [Ormolu]: Our formatter for Haskell, which follows similar design
   principles as Topiary.
-* [rustfmt]: The de facto standard formatter for Rust.
-* [shfmt]: A parser, formatter and interpreter for Bash et al.
+- [rustfmt]: The de facto standard formatter for Rust.
+- [shfmt]: A parser, formatter and interpreter for Bash et al.
 
 <!-- Links -->
 [difftastic]: https://difftastic.wilfred.me.uk

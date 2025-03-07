@@ -29,8 +29,7 @@ Options:
 ```
 <!-- usage:end -->
 
-Please see the respective section for usage documentation on each
-subcommand:
+See the respective chapter for usage documentation on each subcommand:
 
 - [`format`](format.md)
 - [`visualise`](visualise.md)
