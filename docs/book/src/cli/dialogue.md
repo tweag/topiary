@@ -26,13 +26,8 @@ In that case, you don't have to worry about making
 `TOPIARY_LANGUAGE_DIR` has been set at build time and is set at runtime
 as well, the runtime value takes precedence.
 
-<!----------------------------------------------------------------------
-TODO: Move CONTRIBUTING.md into the Topiary Book
-
-For a subsequent PR...
------------------------------------------------------------------------>
-See [`CONTRIBUTING.md`](https://github.com/tweag/topiary/blob/main/CONTRIBUTING.md)
-for details on setting up a development environment.
+See [the contributor's guide](../guides/contributing.html) for details
+on setting up a development environment.
 
 ## Logging
 

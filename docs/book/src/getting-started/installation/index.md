@@ -1,7 +1,7 @@
 # Installation
 
 Topiary can be installed in a few different ways. For more information
-on these, please see the respective section:
+on these, see the respective chapter:
 
 - [Package managers](package-managers.md)
 - [Building from source](building-from-source.md)

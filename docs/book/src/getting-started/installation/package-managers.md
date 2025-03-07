@@ -9,7 +9,7 @@ The Topiary CLI, amongst other things, is available on
 [crates.io](https://crates.io/crates/topiary-cli):
 
 ```sh
-cargo install -p topiary-cli
+cargo install topiary-cli
 ```
 
 ## OPAM (OCaml Package Manager)

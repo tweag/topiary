@@ -7,10 +7,11 @@ such a file.
 
 ## Configuration Sources
 
-At build time the [`languages.ncl`](./languages.ncl) in the root of the
-Topiary repository is embedded into Topiary. This file is parsed at
-runtime. The purpose of this `languages.ncl` file is to provide sane
-defaults for users of Topiary (both the library and the CLI binary).
+At build time the [`languages.ncl`](https://github.com/tweag/topiary/blob/main/topiary-config/languages.ncl)
+in the root of the Topiary repository is embedded into Topiary. This
+file is parsed at runtime. The purpose of this `languages.ncl` file is
+to provide sane defaults for users of Topiary (both the library and the
+CLI binary).
 
 The next two are read by the Topiary binary at runtime and allow the
 user to configure Topiary to their needs. The first is intended to be
@@ -20,8 +21,8 @@ the OS:
 | OS      | Typical Configuration Path                                       |
 | :------ | :--------------------------------------------------------------- |
 | Unix    | `/home/alice/.config/topiary/languages.ncl`                      |
-| Windows | `C:\Users\Alice\AppData\Roaming\Topiary\config\languages.ncl`    |
 | macOS   | `/Users/Alice/Library/Application Support/Topiary/languages.ncl` |
+| Windows | `C:\Users\Alice\AppData\Roaming\Topiary\config\languages.ncl`    |
 
 This file is not automatically created by Topiary.
 
@@ -45,13 +46,10 @@ following order (highest to lowest):
 
 ### Configuration merging
 
-<!-- TODO: See issue #861 -->
-
 By default, Topiary only considers the configuration file with the
-[highest priority](../configuration.md). However, if
-the `-M` or `--merge-configuration` option is provided to the CLI, then
-all available configurations are merged together, as per the [Nickel
-specification](https://nickel-lang.org/user-manual/merging).
+highest priority. However, if the `-M`/`--merge-configuration` option is
+provided to the CLI, then all available configurations are merged
+together, as per the [Nickel specification](https://nickel-lang.org/user-manual/merging).
 
 In which case, if one of the sources listed above attempts to define a
 language configuration already present in the built-in configuration, or
@@ -88,6 +86,14 @@ To override only the indentation, use the following Nickel file:
   },
 }
 ```
+
+<div class="warning">
+
+The merging semantics for Topiary's grammar configuration (see
+[below](#specifying-the-grammar)) is not yet fully defined; see issue
+[#861](https://github.com/tweag/topiary/issues/861).
+
+</div>
 
 ## Configuration options
 
