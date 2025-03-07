@@ -1,12 +1,7 @@
 # Language support
 
-<!-- Update this section as necessary on new developments/releases -->
-
 <!----------------------------------------------------------------------
-TODO Lay out expectations for contributed languages and what constitutes
-a language being "experimental" (or otherwise). See issue #876
-
-(I've made it a bit clearer here, but it could be much better...)
+Update these sections as necessary on new developments/releases
 ----------------------------------------------------------------------->
 
 Topiary ships with formatting support for a number of languages. The
@@ -30,13 +25,13 @@ stated design goals. They are exposed, in Topiary, through the
 `--language` command line flag, or language detection (based on file
 extension).
 
-* [Bash]
-* [JSON]
-* [Nickel]
-* [OCaml] (both implementations and interfaces)
-* [OCamllex]
-* [TOML]
-* [Tree Sitter Queries][tree-sitter-query]
+- [Bash]
+- [JSON]
+- [Nickel]
+- [OCaml] (both implementations and interfaces)
+- [OCamllex]
+- [TOML]
+- [Tree Sitter Queries][tree-sitter-query]
 
 ## Contributed
 
@@ -44,9 +39,9 @@ These languages' formatting styles have been generously provided by
 external contributors. They are built in, by default, so are exposed in
 the same way as supported languages.
 
-* [CSS], by [Eric Lavigne](https://github.com/lavigneer)
-* [OpenSCAD], by [Mikhail Katychev](https://github.com/mkatychev)
-* [SDML], by [Simon Johnston](https://github.com/johnstonskj)
+- [CSS], by [Eric Lavigne](https://github.com/lavigneer)
+- [OpenSCAD], by [Mikhail Katychev](https://github.com/mkatychev)
+- [SDML], by [Simon Johnston](https://github.com/johnstonskj)
 
 ## Experimental
 
@@ -57,7 +52,7 @@ feature flag (either `experimental`, for all of them, or by their
 individual name). Once included, they can be accessed in Topiary in the
 usual way.
 
-* [Rust]
+- [Rust]
 
 <!-- Links -->
 [bash]: https://www.gnu.org/software/bash

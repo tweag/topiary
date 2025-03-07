@@ -26,11 +26,7 @@
 
 # The Topiary Playground
 
-<!----------------------------------------------------------------------
-TODO: Documentation for the web-based playground; see issue #875
------------------------------------------------------------------------>
-
-- [TODO]()
+- [Web playground](playground/web.md)
 - [TTY playground](playground/tty.md)
 
 # Guides
@@ -38,6 +34,7 @@ TODO: Documentation for the web-based playground; see issue #875
 - [Adding a new language](guides/adding-a-new-language.md)
 - [Suggested query development workflow](guides/suggested-workflow.md)
 - [Writing a formatter has never been so easy: a Topiary tutorial](guides/yann-tutorial.md)
+- [Contributing to Topiary](guides/contributing.md)
 
 # Reference
 

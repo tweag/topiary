@@ -234,7 +234,7 @@ These predicates allow the query to trigger only if the matched nodes
 are in a single-line (or, respectively, multi-line) context.
 
 > **Note**\
-> There are scoped equivalents to these predicates; please see
+> There are scoped equivalents to these predicates; see
 > [scopes](scopes.md#testing-context-with-predicates) for details.
 
 ##### Example

@@ -15,8 +15,7 @@ recognised by Topiary to drive formatting.
 
 > **Note**\
 > This example is derived from the [Topiary announcement blog
-> post][tweag:topiary-announcement]. Please see the post for additional
-> detail.
+> post][tweag:topiary-announcement]; see the post for additional detail.
 
 ```scheme
 (
