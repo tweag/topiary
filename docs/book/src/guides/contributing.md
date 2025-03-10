@@ -11,7 +11,7 @@ feel free to say "Hi!" on our [Discord channel][discord].
 
 The most effective way of contributing to Topiary is by developing
 formatting queries for a language you are interested or invested in that
-is not currently represented by Topiary.
+is not currently supported by Topiary.
 
 The other guides in this section outline the steps needed to bootstrap
 this process:
