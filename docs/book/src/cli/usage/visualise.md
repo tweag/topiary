@@ -65,5 +65,5 @@ specify the `--language` and, optionally, `--query` arguments, omitting
 the input file. The visualisation output is written to standard out.
 
 Valid language identifiers, as specified with `--language`, are defined
-as part of your Topiary configuration. Please see the
-[configuration](../configuration.md) section for more details.
+as part of your Topiary configuration. See the [configuration](../configuration.md)
+chapter for more details.
