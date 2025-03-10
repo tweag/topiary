@@ -990,8 +990,15 @@ type foo = {a: 'a. ('a, mandatory) arg -> 'a;}
 type foo = (int, int) result
 
 (* types with constraints *)
-type (+'meth, 'prefix, 'params, 'query, 'input, 'output) service =
-  ('meth, 'prefix, 'params, 'query, 'input, 'output, error) raw
+type (+'meth, 'prefix, 'params, 'query, 'input, 'output) service = (
+    'meth,
+    'prefix,
+    'params,
+    'query,
+    'input,
+    'output,
+    error
+  ) raw
   constraint 'meth = [< meth]
 
 type 'a x = 'a option
@@ -1297,6 +1304,42 @@ type bar = {
   c: int;
 }
 
+type t = (
+  int,
+  float,
+  string
+) foo
+
+type bar = [`A | `B]
+
+type bar = [
+  | `A
+]
+
+type bar = {
+  a: int;
+  b: int
+}
+
+let foo = [
+  1;
+  2;
+  3
+]
+
+let foo = [|1; 2; 3;|]
+
+let foo = [|
+  1;
+  2;
+  3
+|]
+
+let foo = {
+  a = 1;
+  b = 2
+}
+
 (* #731 function dangling on multi-line calls *)
 let _ =
   foo bar baz @@ fun x ->
@@ -1320,3 +1363,16 @@ let _ =
     comp1 ()
   with
     | effect (Xchg n), k -> continue k (n + 1)
+
+(* #661 Dangling of last argument in function application *)
+let _ =
+  my_function {
+    x = 2;
+    y = 12.;
+  }
+
+let _ =
+  my_function @@ [|
+    2;
+    12.;
+  |]
