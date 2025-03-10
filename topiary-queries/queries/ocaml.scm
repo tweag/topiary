@@ -163,6 +163,7 @@
     "class"
     "constraint"
     "downto"
+    "effect"
     "else"
     "exception"
     "external"

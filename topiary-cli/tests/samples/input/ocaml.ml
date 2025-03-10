@@ -1254,3 +1254,8 @@ let _ =
 let _ =
   somefun @@
     fun x -> body
+
+(* #882 Effect handling syntax *)
+let _ =
+  try comp1 () with
+  | effect (Xchg n), k -> continue k (n+1)
