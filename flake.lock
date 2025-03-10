@@ -69,6 +69,7 @@
         "crane": "crane",
         "nixpkgs": "nixpkgs",
         "rust-overlay": "rust-overlay",
+        "tree-sitter-cfml": "tree-sitter-cfml",
         "tree-sitter-nickel": "tree-sitter-nickel",
         "tree-sitter-openscad": "tree-sitter-openscad"
       }
@@ -88,6 +89,26 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "tree-sitter-cfml": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1739694114,
+        "narHash": "sha256-G457KJ418ckkj3N3Sq+8Bncjonuq6MobfgBeb/I/9NY=",
+        "owner": "cfmleditor",
+        "repo": "tree-sitter-cfml",
+        "rev": "979825d2e27ac9e65a217e5132c5c7eef4004b0e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cfmleditor",
+        "repo": "tree-sitter-cfml",
         "type": "github"
       }
     },

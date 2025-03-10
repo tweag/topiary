@@ -79,11 +79,13 @@ contributed = [
 
 # Excluded by default
 experimental = [
-  "rust"
+  "rust",
+  "cfml"
 ]
 
 bash = ["topiary-config/bash", "topiary-queries/bash"]
 css = ["topiary-config/css", "topiary-queries/css"]
+cfml = ["topiary-config/cfml", "topiary-queries/cfml"]
 json = ["topiary-config/json", "topiary-queries/json"]
 nickel = ["topiary-config/nickel", "topiary-queries/nickel"]
 ocaml = ["topiary-config/ocaml", "topiary-queries/ocaml"]
