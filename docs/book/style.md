@@ -30,7 +30,7 @@ writing, this is Algol-style indentation, rather than Lisp-style.
 
 The queries used to define formatting rules should be referred to as
 **"formatting queries"**. Using "rules" or "styles", etc. can confuse
-what it Topiary's core mechanism.
+what is Topiary's core mechanism.
 
 ## Inline code formatting
 
@@ -47,15 +47,18 @@ is not strictly necessary, but it aids reading in a terminal emulator.
 
 **"Nix"** is capitalised (unless it is referring to the binary, in which
 case it's `nix`). All other Nix-related concepts should be treated as
-normal words (i.e., lowercase, unless they start a sentence). For
-example: **"nixpkgs"**, **"flake"**, **"devshell"**, etc.
+normal words (i.e., lowercase, unless they start a sentence), unless
+they are idiomatically capitalised elsewhere. For example:
+**"nixpkgs"**, **"flake"**, **"devshell"**, etc.
 
 ## Notes and warnings
 
 Notes should be marked up like so:
 
+```markdown
 > **Note**\
 > Here is the note text.
+```
 
 Warnings should use mdbook's `warning` class:
 
