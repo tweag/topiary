@@ -34,6 +34,7 @@
 - [Adding a new language](guides/adding-a-new-language.md)
 - [Suggested query development workflow](guides/suggested-workflow.md)
 - [Writing a formatter has never been so easy: a Topiary tutorial](guides/yann-tutorial.md)
+- [Contributing to Topiary](guides/contributing.md)
 
 # Reference
 
