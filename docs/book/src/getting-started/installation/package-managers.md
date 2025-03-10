@@ -45,7 +45,7 @@ home.packages = with pkgs; [
 ];
 ```
 
-### Nix Install
+### Nix install
 
 ```sh
 # Using flakes:

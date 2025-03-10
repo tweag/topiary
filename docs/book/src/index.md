@@ -30,7 +30,7 @@ languages using a [simple DSL][tree-sitter:query]. This allows for the
 fast development of formatters, providing a [Tree-sitter
 grammar][tree-sitter:parsers] is defined for that language.
 
-## Design Principles
+## Design principles
 
 Topiary has been created with the following goals in mind:
 

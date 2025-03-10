@@ -5,7 +5,7 @@ relates to [Nickel](https://nickel-lang.org/), a configuration language
 created by Tweag. There are up to four sources where Topiary checks for
 such a file.
 
-## Configuration Sources
+## Configuration sources
 
 At build time the [`languages.ncl`](https://github.com/tweag/topiary/blob/main/topiary-config/languages.ncl)
 in the root of the Topiary repository is embedded into Topiary. This

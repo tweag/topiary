@@ -36,8 +36,8 @@ extension).
 ## Contributed
 
 These languages' formatting styles have been generously provided by
-external contributors. They are built in, by default, so are exposed in
-the same way as supported languages.
+external contributors. They are built in, by default -- unless marked as
+experimental -- so are exposed in the same way as supported languages.
 
 - [CSS], by [Eric Lavigne](https://github.com/lavigneer)
 - [OpenSCAD], by [Mikhail Katychev](https://github.com/mkatychev)

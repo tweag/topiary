@@ -9,7 +9,7 @@ strings (defined in the [language configuration](../../cli/configuration.md#inde
 ## `@append_indent_start` / `@prepend_indent_start`
 
 The matched nodes will trigger indentation before (or, respectively,
-after) them. This will only apply to lines following, until an
+after) them. This will only apply to the lines following, until an
 indentation end is signalled. If indentation is started and ended on the
 same line, nothing will happen. This is useful, because we get the
 correct behaviour whether a node is formatted as single-line or
