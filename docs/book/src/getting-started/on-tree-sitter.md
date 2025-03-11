@@ -98,7 +98,7 @@ define a formatting style for the language in question.
 <div class="warning">
 Topiary makes no assumption about a language's token separators. When
 it parses any input source into a collection of nodes, it will only
-apply formatting that has been explicitly defined with capture nodes, in
+apply formatting that has been explicitly defined with capture names, in
 a query file. This can result in any unspecified nodes losing their
 token separators (e.g., spacing) after formatting. That is, nodes can be
 "squashed" together, which can change (or even break) the code's

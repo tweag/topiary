@@ -200,6 +200,6 @@ format C code.
 
 You can now iterate on the formatting queries and the respective input
 and expected sample files to build your formatter, using the I/O and
-coverage tests to guide the process. Please also see the [following
+coverage tests to guide the process. Also see the [following
 chapter](suggested-workflow.md) on query development for more
 information.
