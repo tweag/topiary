@@ -1,0 +1,48 @@
+name: Build and deploy website
+
+on:
+  push:
+    # TODO Commented for debugging
+    # branches: main
+    # TODO Trigger on files changed?
+
+  # TODO Do we need to trigger on PR?
+  # pull_request:
+    # TODO Commented for debugging
+    # branches: main
+
+jobs:
+  # Build the WASM-based web playground's assets
+  # NOTE The playground is currently not under active development, so we
+  # checkout from the `playground` branch, which diverged from `main`
+  # circa October 2024.
+  build-playground:
+    name: Build playground WASM assets
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: playground
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixpkgs-unstable
+
+      - name: Set up Nix cache
+        uses: cachix/cachix-action@v16
+        with:
+          name: tweag-topiary
+          authToken: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
+
+      - name: Build WASM assets
+        run: |
+          nix build .#topiary-playground
+
+      - name: Upload assets as build artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: playground-wasm-assets
+          path: result
