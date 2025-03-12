@@ -4,12 +4,6 @@ on:
   push:
     # TODO Commented for debugging
     # branches: main
-    # TODO Trigger on files changed?
-
-  # TODO Do we need to trigger on PR?
-  # pull_request:
-    # TODO Commented for debugging
-    # branches: main
 
 jobs:
   # Build the WASM-based web playground's assets
@@ -35,14 +29,14 @@ jobs:
           key: playground-wasm-assets-${{ steps.checkout-playground.outputs.commit }}
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
         if: steps.cache-artefacts.outputs.cache-hit != 'true'
+        uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixpkgs-unstable
 
       - name: Set up Nix cache
-        uses: cachix/cachix-action@v16
         if: steps.cache-artefacts.outputs.cache-hit != 'true'
+        uses: cachix/cachix-action@v16
         with:
           name: tweag-topiary
           authToken: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
@@ -52,6 +46,8 @@ jobs:
         run: |
           nix build .#topiary-playground
 
+          # Copy the Nix build results into a new directory because the
+          # caching step doesn't like the `result` symlink to the store
           mkdir wasm-assets
           cp -r result/* wasm-assets
 
