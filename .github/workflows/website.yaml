@@ -22,22 +22,33 @@ jobs:
 
     steps:
       - name: Checkout
+        id: checkout-playground
         uses: actions/checkout@v4
         with:
           ref: playground
 
+      - name: Cache build artefacts
+        id: cache-artefacts
+        uses: actions/cache@v4
+        with:
+          path: result
+          key: playground-wasm-assets-${{ steps.checkout-playground.outputs.commit }}
+
       - name: Install Nix
         uses: cachix/install-nix-action@v31
+        if: steps.cache-artefacts.outputs.cache-hit != 'true'
         with:
           nix_path: nixpkgs=channel:nixpkgs-unstable
 
       - name: Set up Nix cache
         uses: cachix/cachix-action@v16
+        if: steps.cache-artefacts.outputs.cache-hit != 'true'
         with:
           name: tweag-topiary
           authToken: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
       - name: Build WASM assets
+        if: steps.cache-artefacts.outputs.cache-hit != 'true'
         run: |
           nix build .#topiary-playground
 
@@ -55,6 +66,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixpkgs-unstable
+
+      - name: Set up Nix cache
+        uses: cachix/cachix-action@v16
+        with:
+          name: tweag-topiary
+          authToken: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
       - name: Prepare directories
         run: |
