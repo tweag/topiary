@@ -27,12 +27,22 @@ jobs:
         with:
           ref: playground
 
+      - name: Prepare results directory (for cached assets)
+        run: |
+          rm -rf result
+          mkdir result
+
       - name: Cache build artefacts
         id: cache-artefacts
         uses: actions/cache@v4
         with:
           path: result/**
           key: playground-wasm-assets-${{ steps.checkout-playground.outputs.commit }}
+
+      - name: Remove results directory (when not cached)
+        if: steps.cache-artefacts.outputs.cache-hit != 'true'
+        run: |
+          rm -rf result
 
       - name: Install Nix
         uses: cachix/install-nix-action@v31
