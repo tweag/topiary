@@ -50,7 +50,7 @@ jobs:
   build-website:
     name: Build website
     runs-on: ubuntu-latest
-    needs: [build-playground]
+    needs: build-playground
 
     steps:
       - name: Checkout
@@ -101,3 +101,27 @@ jobs:
 
           # DEBUG
           ls -lR website
+
+# TODO Commented for debugging
+#      - name: Upload GitHub Pages artefact
+#        uses: actions/upload-pages-artifact@v3
+#        with:
+#          path: website
+#
+#  deploy-website:
+#    name: Deploy website
+#    runs-on: ubuntu-latest
+#    needs: build-website
+#
+#    permissions:
+#      pages: write     # to deploy to Pages
+#      id-token: write  # to verify the deployment originates from an appropriate source
+#
+#    environment:
+#      name: github-pages
+#      url: ${{ steps.deployment.outputs.page_url }}
+#
+#    steps:
+#      - name: Deploy to GitHub Pages
+#        id: deployment
+#        uses: actions/deploy-pages@v4
