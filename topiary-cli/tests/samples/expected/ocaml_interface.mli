@@ -132,9 +132,9 @@ module Tez : sig
 
   val (+?): tez -> tez -> tez tzresult
 
-  val (*?): tez -> int64 -> tez tzresult
+  val ( *? ): tez -> int64 -> tez tzresult
 
-  val (/?): tez -> int64 -> tez tzresult
+  val ( /? ): tez -> int64 -> tez tzresult
 
   val of_string : string -> tez option
 
@@ -513,7 +513,7 @@ module Gas : sig
 
   (** Multiply a cost by a factor. Both arguments are saturated arithmetic values,
     so no negative numbers are involved. *)
-  val (*@): _ Saturation_repr.t -> cost -> cost
+  val ( *@ ): _ Saturation_repr.t -> cost -> cost
 
   (** Add two costs together. *)
   val (+@): cost -> cost -> cost

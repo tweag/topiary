@@ -1764,7 +1764,6 @@
 ; Antispaces for brackets and parentheses
 (
   [
-    "("
     "["
     "[|"
     "{"
@@ -1772,11 +1771,24 @@
 )
 (
   [
-    ")"
     "]"
     "|]"
     "}"
   ] @prepend_antispace
+)
+
+; We must be cautious when surrounding `mult_operator` with parentheses, lest we mess
+; with comments:
+; `val ( * ): x -> y -> x` must not be formatted into `val (*): x -> y -> x`
+(
+  "(" @append_antispace
+  .
+  (mult_operator)? @do_nothing
+)
+(
+  (mult_operator)? @do_nothing
+  .
+  ")" @prepend_antispace
 )
 
 ; Formatting typed patterns in function arguments, e.g.
