@@ -99,6 +99,13 @@ jobs:
           rm -rf website/playground
           cp -r web-playground/dist website/playground
 
+      - name: Build Topiary Book and decant it into website
+        run: |
+          mkdir website/book
+
+          nix build .#topiary-book
+          cp -r result/* website/book
+
           # DEBUG
           ls -lR website
 
