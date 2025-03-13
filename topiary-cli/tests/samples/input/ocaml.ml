@@ -1250,11 +1250,13 @@ type bar = [ | `A | `B ]
 type bar =
   [`A]
 
-type bar =
-  {a: int; b: int}
+type bar = {
+  a: int; b: int
+  }
 
 let foo =
-  [1; 2; 3]
+  [1; 2;
+  3]
 
 let foo = [| 1; 2; 3; |]
 
@@ -1298,3 +1300,57 @@ let _ =
     2;
     12.;
   |]
+
+(* #907 Various dangling behaviours *)
+let _ = {
+  x = 1;
+}
+
+let _ =
+  { x = 1;}
+
+let _ =
+  {
+    x = 1;
+  }
+
+let _ = {x = 1}
+
+type t =
+  (
+    int,
+    float,
+    string
+  ) foo
+
+let foo = {
+  x = 2;
+  y = 12.;
+}
+
+let () =
+  let foo = {
+    x = 2;
+    y = 12.;
+  }
+  in
+  something_with_foo
+
+let () =
+  my_function {
+    x = 2;
+    y = 12.;
+  }
+
+let () =
+  my_function @@ {
+    x = 2;
+    y = 12.;
+  }
+
+type foo = {
+  bar:
+    int list;
+  baz:
+    [`Qux | `Bar];
+}

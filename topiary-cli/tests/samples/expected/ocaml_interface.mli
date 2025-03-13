@@ -1773,8 +1773,7 @@ module Contract : sig
   module Legacy_big_map_diff : sig
     type item =
       private
-      | Update of
-        {
+      | Update of {
           big_map: Z.t;
           diff_key: Script.expr;
           diff_key_hash: Script_expr_hash.t;
@@ -1782,8 +1781,7 @@ module Contract : sig
         }
       | Clear of Z.t
       | Copy of {src: Z.t; dst: Z.t}
-      | Alloc of
-        {
+      | Alloc of {
           big_map: Z.t;
           key_type: Script.expr;
           value_type: Script.expr;
@@ -2294,8 +2292,7 @@ module Tx_rollup_errors : sig
     | Too_many_commitments
     | Too_many_withdrawals
     | Wrong_batch_count
-    | Commitment_too_early of
-      {
+    | Commitment_too_early of {
         provided: Tx_rollup_level.t;
         expected: Tx_rollup_level.t;
       }
@@ -2309,27 +2306,23 @@ module Tx_rollup_errors : sig
     | Invalid_committer
     | Remove_commitment_too_early
     | Commitment_does_not_exist of Tx_rollup_level.t
-    | Wrong_predecessor_hash of
-      {
+    | Wrong_predecessor_hash of {
         provided: Tx_rollup_commitment_hash.t option;
         expected: Tx_rollup_commitment_hash.t option;
       }
     | Internal_error of string
-    | Wrong_message_position of
-      {
+    | Wrong_message_position of {
         level: Tx_rollup_level.t;
         position: int;
         length: int;
       }
-    | Wrong_path_depth of
-      {
+    | Wrong_path_depth of {
         kind: [`Inbox | `Commitment];
         provided: int;
         limit: int;
       }
     | Wrong_message_path of {expected: Tx_rollup_inbox.Merkle.root}
-    | No_finalized_commitment_for_level of
-      {
+    | No_finalized_commitment_for_level of {
         level: Tx_rollup_level.t;
         window: (Tx_rollup_level.t * Tx_rollup_level.t) option;
       }
@@ -2337,16 +2330,13 @@ module Tx_rollup_errors : sig
     | Withdraw_already_consumed
     | Withdrawals_invalid_path
     | Withdrawals_already_dispatched
-    | Cannot_reject_level of
-      {
+    | Cannot_reject_level of {
         provided: Tx_rollup_level.t;
         accepted_range: (Tx_rollup_level.t * Tx_rollup_level.t) option;
       }
-    | Wrong_rejection_hash of
-      {
+    | Wrong_rejection_hash of {
         provided: Tx_rollup_message_result_hash.t;
-        expected:
-        [
+        expected: [
           | `Valid_path of Tx_rollup_commitment.Merkle.h * int
           | `Hash of Tx_rollup_message_result_hash.t
         ];
@@ -2354,8 +2344,7 @@ module Tx_rollup_errors : sig
     | Proof_undecodable
     | Proof_failed_to_reject
     | Proof_produced_rejected_state
-    | Proof_invalid_before of
-      {
+    | Proof_invalid_before of {
         agreed: Context_hash.t;
         provided: Context_hash.t;
       }
@@ -2568,8 +2557,7 @@ module Zk_rollup : sig
       | Invalid_deposit_amount
       | Invalid_deposit_ticket
       | Wrong_deposit_parameters
-      | Ticket_payload_size_limit_exceeded of
-        {
+      | Ticket_payload_size_limit_exceeded of {
           payload_size: Saturation_repr.may_saturate Saturation_repr.t;
           limit: int;
         }
@@ -3160,41 +3148,34 @@ module Dal_errors : sig
     | Dal_feature_disabled
     | Dal_slot_index_above_hard_limit
     | Dal_attestation_unexpected_size of {expected: int; got: int}
-    | Dal_publish_slot_header_future_level of
-      {
+    | Dal_publish_slot_header_future_level of {
         provided: Raw_level.t;
         expected: Raw_level.t;
       }
-    | Dal_publish_slot_header_past_level of
-      {
+    | Dal_publish_slot_header_past_level of {
         provided: Raw_level.t;
         expected: Raw_level.t;
       }
-    | Dal_publish_slot_header_invalid_index of
-      {
+    | Dal_publish_slot_header_invalid_index of {
         given: Dal.Slot_index.t;
         maximum: Dal.Slot_index.t;
       }
     | Dal_publish_slot_header_candidate_with_low_fees of {proposed_fees: Tez.t}
     | Dal_attestation_size_limit_exceeded of {maximum_size: int; got: int}
     | Dal_publish_slot_header_duplicate of {slot_header: Dal.Slot.Header.t}
-    | Dal_publish_slot_header_invalid_proof of
-      {
+    | Dal_publish_slot_header_invalid_proof of {
         commitment: Dal.Slot.Commitment.t;
         commitment_proof: Dal.Slot.Commitment_proof.t;
       }
-    | Dal_data_availability_attestor_not_in_committee of
-      {
+    | Dal_data_availability_attestor_not_in_committee of {
         attestor: Signature.Public_key_hash.t;
         level: Level.t;
       }
-    | Dal_operation_for_old_level of
-      {
+    | Dal_operation_for_old_level of {
         current: Raw_level.t;
         given: Raw_level.t;
       }
-    | Dal_operation_for_future_level of
-      {
+    | Dal_operation_for_future_level of {
         current: Raw_level.t;
         given: Raw_level.t;
       }
@@ -3271,8 +3252,7 @@ module Sc_rollup : sig
   (** See {!Sc_rollup_inbox_message_repr}. *)
   module Inbox_message : sig
     type internal_inbox_message =
-      | Transfer of
-        {
+      | Transfer of {
           payload: Script.expr;
           sender: Contract_hash.t;
           source: public_key_hash;
@@ -3280,8 +3260,7 @@ module Sc_rollup : sig
         }
       | Start_of_level
       | End_of_level
-      | Info_per_level of
-        {
+      | Info_per_level of {
           predecessor_timestamp: Time.t;
           predecessor: Block_hash.t;
         }
@@ -3573,14 +3552,12 @@ module Sc_rollup : sig
     type error +=
       | Dissection_number_of_sections_mismatch of {expected: Z.t; given: Z.t}
       | Dissection_invalid_number_of_sections of Z.t
-      | Dissection_start_hash_mismatch of
-        {
+      | Dissection_start_hash_mismatch of {
           expected: State_hash.t option;
           given: State_hash.t option;
         }
       | Dissection_stop_hash_mismatch of State_hash.t option
-      | Dissection_edge_ticks_mismatch of
-        {
+      | Dissection_edge_ticks_mismatch of {
           dissection_start_tick: Tick.t;
           dissection_stop_tick: Tick.t;
           chunk_start_tick: Tick.t;
@@ -3879,15 +3856,13 @@ module Sc_rollup : sig
     type reveal_proof =
       | Raw_data_proof of string
       | Metadata_proof
-      | Dal_page_proof of
-        {
+      | Dal_page_proof of {
           page_id: Dal.Page.t;
           proof: Dal.Slots_history.proof;
         }
 
     type input_proof =
-      | Inbox_proof of
-        {
+      | Inbox_proof of {
           level: Raw_level.t;
           message_counter: Z.t;
           proof: Inbox.serialized_proof;
@@ -3978,13 +3953,11 @@ module Sc_rollup : sig
     type dissection_chunk = Dissection_chunk.t
 
     type game_state =
-      | Dissecting of
-        {
+      | Dissecting of {
           dissection: dissection_chunk list;
           default_number_of_sections: int;
         }
-      | Final_move of
-        {
+      | Final_move of {
           agreed_start_chunk: dissection_chunk;
           refuted_stop_chunk: dissection_chunk;
         }
@@ -4023,8 +3996,7 @@ module Sc_rollup : sig
       | Proof of Proof.serialized Proof.t
 
     type refutation =
-      | Start of
-        {
+      | Start of {
           player_commitment_hash: Commitment.Hash.t;
           opponent_commitment_hash: Commitment.Hash.t;
         }
@@ -4081,18 +4053,15 @@ module Sc_rollup : sig
     type error +=
       | Dissection_choice_not_found of Tick.t
       | Proof_unexpected_section_size of Z.t
-      | Proof_start_state_hash_mismatch of
-        {
+      | Proof_start_state_hash_mismatch of {
           start_state_hash: State_hash.t option;
           start_proof: State_hash.t;
         }
-      | Proof_stop_state_hash_failed_to_refute of
-        {
+      | Proof_stop_state_hash_failed_to_refute of {
           stop_state_hash: State_hash.t option;
           stop_proof: State_hash.t option;
         }
-      | Proof_stop_state_hash_failed_to_validate of
-        {
+      | Proof_stop_state_hash_failed_to_validate of {
           stop_state_hash: State_hash.t option;
           stop_proof: State_hash.t option;
         }
