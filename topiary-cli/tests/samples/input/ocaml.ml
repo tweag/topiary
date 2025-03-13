@@ -1250,11 +1250,13 @@ type bar = [ | `A | `B ]
 type bar =
   [`A]
 
-type bar =
-  {a: int; b: int}
+type bar = {
+  a: int; b: int
+  }
 
 let foo =
-  [1; 2; 3]
+  [1; 2;
+  3]
 
 let foo = [| 1; 2; 3; |]
 
