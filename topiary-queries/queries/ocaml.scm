@@ -1174,12 +1174,17 @@
 )
 
 (record_expression
+  .
+  "{" @append_begin_scope
+  (#scope_id! "field_expression")
+)
+(record_expression
   (#scope_id! "field_expression")
   [
     (field_expression)
     (attribute)
     (comment)
-  ]? @append_end_scope
+  ] @append_end_scope
   .
   (field_expression) @prepend_begin_scope
 )
@@ -1540,9 +1545,9 @@
       "["
       "[|"
       "{"
-      "("
       (fun_expression)
       (function_expression)
+      (parenthesized_expression)
     ]? @do_nothing
   ) @append_end_measuring_scope
   .
@@ -1554,9 +1559,9 @@
       "["
       "[|"
       "{"
-      "("
       (fun_expression)
       (function_expression)
+      (parenthesized_expression)
     ] @prepend_end_measuring_scope
   )
   .
@@ -2032,6 +2037,10 @@
   (or_pattern) @prepend_begin_scope @append_end_scope
   (#scope_id! "top_level_or_pattern")
 )
+(match_case
+  (alias_pattern) @prepend_begin_scope @append_end_scope
+  (#scope_id! "top_level_or_pattern")
+)
 
 (or_pattern
   "|" @prepend_hardline
@@ -2141,7 +2150,10 @@
 ; end
 (module_binding
   (module_name) @append_indent_start @prepend_begin_scope
-  "=" @prepend_empty_scoped_softline @prepend_indent_end @append_end_scope
+  [
+    "="
+    ":"
+  ] @prepend_empty_scoped_softline @prepend_indent_end @append_end_scope
   (#scope_id! "module_binding_before_equal")
 )
 ; if a module binding has no equal sign and isn't just a signature, everything enters the scope
