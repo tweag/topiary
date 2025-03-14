@@ -8,51 +8,55 @@ readonly FENCE='```'
 
 get-cli-usage() {
   # Get the help text from the CLI
-  local subcommand="${1-ROOT}"
+  local subcommand="$1"
 
   case "${subcommand}" in
-    "ROOT") nix run . -- --help;;
-    *)      nix run . -- "${subcommand}" --help;;
+    "index") nix run . -- --help;;
+    *)       nix run . -- "${subcommand}" --help;;
   esac
 }
 
-get-readme-usage() {
-  # Get the help text from the README
-  local subcommand="${1-ROOT}"
+get-documented-usage() {
+  # Get the help text from the Topiary Book usage chapters
+  local subcommand="$1"
+  local chapter="docs/book/src/cli/usage/${subcommand}.md"
 
   sed --quiet "
-    /usage:start:${subcommand}/, /usage:end:${subcommand}/ {
+    /usage:start/, /usage:end/ {
       //d          # Delete the markers (last pattern)
       /${FENCE}/d  # Delete the code fences
       p            # Print anything else
     }
-  " README.md
+  " "${chapter}"
 }
 
 diff-usage() {
   # Generate a diff between the README and CLI help text
-  local subcommand="${1-ROOT}"
+  local subcommand="$1"
 
   diff --text \
        --ignore-all-space \
-       <(get-readme-usage "${subcommand}") \
+       <(get-documented-usage "${subcommand}") \
        <(get-cli-usage "${subcommand}")
 }
 
 main() {
-  local -a subcommands=(ROOT format visualise config completion coverage prefetch)
+  # NOTE "index" is for the top-level usage documentation.
+  # Each element in this array should correspond with a Markdown file in
+  # docs/book/src/cli/usage
+  local -a subcommands=(index format visualise config completion coverage prefetch)
 
   local _diff
   local _subcommand
   for _subcommand in "${subcommands[@]}"; do
     if ! _diff=$(diff-usage "${_subcommand}"); then
-      >&2 echo "Usage is not correctly documented in README.md for the ${_subcommand} subcommand!"
+      >&2 echo "CLI usage is not correctly documented in docs/book/src/cli/usage/${_subcommand}.md!"
       echo "${_diff}"
       exit 1
     fi
   done
 
-  >&2 echo "Usage is correctly documented in README.md"
+  >&2 echo "Usage is correctly documented in the Topiary Book"
 }
 
 main
