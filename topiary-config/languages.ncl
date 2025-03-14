@@ -51,8 +51,8 @@
       extensions = ["ml"],
       grammar.source.git = {
         git = "https://github.com/tree-sitter/tree-sitter-ocaml.git",
-        rev = "9965d208337d88bbf1a38ad0b0fe49e5f5ec9677",
-        subdir = "ocaml",
+        rev = "a45fda5fe73cda92f2593d16340b3f6bd46674b8",
+        subdir = "grammars/ocaml",
       },
     },
 
@@ -60,8 +60,8 @@
       extensions = ["mli"],
       grammar.source.git = {
         git = "https://github.com/tree-sitter/tree-sitter-ocaml.git",
-        rev = "9965d208337d88bbf1a38ad0b0fe49e5f5ec9677",
-        subdir = "interface",
+        rev = "a45fda5fe73cda92f2593d16340b3f6bd46674b8",
+        subdir = "grammars/interface",
       },
     },
 
