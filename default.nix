@@ -4,12 +4,12 @@
 , crane
 , rust-overlay
 , craneLib
-# tree-sitter-nickel is packaged in Nixpkgs, but it's an older version at the
-# time of writing. Since updating it seems non trivial, and we need Topiary to
-# be compatible with Nickel urgently (it is currently blocking for the CI), we
-# use the tree-sitter-nickel flake directly.
+  # tree-sitter-nickel is packaged in Nixpkgs, but it's an older version at the
+  # time of writing. Since updating it seems non trivial, and we need Topiary to
+  # be compatible with Nickel urgently (it is currently blocking for the CI), we
+  # use the tree-sitter-nickel flake directly.
 , tree-sitter-nickel
-# tree-sitter-openscad is not in nixpkgs so use flake directly
+  # tree-sitter-openscad is not in nixpkgs so use flake directly
 , tree-sitter-openscad
 }:
 let
@@ -192,4 +192,23 @@ in
       cp $LANGUAGES_EXPORT $out/
     '';
   });
+
+  # This was hacked together by a non-Nix person. Dragons be here.
+  topiary-book = pkgs.stdenv.mkDerivation {
+    pname = "topiary-book";
+    version = "1.0";
+
+    src = docs/book;
+
+    nativeBuildInputs = [ pkgs.mdbook ];
+
+    buildPhase = ''
+      mdbook build
+    '';
+
+    installPhase = ''
+      mkdir -p $out
+      cp -r book/* $out
+    '';
+  };
 }
