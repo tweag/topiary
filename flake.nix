@@ -105,6 +105,8 @@
         topiary-cli = topiaryPkgs.topiary-cli { };
         topiary-cli-nix = topiaryPkgs.topiary-cli { nixSupport = true; };
 
+        topiary-book = topiaryPkgs.topiary-book;
+
         inherit (binPkgs)
           # FIXME: Broken
           # generate-coverage
