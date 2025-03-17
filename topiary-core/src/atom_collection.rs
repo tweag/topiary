@@ -992,9 +992,9 @@ impl AtomCollection {
                     prev = moved_prev;
                     remaining = tail;
                 }
-                // If a whitespace atom is followed by an indent atom, swap their positions.
+                // If a whitespace or antispace atom is followed by an indent atom, swap their positions.
                 (
-                    moved_prev @ (Atom::Space | Atom::Hardline | Atom::Blankline),
+                    moved_prev @ (Atom::Antispace | Atom::Space | Atom::Hardline | Atom::Blankline),
                     moved_remaining @ [Atom::IndentStart | Atom::IndentEnd, ..],
                 ) => {
                     let old_prev = moved_prev.clone();
@@ -1341,8 +1341,8 @@ mod test {
             vec![
                 Atom::Literal("foo".into()),
                 Atom::IndentEnd,
-                Atom::Empty,
                 Atom::Hardline,
+                Atom::Empty,
                 Atom::Literal("foo".into()),
             ]
         );
