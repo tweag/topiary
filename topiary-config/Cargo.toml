@@ -45,6 +45,7 @@ bash = []
 css = []
 json = []
 nickel = []
+cfml = []
 ocaml = []
 ocaml_interface = []
 ocamllex = []
@@ -61,6 +62,7 @@ all = [
   "css",
   "json",
   "nickel",
+  "cfml",
   "ocaml",
   "ocaml_interface",
   "ocamllex",

@@ -330,6 +330,9 @@ where
         #[cfg(feature = "css")]
         "css" => Ok(topiary_queries::css().into()),
 
+        #[cfg(feature = "cfml")]
+        "cfml" => Ok(topiary_queries::cfml().into()),
+
         #[cfg(feature = "json")]
         "json" => Ok(topiary_queries::json().into()),
 

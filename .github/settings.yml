@@ -50,6 +50,9 @@ labels:
   - name: "language: nickel"
     color: f8451f
     description: "Nickel formatting issues"
+  - name: "language: cfml"
+    color: f8451f
+    description: "Cfml formatting issues"
   - name: "language: Tree-sitter queries"
     color: f8451f
     description: "Tree-sitter queries formatting issues"

@@ -40,6 +40,12 @@
       grammar.source.path = "@nickel@",
     },
 
+    cfml = {
+      extensions = ["cfm"],
+      indent = "	", # 1 tab
+      grammar.source.path = "@cfml@",
+    },
+
     ocaml = {
       extensions = ["ml"],
       grammar.source.path = "@ocaml@",
