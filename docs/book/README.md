@@ -90,7 +90,7 @@ Notes should be marked up like so:
 > Here is the note text.
 ```
 
-Warnings should use mdbook's `warning` class:
+Warnings should use mdBook's `warning` class:
 
 ```markdown
 <div class="warning">
@@ -99,6 +99,11 @@ Here is the warning text.
 
 <div>
 ```
+
+> [!TIP]
+> When including HTML, such as mdBook's `warning` class, ensure the
+> Markdown content is interposed by blank lines. Otherwise, it will be
+> treated as plain text and no Markdown rendering will be applied.
 
 ### Single and multi-line
 
