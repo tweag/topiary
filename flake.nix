@@ -105,6 +105,8 @@
         topiary-cli = topiaryPkgs.topiary-cli { };
         topiary-cli-nix = topiaryPkgs.topiary-cli { nixSupport = true; };
 
+        topiary-book = topiaryPkgs.topiary-book;
+
         inherit (binPkgs)
           # FIXME: Broken
           # generate-coverage
@@ -146,7 +148,7 @@
           wasm = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; craneLib = topiaryPkgs.passthru.craneLibWasm; inherit binPkgs; };
         });
 
-      ## For easy use in https://github.com/cachix/pre-commit-hooks.nix
+      ## For easy use in https://github.com/cachix/git-hooks.nix
       lib = forAllSystems ({ system, lib, ... }: {
         pre-commit-hook = {
           enable = true;

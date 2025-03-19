@@ -1,0 +1,10 @@
+[book]
+authors = ["The Topiary Core Team"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Topiary"
+
+[output.html]
+site-url = "/book/"
+git-repository-url = "https://github.com/tweag/topiary"
