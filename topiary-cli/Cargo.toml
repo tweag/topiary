@@ -74,6 +74,7 @@ default = [
 contributed = [
   "css",
   "openscad",
+  "wit",
   "sdml",
 ]
 
@@ -94,3 +95,4 @@ rust = ["topiary-config/rust", "topiary-queries/rust"]
 sdml = ["topiary-config/sdml", "topiary-queries/sdml"]
 toml = ["topiary-config/toml", "topiary-queries/toml"]
 tree_sitter_query = ["topiary-config/tree_sitter_query", "topiary-queries/tree_sitter_query"]
+wit = ["topiary-config/wit", "topiary-queries/wit"]

@@ -31,6 +31,11 @@
       url = "github:openscad/tree-sitter-openscad";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    tree-sitter-wit = {
+      url = "github:mkatychev/tree-sitter-wit";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
@@ -49,7 +54,7 @@
 
         topiaryPkgs = pkgs.callPackage ./default.nix {
           inherit (inputs) advisory-db crane rust-overlay;
-          inherit (pkgs.tree-sitter-grammars) tree-sitter-nickel tree-sitter-openscad;
+          inherit (pkgs.tree-sitter-grammars) tree-sitter-nickel tree-sitter-openscad tree-sitter-wit;
           craneLib = inputs.crane.mkLib pkgs;
         };
 
@@ -70,6 +75,7 @@
           tree-sitter-grammars = prev.tree-sitter-grammars // {
             tree-sitter-nickel = inputs.tree-sitter-nickel.packages.${prev.system}.default;
             tree-sitter-openscad = inputs.tree-sitter-openscad.packages.${prev.system}.default;
+            tree-sitter-wit = inputs.tree-sitter-wit.packages.${prev.system}.default;
           };
         };
 

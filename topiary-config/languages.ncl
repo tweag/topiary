@@ -116,5 +116,13 @@
         symbol = "tree_sitter_query",
       },
     },
+
+    wit = {
+      extensions = ["wit"],
+      grammar.source.git = {
+        git = "https://github.com/mkatychev/tree-sitter-wit.git",
+        rev = "XXXX",
+      },
+    },
   },
 }

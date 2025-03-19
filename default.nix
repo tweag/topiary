@@ -9,8 +9,9 @@
   # be compatible with Nickel urgently (it is currently blocking for the CI), we
   # use the tree-sitter-nickel flake directly.
 , tree-sitter-nickel
-  # tree-sitter-openscad is not in nixpkgs so use flake directly
+  # tree-sitter-openscad and tree-sitter-wit are not in nixpkgs so use flakes directly
 , tree-sitter-openscad
+, tree-sitter-wit
 }:
 let
   inherit (pkgs.lib) fileset;
@@ -135,6 +136,7 @@ in
       rust="${pkgs.tree-sitter-grammars.tree-sitter-rust}/parser" \
       toml="${pkgs.tree-sitter-grammars.tree-sitter-toml}/parser" \
       tree_sitter_query="${pkgs.tree-sitter-grammars.tree-sitter-query}/parser" \
+      wit="${tree-sitter-wit}/parser" \
       substituteAllInPlace topiary-config/languages_nix.ncl
 
       mv topiary-config/languages_nix.ncl topiary-config/languages.ncl

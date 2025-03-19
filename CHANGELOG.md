@@ -48,6 +48,7 @@ This name should be decided amongst the team before the release.
 <!-- - <New feature> -->
 - [#862](https://github.com/tweag/topiary/pull/862) Added support for the Simple Domain Modeling Language ([SDML](https://sdml.io)), thanks to @johnstonskj
 - [#884](https://github.com/tweag/topiary/pull/884) The Topiary Book
+- [#845](https://github.com/tweag/topiary/pull/747) Added support for WIT, thanks to @mkatychev
 
 ### Changed
 <!-- - <Changes in existing functionality> -->
@@ -81,7 +82,7 @@ This name should be decided amongst the team before the release.
 - [#786](https://github.com/tweag/topiary/pull/786) Re-introduce tests to check that all of the language queries are useful
 - [#832](https://github.com/tweag/topiary/pull/832) Added `typos-cli` configuration to workspace `Cargo.toml` for spellchecking, thanks to @mkatychev
 - [#838](https://github.com/tweag/topiary/pull/838) Added `@upper_case` and `@lower_case` captures, thanks to @ctdunc
-- [#845](https://github.com/tweag/topiary/pull/747) Added support for OpenSCAD, thanks to @mkatychev
+- [#845](https://github.com/tweag/topiary/pull/845) Added support for OpenSCAD, thanks to @mkatychev
 - [#851](https://github.com/tweag/topiary/pull/851) Added support for following symlinks when specifying input files for formatting
 
 ### Changed

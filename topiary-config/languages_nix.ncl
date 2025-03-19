@@ -73,5 +73,10 @@
         symbol = "tree_sitter_query",
       },
     },
+
+    wit = {
+      extensions = ["wit"],
+      grammar.source.path = "@wit@",
+    },
   },
 }
