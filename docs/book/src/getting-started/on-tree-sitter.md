@@ -96,17 +96,66 @@ Taken in aggregate, when applied to source code files by Topiary, they
 define a formatting style for the language in question.
 
 <div class="warning">
-Topiary makes no assumption about a language's token separators. When
-it parses any input source into a collection of nodes, it will only
-apply formatting that has been explicitly defined with capture names, in
-a query file. This can result in any unspecified nodes losing their
-token separators (e.g., spacing) after formatting. That is, nodes can be
+
+Topiary makes no assumption about a language's token separators. When it
+parses any input source into a collection of nodes, it will only apply
+formatting that has been _explicitly defined_ with capture names, in a
+query file. This can result in any unspecified nodes losing their token
+separators (e.g., spacing) after formatting. That is, nodes can be
 "squashed" together, which can change (or even break) the code's
 semantics.
+
+For example, with the Bash Tree-sitter grammar, the command invocation
+`command arg1 arg2` has a syntax tree that looks like this:
+
+```
+command
+  command_name
+    word
+  word
+  word
+```
+
+A naive formatting query might just put a space after the command
+itself, in which case the arguments would coalesce. An improvement on
+this would be to account for the `(word)` arguments, but then that
+becomes tightly coupled to this use-case (e.g., `(string)` nodes can
+also be command arguments). A better insight is to observe that pairs of
+nodes under the `(command)` node -- whatever they may be -- should have
+a space between them:
+
+```scm
+; Naive query (incorrect; neglects arguments)
+; Results in: command arg1arg2
+(command_name) @append_space
+
+
+; Improved queries (incorrect; too specific)
+; Results in: command arg1 arg2
+; Failure mode if the first argument is a string: command "arg1"arg2
+(command
+  (command_name) @append_space
+)
+
+(command
+  (word) @append_space
+)
+
+
+; Correct query (if we ignore everything besides commands)
+; Results in: command arg1 arg2
+; Handles string arguments: command "arg1" arg2
+(command
+  (_) @append_space
+  .
+  (_)
+)
+```
 
 This can seem counter-intuitive, or even frustrating, to new-comers.
 However, it stands to reason and nudges the creation of suitably general
 rules to correct the spacing.
+
 </div>
 
 <!-- Footnotes -->
