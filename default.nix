@@ -30,8 +30,8 @@ let
         ./Cargo.lock
         ./Cargo.toml
         ./languages.ncl
-        ./languages_nix.ncl
         ./examples
+        ./prefetchLanguages.nix
         ./topiary-core
         ./topiary-cli
         ./topiary-config
@@ -122,23 +122,11 @@ in
 
     preConfigurePhases = pkgs.lib.optional nixSupport "useNixConfiguration";
 
-    # ocamllex is not (yet) packaged in nixpkgs:
-    # ocamllex="${pkgs.tree-sitter-grammars.tree-sitter-ocamllex}/parser" \
-    useNixConfiguration = ''
-      bash="${pkgs.tree-sitter-grammars.tree-sitter-bash}/parser" \
-      css="${pkgs.tree-sitter-grammars.tree-sitter-css}/parser" \
-      json="${pkgs.tree-sitter-grammars.tree-sitter-json}/parser" \
-      nickel="${tree-sitter-nickel}/parser" \
-      ocaml="${pkgs.tree-sitter-grammars.tree-sitter-ocaml}/parser" \
-      ocaml_interface="${pkgs.tree-sitter-grammars.tree-sitter-ocaml-interface}/parser" \
-      openscad="${tree-sitter-openscad}/parser" \
-      rust="${pkgs.tree-sitter-grammars.tree-sitter-rust}/parser" \
-      toml="${pkgs.tree-sitter-grammars.tree-sitter-toml}/parser" \
-      tree_sitter_query="${pkgs.tree-sitter-grammars.tree-sitter-query}/parser" \
-      substituteAllInPlace topiary-config/languages_nix.ncl
-
-      mv topiary-config/languages_nix.ncl topiary-config/languages.ncl
-    '';
+    useNixConfiguration =
+      pkgs.lib.optional nixSupport (
+        let inherit (import ./prefetchLanguages.nix { inherit pkgs; }) prefetchLanguagesFile; in
+        "cp ${prefetchLanguagesFile ./topiary-config/languages.ncl} topiary-config/languages.ncl"
+      );
 
     postInstall = ''
       install -Dm444 topiary-queries/queries/* -t $out/share/queries
