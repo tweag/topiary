@@ -26,6 +26,7 @@ let
     ;
   inherit (pkgs.lib) warn;
   inherit (pkgs.lib.strings) removeSuffix;
+  inherit (pkgs.lib.attrsets) updateManyAttrsByPath;
 
   prefetchLanguageSourceGit =
     name: source:
@@ -53,24 +54,15 @@ let
     else
       throw ("Unsupported Topiary language sources: " ++ concatStringsSep ", " (attrNames source));
 
+  updateByPath = path: update: updateManyAttrsByPath [ { inherit path update; } ];
+
   ## Given a Topiary configuration as a Nix value, returns the same
   ## configuration, except all language sources have been replaced by a
   ## prefetched and precompiled one. This requires the presence of a `nixHash`
   ## for all sources.
-  prefetchLanguages =
-    topiaryConfig:
-    topiaryConfig
-    // {
-      languages = mapAttrs (
-        name: languageConfig:
-        languageConfig
-        // {
-          grammar = languageConfig.grammar // {
-            source = prefetchLanguageSource name languageConfig.grammar.source;
-          };
-        }
-      ) topiaryConfig.languages;
-    };
+  prefetchLanguages = updateByPath [ "languages" ] (
+    mapAttrs (name: updateByPath [ "grammar" "source" ] (prefetchLanguageSource name))
+  );
 
   toNickelFile =
     name: e:
