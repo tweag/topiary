@@ -11,10 +11,14 @@ let
     fromJSON
     baseNameOf
     ;
-
-  inherit (pkgs) fetchgit nickel;
+  inherit (pkgs)
+    fetchgit
+    nickel
+    runCommandNoCC
+    writeText
+    ;
   inherit (pkgs.lib) warn;
-  inherit (pkgs.stdenvNoCC) mkDerivation;
+  inherit (pkgs.lib.strings) removeSuffix;
   inherit (pkgs.tree-sitter) buildGrammar;
 
   prefetchLanguageSourceGit =
@@ -29,7 +33,7 @@ let
           if source ? "nixHash" then
             source.nixHash
           else
-            warn "Language ${name}: no nixHash provided - using dummy value" "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+            warn "Language `${name}`: no nixHash provided - using dummy value" "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
       };
       location = if source ? "subdir" then source.subdir else null;
     };
@@ -62,38 +66,19 @@ let
       ) topiaryConfig.languages;
     };
 
-  toJSONFile =
-    name: e:
-    mkDerivation {
-      name = "${name}.json";
-      dontUnpack = true;
-      buildPhase = ''
-        cat <<\EOF > $out
-        ${toJSON e}
-        EOF
-      '';
-    };
-
   toNickelFile =
     name: e:
-    mkDerivation {
-      name = "${name}.ncl";
-      dontUnpack = true;
-      buildPhase = ''
-        echo "import \"${toJSONFile name e}\"" > $out
-      '';
-    };
+    let
+      jsonFile = writeText "${removeSuffix ".ncl" name}.json" (toJSON e);
+    in
+    writeText name "import \"${jsonFile}\"";
 
   fromNickelFile =
     path:
     let
-      jsonDrv = mkDerivation {
-        name = "${baseNameOf path}.json";
-        dontUnpack = true;
-        buildPhase = ''
-          ${nickel}/bin/nickel export ${path} > $out
-        '';
-      };
+      jsonDrv = runCommandNoCC "${removeSuffix ".ncl" (baseNameOf path)}.json" { } ''
+        ${nickel}/bin/nickel export ${path} > $out
+      '';
     in
     fromJSON (readFile "${jsonDrv}");
 
@@ -101,7 +86,7 @@ let
   ## produces a path to another Nickel file.
   prefetchLanguagesFile =
     topiaryConfigFile:
-    toNickelFile "${baseNameOf topiaryConfigFile}-prefetched.ncl" (
+    toNickelFile "${removeSuffix ".ncl" (baseNameOf topiaryConfigFile)}-prefetched.ncl" (
       prefetchLanguages (fromNickelFile topiaryConfigFile)
     );
 
