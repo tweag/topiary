@@ -1,3 +1,9 @@
+## Because of dynamic loading, Topiary plays poorly in the Nix sandbox. This
+## file introduces two utilities, `prefetchLanguages` and
+## `prefetchLanguagesFile` that transform a Topiary configuration into another
+## one where all the grammars have been pre-fetched and pre-compiled in Nix
+## derivations.
+
 { pkgs, ... }:
 
 let
@@ -16,14 +22,14 @@ let
     nickel
     runCommandNoCC
     writeText
+    tree-sitter
     ;
   inherit (pkgs.lib) warn;
   inherit (pkgs.lib.strings) removeSuffix;
-  inherit (pkgs.tree-sitter) buildGrammar;
 
   prefetchLanguageSourceGit =
     name: source:
-    buildGrammar {
+    tree-sitter.buildGrammar {
       language = name;
       version = source.rev;
       src = fetchgit {
