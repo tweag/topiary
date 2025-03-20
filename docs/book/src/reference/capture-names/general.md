@@ -48,6 +48,17 @@ query based on context.
 )
 ```
 
+<div class="warning">
+
+Nodes which are annotated with `@do_nothing` ought to be
+[quantified][tree-sitter:quantifiers] with Tree-sitter's `*` (zero or
+more matches) or `?` (at most one match) operators, to define a pattern
+where the exceptional node _could_ appear. Without, the `@do_nothing`
+capture will always be applied and the query will be cancelled
+regardless.
+
+</div>
+
 ## `#query_name!`
 
 When the logging verbosity is set to `-vv` or higher (see [runtime
@@ -301,3 +312,4 @@ those extraneous spaces.
 [topiary:#824]: https://github.com/tweag/topiary/issues/824
 [tree-sitter:anchors]: https://tree-sitter.github.io/tree-sitter/using-parsers/queries/2-operators.html#anchors
 [tree-sitter:predicates]: https://tree-sitter.github.io/tree-sitter/using-parsers/queries/3-predicates-and-directives.html
+[tree-sitter:quantifiers]: https://tree-sitter.github.io/tree-sitter/using-parsers/queries/2-operators.html#quantification-operators
