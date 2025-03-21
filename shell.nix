@@ -18,6 +18,7 @@ craneLib.devShell
         cargo-flamegraph
         rust-analyzer
         mdbook
+        mdbook-man
 
         pkg-config
         openssl.dev
