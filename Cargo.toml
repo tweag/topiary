@@ -4,7 +4,7 @@ edition = "2021"
 authors = ["Tweag"]
 homepage = "https://topiary.tweag.io"
 repository = "https://github.com/tweag/topiary"
-documentation = "https://github.com/tweag/topiary#topiary"
+documentation = "https://topiary.tweag.io/book"
 readme = "README.md"
 license = "MIT"
 
