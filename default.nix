@@ -117,7 +117,7 @@ in
 
     useNixConfiguration =
       pkgs.lib.optional nixSupport (
-        let inherit (import ./prefetchLanguages.nix { inherit pkgs; }) prefetchLanguagesFile; in
+        let inherit (pkgs.callPackage ./prefetchLanguages.nix {}) prefetchLanguagesFile; in
         "cp ${prefetchLanguagesFile ./topiary-config/languages.ncl} topiary-config/languages.ncl"
       );
 

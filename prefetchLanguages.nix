@@ -4,7 +4,14 @@
 ## one where all the grammars have been pre-fetched and pre-compiled in Nix
 ## derivations.
 
-{ pkgs, ... }:
+{
+  lib,
+  fetchgit,
+  nickel,
+  runCommandNoCC,
+  writeText,
+  tree-sitter,
+}:
 
 let
   inherit (builtins)
@@ -17,16 +24,9 @@ let
     fromJSON
     baseNameOf
     ;
-  inherit (pkgs)
-    fetchgit
-    nickel
-    runCommandNoCC
-    writeText
-    tree-sitter
-    ;
-  inherit (pkgs.lib) warn;
-  inherit (pkgs.lib.strings) removeSuffix;
-  inherit (pkgs.lib.attrsets) updateManyAttrsByPath;
+  inherit (lib) warn;
+  inherit (lib.strings) removeSuffix;
+  inherit (lib.attrsets) updateManyAttrsByPath;
 
   prefetchLanguageSourceGit =
     name: source:
