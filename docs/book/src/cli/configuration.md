@@ -158,6 +158,33 @@ nickel = {
 > by Topiary itself, those look like `~/.cache/topiary/<LANGUAGE>/<GIT_HASH>.so`
 > (or the equivalent for your platform).
 
-For usage in Nix, a `languages_nix.ncl` file is provided that specifies
-the paths of every language using the `@nickel@` syntax. These can
-easily be replaced with nixpkgs' `substituteAll`.
+For usage in Nix, a `prefetchLanguages.nix` file provides utilities allowing to
+transform a Topiary configuration into one where languages have been pre-fetched
+and pre-compiled in Nix derivations. The only caveat is that, for each Git
+source, the configuration must contain a `nixHash` for that source. For instance:
+
+```nickel
+nickel = {
+  extensions = ["ncl"],
+  grammar.source.git = {
+    git = "https://github.com/nickel-lang/tree-sitter-nickel",
+    rev = "43433d8477b24cd13acaac20a66deda49b7e2547",
+    nixHash = "sha256-9Ei0uy+eGK9oiH7y2KIhB1E88SRzGnZinqECT3kYTVE=",
+  },
+},
+```
+
+The simplest way to obtain the hash is to use `nix-prefetch-git` (and look for
+the `hash` field in its output). The second simplest way is to compile, which
+will show something like:
+
+```
+evaluation warning: Language `nickel`: no nixHash provided - using dummy value
+error: hash mismatch in fixed-output derivation '/nix/store/jgny7ll7plh7rfdnvdpgcb82kd51aiyx-tree-sitter-nickel-43433d8.drv':
+         specified: sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+            got:    sha256-9Ei0uy+eGK9oiH7y2KIhB1E88SRzGnZinqECT3kYTVE=
+error: 1 dependencies of derivation '/nix/store/0q20rk8l4g0n5fzr0w45agxx0j9qy65v-nickel-grammar-43433d8477b24cd13acaac20a66deda49b7e2547.drv' failed to build
+error: 1 dependencies of derivation '/nix/store/s5phxykjyzqay7gc33hc6f8kw4ndba25-languages-prefetched.json.drv' failed to build
+error: 1 dependencies of derivation '/nix/store/5w15p3b3xfw5nd6mxz58ln09v10kvf8v-languages-prefetched.ncl.drv' failed to build
+error: 1 dependencies of derivation '/nix/store/7zzyha67jw09kc37valp28bp5h6i7dka-topiary-0.6.0.drv' failed to build
+```
