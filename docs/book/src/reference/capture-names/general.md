@@ -303,8 +303,8 @@ and Topiary will insert exactly the right number of spaces.
 
 If we remove the anchor, it will match 10 times -- `1 2`, `1 3`, `1 4`,
 `1 5`, `2 3`, `2 4`, `2 5`, `3 4`, `3 5` and `4 5` -- so Topiary does
-more than twice as much work, only for the post-processor to remove all
-those extraneous spaces.
+more than twice as much work, only for [subsequent processing](../formatting-pipeline.md#atom-processing)
+to remove all those extraneous spaces.
 
 </div>
 

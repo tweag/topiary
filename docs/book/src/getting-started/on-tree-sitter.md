@@ -78,7 +78,7 @@ the [`@prepend_hardline` capture name](../reference/capture-names/vertical-spaci
 )
 ```
 
-This is the essence of Topiary.
+This is the [essence of Topiary](../reference/formatting-pipeline.md#query-matching).
 
 <div class="warning">
 This example is contrived for illustrative purposes. The queries you

@@ -2,18 +2,19 @@
 
 ## Query matching
 
-The first step is to apply the formatting queries against an input. That
-is, each Tree-sitter query will be applied to the input's syntax tree,
-taking into account the relevant capture names against all matching
-subtrees. The result of this is effectively serialised into a list of
-atomic units -- formatting directives, defined by the matching capture
-names, and leaf node content (see also [`@leaf`](capture-names/general.md#leaf))
+As discussed in [Tree-sitter and its queries](../getting-started/on-tree-sitter.md),
+the essence of Topiary is to apply the formatting queries against an
+input. That is, each Tree-sitter query will be applied to the input's
+syntax tree, taking into account the relevant capture names against all
+matching subtrees. The result of this is effectively serialised into a
+list of atomic units -- formatting directives, defined by the matching
+capture names, and leaf node content (see also [`@leaf`](capture-names/general.md#leaf))
 -- along with the necessary metadata to drive the process.
 
-## Post-processing
+## Atom processing
 
 The list of atoms from the first step are then processed into a
-canonical form. Specifically:
+cleaned-up, canonical form. Specifically:
 
 - Processes [scopes](capture-names/scopes.md);
 - Processes [deletions](capture-names/insertion-and-deletion.md#delete);
@@ -23,13 +24,18 @@ canonical form. Specifically:
   -- and sorts some remaining, adjacent atoms (e.g., hardlines always
   before spaces, etc.).
 
+> **Note**\
+> In the code, this step is referred to as "post-processing"; as in
+> "post-query matching-processing", rather than a final step.
+
 ## Pretty printing
 
-The pretty printer goes through the post-processed atom collection and
+The pretty printer goes through the processed atom collection and
 renders each atom into a stream of text output. For example, an
-indentation start atom will increase the indent level; that is, all
+"indentation start" atom will increase the indent level; that is, all
 atoms immediately following a hardline will now be prefixed with the
-appropriate indent string, until the indentation end atom is reached.
+appropriate indent string, until the respective "indentation end" atom
+is reached.
 
 ## Whitespace trimming
 
@@ -47,7 +53,7 @@ in the input, intentionally or otherwise.
 ## Idempotence checking
 
 The Topiary CLI performs "[idempotence][wiki:idempotence] checking" by
-default. That is, it checks that formatting (i.e., the pipeline as
+default. That is, it checks that formatting (i.e., per the pipeline as
 described above) an already-formatted input makes no further changes.
 
 Anecdotally, this incurs a negligible performance penalty to Topiary:
