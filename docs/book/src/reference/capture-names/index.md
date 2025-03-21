@@ -38,8 +38,8 @@ where the annotated node within it will be "captured" with the name
 we process any capture called `@append_space`, we append a space after
 the annotated node.
 
-Before rendering the output, Topiary does some post-processing, such as
-squashing consecutive spaces and newlines, trimming extraneous
+Before rendering the output, Topiary does some [further processing](../formatting-pipeline.md#atom-processing),
+such as squashing consecutive spaces and newlines, trimming extraneous
 whitespace, and ordering indentation and newline instructions
 consistently. This means that you can, for example, prepend and append
 spaces to `if` and `true`, and Topiary will still output `if true` with

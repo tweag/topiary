@@ -56,7 +56,7 @@ formatting. Otherwise, the following exit codes are defined:
 | Topiary query error          |    4 |
 | Source parsing error         |    5 |
 | Language detection error     |    6 |
-| Idempotency error            |    7 |
+| Idempotence error            |    7 |
 | Unspecified formatting error |    8 |
 | Multiple errors              |    9 |
 | Unspecified error            |   10 |
