@@ -93,5 +93,7 @@ in
   inherit
     prefetchLanguages
     prefetchLanguagesFile
+    fromNickelFile
+    toNickelFile
     ;
 }
