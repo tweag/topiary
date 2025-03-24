@@ -68,9 +68,7 @@
         "advisory-db": "advisory-db",
         "crane": "crane",
         "nixpkgs": "nixpkgs",
-        "rust-overlay": "rust-overlay",
-        "tree-sitter-nickel": "tree-sitter-nickel",
-        "tree-sitter-openscad": "tree-sitter-openscad"
+        "rust-overlay": "rust-overlay"
       }
     },
     "rust-overlay": {
@@ -88,46 +86,6 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "type": "github"
-      }
-    },
-    "tree-sitter-nickel": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1739799809,
-        "narHash": "sha256-6Rgxfd1ZVyYvAcgGhiV7/m+aWBGuZf9FzHKsi+2rxn8=",
-        "owner": "nickel-lang",
-        "repo": "tree-sitter-nickel",
-        "rev": "f77c02df6dd0845594846beeeedf3715d4b68758",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nickel-lang",
-        "repo": "tree-sitter-nickel",
-        "type": "github"
-      }
-    },
-    "tree-sitter-openscad": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1741276805,
-        "narHash": "sha256-wPLI5iUAkmv0CsJ5s9qeghFqIPxCvq6s9n3F9b2FKMk=",
-        "owner": "openscad",
-        "repo": "tree-sitter-openscad",
-        "rev": "654280c0ea7beaa81c402f199a13f25379535f89",
-        "type": "github"
-      },
-      "original": {
-        "owner": "openscad",
-        "repo": "tree-sitter-openscad",
         "type": "github"
       }
     }
