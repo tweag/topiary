@@ -9,18 +9,15 @@
   (expansion)
   (heredoc_redirect)
   (string)
-  (word)
-] @leaf
+  (word)] @leaf
 
 (simple_expansion
   "$"
   .
-  (_) @leaf
-)
+  (_) @leaf)
 
 (subscript
-  index: (_) @leaf
-)
+  index: (_) @leaf)
 
 ;; Spacing
 
@@ -41,8 +38,7 @@
   (redirected_statement)
   (subshell)
   (variable_assignment)
-  (while_statement)
-] @allow_blank_line_before
+  (while_statement)] @allow_blank_line_before
 
 ; Insert a new line before multi-line syntactic blocks, regardless of
 ; context
@@ -52,8 +48,7 @@
   (for_statement)
   (function_definition)
   (if_statement)
-  (while_statement)
-] @prepend_hardline
+  (while_statement)] @prepend_hardline
 
 ; Subshells and compound statements should have a new line inserted
 ; before them when they are top-level constructs. Beyond that level, the
@@ -64,9 +59,7 @@
 (program
   [
     (compound_statement)
-    (subshell)
-  ] @prepend_hardline
-)
+    (subshell)] @prepend_hardline)
 
 ; A run of "units of execution" (see Commands section, below; sans
 ; variables which are special) should be interposed by a new line, after
@@ -80,12 +73,10 @@
     (function_definition)
     (if_statement)
     (variable_assignment)
-    (while_statement)
-  ]
+    (while_statement)]
   .
   ; Commands (sans variables)
-  [(command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement)] @prepend_hardline
-)
+  [(command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement)] @prepend_hardline)
 
 ; A run of variable declarations and assignments should be interposed by
 ; a new line, after almost anything else. This makes them stand out.
@@ -102,14 +93,11 @@
     (pipeline)
     (redirected_statement)
     (subshell)
-    (while_statement)
-  ]
+    (while_statement)]
   .
   [
     (declaration_command)
-    (variable_assignment)
-  ] @prepend_hardline
-)
+    (variable_assignment)] @prepend_hardline)
 
 ; Append a space to the following keywords and delimiters
 [
@@ -128,15 +116,13 @@
   "then"
   "typeset"
   "until"
-  "while"
-] @append_space
+  "while"] @append_space
 
 ";" @prepend_antispace
 
 ; Prepend a space to intra-statement keywords
 [
-  "in"
-] @prepend_space
+  "in"] @prepend_space
 
 ;; Comments
 
@@ -194,16 +180,14 @@
   "{" @append_spaced_softline @append_indent_start
   _
   "}" @prepend_spaced_softline @prepend_indent_end
-  .
-)
+  .)
 
 (subshell
   .
   "(" @append_spaced_softline @append_indent_start
   _
   ")" @prepend_spaced_softline @prepend_indent_end
-  .
-)
+  .)
 
 ;; Commands
 
@@ -265,12 +249,10 @@
     (subshell)
     (compound_statement)
     (redirected_statement)
-    (variable_assignment)
-  ] @append_begin_scope @append_empty_scoped_softline
+    (variable_assignment)] @append_begin_scope @append_empty_scoped_softline
   .
   _ @prepend_end_scope
-  (#scope_id! "program_line_break")
-)
+  (#scope_id! "program_line_break"))
 
 (compound_statement
   [
@@ -280,12 +262,10 @@
     (subshell)
     (compound_statement)
     (redirected_statement)
-    (variable_assignment)
-  ] @append_begin_scope @append_empty_scoped_softline
+    (variable_assignment)] @append_begin_scope @append_empty_scoped_softline
   .
   _ @prepend_end_scope
-  (#scope_id! "compound_statement_line_break")
-)
+  (#scope_id! "compound_statement_line_break"))
 
 (subshell
   [
@@ -295,12 +275,10 @@
     (subshell)
     (compound_statement)
     (redirected_statement)
-    (variable_assignment)
-  ] @append_begin_scope @append_empty_scoped_softline
+    (variable_assignment)] @append_begin_scope @append_empty_scoped_softline
   .
   _ @prepend_end_scope
-  (#scope_id! "subshell_line_break")
-)
+  (#scope_id! "subshell_line_break"))
 
 (if_statement
   .
@@ -313,12 +291,10 @@
     (subshell)
     (compound_statement)
     (redirected_statement)
-    (variable_assignment)
-  ] @append_begin_scope @append_empty_scoped_softline
+    (variable_assignment)] @append_begin_scope @append_empty_scoped_softline
   .
   _ @prepend_end_scope
-  (#scope_id! "(if_statement_line_break")
-)
+  (#scope_id! "(if_statement_line_break"))
 
 (elif_clause
   .
@@ -331,12 +307,10 @@
     (subshell)
     (compound_statement)
     (redirected_statement)
-    (variable_assignment)
-  ] @append_begin_scope @append_empty_scoped_softline
+    (variable_assignment)] @append_begin_scope @append_empty_scoped_softline
   .
   _ @prepend_end_scope
-  (#scope_id! "elif_clause_line_break")
-)
+  (#scope_id! "elif_clause_line_break"))
 
 (else_clause
   .
@@ -348,12 +322,10 @@
     (subshell)
     (compound_statement)
     (redirected_statement)
-    (variable_assignment)
-  ] @append_begin_scope @append_empty_scoped_softline
+    (variable_assignment)] @append_begin_scope @append_empty_scoped_softline
   .
   _ @prepend_end_scope
-  (#scope_id! "else_clause_line_break")
-)
+  (#scope_id! "else_clause_line_break"))
 
 (case_item
   .
@@ -366,12 +338,10 @@
     (subshell)
     (compound_statement)
     (redirected_statement)
-    (variable_assignment)
-  ] @append_begin_scope @append_empty_scoped_softline
+    (variable_assignment)] @append_begin_scope @append_empty_scoped_softline
   .
   _ @prepend_end_scope
-  (#scope_id! "case_item_line_break")
-)
+  (#scope_id! "case_item_line_break"))
 
 (do_group
   .
@@ -383,12 +353,10 @@
     (subshell)
     (compound_statement)
     (redirected_statement)
-    (variable_assignment)
-  ] @append_begin_scope @append_empty_scoped_softline
+    (variable_assignment)] @append_begin_scope @append_empty_scoped_softline
   .
   _ @prepend_end_scope
-  (#scope_id! "do_group_line_break")
-)
+  (#scope_id! "do_group_line_break"))
 
 (command_substitution
   [
@@ -398,30 +366,25 @@
     (subshell)
     (compound_statement)
     (redirected_statement)
-    (variable_assignment)
-  ] @append_begin_scope @append_empty_scoped_softline
+    (variable_assignment)] @append_begin_scope @append_empty_scoped_softline
   .
   _ @prepend_end_scope
-  (#scope_id! "command_substitution_line_break")
-)
+  (#scope_id! "command_substitution_line_break"))
 
 ; Spaces between named nodes and command list/pipeline delimiters
 (list
   [(_) "&&" "||"] @append_space
   .
-  _
-)
+  _)
 
 (pipeline
-  ["|" "|&"] @prepend_space @append_spaced_softline
-)
+  ["|" "|&"] @prepend_space @append_spaced_softline)
 
 (pipeline
   .
   (_)
   .
-  ["|" "|&"] @append_indent_start
-) @append_indent_end
+  ["|" "|&"] @append_indent_start) @append_indent_end
 
 ; Prepend the asynchronous operator with a space
 ; NOTE This can interpose two "commands", but it's rare to see it in the
@@ -429,8 +392,7 @@
 (_
   [(command) (list) (pipeline) (compound_statement) (subshell) (redirected_statement)]
   .
-  "&" @prepend_space @append_spaced_softline
-)
+  "&" @prepend_space @append_spaced_softline)
 
 ; Spaces between command and its arguments
 ; NOTE If we treat (command) as a leaf node, then commands are formatted
@@ -440,49 +402,42 @@
 (command
   (_) @append_space
   .
-  (_)
-)
+  (_))
 
 ; Ensure the negation operator is surrounded by spaces
 ; NOTE This is a syntactic requirement
 (negated_command
   .
-  "!" @prepend_space @append_space
-)
+  "!" @prepend_space @append_space)
 
 (command_substitution
   .
   "`" @delete @append_delimiter
   .
   _ @prepend_empty_softline @prepend_indent_start
-  (#delimiter! "$(")
-)
+  (#delimiter! "$("))
 
 (command_substitution
   _ @append_empty_softline @append_indent_end
   .
   "`" @delete @append_delimiter
   .
-  (#delimiter! ")")
-)
+  (#delimiter! ")"))
 
 ; Multi-line command substitutions become an indent block
 (command_substitution
   "$(" @append_empty_softline @append_indent_start
-  ")" @prepend_empty_softline @prepend_indent_end
-)
+  ")" @prepend_empty_softline @prepend_indent_end)
 
 ; Ensure a space interposes command substitutions containing subshells
 ; This is to remove the ambiguity with $(( ... ))
 (command_substitution
   .
-  (subshell) @prepend_space
-)
+  (subshell) @prepend_space)
 
 (command_substitution
   (subshell) @append_space
-  .
-)
+  .)
 
 ;; Redirections
 
@@ -491,8 +446,7 @@
 (redirected_statement
   (_) @append_space
   .
-  (_)
-)
+  (_))
 
 ; ...with the exceptions of herestrings, that are spaced
 (herestring_redirect (_) @prepend_space)
@@ -503,30 +457,25 @@
 [
   (if_statement)
   (elif_clause)
-  (else_clause)
-] @append_hardline
+  (else_clause)] @append_hardline
 
 ; New line after "then" and start indent block
 [
   (if_statement)
-  (elif_clause)
-]
+  (elif_clause)]
 "then" @append_hardline @append_indent_start
 
 ; New line after "else" and start indent block
 (else_clause
   .
-  "else" @append_hardline @append_indent_start
-)
+  "else" @append_hardline @append_indent_start)
 
 ; Finish indent block at "fi", "else" or "elif"
 (if_statement
   [
     "fi"
     (else_clause)
-    (elif_clause)
-  ] @prepend_indent_end @prepend_hardline
-)
+    (elif_clause)] @prepend_indent_end @prepend_hardline)
 
 ; Keep the "if"/"elif" and the "then" on the same line,
 ; inserting a spaced delimiter when necessary
@@ -534,8 +483,7 @@
   ";"* @do_nothing
   .
   "then" @prepend_delimiter
-  (#delimiter! "; ")
-)
+  (#delimiter! "; "))
 
 ;; Test Commands
 
@@ -543,18 +491,15 @@
 ; FIXME This breaks _sometimes_, but I don't know why :(
 (test_command
   "[" @append_delimiter
-  (#delimiter! "[ ")
-)
+  (#delimiter! "[ "))
 
 (test_command
   "]" @prepend_delimiter
-  (#delimiter! " ]")
-)
+  (#delimiter! " ]"))
 
 (test_command
   "[[" @append_space
-  "]]" @prepend_space
-)
+  "]]" @prepend_space)
 
 ; NOTE (arithmetic_expansion) seems to take higher priority
 ; (test_command
@@ -564,31 +509,25 @@
 
 (arithmetic_expansion
   "$[" @delete @append_delimiter
-  (#delimiter! "$(( ")
-)
+  (#delimiter! "$(( "))
 
 (arithmetic_expansion
   "]" @delete @append_delimiter
-  (#delimiter! " ))")
-)
+  (#delimiter! " ))"))
 
 (arithmetic_expansion
   ["$((" "(("] @append_space
-  ["))"] @prepend_space
-)
+  ["))"] @prepend_space)
 
 (unary_expression
-  "!" @append_space
-)
+  "!" @append_space)
 
 (unary_expression
-  (test_operator) @append_space
-)
+  (test_operator) @append_space)
 
 (binary_expression
   left: (_) @append_space
-  right: (_) @prepend_space
-)
+  right: (_) @prepend_space)
 
 ;; Case Statements
 
@@ -602,14 +541,12 @@
   "in" @append_hardline @append_indent_start
   _
   "esac" @prepend_hardline @prepend_indent_end
-  .
-) @append_hardline
+  .) @append_hardline
 
 ; New (soft)line after branch, which starts an indentation block up
 ; until its end
 (case_item
-  ")" @append_spaced_softline @append_indent_start
-) @append_indent_end
+  ")" @append_spaced_softline @append_indent_start) @append_indent_end
 
 ; Ensure case branch terminators appear on their own line, in a
 ; multi-line context; or, at least, push the next case branch on to a
@@ -620,10 +557,8 @@
   [
     ";;"
     ";;&"
-    ";&"
-  ] @append_hardline
-  .
-)
+    ";&"] @append_hardline
+  .)
 
 ;; Loops
 
@@ -633,19 +568,16 @@
   "do" @append_hardline @append_indent_start
   _
   "done" @prepend_hardline @prepend_indent_end
-  .
-) @append_hardline
+  .) @append_hardline
 
 ; Ensure the word list is delimited by spaces in classic for loops
 (for_statement
-  value: _* @prepend_space
-)
+  value: _* @prepend_space)
 
 ; Surround the loop condition with spaces in C-style for loops
 (c_style_for_statement
   initializer: _ @prepend_space
-  update: _ @append_space
-)
+  update: _ @append_space)
 
 ; Keep the loop construct and the "do" on the same line,
 ; inserting a spaced delimiter when necessary
@@ -653,8 +585,7 @@
   ";"* @do_nothing
   .
   (do_group) @prepend_delimiter
-  (#delimiter! "; ")
-)
+  (#delimiter! "; "))
 
 ;; Function Definitions
 
@@ -674,8 +605,7 @@
 ; statements and test commands as function bodies.
 
 (function_definition
-  body: (_) @prepend_space @append_hardline
-)
+  body: (_) @prepend_space @append_hardline)
 
 (function_definition
   .
@@ -683,18 +613,15 @@
   .
   (
     "("
-    ")"
-  )? @do_nothing
+    ")")? @do_nothing
 
-  (#delimiter! "()")
-)
+  (#delimiter! "()"))
 
 ; NOTE This rule must appear after the above, where the "()" are
 ; appended, if necessary
 (function_definition
   .
-  "function" @delete
-)
+  "function" @delete)
 
 ;; Variable Declaration, Assignment and Expansion
 
@@ -707,45 +634,37 @@
 (
   (declaration_command)
   .
-  (_) @prepend_hardline
-)
+  (_) @prepend_hardline)
 
 ; All declaration arguments must be separated by whitespace
 (declaration_command
-  (word) @append_space
-)
+  (word) @append_space)
 
 ; Multiple variables can be declared (and assigned) at once
 (declaration_command
   [
     (variable_name)
-    (variable_assignment)
-  ] @prepend_space
-)
+    (variable_assignment)] @prepend_space)
 
 (declaration_command
   (variable_name)? @do_nothing
   .
-  (concatenation) @prepend_space
-)
+  (concatenation) @prepend_space)
 
 ; Environment variables assigned to commands inline need to be spaced
 (command
-  (variable_assignment) @append_space
-)
+  (variable_assignment) @append_space)
 
 ; Multi-line arrays start an indentation block
 (array
   "(" @append_empty_softline @append_indent_start
-  ")" @prepend_empty_softline @prepend_indent_end
-)
+  ")" @prepend_empty_softline @prepend_indent_end)
 
 ; Array elements need to be spaced
 (array
   (_) @append_spaced_softline
   .
-  (_)
-)
+  (_))
 
 ; Convert (simple_expansion) into (expansion)s
 ; NOTE Only convert $word, not special forms like $0, $@, etc.
@@ -754,13 +673,11 @@
   "$"
   .
   (variable_name) @prepend_delimiter
-  (#not-match? @prepend_delimiter "[0-9]")
-)
+  (#not-match? @prepend_delimiter "[0-9]"))
 
 (simple_expansion
   (#delimiter! "}")
   "$"
   .
   (variable_name) @append_delimiter
-  (#not-match? @append_delimiter "[0-9]")
-)
+  (#not-match? @append_delimiter "[0-9]"))

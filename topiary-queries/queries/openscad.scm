@@ -4,8 +4,7 @@
 [
   (block_comment)
   (line_comment)
-  (string)
-] @leaf
+  (string)] @leaf
 
 ; Allow blank line before
 [
@@ -24,8 +23,7 @@
   (function_item)
   (module_item)
   (expression)
-  (var_declaration)
-] @allow_blank_line_before
+  (var_declaration)] @allow_blank_line_before
 
 ; Keywords
 
@@ -57,8 +55,7 @@
   "?"
   ":"
   (parenthesized_expression)
-  (assignments)
-] @prepend_space @append_space
+  (assignments)] @prepend_space @append_space
 
 ; Colon should have whitespace trimmed in a range delimiter
 (range ":" @prepend_antispace @append_antispace)
@@ -68,8 +65,7 @@
 ; always ends with a line break.
 [
   (block_comment)
-  (line_comment)
-] @prepend_input_softline
+  (line_comment)] @prepend_input_softline
 
 ; Append line breaks. If there is a comment following, we don't add anything,
 ; because the input softlines and spaces above will already have sorted out the
@@ -87,15 +83,12 @@
     (union_block)
     (use_statement)
     (include_statement)
-    (assert_statement)
-  ] @append_spaced_softline
+    (assert_statement)] @append_spaced_softline
   .
   [
     "else"
     (block_comment)
-    (line_comment)
-  ]* @do_nothing
-)
+    (line_comment)]* @do_nothing)
 
 (line_comment) @append_hardline
 
@@ -105,15 +98,13 @@
 (
   (block_comment)
   .
-  _ @prepend_input_softline
-)
+  _ @prepend_input_softline)
 
 ; Append softlines, unless followed by comments.
 ; When binding multiple values in a let block, allow new lines between the bindings.
 (list
   "[" @append_indent_start @append_empty_softline @append_antispace
-  "]" @prepend_indent_end @prepend_empty_softline @prepend_antispace
-)
+  "]" @prepend_indent_end @prepend_empty_softline @prepend_antispace)
 ; to avoid having a list that directly follows a let_expression look visually unindented,
 ; add another level of indentation:
 ; let (
@@ -127,14 +118,11 @@
 (let_expression
   (list
     "[" @append_indent_start
-    "]" @prepend_indent_end
-  )
-)
+    "]" @prepend_indent_end))
 
 (range
   "[" @append_antispace
-  "]" @prepend_antispace
-)
+  "]" @prepend_antispace)
 (list "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 (assignments "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 (parameters "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
@@ -159,8 +147,7 @@
   .
   "=" @append_spaced_softline @append_indent_start
   (expression)
-  ";" @prepend_indent_end
-)
+  ";" @prepend_indent_end)
 
 ; ===
 ; function literals
@@ -182,9 +169,7 @@
     (assign_block)
     (transform_chain)
     (include_statement)
-    (assert_statement)
-  ] @prepend_indent_start @append_indent_end
-)
+    (assert_statement)] @prepend_indent_start @append_indent_end)
 
 ; module calls in a transformation chain will follow each other
 ; sometimes staying on the same line and sometimes having a linebreak,
@@ -193,8 +178,7 @@
 (transform_chain
   (modifier)*
   (module_call) @append_indent_start
-  (transform_chain) @append_indent_end
-)
+  (transform_chain) @append_indent_end)
 
 ; ================================================================================
 ; blocks/expressions/statements
@@ -214,14 +198,12 @@
   .
   ")"
   .
-  (#multi_line_only!)
-)
+  (#multi_line_only!))
 (assignments
   .
   "(" @append_empty_softline @append_indent_start
   ")" @prepend_indent_end @prepend_empty_softline
-  .
-)
+  .)
 (assignments "," @delete . ")" . (#single_line_only!))
 (assignments "," @append_spaced_softline)
 
@@ -231,8 +213,7 @@
   .
   "(" @append_empty_softline @append_indent_start @append_antispace
   ")" @prepend_indent_end @prepend_empty_softline @prepend_antispace
-  .
-)
+  .)
 (arguments
   (#delimiter! ",")
   (_) @append_delimiter
@@ -243,8 +224,7 @@
   .
   ")"
   .
-  (#multi_line_only!)
-)
+  (#multi_line_only!))
 
 (parameters "," @append_input_softline)
 (parameters "," @delete . ")" . (#single_line_only!))
@@ -252,15 +232,13 @@
   .
   "(" @append_empty_softline @append_indent_start
   ")" @prepend_indent_end @prepend_empty_softline
-  .
-)
+  .)
 
 (parenthesized_expression
   .
   "(" @append_empty_softline @append_indent_start
   ")" @prepend_indent_end @prepend_empty_softline
-  .
-)
+  .)
 (list "," @delete . "]" . (#single_line_only!))
 (list
   (#delimiter! ",")
@@ -270,8 +248,7 @@
   .
   "]"
   .
-  (#multi_line_only!)
-)
+  (#multi_line_only!))
 
 ; differentiate parameter definitions from parameter invocation,
 ; module/function definitions have param separation while
@@ -279,17 +256,14 @@
 ; and provides visual distinction between definitions and calls
 (arguments
   (assignment
-    "=" @append_antispace @prepend_antispace
-  )
-)
+    "=" @append_antispace @prepend_antispace))
 
 (union_block
   .
   "{" @append_spaced_softline @append_indent_start @prepend_space
   _
   "}" @prepend_spaced_softline @prepend_indent_end
-  .
-)
+  .)
 
 ; everything except `union_block` after a for/if/else statement should be a spaced_softline
 (if_block
@@ -303,9 +277,7 @@
     (assign_block)
     (transform_chain)
     (include_statement)
-    (assert_statement)
-  ] @append_indent_end @append_spaced_softline
-)
+    (assert_statement)] @append_indent_end @append_spaced_softline)
 (
   "else" @append_spaced_softline @append_indent_start
   .
@@ -316,18 +288,14 @@
     (assign_block)
     (transform_chain)
     (include_statement)
-    (assert_statement)
-  ] @append_indent_end
-) @prepend_spaced_softline
+    (assert_statement)] @append_indent_end) @prepend_spaced_softline
 
 ; scope is triggered by the presence of a (union_block) consequce on the intersection_for_block;
 ; and extends to the "else if" and "else" portions
 (
   "else"? @do_nothing
   (if_block
-    (#scope_id! "if_union")
-  ) @prepend_begin_scope @append_end_scope
-)
+    (#scope_id! "if_union")) @prepend_begin_scope @append_end_scope)
 
 (if_block
   (#scope_id! "if_union")
@@ -335,9 +303,7 @@
     .
     "{" @append_spaced_scoped_softline
     "}" @prepend_spaced_scoped_softline
-    .
-  )
-)
+    .))
 
 (for_block
   (assignments) @append_spaced_softline @append_indent_start
@@ -350,9 +316,7 @@
     (assign_block)
     (transform_chain)
     (include_statement)
-    (assert_statement)
-  ] @append_indent_end @append_spaced_softline
-)
+    (assert_statement)] @append_indent_end @append_spaced_softline)
 ; modifiers
 (modifier) @append_antispace
 
@@ -363,12 +327,9 @@
     value: [
       (assert_expression)
       (echo_expression)
-      (ternary_expression)
-    ] @prepend_indent_start
-  )
+      (ternary_expression)] @prepend_indent_start)
   ";" @prepend_indent_end
-  .
-)
+  .)
 
 (assert_expression expression: (_) @prepend_spaced_softline)
 (assert_statement statement: (_) @prepend_spaced_softline)
@@ -376,10 +337,8 @@
 
 ; ternary expressions
 (ternary_expression
-  ":" @prepend_spaced_softline
-)
+  ":" @prepend_spaced_softline)
 ; Prettier style ternaries https://prettier.io/blog/2023/11/13/curious-ternaries
 (ternary_expression
   "?" @append_input_softline @append_indent_start
-  ":" @prepend_indent_end
-)
+  ":" @prepend_indent_end)

@@ -18,26 +18,22 @@
   "{" @append_spaced_softline @append_indent_start
   (pair)
   "}" @prepend_spaced_softline @prepend_indent_end
-  .
-)
+  .)
 
 (array
   .
   "[" @append_spaced_softline @append_indent_start
   (_value)
   "]" @prepend_spaced_softline @prepend_indent_end
-  .
-)
+  .)
 
 ; Pairs should always end with a softline.
 ; Pairs come in two kinds, ones with a trailing comma, and those without.
 ; Those without are the last pair of an object,
 ; and the line is already added by the closing curly brace of the object.
 (object
-  "," @append_spaced_softline
-)
+  "," @append_spaced_softline)
 
 ; Items in an array must have a softline after. See also the pairs above.
 (array
-  "," @append_spaced_softline
-)
+  "," @append_spaced_softline)

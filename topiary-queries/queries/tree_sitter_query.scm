@@ -4,15 +4,13 @@
 [
   (capture)
   (identifier)
-  (string)
-] @leaf
+  (string)] @leaf
 
 (comment) @prepend_input_softline @append_hardline @allow_blank_line_before
 
 ; Elements at top-level must be alone on their line. Blank lines are allowed
 (program
-  _ @allow_blank_line_before @prepend_hardline
-)
+  _ @allow_blank_line_before @prepend_hardline)
 
 (predicate) @allow_blank_line_before
 
@@ -29,8 +27,7 @@
     ":"
     "."
     ")"
-    "]"
-  ] @append_space
+    "]"] @append_space
   .
   [")" "]" ":"]? @do_nothing
   .
@@ -44,13 +41,10 @@
     "."
     "("
     "["
-    "_"
-  ]
-)
+    "_"])
 
 (anonymous_node
-  (capture) @prepend_space
-)
+  (capture) @prepend_space)
 
 ; The grammar always includes a (parameters) child node under
 ; (predicate), even when there are none. Topiary will deal with the
@@ -60,42 +54,32 @@
   (parameters
     [(identifier) (capture)] @append_spaced_softline @append_indent_start
     .
-    (string)
-  ) @append_indent_end
-)
+    (string)) @append_indent_end)
 
 (predicate
   (parameters
-    (string) @append_empty_softline
-  )
-)
+    (string) @append_empty_softline))
 
 (predicate
   (parameters
-    (_) @prepend_space
-  )
-)
+    (_) @prepend_space))
 
 ; Line breaks and indentation in multi-line lists and nodes
 (list
   "[" @append_indent_start @append_empty_softline
-  "]" @prepend_indent_end @prepend_empty_softline
-)
+  "]" @prepend_indent_end)
 
 (grouping
   "(" @append_indent_start @append_empty_softline
-  ")" @prepend_indent_end @prepend_empty_softline
-)
+  ")" @prepend_indent_end)
 
 (named_node
   "("
   .
   [
     (identifier)
-    "_"
-  ] @append_indent_start @append_empty_softline
-  ")" @prepend_indent_end @prepend_empty_softline
-)
+    "_"] @append_indent_start @append_empty_softline
+  ")" @prepend_indent_end)
 
 (
   [
@@ -105,8 +89,7 @@
     (list)
     (named_node)
     (predicate)
-    "."
-  ] @append_spaced_softline
+    "."] @append_spaced_softline
   .
   [
     (anonymous_node)
@@ -115,6 +98,4 @@
     (list)
     (named_node)
     (predicate)
-    "."
-  ]
-)
+    "."])
