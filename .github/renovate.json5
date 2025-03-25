@@ -4,6 +4,10 @@
 
   prConcurrentLimit: 1,
 
+  reviewers: [
+    "team:topiary-core-team"
+  ],
+
   schedule: [
     // Only run on Sundays
     "* * * * 0"
