@@ -10,17 +10,17 @@
     {
       "groupName": "Tree-sitter packages",
       "matchPackageNames": ["tree-sitter", "tree-sitter-*"],
-      "matchDatasources": ["cargo"]
+      "matchManagers": ["cargo"]
     },
     {
       "groupName": "Clap packages",
       "matchPackageNames": ["clap", "clap_derive"],
-      "matchDatasources": ["cargo"]
+      "matchManagers": ["cargo"]
     },
     {
       "groupName": "serde packages",
       "matchPackageNames": ["serde", "serde_*"],
-      "matchDatasources": ["cargo"]
+      "matchManagers": ["cargo"]
     }
   ]
 }
