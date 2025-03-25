@@ -2,5 +2,15 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "lockFileMaintenance": { "enabled": true },
+  "prConcurrentLimit": 1,
+  "ignorePaths": [".github/workflows/release.yml"],
+  "packageRules": [
+    {
+      "groupName": "Tree-sitter packages",
+      "matchPackageNames": ["tree-sitter", "tree-sitter-**"],
+      "matchDatasources": ["cargo"]
+    }
   ]
 }
