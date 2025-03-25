@@ -33,6 +33,6 @@ that language; the "Output" pane will then be generated appropriately.
 By default, the web playground will format the input on-the-fly (i.e.,
 on changes to either the "Query" or "Input" panes). This option can be
 disabled with the appropriate checkbox and the "Format" button can be
-used as an alternative. Otherwise, options are provides that mimic the
+used as an alternative. Otherwise, options are provided that mimic the
 `--skip-idempotence` and `--tolerate-parsing-errors` flags to the
 Topiary CLI (see [`topiary format`](../cli/usage/format.md)).

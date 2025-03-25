@@ -21,21 +21,6 @@
       url = "github:rustsec/advisory-db";
       flake = false;
     };
-
-    tree-sitter-nickel = {
-      url = "github:nickel-lang/tree-sitter-nickel";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    tree-sitter-openscad = {
-      url = "github:openscad/tree-sitter-openscad";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    tree-sitter-wit = {
-      url = "github:mkatychev/tree-sitter-wit";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
@@ -46,7 +31,6 @@
         pkgs = import nixpkgs {
           inherit system;
           overlays = [
-            self.overlays.tree-sitter-grammars
             self.overlays.wasm-bindgen-cli
             inputs.rust-overlay.overlays.default
           ];
@@ -54,7 +38,6 @@
 
         topiaryPkgs = pkgs.callPackage ./default.nix {
           inherit (inputs) advisory-db crane rust-overlay;
-          inherit (pkgs.tree-sitter-grammars) tree-sitter-nickel tree-sitter-openscad tree-sitter-wit;
           craneLib = inputs.crane.mkLib pkgs;
         };
 
@@ -70,15 +53,6 @@
     in
     {
       overlays = {
-        tree-sitter-grammars = final: prev: {
-          # Nickel *should* have an overlay like this already
-          tree-sitter-grammars = prev.tree-sitter-grammars // {
-            tree-sitter-nickel = inputs.tree-sitter-nickel.packages.${prev.system}.default;
-            tree-sitter-openscad = inputs.tree-sitter-openscad.packages.${prev.system}.default;
-            tree-sitter-wit = inputs.tree-sitter-wit.packages.${prev.system}.default;
-          };
-        };
-
         wasm-bindgen-cli = final: prev:
           let
             cargoLock = builtins.fromTOML (builtins.readFile ./Cargo.lock);
@@ -106,12 +80,12 @@
         inherit (topiaryPkgs)
           topiary-playground
           topiary-queries
+          topiary-cli
+          topiary-book
           client-app;
 
-        topiary-cli = topiaryPkgs.topiary-cli { };
-        topiary-cli-nix = topiaryPkgs.topiary-cli { nixSupport = true; };
-
-        topiary-book = topiaryPkgs.topiary-book;
+        topiary-cli-nix =
+          topiaryPkgs.topiary-cli.override { prefetchGrammars = true; };
 
         inherit (binPkgs)
           # FIXME: Broken

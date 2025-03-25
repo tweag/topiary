@@ -31,8 +31,8 @@ let
         ./Cargo.lock
         ./Cargo.toml
         ./languages.ncl
-        ./languages_nix.ncl
         ./examples
+        ./prefetchLanguages.nix
         ./topiary-core
         ./topiary-cli
         ./topiary-config
@@ -113,51 +113,41 @@ in
     cargoExtraArgs = "-p topiary-core";
   });
 
-  topiary-cli = { nixSupport ? false }: craneLib.buildPackage (commonArgs
-    // {
-    inherit cargoArtifacts;
-    pname = "topiary";
-    cargoExtraArgs = "-p topiary-cli";
-    cargoTestExtraArgs = "--no-default-features";
+  topiary-cli =
+    pkgs.lib.makeOverridable (
+      { prefetchGrammars ? false }:
+      craneLib.buildPackage (commonArgs
+        // {
+          inherit cargoArtifacts;
+          pname = "topiary";
+          cargoExtraArgs = "-p topiary-cli";
+          cargoTestExtraArgs = "--no-default-features";
 
+          preConfigurePhases = pkgs.lib.optional prefetchGrammars "prepareTopiaryDefaultConfiguration";
 
-    preConfigurePhases = pkgs.lib.optional nixSupport "useNixConfiguration";
+          prepareTopiaryDefaultConfiguration =
+            pkgs.lib.optional prefetchGrammars (
+              let inherit (pkgs.callPackage ./prefetchLanguages.nix {}) prefetchLanguagesFile; in
+              "cp ${prefetchLanguagesFile ./topiary-config/languages.ncl} topiary-config/languages.ncl"
+            );
 
-    # ocamllex is not (yet) packaged in nixpkgs:
-    # ocamllex="${pkgs.tree-sitter-grammars.tree-sitter-ocamllex}/parser" \
-    useNixConfiguration = ''
-      bash="${pkgs.tree-sitter-grammars.tree-sitter-bash}/parser" \
-      css="${pkgs.tree-sitter-grammars.tree-sitter-css}/parser" \
-      json="${pkgs.tree-sitter-grammars.tree-sitter-json}/parser" \
-      nickel="${tree-sitter-nickel}/parser" \
-      ocaml="${pkgs.tree-sitter-grammars.tree-sitter-ocaml}/parser" \
-      ocaml_interface="${pkgs.tree-sitter-grammars.tree-sitter-ocaml-interface}/parser" \
-      openscad="${tree-sitter-openscad}/parser" \
-      rust="${pkgs.tree-sitter-grammars.tree-sitter-rust}/parser" \
-      toml="${pkgs.tree-sitter-grammars.tree-sitter-toml}/parser" \
-      tree_sitter_query="${pkgs.tree-sitter-grammars.tree-sitter-query}/parser" \
-      wit="${tree-sitter-wit}/parser" \
-      substituteAllInPlace topiary-config/languages_nix.ncl
+          postInstall = ''
+            install -Dm444 topiary-queries/queries/* -t $out/share/queries
+          '';
 
-      mv topiary-config/languages_nix.ncl topiary-config/languages.ncl
-    '';
+          # Set TOPIARY_LANGUAGE_DIR to the Nix store
+          # for the build
+          TOPIARY_LANGUAGE_DIR = "${placeholder "out"}/share/queries";
 
-    postInstall = ''
-      install -Dm444 topiary-queries/queries/* -t $out/share/queries
-    '';
+          # Set TOPIARY_LANGUAGE_DIR to the working directory
+          # in a development shell
+          shellHook = ''
+            export TOPIARY_LANGUAGE_DIR=$PWD/queries
+          '';
 
-    # Set TOPIARY_LANGUAGE_DIR to the Nix store
-    # for the build
-    TOPIARY_LANGUAGE_DIR = "${placeholder "out"}/share/queries";
-
-    # Set TOPIARY_LANGUAGE_DIR to the working directory
-    # in a development shell
-    shellHook = ''
-      export TOPIARY_LANGUAGE_DIR=$PWD/queries
-    '';
-
-    meta.mainProgram = "topiary";
-  });
+          meta.mainProgram = "topiary";
+        })
+    ) {};
 
   topiary-queries = craneLib.buildPackage (commonArgs
     // {
