@@ -360,6 +360,9 @@ where
         #[cfg(feature = "tree_sitter_query")]
         "tree_sitter_query" => Ok(topiary_queries::tree_sitter_query().into()),
 
+        #[cfg(feature = "wit")]
+        "wit" => Ok(topiary_queries::wit().into()),
+
         name => Err(TopiaryError::Bin(
             format!("The specified language is unsupported: {}", name),
             Some(CLIError::UnsupportedLanguage(name.to_string())),

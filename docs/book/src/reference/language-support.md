@@ -42,6 +42,7 @@ experimental -- so are exposed in the same way as supported languages.
 - [CSS], by [Eric Lavigne](https://github.com/lavigneer)
 - [OpenSCAD], by [Mikhail Katychev](https://github.com/mkatychev)
 - [SDML], by [Simon Johnston](https://github.com/johnstonskj)
+- [WIT], by [Mikhail Katychev](https://github.com/mkatychev)
 
 ## Experimental
 
@@ -66,3 +67,4 @@ usual way.
 [sdml]: https://sdml.io/
 [toml]: https://toml.io
 [tree-sitter-query]: https://tree-sitter.github.io/tree-sitter/using-parsers#pattern-matching-with-queries
+[wit]: https://component-model.bytecodealliance.org/design/wit.html

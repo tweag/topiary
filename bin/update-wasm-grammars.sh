@@ -157,7 +157,7 @@ openscad() {
   echo -e "${BLUE}OpenSCAD: Fetching${NC}"
   REPO=$(repo_for_language "openscad")
   git clone "${REPO}" "${WORKDIR}/tree-sitter-openscad" &> /dev/null
-  REV=$(ref_for_language "opescad")
+  REV=$(ref_for_language "openscad")
   pushd "${WORKDIR}/tree-sitter-openscad" &> /dev/null
     git checkout "$REV" &> /dev/null
   popd &> /dev/null
@@ -166,7 +166,20 @@ openscad() {
   echo -e "${GREEN}OpenSCAD: Done${NC}"
 }
 
+wit() {
+  echo -e "${BLUE}WIT: Fetching${NC}"
+  REPO=$(repo_for_language "wit")
+  git clone "${REPO}" "${WORKDIR}/tree-sitter-wit" &> /dev/null
+  REV=$(ref_for_language "wit")
+  pushd "${WORKDIR}/tree-sitter-wit" &> /dev/null
+    git checkout "$REV" &> /dev/null
+  popd &> /dev/null
+  echo -e "${ORANGE}WIT: Building${NC}"
+  tree-sitter build --wasm "${WORKDIR}/tree-sitter-wit"
+  echo -e "${GREEN}WIT: Done${NC}"
+}
 
-(trap 'kill 0' SIGINT; json & nickel & ocaml & ocamllex & bash & rust & toml & tree-sitter-query & css & openscad & wait)
+
+(trap 'kill 0' SIGINT; json & nickel & ocaml & ocamllex & bash & rust & toml & tree-sitter-query & css & openscad & wit & wait)
 
 echo -e "${GREEN}Done! All grammars have been updated${NC}"
