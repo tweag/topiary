@@ -1,0 +1,24 @@
+[package]
+name = "mdbook-manmunge"
+description = "mdBook pre- and post-processor to help munge (a subset of) the Topiary Book into manpages with mdbook-man"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+readme.workspace = true
+license.workspace = true
+
+# Don't publish this as part of a Topiary release
+publish = false
+
+[[bin]]
+name = "mdbook-manmange"
+path = "src/main.rs"
+
+[dependencies]
+clap = { workspace = true, features = ["derive"] }
+mdbook = { workspace = true, default-features = false }
+pulldown-cmark.workspace = true
+pulldown-cmark-to-cmark.workspace = true
