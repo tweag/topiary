@@ -1,0 +1,13 @@
+[book]
+authors = ["The Topiary Core Team"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Topiary"
+
+[build]
+build-dir = "man"
+
+[output.man]
+output-dir = "."
+filename = "topiary.man"
