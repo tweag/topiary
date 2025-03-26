@@ -13,6 +13,9 @@
     "web-playground/package.json",    // Not currently maintained (see `playground` branch)
   ],
 
+  // Enable Nix support
+  nix: { enabled: true },
+
   // For Nix flake.lock and Cargo.lock
   lockFileMaintenance: { enabled: true },
 
