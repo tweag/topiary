@@ -1,6 +1,56 @@
+use clap::{Parser, Subcommand};
 use std::process::ExitCode;
 
+// Supported renderers
+const SUPPORTED: &[&str] = &["mdbook-man"];
+
+#[derive(Debug, Parser)]
+#[command(
+    about,
+    after_help = "Omit the COMMAND to access the mdBook interface for pre-processing",
+    author,
+    long_about = None,
+    version,
+)]
+struct Args {
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Debug, Subcommand)]
+enum Commands {
+    /// mdBook interface for assessing pre-processor support
+    Supports {
+        /// Name of the renderer being used by mdBook
+        renderer: String,
+    },
+
+    /// Post-process the rendered manpage from standard input to standard output
+    PostProcess,
+}
+
 fn main() -> ExitCode {
-    println!("Hello!");
+    let args = Args::parse();
+
+    match args.command {
+        None => {
+            // TODO
+            println!("Pre-process");
+        }
+
+        Some(Commands::Supports { renderer }) => {
+            if !SUPPORTED.iter().any(|&supported| renderer == supported) {
+                eprintln!("Unsupported pre-processor: {renderer}");
+                eprintln!("Supported pre-processors: {}", SUPPORTED.join(" "));
+                return ExitCode::FAILURE;
+            }
+        }
+
+        Some(Commands::PostProcess) => {
+            // TODO
+            println!("Post-process");
+        }
+    }
+
     ExitCode::SUCCESS
 }
