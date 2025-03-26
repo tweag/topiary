@@ -55,7 +55,10 @@
   - Bump `workspace.package.version`.
   - Bump any workspace dependency versions, respectively.
 
-- Update lockfiles and the release workflow.
+- Update lockfiles and the release workflow. Lockfiles should be kept up
+  to date by the Renovate bot, but it's worth doing manually when
+  preparing a release; the release workflow always needs manual
+  updating.
 
   - Run `nix flake update` to update `flake.lock`.
 
