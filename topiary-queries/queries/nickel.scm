@@ -6,22 +6,19 @@
   (str_chunks_single)
   (str_chunks_multi)
   (builtin)
-  (quoted_enum_tag)
-] @leaf
+  (quoted_enum_tag)] @leaf
 
 ; Allow a blank line before the following nodes
 [
   (comment)
   (record_field)
-  (record_last_field)
-] @allow_blank_line_before
+  (record_last_field)] @allow_blank_line_before
 
 ; Allow blank lines to appear between a let bind and its result
 (let_expr
   (let_in_block)
   .
-  (term) @allow_blank_line_before
-)
+  (term) @allow_blank_line_before)
 
 ; Surround with spaces: keywords, operators, annotation markers
 (
@@ -74,9 +71,7 @@
     "=="
     "!="
     "&&"
-    "||"
-  ] @prepend_space @append_space
-)
+    "||"] @prepend_space @append_space)
 
 ; Don't insert spaces before the following delimiters
 ;
@@ -91,8 +86,7 @@
 ; formatting rules.
 [
   ","
-  ";"
-] @prepend_antispace
+  ";"] @prepend_antispace
 
 ; Parentheses
 ;
@@ -138,31 +132,25 @@
       (infix_expr . (applicative . (match_expr)))
 
       ; Multi-line and symbolic strings
-      (infix_expr . (applicative . (record_operand . (atom . (str_chunks)))))
-    ]
-  )? @do_nothing
+      (infix_expr . (applicative . (record_operand . (atom . (str_chunks)))))])? @do_nothing
   ")" @prepend_indent_end
-  .
-)
+  .)
 
 (atom
   .
   "(" @append_antispace
   ")" @prepend_antispace @prepend_empty_softline
-  .
-)
+  .)
 
 ; Don't insert spaces between infix operators and their operand
 (infix_expr
   .
   [
     "-"
-    (infix_u_op_5 "!")
-  ] @append_antispace
+    (infix_u_op_5 "!")] @append_antispace
   .
   (infix_expr)
-  .
-)
+  .)
 
 ; Flow a chain of infix expressions over new lines, in a multi-line
 ; context. Note that we _don't_ want this to happen for comparison
@@ -171,9 +159,7 @@
   (#scope_id! "infix_chain")
   [
     (infix_expr)
-    (annotated_infix_expr)
-  ] @prepend_begin_scope
-) @append_end_scope
+    (annotated_infix_expr)] @prepend_begin_scope) @append_end_scope
 
 (infix_expr
   (#scope_id! "infix_chain")
@@ -188,25 +174,21 @@
     (infix_lazy_b_op_10) ; ||
   ] @prepend_spaced_scoped_softline
   .
-  (infix_expr)
-)
+  (infix_expr))
 
 ; Surround all polymorphic type variables with spaces
 (forall
-  (ident) @prepend_space
-)
+  (ident) @prepend_space)
 
 ; Insert a space between the enum tag and the argument of an enum variant
 (enum_variant
-  (enum_tag) @append_space
-)
+  (enum_tag) @append_space)
 
 ; Insert a space between the enum tag and the argument of an enum variant
 ; pattern
 (enum_variant_pattern
   (enum_tag) @append_space
-  (pattern_fun)
-)
+  (pattern_fun))
 
 ;; Comments
 
@@ -239,9 +221,7 @@
   .
   [
     (term)
-    (pattern)
-  ] @append_end_scope
-)
+    (pattern)] @append_end_scope)
 
 (_
   (#scope_id! "bound_rhs")
@@ -275,11 +255,7 @@
         (infix_expr . (applicative . (match_expr)))
 
         ; Multi-line and symbolic strings
-        (infix_expr . (applicative . (record_operand . (atom . (str_chunks)))))
-      ]? @do_nothing
-    )
-  ) @append_indent_end
-)
+        (infix_expr . (applicative . (record_operand . (atom . (str_chunks)))))]? @do_nothing)) @append_indent_end)
 
 ; If the RHS starts with a comment, which itself is followed by a hard
 ; line, then we apply the normal indent block formatting in a multi-line
@@ -288,8 +264,7 @@
   "=" @append_indent_start
   .
   (comment)
-  (term) @append_indent_end
-)
+  (term) @append_indent_end)
 
 ; A let expression looks like:
 ;
@@ -322,10 +297,8 @@
     ; so that in the case of a "let rec" the line break goes after the "rec".
     (let_binding) @prepend_spaced_softline @prepend_indent_start
     (let_binding)
-    "in" @prepend_indent_end @prepend_begin_scope @prepend_spaced_softline
-  )
-  (term) @append_end_scope
-)
+    "in" @prepend_indent_end @prepend_begin_scope @prepend_spaced_softline)
+  (term) @append_end_scope)
 
 ; A let with a single binding. The binding should be on the same line as the "let".
 (let_expr
@@ -335,23 +308,18 @@
     .
     (let_binding)
     .
-    "in" @prepend_begin_scope @prepend_spaced_softline
-  )
-  (term) @append_end_scope
-)
+    "in" @prepend_begin_scope @prepend_spaced_softline)
+  (term) @append_end_scope)
 
 ; When binding multiple values in a let block, allow new lines between the bindings.
 (let_expr
   (#scope_id! "let_result")
   (let_in_block
-    ("," @append_spaced_softline)
-  )
-)
+    ("," @append_spaced_softline)))
 
 (let_expr
   (#scope_id! "let_result")
-  (term) @prepend_spaced_scoped_softline
-)
+  (term) @prepend_spaced_scoped_softline)
 
 ;; Annotations
 
@@ -370,14 +338,12 @@
   (#scope_id! "annotations")
   (_) @append_begin_scope
   .
-  (annot) @append_end_scope
-)
+  (annot) @append_end_scope)
 
 ; Put each annotation on a new line, in a multi-line context.
 (annot
   (#scope_id! "annotations")
-  (annot_atom) @prepend_spaced_scoped_softline
-)
+  (annot_atom) @prepend_spaced_scoped_softline)
 
 ; Start a new scope for annotations, used to properly indent any content coming
 ; after the annotations. We use Topiary's measuring scope feature: the
@@ -390,8 +356,7 @@
   .
   (annot) @append_end_measuring_scope
   "="
-  (term) @append_end_scope
-)
+  (term) @append_end_scope)
 
 ; Add a new line before the last annotation and the following equal sign, when
 ; the annotations are multi-line.
@@ -418,13 +383,11 @@
   (#scope_id! "annotations_with_content")
   (annot) @append_spaced_scoped_softline
   .
-  "="
-)
+  "=")
 
 ; Indent the annotations with respect to the identifier they annotate.
 (
-  (annot) @prepend_indent_start @append_indent_end
-)
+  (annot) @prepend_indent_start @append_indent_end)
 
 ; Indent the bound expression of a let-binding (or a field definition) in
 ; presence of multi-line annotations. That's where we use the measuring scope of
@@ -434,14 +397,12 @@
   (#multi_line_scope_only! "annotations_with_content")
   (annot) @append_indent_start
   "="
-  (term) @append_indent_end
-)
+  (term) @append_indent_end)
 
 ; Break a multi-line polymorphic type annotation after the type
 ; variables, starting an indentation block
 (forall
-  "." @append_spaced_softline @append_indent_start
-) @append_indent_end
+  "." @append_spaced_softline @append_indent_start) @append_indent_end
 
 ;; Functions
 
@@ -449,17 +410,14 @@
 ; This also defines an indentation block.
 (fun_expr
   (#scope_id! "function_definition")
-  "=>" @prepend_begin_scope @append_indent_start
-) @append_indent_end @append_end_scope
+  "=>" @prepend_begin_scope @append_indent_start) @append_indent_end @append_end_scope
 
 (fun_expr
   (#scope_id! "function_definition")
-  (term) @prepend_spaced_scoped_softline
-)
+  (term) @prepend_spaced_scoped_softline)
 
 (fun_expr
-  (pattern_fun) @append_space
-)
+  (pattern_fun) @append_space)
 
 ; Function application (and similar: type applications, enum variants, etc.)
 
@@ -478,8 +436,7 @@
 ; each argument, so we crate a scope accordingly.
 (infix_expr
   (#scope_id! "applicative_chain")
-  (applicative) @prepend_begin_scope
-) @append_end_scope
+  (applicative) @prepend_begin_scope) @append_end_scope
 
 ; In the the multi-ary application case, we add a softline before each argument,
 ; and we indent it.
@@ -491,11 +448,8 @@
   (applicative
     t1: (applicative
       t1: (applicative)
-      t2: (_) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
-    )
-    t2: (_)
-  )
-)
+      t2: (_) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end)
+    t2: (_)))
 
 ; Missing case of the previous rule to indent the very last argument of a
 ; multi-ary application
@@ -504,11 +458,8 @@
   (applicative
     t1: (applicative
       t1: _
-      t2: _
-    )
-    t2: (_) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
-  )
-)
+      t2: _)
+    t2: (_) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end))
 
 ; This adds a space before any argument of an application.
 ;
@@ -522,8 +473,7 @@
 ; additional effect in that case.
 (applicative
   t1: _
-  t2: (_) @prepend_space
-)
+  t2: (_) @prepend_space)
 
 ;; Patterns and match branches
 
@@ -534,22 +484,18 @@
   (#scope_id! "branch_body")
   (pattern)
   "=>" @prepend_begin_scope
-  (term) @append_end_scope
-)
+  (term) @append_end_scope)
 
 ; Flow multi-line match cases into an indented block after the =>
 (match_branch
   (#scope_id! "branch_body")
-  "=>" @append_spaced_scoped_softline @append_indent_start
-) @append_indent_end
+  "=>" @append_spaced_scoped_softline @append_indent_start) @append_indent_end
 
 ; Add indentation to the condition of pattern guards
 (match_branch
   (pattern_guard
     "if" @append_indent_start
-    (term) @append_indent_end
-  )
-)
+    (term) @append_indent_end))
 
 ; Flow each or-branch of an or-pattern on a separate line when they're the
 ; top-level construct of the pattern
@@ -557,11 +503,7 @@
   (pattern
     (or_pattern
       (or_pattern_unparens
-        "or" @prepend_spaced_softline
-      )
-    )
-  )
-)
+        "or" @prepend_spaced_softline))))
 
 ;; Conditionals
 
@@ -588,16 +530,13 @@
 ; alternative style is to give the "then" token its own line.)
 (ite_expr
   "then" @append_spaced_softline @append_indent_start
-  "else" @prepend_indent_end @prepend_spaced_softline
-)
+  "else" @prepend_indent_end @prepend_spaced_softline)
 
 (ite_expr
   "else" @append_spaced_softline @append_indent_start
   t2: (term
     ; Don't apply formatting if an "else" is followed by an "if"
-    (uni_term (ite_expr))? @do_nothing
-  ) @append_indent_end
-)
+    (uni_term (ite_expr))? @do_nothing) @append_indent_end)
 
 ;; Container Types
 ; i.e., Arrays, records (and dictionaries, vicariously) and enums
@@ -611,8 +550,7 @@
   "{" @append_spaced_softline @append_indent_start @prepend_begin_scope
   (_)
   "}" @prepend_indent_end @prepend_spaced_softline @append_end_scope
-  .
-)
+  .)
 
 ; Unlike records, arrays should never have internal spacing, similar to
 ; parentheticals. (This is a conscious choice by the Nickel team; see
@@ -624,8 +562,7 @@
   "[" @append_empty_softline @append_indent_start @prepend_begin_scope
   (_)
   "]" @prepend_indent_end @prepend_empty_softline @append_end_scope
-  .
-)
+  .)
 
 ; It doesn't really make sense for an enum to
 ; have no members, so we ignore that case
@@ -634,8 +571,7 @@
   .
   "[|" @append_spaced_softline @append_indent_start @prepend_begin_scope
   "|]" @prepend_indent_end @prepend_spaced_softline @append_end_scope
-  .
-)
+  .)
 
 ; Allow newlines after the comma (or semicolon) following a container
 ; element.
@@ -650,13 +586,11 @@
     (term)
     (pattern)
     (last_elem_pat)
-    (enum)
-  ]
+    (enum)]
   .
   ["," ";"] @append_spaced_scoped_softline
   .
-  (comment)? @do_nothing
-)
+  (comment)? @do_nothing)
 
 ; Enums and records can have a `;` at the very beginning; allow spaces after
 ; these ones also.
@@ -665,5 +599,4 @@
   .
   ";" @append_spaced_scoped_softline
   .
-  (comment)? @do_nothing
-)
+  (comment)? @do_nothing)

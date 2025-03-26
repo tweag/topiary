@@ -27,9 +27,7 @@
     (character)
     (quoted_string)
     (signed_number)
-    (string)
-  ]
-) @leaf
+    (string)]) @leaf
 
 (comment) @multi_line_indent_all
 
@@ -58,31 +56,26 @@
   (open_module)
   (type_definition)
   (value_definition)
-  (value_specification)
-] @allow_blank_line_before
+  (value_specification)] @allow_blank_line_before
 
 ; The `;;` top-level operator should be alone on its line,
 ; possibly separated by blank lines above and below.
 (
   ";;" @allow_blank_line_before @prepend_hardline @append_hardline
   .
-  _ @allow_blank_line_before
-)
+  _ @allow_blank_line_before)
 
 ; In a definition including several mutually recursive functions,
 ; one can skip a line before each of them.
 (value_definition
-  "and" @allow_blank_line_before
-)
+  "and" @allow_blank_line_before)
 (value_definition
-  (let_and_operator) @allow_blank_line_before
-)
+  (let_and_operator) @allow_blank_line_before)
 
 ; In a definition including several mutually recursive types,
 ; one can skip a line before each of them.
 (type_definition
-  "and" @allow_blank_line_before
-)
+  "and" @allow_blank_line_before)
 
 ; Append line breaks. If there is a comment following, we don't add anything,
 ; because the input softlines and spaces above will already have sorted out the
@@ -93,13 +86,11 @@
     (external)
     (module_definition)
     (module_type_definition)
-    (type_definition)
-  ] @append_spaced_softline
+    (type_definition)] @append_spaced_softline
   .
   "in"? @do_nothing
   .
-  (comment)* @do_nothing
-)
+  (comment)* @do_nothing)
 ; Also append line breaks after open_module, except when it's
 ; preceded by "let", because in this case it's in a let_open_expression.
 (
@@ -107,8 +98,7 @@
   .
   (open_module) @append_hardline
   .
-  (comment)* @do_nothing
-)
+  (comment)* @do_nothing)
 
 ; Append line break after module include, except if it's alone in a single-lined struct
 (
@@ -119,8 +109,7 @@
     ; end equivalence class
   ] @append_hardline
   .
-  "end"? @do_nothing
-)
+  "end"? @do_nothing)
 (structure
   "struct"
   .
@@ -131,15 +120,13 @@
     ; end equivalence class
   ] @append_spaced_softline
   .
-  "end"
-)
+  "end")
 
 ; Consecutive definitions must be separated by line breaks
 (
   [
     (value_definition)
-    (value_specification)
-  ] @append_spaced_softline
+    (value_specification)] @append_spaced_softline
   .
   [
     (exception_definition)
@@ -149,9 +136,7 @@
     (open_module)
     (type_definition)
     (value_definition)
-    (value_specification)
-  ]
-)
+    (value_specification)])
 
 ; Surround spaces
 ; A space is put after, except when followed by a PPX "%".
@@ -222,11 +207,9 @@
     ":>"
     "::"
     "[>"
-    "[<"
-  ] @append_space
+    "[<"] @append_space
   .
-  "%"? @do_nothing
-)
+  "%"? @do_nothing)
 
 ; Prepend a space. Note that these nodes are not expected to come after an open parenthesis,
 ; or if they do, we still want a space before.
@@ -266,8 +249,7 @@
   "+="
   ":="
   ":>"
-  "::"
-] @prepend_space
+  "::"] @prepend_space
 
 ; let-like and and-like operators are only followed by a closing parenthesis
 ; during their definition, in which case no space must be appended.
@@ -275,20 +257,17 @@
 (
   (let_and_operator) @append_space
   .
-  ")"* @do_nothing
-)
+  ")"* @do_nothing)
 (
   (let_operator) @append_space
   .
-  ")"* @do_nothing
-)
+  ")"* @do_nothing)
 
 ; Put a space after commas, except the last one.
 (
   "," @append_space
   .
-  (_)
-)
+  (_))
 
 ; Put a space after the dot in polymorphic function types
 ;
@@ -296,8 +275,7 @@
 ;   type a b. a: a -> b: b -> a =
 ;   fun ~a ~b -> a
 (polymorphic_type
-  "." @append_space
-)
+  "." @append_space)
 
 ; Certain elements must be separated by spaces.
 (
@@ -332,8 +310,7 @@
     (value_path)
     (value_pattern)
     ")"
-    "]"
-  ] @append_space
+    "]"] @append_space
   .
   [
     ; Don't add any space just before these.
@@ -342,8 +319,7 @@
     "."
     ".."
     ")"
-    "]"
-  ]* @do_nothing
+    "]"]* @do_nothing
   .
   [
     (abstract_type)
@@ -383,9 +359,7 @@
     (value_path)
     (value_pattern)
     "("
-    "{"
-  ]
-)
+    "{"])
 
 ; When one uses a language extension, we always put a space after the extension name,
 ; if this name ends by the '?' or ':' token, the space comes after it.
@@ -396,16 +370,11 @@
   (attribute_payload
     [
       "?"
-      ":"
-    ]
-  )* @do_nothing
-)
+      ":"])* @do_nothing)
 (attribute_payload
   [
     "?"
-    ":"
-  ] @append_space
-)
+    ":"] @append_space)
 
 ; Some kinds of colons should have a space in front.
 (
@@ -415,11 +384,9 @@
     (module_name)
     (parenthesized_expression)
     (value_name)
-    (value_pattern)
-  ] @append_space
+    (value_pattern)] @append_space
   .
-  ":"
-)
+  ":")
 
 ; Keep spacing between pointy brackets when used in object types.
 ;
@@ -429,8 +396,7 @@
 ;   let obj_id (obj : <..>) = obj
 (object_type
   "<" @append_space
-  ">" @prepend_space
-)
+  ">" @prepend_space)
 
 ; Softlines. These become either a space or a newline, depending on whether we
 ; format their node as single-line or multi-line. If there is a comment
@@ -446,15 +412,12 @@
     "struct"
     "then"
     "with"
-    ";"
-  ] @append_spaced_softline
+    ";"] @append_spaced_softline
   .
   [
     (attribute)
     (comment)
-    "%"
-  ]* @do_nothing
-)
+    "%"]* @do_nothing)
 
 (
   [
@@ -463,15 +426,13 @@
     "struct"
     "then"
     "with"
-    ";"
-  ]
+    ";"]
   .
   "%"
   .
   (attribute_id) @append_spaced_softline
   .
-  (comment)* @do_nothing
-)
+  (comment)* @do_nothing)
 
 ; only add softlines after "else" if it's not part of an "else if" construction
 (
@@ -479,18 +440,14 @@
   .
   [
     (comment)
-    (if_expression)
-  ]? @do_nothing
-)
+    (if_expression)]? @do_nothing)
 
 ; ":" must not always be followed by a softline, we explicitly enumerate
 ; the contexts where it must happen
 (value_specification
-  ":" @append_spaced_softline
-)
+  ":" @append_spaced_softline)
 (module_binding
-  ":" @append_input_softline
-)
+  ":" @append_input_softline)
 (field_declaration
   ":" @append_spaced_softline
   [
@@ -499,13 +456,9 @@
       [
         "("
         (polymorphic_variant_type)
-        (record_declaration)
-      ]
-    )
+        (record_declaration)])
     (polymorphic_variant_type)
-    (record_declaration)
-  ]? @do_nothing
-)
+    (record_declaration)]? @do_nothing)
 ; We also want to add the softline when the following list-like structure is single-line
 (field_declaration
   ":" @append_spaced_softline
@@ -515,32 +468,23 @@
       [
         "("
         (polymorphic_variant_type)
-        (record_declaration)
-      ]
-    )
+        (record_declaration)])
     (polymorphic_variant_type)
-    (record_declaration)
-  ]
-  (#single_line_scope_only! "dangling_list_like")
-)
+    (record_declaration)]
+  (#single_line_scope_only! "dangling_list_like"))
 (typed_label
-  ":" @append_spaced_softline
-)
+  ":" @append_spaced_softline)
 (constructor_declaration
-  ":" @append_spaced_softline
-)
+  ":" @append_spaced_softline)
 
 ; "->" must not always be followed by a softline, we explicitly enumerate
 ; the contexts where it must happen
 (fun_expression
-  "->" @append_spaced_softline
-)
+  "->" @append_spaced_softline)
 (match_case
-  "->" @append_spaced_softline
-)
+  "->" @append_spaced_softline)
 (constructor_declaration
-  "->" @append_spaced_softline
-)
+  "->" @append_spaced_softline)
 
 ; Always put softlines before these:
 [
@@ -550,12 +494,10 @@
   (else_clause)
   (item_attribute)
   "*"
-  "|"
-] @prepend_spaced_softline
+  "|"] @prepend_spaced_softline
 
 [
-  (match_expression)
-] @prepend_empty_softline
+  (match_expression)] @prepend_empty_softline
 
 ; Softline before the first match case
 ;
@@ -566,12 +508,10 @@
 (match_expression
   "|"* @do_nothing
   .
-  (match_case) @prepend_spaced_softline
-)
+  (match_case) @prepend_spaced_softline)
 
 (match_expression
-  "|" @prepend_empty_softline
-)
+  "|" @prepend_empty_softline)
 
 ; Allow (and enforce) the optional "|" before the first match case
 ; if and only if the context is multi-line
@@ -581,8 +521,7 @@
   "|" @delete
   .
   (match_case)
-  (#single_line_only!)
-)
+  (#single_line_only!))
 
 (
   "with"
@@ -591,16 +530,14 @@
   .
   (match_case) @prepend_delimiter
   (#delimiter! "| ") ; sic
-  (#multi_line_only!)
-)
+  (#multi_line_only!))
 
 ; Same as above, with polymorphic variant type, only in the contexts where
 ; `dangling_list_like` can be defined.
 (
   [
     ":"
-    "="
-  ]
+    "="]
   .
   (polymorphic_variant_type
     "["
@@ -608,14 +545,11 @@
     "|" @delete
     .
     (tag_specification)
-    (#single_line_scope_only! "dangling_list_like")
-  )
-)
+    (#single_line_scope_only! "dangling_list_like")))
 (
   [
     ":"
-    "="
-  ]
+    "="]
   .
   (polymorphic_variant_type
     "["
@@ -624,26 +558,20 @@
     .
     (tag_specification) @prepend_delimiter
     (#delimiter! "| ") ; sic
-    (#multi_line_scope_only! "dangling_list_like")
-  )
-)
+    (#multi_line_scope_only! "dangling_list_like")))
 (
   [
     ":"
-    "="
-  ]
+    "="]
   .
   (polymorphic_variant_type
     (tag_specification) @append_empty_scoped_softline
-    (#scope_id! "dangling_list_like")
-  )
-)
+    (#scope_id! "dangling_list_like")))
 ; Default version relying on local scope only
 (
   [
     ":"
-    "="
-  ]? @do_nothing
+    "="]? @do_nothing
   .
   (polymorphic_variant_type
     "["
@@ -651,14 +579,11 @@
     "|" @delete
     .
     (tag_specification)
-    (#single_line_only!)
-  )
-)
+    (#single_line_only!)))
 (
   [
     ":"
-    "="
-  ]? @do_nothing
+    "="]? @do_nothing
   .
   (polymorphic_variant_type
     "["
@@ -667,33 +592,24 @@
     .
     (tag_specification) @prepend_delimiter
     (#delimiter! "| ") ; sic
-    (#multi_line_only!)
-  )
-)
+    (#multi_line_only!)))
 (
   [
     ":"
-    "="
-  ]? @do_nothing
+    "="]? @do_nothing
   .
   (polymorphic_variant_type
     [
       "["
-      (tag_specification)
-    ] @append_empty_softline
-  )
-)
+      (tag_specification)] @append_empty_softline))
 (
   [
     ":"
-    "="
-  ]? @do_nothing
+    "="]? @do_nothing
   .
   (polymorphic_variant_type
     "[" @append_indent_start
-    "]" @prepend_indent_end
-  )
-)
+    "]" @prepend_indent_end))
 
 ; Multi-line definitions must have a linebreak after "=" and before "in":
 ;
@@ -705,21 +621,17 @@
 (let_expression
   (value_definition
     (_) @append_spaced_softline
-    .
-  )
+    .)
   .
-  "in" @append_spaced_softline
-)
+  "in" @append_spaced_softline)
 (let_module_expression
   (module_definition)
   .
-  "in" @append_spaced_softline
-)
+  "in" @append_spaced_softline)
 (let_open_expression
   (open_module)
   .
-  "in" @append_spaced_softline
-)
+  "in" @append_spaced_softline)
 ; There are special cases however. We do not want to break lines after "=" when writing
 ;
 ; let f = function
@@ -739,16 +651,12 @@
       .
       [
         "("
-        "["
-      ]
-    )
+        "["])
     (list_expression)
     (record_expression)
     (array_expression)
     (function_expression)
-    (fun_expression)
-  ]* @do_nothing
-)
+    (fun_expression)]* @do_nothing)
 
 ; We want to write multi-line list-like bindings as:
 ;
@@ -772,8 +680,7 @@
     "::"
     "<-"
     "->"
-    "*"
-  ] @append_begin_scope
+    "*"] @append_begin_scope
   .
   (comment)*
   .
@@ -783,17 +690,13 @@
       .
       [
         "("
-        "["
-      ]
-    )
+        "["])
     (list_expression)
     (record_expression)
     (array_expression)
     ; types
     (polymorphic_variant_type)
-    (record_declaration)
-  ] @append_end_scope @prepend_begin_measuring_scope @append_end_measuring_scope
-)
+    (record_declaration)] @append_end_scope @prepend_begin_measuring_scope @append_end_measuring_scope)
 (application_expression
   (#scope_id! "dangling_list_like")
   (_) @append_begin_scope
@@ -804,14 +707,10 @@
       .
       [
         "("
-        "["
-      ]
-    )
+        "["])
     (list_expression)
     (record_expression)
-    (array_expression)
-  ] @append_end_scope @prepend_begin_measuring_scope @append_end_measuring_scope
-)
+    (array_expression)] @append_end_scope @prepend_begin_measuring_scope @append_end_measuring_scope)
 (_
   (#scope_id! "dangling_list_like")
   "let" @append_begin_scope
@@ -820,10 +719,7 @@
     [
       (array_pattern)
       (list_pattern)
-      (record_pattern)
-    ] @append_end_scope @prepend_begin_measuring_scope @append_end_measuring_scope
-  )
-)
+      (record_pattern)] @append_end_scope @prepend_begin_measuring_scope @append_end_measuring_scope))
 (constructor_pattern
   (#scope_id! "dangling_list_like")
   (_) @append_begin_scope
@@ -831,9 +727,7 @@
   [
     (array_pattern)
     (list_pattern)
-    (record_pattern)
-  ] @append_end_scope @prepend_begin_measuring_scope @append_end_measuring_scope
-)
+    (record_pattern)] @append_end_scope @prepend_begin_measuring_scope @append_end_measuring_scope)
 
 ; We want to add a line when the regular scope is multi-line,
 ; But only if the (measured) custom scope is single-line.
@@ -858,8 +752,7 @@
     ":"
     "::"
     "<-"
-    "*"
-  ] @append_spaced_softline @append_indent_start
+    "*"] @append_spaced_softline @append_indent_start
   .
   (comment)*
   .
@@ -870,43 +763,35 @@
       .
       [
         "("
-        "["
-      ]
+        "["]
       _
       [
         ")"
-        "]"
-      ]
-      .
-    )
+        "]"]
+      .)
     (list_expression)
     (record_expression)
     (array_expression)
     ; types
     (polymorphic_variant_type)
-    (record_declaration)
-  ] @append_indent_end
+    (record_declaration)] @append_indent_end
   .
   "="? @do_nothing ; Abort if we're in a let binding before the `=`
-  (#single_line_scope_only! "dangling_list_like")
-)
+  (#single_line_scope_only! "dangling_list_like"))
 ; Do not indent `in` and `->`, because we want to be able to chain them while
 ; keeping alignment
 (_
   [
     "in"
-    "->"
-  ] @append_spaced_softline
+    "->"] @append_spaced_softline
   .
   [
     ; expressions
     (parenthesized_expression)
     (list_expression)
     (record_expression)
-    (array_expression)
-  ]
-  (#single_line_scope_only! "dangling_list_like")
-)
+    (array_expression)]
+  (#single_line_scope_only! "dangling_list_like"))
 
 ; We chose not to add a line break between `=` and the
 ; `fun` or `function` keywords, but in order to keep the multi-lined-ness
@@ -930,10 +815,8 @@
   "=" @prepend_begin_scope
   .
   (fun_expression
-    "->" @append_spaced_scoped_softline
-  ) @append_end_scope
-  (#scope_id! "fun_definition")
-)
+    "->" @append_spaced_scoped_softline) @append_end_scope
+  (#scope_id! "fun_definition"))
 
 ; The same as above holds for single-line `function`.
 ;
@@ -954,27 +837,22 @@
   "=" @prepend_begin_scope
   .
   (function_expression
-    "function" @append_spaced_scoped_softline
-  ) @append_end_scope
-  (#scope_id! "function_definition")
-)
+    "function" @append_spaced_scoped_softline) @append_end_scope
+  (#scope_id! "function_definition"))
 ; The following is the general case, which should happen anywhere except in let bindings
 (
   "="? @do_nothing
   .
   (function_expression
-    "function" @append_spaced_scoped_softline
-  ) @prepend_begin_scope @append_end_scope
-  (#scope_id! "function_definition")
-)
+    "function" @append_spaced_scoped_softline) @prepend_begin_scope @append_end_scope
+  (#scope_id! "function_definition"))
 (function_expression
   (match_case)? @do_nothing
   .
   "|" @delete
   .
   (match_case)
-  (#single_line_scope_only! "function_definition")
-)
+  (#single_line_scope_only! "function_definition"))
 (function_expression
   "|"? @do_nothing
   .
@@ -986,12 +864,10 @@
   "|" @prepend_spaced_scoped_softline
   .
   (match_case)
-  (#scope_id! "function_definition")
-)
+  (#scope_id! "function_definition"))
 
 (value_definition
-  (let_and_operator) @prepend_spaced_softline
-)
+  (let_and_operator) @prepend_spaced_softline)
 
 ; There is a large class of terms which should be separated from "=" by a soft line break.
 (
@@ -1010,9 +886,7 @@
     (typed_expression)
     (unit)
     (value_path)
-    (variant_declaration)
-  ]
-)
+    (variant_declaration)])
 
 ; In module signature, each symbol declaration is separated by a softline.
 ;
@@ -1031,8 +905,7 @@
     (include_module)
     (include_module_type)
     ; end equivalence class
-  ] @append_spaced_softline
-)
+  ] @append_spaced_softline)
 
 ; In class definitions and class type definitions, each declaration is separated
 ; by a softline.
@@ -1050,9 +923,7 @@
     (inheritance_definition)
     (instance_variable_definition)
     (method_definition)
-    (class_initializer)
-  ] @append_spaced_softline @prepend_spaced_softline
-)
+    (class_initializer)] @append_spaced_softline @prepend_spaced_softline)
 
 (class_body_type
   "object"
@@ -1060,9 +931,7 @@
     (inheritance_specification)
     (instance_variable_definition)
     (method_definition)
-    (class_initializer)
-  ] @append_spaced_softline @prepend_spaced_softline
-)
+    (class_initializer)] @append_spaced_softline @prepend_spaced_softline)
 
 ; Move semicolon delimiters just after field declarations,
 ; before any attributes and comments.
@@ -1083,12 +952,10 @@
   .
   [
     (comment)
-    (attribute)
-  ]*
+    (attribute)]*
   .
   ";" @delete
-  (#delimiter! ";")
-)
+  (#delimiter! ";"))
 
 ; Unfortunately, we can't process all record declarations:
 ; some are arbitrarily nested within (constructed_type) or (function_type),
@@ -1097,24 +964,18 @@
   [
     ":"
     "="
-    "of"
-  ]
+    "of"]
   (record_declaration
     (field_declaration) @prepend_empty_scoped_softline
-    (#scope_id! "dangling_list_like")
-  )
-)
+    (#scope_id! "dangling_list_like")))
 (
   [
     ":"
     "="
-    "of"
-  ]
+    "of"]
   (record_declaration
     "}" @prepend_empty_scoped_softline
-    (#scope_id! "dangling_list_like")
-  )
-)
+    (#scope_id! "dangling_list_like")))
 
 ; Allow multi-line attributes after field declaratioms, such as:
 ; type t = {
@@ -1130,25 +991,20 @@
   [
     (field_declaration)
     (attribute)
-    (comment)
-  ]? @append_end_scope
+    (comment)]? @append_end_scope
   .
-  (field_declaration) @prepend_begin_scope
-)
+  (field_declaration) @prepend_begin_scope)
 (record_declaration
   (#scope_id! "field_declaration")
   [
     (field_declaration)
     (attribute)
-    (comment)
-  ] @append_end_scope
+    (comment)] @append_end_scope
   .
-  "}"
-)
+  "}")
 (record_declaration
   (attribute) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
-  (#scope_id! "field_declaration")
-)
+  (#scope_id! "field_declaration"))
 
 ; Duplicate the same logic as above for record *expressions*
 (record_expression
@@ -1156,64 +1012,52 @@
   .
   [
     (comment)
-    (attribute)
-  ]*
+    (attribute)]*
   .
   ";" @delete
-  (#delimiter! ";")
-)
+  (#delimiter! ";"))
 
 (record_expression
   (field_expression) @prepend_empty_scoped_softline
-  (#scope_id! "dangling_list_like")
-)
+  (#scope_id! "dangling_list_like"))
 
 (record_expression
   "}" @prepend_empty_scoped_softline
-  (#scope_id! "dangling_list_like")
-)
+  (#scope_id! "dangling_list_like"))
 
 (record_expression
   .
   "{" @append_begin_scope
-  (#scope_id! "field_expression")
-)
+  (#scope_id! "field_expression"))
 (record_expression
   (#scope_id! "field_expression")
   [
     (field_expression)
     (attribute)
-    (comment)
-  ] @append_end_scope
+    (comment)] @append_end_scope
   .
-  (field_expression) @prepend_begin_scope
-)
+  (field_expression) @prepend_begin_scope)
 (record_expression
   (#scope_id! "field_expression")
   [
     (field_expression)
     (attribute)
-    (comment)
-  ] @append_end_scope
+    (comment)] @append_end_scope
   .
-  "}"
-)
+  "}")
 (record_expression
   (attribute) @prepend_indent_start @prepend_spaced_scoped_softline @append_indent_end
-  (#scope_id! "field_expression")
-)
+  (#scope_id! "field_expression"))
 
 ; Minimized version of the above for list expressions and array expressions
 
 (list_expression
   ";" @append_empty_scoped_softline
-  (#scope_id! "dangling_list_like")
-)
+  (#scope_id! "dangling_list_like"))
 
 (array_expression
   ";" @append_empty_scoped_softline
-  (#scope_id! "dangling_list_like")
-)
+  (#scope_id! "dangling_list_like"))
 
 ; Start an indented block after these
 [
@@ -1222,43 +1066,35 @@
   "object"
   "sig"
   "struct"
-  "then"
-] @append_indent_start
+  "then"] @append_indent_start
 
 ; "{" can be used to start quoted strings. Don't indent in that case
 (
   "{" @append_indent_start
   .
-  (quoted_string_content)* @do_nothing
-)
+  (quoted_string_content)* @do_nothing)
 
 ; End the indented block before these
 (
   [
     "done"
-    "end"
-  ] @prepend_indent_end
-)
+    "end"] @prepend_indent_end)
 
 ; "}" can be used to end quoted strings. Don't indent in that case
 (
   (quoted_string_content)* @do_nothing
   .
-  "}" @prepend_indent_end
-)
+  "}" @prepend_indent_end)
 
 ; Only indent after "else" if it's not an "else if" construction
 (
   (else_clause
     "else" @append_indent_start
-    (if_expression)? @do_nothing
-  ) @append_indent_end
-)
+    (if_expression)? @do_nothing) @append_indent_end)
 
 ; End the indented block after these
 (
-  (then_clause) @append_indent_end
-)
+  (then_clause) @append_indent_end)
 
 ; Make an indented block after ":" in typed expressions
 ;
@@ -1276,8 +1112,7 @@
 (value_specification
   ":" @append_indent_start
   (_) @append_indent_end
-  .
-)
+  .)
 
 ; Make an indented block after "=" in
 ; * class bindings
@@ -1288,23 +1123,19 @@
 
 (class_binding
   "=" @append_indent_start
-  (_) @append_indent_end
-)
+  (_) @append_indent_end)
 
 (class_type_binding
   "=" @append_indent_start
-  (_) @append_indent_end
-)
+  (_) @append_indent_end)
 
 (instance_variable_definition
   "=" @append_indent_start
-  (_) @append_indent_end
-)
+  (_) @append_indent_end)
 
 (method_definition
   "=" @append_indent_start
-  (_) @append_indent_end
-)
+  (_) @append_indent_end)
 
 ; Some more rules for type bindings:
 ; Don't indent for record types nor polymorphic variant types:
@@ -1312,14 +1143,12 @@
 (type_binding
   [
     "="
-    "+="
-  ] @append_indent_start
+    "+="] @append_indent_start
   .
   [
     (constructed_type
       ; We don't want to capture constructed types that add their own indentation
-      "("? @do_nothing
-    )
+      "("? @do_nothing)
     (function_type)
     (hash_type)
     (object_type)
@@ -1328,17 +1157,14 @@
     (tuple_type)
     (type_constructor_path)
     (type_variable)
-    (variant_declaration)
-  ] @append_indent_end
+    (variant_declaration)] @append_indent_end
   .
-  (type_constraint)? @do_nothing
-)
+  (type_constraint)? @do_nothing)
 
 (type_binding
   [
     "="
-    "+="
-  ] @append_indent_start
+    "+="] @append_indent_start
   .
   [
     (constructed_type)
@@ -1350,20 +1176,16 @@
     (tuple_type)
     (type_constructor_path)
     (type_variable)
-    (variant_declaration)
-  ]
+    (variant_declaration)]
   .
-  (type_constraint) @append_indent_end
-)
+  (type_constraint) @append_indent_end)
 
 (type_binding
   (package_type
     .
     "(" @append_empty_softline @append_indent_start
     ")" @prepend_empty_softline @prepend_indent_end
-    .
-  ) @prepend_spaced_softline
-)
+    .) @prepend_spaced_softline)
 
 ; Consider type constraints to be "out of the block" when deciding
 ; whether to add a newline between "=" and a constructed type.
@@ -1374,8 +1196,7 @@
 (type_binding
   [
     "="
-    "+="
-  ] @prepend_begin_scope
+    "+="] @prepend_begin_scope
   .
   [
     (constructed_type)
@@ -1387,21 +1208,17 @@
     (tuple_type)
     (type_constructor_path)
     (type_variable)
-    (variant_declaration)
-  ] @append_end_scope
-  (#scope_id! "type_binding_before_constraint")
-)
+    (variant_declaration)] @append_end_scope
+  (#scope_id! "type_binding_before_constraint"))
 
 (type_binding
   [
     "="
-    "+="
-  ] @append_spaced_scoped_softline
+    "+="] @append_spaced_scoped_softline
   .
   [
     (constructed_type
-      "("? @do_nothing
-    )
+      "("? @do_nothing)
     (function_type)
     (hash_type)
     (object_type)
@@ -1410,14 +1227,11 @@
     (tuple_type)
     (type_constructor_path)
     (type_variable)
-    (variant_declaration)
-  ]
-  (#scope_id! "type_binding_before_constraint")
-)
+    (variant_declaration)]
+  (#scope_id! "type_binding_before_constraint"))
 
 (type_binding
-  (type_constraint) @prepend_spaced_softline
-)
+  (type_constraint) @prepend_spaced_softline)
 
 ; Make an indented block after "of" or ":" in constructor declarations
 ;
@@ -1429,11 +1243,9 @@
 (constructor_declaration
   [
     "of"
-    ":"
-  ] @append_indent_start
+    ":"] @append_indent_start
   (_) @append_indent_end
-  .
-)
+  .)
 
 ; Make an indented block after the first term in a long if expression
 ;
@@ -1446,9 +1258,7 @@
     .
     (_) @append_indent_start
     (_) @append_indent_end
-    .
-  )
-)
+    .))
 
 ; Make an indented block after match arrows.
 ;
@@ -1459,8 +1269,7 @@
 (match_case
   "->" @append_indent_start
   (_) @append_indent_end
-  .
-)
+  .)
 
 ; Make an indented block after constructor declaration arrows.
 ;
@@ -1470,8 +1279,7 @@
 (constructor_declaration
   "->" @append_indent_start
   (_) @append_indent_end
-  .
-)
+  .)
 
 ; Make an indented block where a function/match starts in PPX syntax.
 ; The special case about function expressions allows the following to be formatted
@@ -1491,17 +1299,12 @@
     (expression_item
       [
         (function_expression)
-        (fun_expression)
-      ]? @do_nothing
-    )?
-  )
+        (fun_expression)]? @do_nothing)?)
   "]" @prepend_indent_end
-  .
-)
+  .)
 (extension
   "]" @prepend_empty_softline
-  .
-)
+  .)
 
 ; Indent and add softlines in multiline application expressions, such as
 ; let _ =
@@ -1533,8 +1336,7 @@
   (_) @append_indent_start @prepend_begin_scope @prepend_begin_measuring_scope
   (#scope_id! "function_application")
   (_) @append_end_scope
-  .
-)
+  .)
 ; The end of the measuring scope depends on the last argument: if it's a node that
 ; adds its own indentation, end it before the argument. Otherwise end it after the
 ; last argument. In that case, it's the same as the regular scope.
@@ -1547,11 +1349,8 @@
       "{"
       (fun_expression)
       (function_expression)
-      (parenthesized_expression)
-    ]? @do_nothing
-  ) @append_end_measuring_scope
-  .
-)
+      (parenthesized_expression)]? @do_nothing) @append_end_measuring_scope
+  .)
 (application_expression
   (#scope_id! "function_application")
   (_
@@ -1561,31 +1360,25 @@
       "{"
       (fun_expression)
       (function_expression)
-      (parenthesized_expression)
-    ] @prepend_end_measuring_scope
-  )
-  .
-)
+      (parenthesized_expression)] @prepend_end_measuring_scope)
+  .)
 ; If the measuring scope is single-line, end indentation _before_ the last node.
 ; Otherwise, end the indentation after the last node.
 (application_expression
   (#multi_line_scope_only! "function_application")
   (_) @append_indent_end
-  .
-)
+  .)
 (application_expression
   (#single_line_scope_only! "function_application")
   (_) @prepend_indent_end
-  .
-)
+  .)
 ; The node to which we apply append_spaced_scoped_softline will always
 ; be in both scopes, regular and measuring.
 (application_expression
   (_) @append_spaced_scoped_softline
   .
   (_)
-  (#scope_id! "function_application")
-)
+  (#scope_id! "function_application"))
 
 ; Indent and allow softlines in multiline function definitions, such as
 ; let long_function
@@ -1615,10 +1408,8 @@
       "[|" ; array_expression
       "{" ; record_expression. Unfortunately this also captures quoted strings
       "(" ; parenthesized_expression. Unfortunately this also captures unit
-    ]? @do_nothing
-  ) @append_indent_end
-  .
-)
+    ]? @do_nothing) @append_indent_end
+  .)
 ; Special case to still indent quoted strings and unit, despite the rule above
 (let_binding
   .
@@ -1626,31 +1417,25 @@
   "="
   [
     (quoted_string)
-    (unit)
-  ] @append_indent_end
-  .
-)
+    (unit)] @append_indent_end
+  .)
 
 (let_binding
   .
   (_) @append_indent_start
-  "=" @prepend_indent_end
-)
+  "=" @prepend_indent_end)
 (let_binding
   .
   (_) @prepend_begin_scope
   "=" @append_end_scope
-  (#scope_id! "let_binding_before_equal")
-)
+  (#scope_id! "let_binding_before_equal"))
 (let_binding
   (parameter) @prepend_spaced_scoped_softline
-  (#scope_id! "let_binding_before_equal")
-)
+  (#scope_id! "let_binding_before_equal"))
 (let_binding
   ":"? @prepend_spaced_scoped_softline
   "=" @prepend_spaced_scoped_softline
-  (#scope_id! "let_binding_before_equal")
-)
+  (#scope_id! "let_binding_before_equal"))
 
 ; Indent and allow softlines in anonymous function definitions, such as
 ; fun
@@ -1665,49 +1450,39 @@
 (
   [
     (concat_operator)
-    (rel_operator)
-  ]? @do_nothing
+    (rel_operator)]? @do_nothing
   .
   (fun_expression
     .
     "fun" @append_indent_start
     (_) @append_indent_end
-    .
-  )
-)
+    .))
 (fun_expression
   .
   "fun" @append_indent_start
-  "->" @prepend_indent_end
-)
+  "->" @prepend_indent_end)
 (fun_expression
   .
   "fun" @prepend_begin_scope
   "->" @append_end_scope
-  (#scope_id! "fun_expr_before_arrow")
-)
+  (#scope_id! "fun_expr_before_arrow"))
 (fun_expression
   (parameter) @prepend_spaced_scoped_softline
-  (#scope_id! "fun_expr_before_arrow")
-)
+  (#scope_id! "fun_expr_before_arrow"))
 (fun_expression
   ":"? @prepend_spaced_scoped_softline
   "->" @prepend_spaced_scoped_softline
-  (#scope_id! "fun_expr_before_arrow")
-)
+  (#scope_id! "fun_expr_before_arrow"))
 (
   [
     (concat_operator)
-    (rel_operator)
-  ]? @do_nothing
+    (rel_operator)]? @do_nothing
   .
   (function_expression
     .
     "function" @append_indent_start
     (_) @append_indent_end
-    .
-  )
-)
+    .))
 
 ; Indent and allow softlines in tuples and local opens, such as
 ; let _ =
@@ -1724,22 +1499,18 @@
   "(" @append_empty_softline @append_indent_start
   [
     (fun_expression)
-    (function_expression)
-  ]? @do_nothing
+    (function_expression)]? @do_nothing
   ")" @prepend_indent_end
-  .
-)
+  .)
 (parenthesized_expression
   ")" @prepend_empty_softline
-  .
-)
+  .)
 (local_open_expression
   "."
   .
   "(" @append_empty_softline @append_indent_start
   ")" @prepend_indent_end @prepend_empty_softline
-  .
-)
+  .)
 ; Parenthesis are optional when using tuples, so scopes must be tied
 ; to the `product_expression` inside.
 ; Product expressions are nested grammar elements, which means that the syntax tree of
@@ -1758,12 +1529,10 @@
   (product_expression) @prepend_begin_scope @append_end_scope
   .
   ","? @do_nothing
-  (#scope_id! "tuple")
-)
+  (#scope_id! "tuple"))
 (product_expression
   "," @append_spaced_scoped_softline
-  (#scope_id! "tuple")
-)
+  (#scope_id! "tuple"))
 
 ; Allow softlines in function and functor types, such as
 ; type t =
@@ -1790,23 +1559,19 @@
   "->"? @do_nothing
   .
   (function_type) @prepend_begin_scope @append_end_scope
-  (#scope_id! "function_type")
-)
+  (#scope_id! "function_type"))
 (function_type
   "->" @append_spaced_scoped_softline
-  (#scope_id! "function_type")
-)
+  (#scope_id! "function_type"))
 
 (
   "->"? @do_nothing
   .
   (functor_type) @prepend_begin_scope @append_end_scope
-  (#scope_id! "functor_type")
-)
+  (#scope_id! "functor_type"))
 (functor_type
   "->" @append_spaced_scoped_softline
-  (#scope_id! "functor_type")
-)
+  (#scope_id! "functor_type"))
 
 ; Allow softlines in boolean infix expressions, such as
 ; let b =
@@ -1820,27 +1585,21 @@
   (and_operator)? @do_nothing
   .
   (infix_expression
-    (and_operator)
-  ) @prepend_begin_scope @append_end_scope
-  (#scope_id! "and_infix_expression")
-)
+    (and_operator)) @prepend_begin_scope @append_end_scope
+  (#scope_id! "and_infix_expression"))
 (infix_expression
   (and_operator) @prepend_spaced_scoped_softline
-  (#scope_id! "and_infix_expression")
-)
+  (#scope_id! "and_infix_expression"))
 
 (
   (or_operator)? @do_nothing
   .
   (infix_expression
-    (or_operator)
-  ) @prepend_begin_scope @append_end_scope
-  (#scope_id! "or_infix_expression")
-)
+    (or_operator)) @prepend_begin_scope @append_end_scope
+  (#scope_id! "or_infix_expression"))
 (infix_expression
   (or_operator) @prepend_spaced_scoped_softline
-  (#scope_id! "or_infix_expression")
-)
+  (#scope_id! "or_infix_expression"))
 
 ; When a "rel_operator" (like ">>=") is followed by a function definition,
 ; do not add a newline
@@ -1848,16 +1607,13 @@
   (rel_operator)? @do_nothing
   .
   (infix_expression
-    (rel_operator)
-  ) @prepend_begin_scope @append_end_scope
-  (#scope_id! "rel_infix_expression")
-)
+    (rel_operator)) @prepend_begin_scope @append_end_scope
+  (#scope_id! "rel_infix_expression"))
 (infix_expression
   (rel_operator) @prepend_spaced_scoped_softline
   (fun_expression)? @do_nothing
   (function_expression)? @do_nothing
-  (#scope_id! "rel_infix_expression")
-)
+  (#scope_id! "rel_infix_expression"))
 
 ; Put softline and indented blocks after all other infix operators
 (infix_expression
@@ -1865,10 +1621,8 @@
     (pow_operator)
     (mult_operator)
     (add_operator)
-    (assign_operator)
-  ] @append_spaced_softline @append_indent_start
-  right: (_) @append_indent_end
-)
+    (assign_operator)] @append_spaced_softline @append_indent_start
+  right: (_) @append_indent_end)
 
 ; After concat_operator, we want to place a spaced_softline,
 ; except when a function definition or a list-like structure follows.
@@ -1880,8 +1634,7 @@
   (parenthesized_expression)? @do_nothing
   (record_expression)? @do_nothing
   (fun_expression)? @do_nothing
-  (function_expression)? @do_nothing
-)
+  (function_expression)? @do_nothing)
 
 ; Then, we want to indent the expression after a concat_operator
 ; (with the exception of concat_operator chains, and nodes that add their
@@ -1910,15 +1663,12 @@
   (infix_expression
     operator: (concat_operator) @append_indent_start
     (infix_expression
-      operator: (concat_operator)
-    )? @do_nothing
+      operator: (concat_operator))? @do_nothing
     (array_expression)? @do_nothing
     (fun_expression)? @do_nothing
     (list_expression)? @do_nothing
     (parenthesized_expression)? @do_nothing
-    (record_expression)? @do_nothing
-  ) @append_indent_end
-)
+    (record_expression)? @do_nothing) @append_indent_end)
 
 ; The same holds for rel_operator, such as `>>=`
 (_
@@ -1927,11 +1677,8 @@
   (infix_expression
     operator: (rel_operator) @append_indent_start
     (infix_expression
-      operator: (rel_operator)
-    )? @do_nothing
-    (fun_expression)? @do_nothing
-  ) @append_indent_end
-)
+      operator: (rel_operator))? @do_nothing
+    (fun_expression)? @do_nothing) @append_indent_end)
 
 ; The following bit of scope sorcery allows the following to be formatted as such:
 ;
@@ -1955,9 +1702,7 @@
   (#scope_id! "dangling_multiline_function")
   [
     (fun_expression)
-    (function_expression)
-  ] @append_end_scope
-)
+    (function_expression)] @append_end_scope)
 (infix_expression
   (application_expression)
   .
@@ -1966,9 +1711,7 @@
   (#multi_line_scope_only! "dangling_multiline_function")
   [
     (fun_expression)
-    (function_expression)
-  ] @append_indent_end
-)
+    (function_expression)] @append_indent_end)
 
 ; The following allows
 ;
@@ -1985,17 +1728,13 @@
   .
   (fun_expression
     "fun" @prepend_end_measuring_scope
-    "->" @append_end_scope
-  )
-)
+    "->" @append_end_scope))
 (infix_expression
   (#multi_line_scope_only! "relocate_dangling_function_line_break")
   (concat_operator)
   .
   (fun_expression
-    "->" @append_hardline
-  )
-)
+    "->" @append_hardline))
 
 ; Allow softlines in sequences and ppx sequences, such as
 ; let b =
@@ -2007,24 +1746,20 @@
 (
   ";"? @do_nothing
   (sequence_expression
-    ";"
-  ) @prepend_begin_scope @append_end_scope
-  (#scope_id! "sequence_expression")
-)
+    ";") @prepend_begin_scope @append_end_scope
+  (#scope_id! "sequence_expression"))
 (sequence_expression
   ";" @append_spaced_scoped_softline
   .
   "%"? @do_nothing
-  (#scope_id! "sequence_expression")
-)
+  (#scope_id! "sequence_expression"))
 (sequence_expression
   ";"
   .
   "%"
   .
   (attribute_id) @append_spaced_scoped_softline
-  (#scope_id! "sequence_expression")
-)
+  (#scope_id! "sequence_expression"))
 
 ; Allow softlines in or patterns in matches, such as
 ; match foo with
@@ -2035,17 +1770,14 @@
 
 (match_case
   (or_pattern) @prepend_begin_scope @append_end_scope
-  (#scope_id! "top_level_or_pattern")
-)
+  (#scope_id! "top_level_or_pattern"))
 (match_case
   (alias_pattern) @prepend_begin_scope @append_end_scope
-  (#scope_id! "top_level_or_pattern")
-)
+  (#scope_id! "top_level_or_pattern"))
 
 (or_pattern
   "|" @prepend_hardline
-  (#multi_line_scope_only! "top_level_or_pattern")
-)
+  (#multi_line_scope_only! "top_level_or_pattern"))
 
 ; Indent and add softlines in lists and arrays, such as
 ; let _ = [
@@ -2058,16 +1790,14 @@
   "[" @append_indent_start @append_empty_scoped_softline
   (#scope_id! "dangling_list_like")
   "]" @prepend_indent_end @prepend_empty_scoped_softline
-  .
-)
+  .)
 
 (list_pattern
   .
   "[" @append_indent_start @append_empty_scoped_softline
   (#scope_id! "dangling_list_like")
   "]" @prepend_indent_end @prepend_empty_scoped_softline
-  .
-)
+  .)
 
 ; Unfortunately, we can't process all polymorphic variant types:
 ; some are arbitrarily nested within (constructed_type) or (function_type),
@@ -2075,69 +1805,55 @@
 (
   [
     "="
-    ":"
-  ]
+    ":"]
   (polymorphic_variant_type
     .
     "[" @append_indent_start @append_empty_scoped_softline
     (#scope_id! "dangling_list_like")
     "]" @prepend_indent_end @prepend_empty_scoped_softline
-    .
-  )
-)
+    .))
 ; Same for parenthesized constructed types, and record declarations.
 ; This is a best effort situation.
 (
   [
     "="
-    ":"
-  ]
+    ":"]
   (constructed_type
     .
     "(" @append_indent_start @append_empty_scoped_softline
     (#scope_id! "dangling_list_like")
-    ")" @prepend_indent_end @prepend_empty_scoped_softline
-  )
-)
+    ")" @prepend_indent_end @prepend_empty_scoped_softline))
 (
   [
     "="
-    ":"
-  ]
+    ":"]
   (constructed_type
     .
     "("
     "," @append_spaced_scoped_softline
     ")"
-    (#scope_id! "dangling_list_like")
-  )
-)
+    (#scope_id! "dangling_list_like")))
 (
   [
     "="
-    ":"
-  ] @append_empty_softline
+    ":"] @append_empty_softline
   (constructed_type
     "("
-    ")"
-  )
-  (#single_line_scope_only! "dangling_list_like")
-)
+    ")")
+  (#single_line_scope_only! "dangling_list_like"))
 
 (array_expression
   .
   "[|" @append_indent_start @append_empty_scoped_softline
   (#scope_id! "dangling_list_like")
   "|]" @prepend_indent_end @prepend_empty_scoped_softline
-  .
-)
+  .)
 
 (array_pattern
   .
   "[|" @append_indent_start @append_empty_softline
   "|]" @prepend_indent_end @prepend_empty_softline
-  .
-)
+  .)
 
 ; Allow softlines and indentation in functor definitions with many arguments, such as
 ; module Lift
@@ -2152,63 +1868,51 @@
   (module_name) @append_indent_start @prepend_begin_scope
   [
     "="
-    ":"
-  ] @prepend_empty_scoped_softline @prepend_indent_end @append_end_scope
-  (#scope_id! "module_binding_before_equal")
-)
+    ":"] @prepend_empty_scoped_softline @prepend_indent_end @append_end_scope
+  (#scope_id! "module_binding_before_equal"))
 ; if a module binding has no equal sign and isn't just a signature, everything enters the scope
 (module_binding
   (#scope_id! "module_binding_before_equal")
   (module_name) @append_indent_start @prepend_begin_scope
   "="? @do_nothing
-  (signature)? @do_nothing
-) @append_indent_end @append_end_scope
+  (signature)? @do_nothing) @append_indent_end @append_end_scope
 (module_binding
   (module_name) @append_empty_scoped_softline
   (module_parameter) @prepend_spaced_scoped_softline
-  (#scope_id! "module_binding_before_equal")
-)
+  (#scope_id! "module_binding_before_equal"))
 
 ; Try block formatting
 ; A soft linebreak after the "try" (potentially "try%ppx") and one after the "with".
 (try_expression
   "try" @append_spaced_softline @append_indent_start
   .
-  "%"* @do_nothing
-)
+  "%"* @do_nothing)
 (try_expression
   "try"
   .
   "%"
   .
-  (attribute_id) @append_spaced_softline @append_indent_start
-)
+  (attribute_id) @append_spaced_softline @append_indent_start)
 (try_expression
   "with" @prepend_indent_end @prepend_spaced_softline @append_indent_start
   (_) @append_indent_end
-  .
-)
+  .)
 
 ; Formatting set expressions
 (set_expression
-  "<-" @append_spaced_softline @append_indent_start
-) @append_indent_end
+  "<-" @append_spaced_softline @append_indent_start) @append_indent_end
 
 ; Antispaces for brackets and parentheses
 (
   [
     "["
     "[|"
-    "{"
-  ] @append_antispace
-)
+    "{"] @append_antispace)
 (
   [
     "]"
     "|]"
-    "}"
-  ] @prepend_antispace
-)
+    "}"] @prepend_antispace)
 
 ; We must be cautious when surrounding `mult_operator` with parentheses, lest we mess
 ; with comments:
@@ -2216,13 +1920,11 @@
 (
   "(" @append_antispace
   .
-  (mult_operator)? @do_nothing
-)
+  (mult_operator)? @do_nothing)
 (
   (mult_operator)? @do_nothing
   .
-  ")" @prepend_antispace
-)
+  ")" @prepend_antispace)
 
 ; Formatting typed patterns in function arguments, e.g.
 ; let foo
@@ -2243,16 +1945,14 @@
   "("
   ":" @append_spaced_softline @append_indent_start
   ")" @prepend_indent_end @prepend_empty_softline
-  .
-)
+  .)
 (parameter
   "~"
   .
   "("
   ":" @append_spaced_softline @append_indent_start
   ")" @prepend_indent_end @prepend_empty_softline
-  .
-)
+  .)
 
 ; Input softlines before and after all comments. This means that the input
 ; decides if a comment should have line breaks before or after. But don't put a
@@ -2263,5 +1963,4 @@
 (
   (comment) @append_input_softline
   .
-  ["," ";"]* @do_nothing
-)
+  ["," ";"]* @do_nothing)

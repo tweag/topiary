@@ -7,14 +7,12 @@
   (string_value)
   (color_value)
   (float_value)
-  (grid_value)
-] @leaf
+  (grid_value)] @leaf
 
 ; Append space after colons
 (declaration ":" @append_space)
 (feature_query
-  ":" @append_space
-)
+  ":" @append_space)
 
 ; Append space after import
 (import_statement "@import" @append_space)
@@ -37,12 +35,10 @@
 
 ; Space around and in binary queries
 (binary_query
-  "and" @prepend_space @append_space
-)
+  "and" @prepend_space @append_space)
 ; Space around not in unary queries
 (unary_query
-  "not" @append_space
-)
+  "not" @append_space)
 
 ; Add space before any !important declarations
 (important) @prepend_space
@@ -61,23 +57,19 @@
 (descendant_selector
   (_) @append_space
   .
-  (_)
-)
+  (_))
 (sibling_selector
   (_) @append_space
   "~" @append_space
-  (_)
-)
+  (_))
 (adjacent_sibling_selector
   (_) @append_space
   "+" @append_space
-  (_)
-)
+  (_))
 (child_selector
   (_) @append_space
   ">" @append_space
-  (_)
-)
+  (_))
 
 ; Indent the declarations in the block
 (block
@@ -85,8 +77,7 @@
   "{" @append_hardline @append_indent_start @prepend_space
   (_)
   "}" @prepend_hardline @prepend_indent_end @append_hardline
-  .
-)
+  .)
 
 ; Indent the declarations in the keyframe_block_list
 (keyframe_block_list
@@ -94,45 +85,37 @@
   "{" @append_hardline @append_indent_start @prepend_space
   (_)
   "}" @prepend_hardline @prepend_indent_end @append_hardline
-  .
-)
+  .)
 
 ; Always have semicolon after declarations
 (
   (declaration) @append_delimiter
   (#delimiter! ";")
-  (#not-match? @append_delimiter ";$")
-)
+  (#not-match? @append_delimiter ";$"))
 
 ; Appends hardline between declaration
 (declaration
-  ";" @append_hardline
-)
+  ";" @append_hardline)
 
 ; Add space between values after a property name
 (declaration
   (property_name)
   ":" @append_space
-  (_) @append_space
-)
+  (_) @append_space)
 
 ; Do not add a space between the last value and the ending semicolon
 (declaration
-  ";" @prepend_antispace
-)
+  ";" @prepend_antispace)
 
 (declaration
-  "," @prepend_antispace @append_space
-)
+  "," @prepend_antispace @append_space)
 
 (arguments
-  "," @append_space
-)
+  "," @append_space)
 
 ; Newline between selectors
 (selectors
-  "," @append_hardline
-)
+  "," @append_hardline)
 
 ; Space between operators in binary expressions
 (binary_expression ["+" "*" "-" "/"] @append_space @prepend_space)
@@ -142,6 +125,4 @@
   (arguments
     (_) @append_space
     .
-    ["," ")"]* @do_nothing
-  )
-)
+    ["," ")"]* @do_nothing))
