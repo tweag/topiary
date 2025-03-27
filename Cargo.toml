@@ -17,7 +17,7 @@ members = [
   "topiary-config",
   "topiary-web-tree-sitter-sys",
   "topiary-tree-sitter-facade",
-  "mdbook-manmunge",
+  "docs/manpages/mdbook-manmunge",
   "examples/*",
 ]
 default-members = ["topiary-core", "topiary-cli"]
