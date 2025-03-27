@@ -140,6 +140,8 @@
             withConfig
             gitHook
           ;
+
+          defaultConfiguration = fromNickelFile ./languages.ncl;
         });
     };
 }
