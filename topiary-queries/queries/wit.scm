@@ -76,21 +76,26 @@
     (since_gate)
     (deprecated_gate)
     (unstable_gate)
-  ] @append_spaced_softline
+  ] @append_spaced_softline @prepend_hardline
   .
   [
     (block_comment)
     (line_comment)
   ]* @do_nothing
 )
+[
+    (since_gate)
+    (deprecated_gate)
+    (unstable_gate)
+] @append_hardline
 
 ; (ty (_ "," @append_space))
 
 (body
   .
-  "{" @append_spaced_softline @append_indent_start @prepend_space
+  "{" @append_hardline @append_indent_start @prepend_space
   _
-  "}" @prepend_spaced_softline @prepend_indent_end @append_hardline
+  "}" @prepend_hardline @prepend_indent_end
   .
 )
 
@@ -103,7 +108,7 @@
 ; // ==================
 ; Never put a space before a comma or semicolon
 (
-  ";" @append_hardline @prepend_antispace
+  ";" @append_hardline
   .
   [
     (block_comment)
@@ -116,7 +121,7 @@
   ")"
   ","
   ";"
-]
+] @prepend_antispace
 
 "," @append_space
 

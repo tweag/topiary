@@ -74,7 +74,8 @@ interface %resource {
     read: func (n: u32) -> list<u8>;
     merge: static func (
       lhs: blob,
-      rhs: blob
+      // add trailing comma
+      rhs: blob,
     ) -> blob;
   }
 
@@ -93,7 +94,13 @@ interface %resource {
 }
 
 interface my-interface {
-  use an-interface.{a, list, of, names};
+  use an-interface.{
+    // add trailing comma
+    a,
+    list,
+    of,
+    names,
+  };
   use my:dependency/the-interface.{more, names as foo};
   use wasi:http/types@1.0.0.{request, response};
   use types.{errno as my-errno};
@@ -110,22 +117,24 @@ interface types {
   }
   // values of this type will be one of the specified cases
   variant human {
-    /// `doc` comment
     baby,
     child(u32),
+    // add trailing comma
     fixed-size(list<bool, 1>),
   }
   // similar to `variant`, but no type payloads
   enum errno {
     too-big,
+    // add trailing comma
     too-small,
     too-fast,
-    too-slow
+    too-slow,
   }
   // a bitflags type
   flags permissions {
     read,
     write,
+    // add trailing comma
     exec,
   }
   // type aliases are allowed to primitive types and additionally here are some
