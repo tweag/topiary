@@ -25,3 +25,4 @@ pulldown-cmark-to-cmark.workspace = true
 pulldown-cmark.workspace = true
 semver.workspace = true
 serde_json.workspace = true
+url.workspace = true

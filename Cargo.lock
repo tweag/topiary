@@ -3052,6 +3052,7 @@ dependencies = [
  "pulldown-cmark-to-cmark",
  "semver",
  "serde_json",
+ "url",
 ]
 
 [[package]]
