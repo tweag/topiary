@@ -4,17 +4,37 @@
 
 // WIT grammar for tree-sitter
 //// WIT grammar for tree-sitter
-/*** nested comments
-/** WIT grammar for /*tree-sitter*/ */
+/** nested comments
+/** WIT grammar for
+/*tree-sitter*/
+/// nested `doc_comment`
 */
-/* nested comments
-/** WIT grammar for /*tree-sitter*/ */
 */
-/// WIT *grammar* for tree-sitter
+/// WIT [grammar](https://component-model.bytecodealliance.org/design/wit.html) for tree-sitter
 package tree-sitter:wit@1.0.0;
 package topiary:wit@1.0.0;
 package wasmi:io:hello;
 package wasmi:io:hello/epic@1.0.0;
+/// `stream` (no _s_) is a *type* that
+/// - can include a `<T>`
+/// - be a type in ofitself
+/**
+/* the section is a doc_comment in markdown */
+```wit
+ interface filesystem {
+   resource file {
+     constructor();
+     is-closed: func() -> bool;
+     /// see [`streams:iter/read`][async-explainer] for more details
+     read: async func(num-bytes: u32) -> result<list<u8>>;
+     from-bytes: static func(bytes: list<u8>) -> file;
+     from-stream: static async func(bytes: stream<u8>) -> file;
+   }
+ }
+```
+[async-explainer]: https://github.com/WebAssembly/component-model/blob/main/design/mvp/Async.md#sync-and-async-functions
+*/
+package fs:filesystem@1.0.0;
 
 // ==================
 // Worlds

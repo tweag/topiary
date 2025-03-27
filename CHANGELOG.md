@@ -48,7 +48,7 @@ This name should be decided amongst the team before the release.
 <!-- - <New feature> -->
 - [#862](https://github.com/tweag/topiary/pull/862) Added support for the Simple Domain Modeling Language ([SDML](https://sdml.io)), thanks to @johnstonskj
 - [#884](https://github.com/tweag/topiary/pull/884) The Topiary Book
-- [#XXX](https://github.com/tweag/topiary/pull/XXX) Added support for WIT, thanks to @mkatychev
+- [#933](https://github.com/tweag/topiary/pull/933) Added support for WIT, thanks to @mkatychev
 - [#918](https://github.com/tweag/topiary/pull/918) Language prefetching utilities for Nix
 
 ### Changed
