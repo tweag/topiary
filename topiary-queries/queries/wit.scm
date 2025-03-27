@@ -65,13 +65,15 @@
 ; formatting.
 (
   [
-   (package_decl)
    (export_item)
    (func_item)
    (import_item)
+   (include_item)
    (interface_item)
+   (package_decl)
    (resource_item)
    (type_item)
+   (use_item)
    (resource_method)
    (since_gate)
    (deprecated_gate)
@@ -84,6 +86,14 @@
   ]* @do_nothing
 )
 
+
+(body
+  .
+  "{" @append_spaced_softline @append_indent_start @prepend_space
+  _
+  "}" @prepend_spaced_softline @prepend_indent_end
+  .
+) @append_hardline
 
 ; // ==================
 ; // Delimiters
@@ -102,6 +112,14 @@
  "<"
  "("
 ] @append_antispace
+
+
+(param_list
+  .
+  "(" @append_empty_softline @append_indent_start
+  ")" @prepend_indent_end @prepend_empty_softline
+  .
+)
 
 ; Colon should have whitespace trimmed for URI separator
 ; pkg & use nodes
