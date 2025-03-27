@@ -102,6 +102,21 @@ let
       text = "exec ${getExe topiaryCli} -C ${toNickelFile "languages.ncl" topiaryConfig} \"$@\"";
     };
 
+  ## Given a package for Topiary CLI and a configuration, return an attrset
+  ## compatible with https://github.com/cachix/git-hooks.nix.
+  gitHook =
+    topiaryCli:
+    topiaryConfig: {
+      name = "topiary";
+      entry = "${getExe (withConfig topiaryCli topiaryConfig)} format";
+      files =
+        let
+          inherit (lib) concatMap attrValues concatStringsSep;
+          extensions = concatMap (c: c.extensions) (attrValues topiaryConfig.languages);
+        in
+          "\\.(" + concatStringsSep "|" extensions + ")$";
+    };
+
 in
 {
   inherit
@@ -110,5 +125,6 @@ in
     fromNickelFile
     toNickelFile
     withConfig
+    gitHook
     ;
 }
