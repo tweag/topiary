@@ -128,15 +128,24 @@
           wasm = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; craneLib = topiaryPkgs.passthru.craneLibWasm; inherit binPkgs; };
         });
 
-      ## For easy use in https://github.com/cachix/git-hooks.nix
-      lib = forAllSystems ({ system, lib, ... }: {
-        pre-commit-hook = {
-          enable = true;
-          name = "topiary";
-          description = "A general code formatter based on tree-sitter.";
-          entry = "${lib.getExe self.packages.${system}.topiary-cli} fmt";
-          types = [ "text" ];
-        };
-      });
+      lib = forAllSystems ({ system, lib, pkgs, ... }:
+        with pkgs.callPackage ./prefetchLanguages.nix {};
+        {
+          inherit
+            prefetchLanguages
+            prefetchLanguagesFile
+            fromNickelFile
+            toNickelFile
+            withConfig
+          ;
+
+          pre-commit-hook = {
+            enable = true;
+            name = "topiary";
+            description = "A general code formatter based on tree-sitter.";
+            entry = "${lib.getExe self.packages.${system}.topiary-cli} fmt";
+            types = [ "text" ];
+          };
+        });
     };
 }
