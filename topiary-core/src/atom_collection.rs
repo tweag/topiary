@@ -1110,8 +1110,8 @@ fn collapse_spaces_before_antispace(v: &mut [Atom]) {
             antispace_mode = true;
         } else if *a == Atom::Space && antispace_mode {
             *a = Atom::Empty;
-        } else if *a != Atom::Empty {
-            // Don't change mode when encountering Empty
+        } else if *a != Atom::Empty && *a != Atom::IndentStart && *a != Atom::IndentEnd {
+            // Don't change mode when encountering Empty or Indent atoms
             antispace_mode = false;
         }
     }

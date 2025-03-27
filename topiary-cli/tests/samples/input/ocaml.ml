@@ -1354,3 +1354,53 @@ type foo = {
   baz:
     [`Qux | `Bar];
 }
+
+(* #914 to #917 Edge cases in dangling behaviours *)
+let _ =
+  match foo with
+  | _ ->
+    (
+      match bar with
+      | [] -> None
+      | _ -> foo
+    )
+
+let _ =
+  match foo with
+  | _ ->
+    (
+      if path = [] then
+        ()
+      else
+        ()
+    )
+
+let foo : (bar, baz) qux =
+  ()
+
+let _ =
+  div
+    ~a: [a_id "page_nav"]
+    [
+      some stuff
+    ]
+
+let _ :: [
+  foo;
+  bar;
+  baz
+] =
+  [1;2;3;4]
+
+let [|
+  a;
+  b;
+|] = [|1; 2|]
+
+let {
+  a;
+  b;
+} = {
+  a = 1;
+  b = 2;
+}
