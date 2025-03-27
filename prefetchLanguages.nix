@@ -11,6 +11,7 @@
   runCommandNoCC,
   writeText,
   tree-sitter,
+  writeShellApplication,
 }:
 
 let
@@ -24,7 +25,7 @@ let
     fromJSON
     baseNameOf
     ;
-  inherit (lib) warn;
+  inherit (lib) warn getExe;
   inherit (lib.strings) removeSuffix;
   inherit (lib.attrsets) updateManyAttrsByPath;
 
@@ -88,6 +89,19 @@ let
       prefetchLanguages (fromNickelFile topiaryConfigFile)
     );
 
+  ## Given a package for Topiary CLI and a configuration, return the CLI with
+  ## the configuration hard-coded. It will ignore `.topiary/languages.ncl`,
+  ## `$XDG_CONFIG_HOME/topiary/languages.ncl`, and will refuse
+  ## `--configuration`. This can be useful to avoid non-reproducibility issues,
+  ## or in combination with `prefetchLanguages`.
+  withConfig =
+    topiaryCli:
+    topiaryConfig:
+    writeShellApplication {
+      name = "topiary";
+      text = "exec ${getExe topiaryCli} -C ${toNickelFile "languages.ncl" topiaryConfig} \"$@\"";
+    };
+
 in
 {
   inherit
@@ -95,5 +109,6 @@ in
     prefetchLanguagesFile
     fromNickelFile
     toNickelFile
+    withConfig
     ;
 }
