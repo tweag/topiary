@@ -58,26 +58,24 @@
   "="
 ] @prepend_space @append_space
 
-
-
 ; Append line breaks. If there is a comment following, we don't add anything,
 ; because the input softlines and spaces above will already have sorted out the
 ; formatting.
 (
   [
-   (export_item)
-   (func_item)
-   (import_item)
-   (include_item)
-   (interface_item)
-   (package_decl)
-   (resource_item)
-   (type_item)
-   (use_item)
-   (resource_method)
-   (since_gate)
-   (deprecated_gate)
-   (unstable_gate)
+    (export_item)
+    (func_item)
+    (import_item)
+    (include_item)
+    (interface_item)
+    (package_decl)
+    (resource_item)
+    (type_item)
+    (use_item)
+    (resource_method)
+    (since_gate)
+    (deprecated_gate)
+    (unstable_gate)
   ] @append_spaced_softline
   .
   [
@@ -86,33 +84,46 @@
   ]* @do_nothing
 )
 
+; (ty (_ "," @append_space))
 
 (body
   .
   "{" @append_spaced_softline @append_indent_start @prepend_space
   _
-  "}" @prepend_spaced_softline @prepend_indent_end
+  "}" @prepend_spaced_softline @prepend_indent_end @append_hardline
   .
-) @append_hardline
+)
 
+(enum_cases "," @append_hardline)
+(flags_items (body "," @append_hardline))
+(record_item (body "," @append_hardline))
+(variant_cases "," @append_hardline)
 ; // ==================
 ; // Delimiters
 ; // ==================
 ; Never put a space before a comma or semicolon
-(";" @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
+(
+  ";" @append_hardline @prepend_antispace
+  .
+  [
+    (block_comment)
+    (line_comment)
+  ]* @do_nothing
+)
 (named_type_list "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 [
- ">"
- ")"
- ","
- ";"
-] @prepend_antispace
+  ">"
+  ")"
+  ","
+  ";"
+]
+
+"," @append_space
 
 [
- "<"
- "("
+  "<"
+  "("
 ] @append_antispace
-
 
 (param_list
   .
@@ -124,17 +135,20 @@
 ; Colon should have whitespace trimmed for URI separator
 ; pkg & use nodes
 (package_decl
-  ["@" ":" "/"] @prepend_antispace @append_antispace)
+  ["@" ":" "/"] @prepend_antispace @append_antispace
+)
 (use_path
-  ["@" ":" "/"] @prepend_antispace @append_antispace)
+  ["@" ":" "/"] @prepend_antispace @append_antispace
+)
 (record_field
-  ":" @prepend_antispace @append_space)
+  ":" @prepend_antispace @append_space
+)
 (named_type
-  ":" @prepend_antispace @append_space)
+  ":" @prepend_antispace @append_space
+)
 
 [
- "@"
- "/"
- "."
+  "@"
+  "/"
+  "."
 ] @prepend_antispace @append_antispace
-
