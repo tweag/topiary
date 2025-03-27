@@ -84,7 +84,7 @@
           client-app;
 
         topiary-cli = topiaryPkgs.topiary-cli // {
-          withConfig = self.lib.${system}.withConfig topiaryPkgs.topiary-cli;
+          withConfiguration = self.lib.${system}.withConfiguration topiaryPkgs.topiary-cli;
         };
 
         inherit (binPkgs)
@@ -137,7 +137,7 @@
             prefetchLanguagesFile
             fromNickelFile
             toNickelFile
-            withConfig
+            withConfiguration
             gitHook
           ;
 
