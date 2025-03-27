@@ -110,7 +110,8 @@
         ## correctly. `deepSeq e1 e2` evaluates `e1` strictly in depth before
         ## returning `e2`. We use this trick because checks need to be
         ## derivations, which `lib.pre-commit-hook` is not.
-        pre-commit-hook = builtins.deepSeq self.lib.${system}.pre-commit-hook pkgs.hello;
+        gitHook = with self; with lib.${system}; with packages.${system};
+          builtins.deepSeq (gitHook topiary-cli defaultConfiguration) pkgs.hello;
       });
 
       devShells = forAllSystems ({ system, pkgs, craneLib, topiaryPkgs, binPkgs, ... }:
@@ -137,15 +138,8 @@
             fromNickelFile
             toNickelFile
             withConfig
+            gitHook
           ;
-
-          pre-commit-hook = {
-            enable = true;
-            name = "topiary";
-            description = "A general code formatter based on tree-sitter.";
-            entry = "${lib.getExe self.packages.${system}.topiary-cli} fmt";
-            types = [ "text" ];
-          };
         });
     };
 }
