@@ -132,7 +132,7 @@
     wit = {
       extensions = ["wit"],
 
-      grammar.source.path = "/Users/mkatychev/Documents/tree-sitter/wit",
+      grammar.source.path = "/Users/mkatychev/Documents/tree-sitter/wit/build/parser.so",
     },
   },
 }

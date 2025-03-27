@@ -65,7 +65,7 @@
 ; formatting.
 (
   [
-   (pacakge_decl)
+   (package_decl)
    (export_item)
    (func_item)
    (import_item)
@@ -105,7 +105,7 @@
 
 ; Colon should have whitespace trimmed for URI separator
 ; pkg & use nodes
-(pacakge_decl
+(package_decl
   ["@" ":" "/"] @prepend_antispace @append_antispace)
 (use_path
   ["@" ":" "/"] @prepend_antispace @append_antispace)
