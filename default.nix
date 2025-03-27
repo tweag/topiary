@@ -24,7 +24,6 @@ let
         ./Cargo.toml
         ./languages.ncl
         ./examples
-        ./prefetchLanguages.nix
         ./topiary-core
         ./topiary-cli
         ./topiary-config
@@ -105,41 +104,29 @@ in
     cargoExtraArgs = "-p topiary-core";
   });
 
-  topiary-cli =
-    pkgs.lib.makeOverridable (
-      { prefetchGrammars ? false }:
-      craneLib.buildPackage (commonArgs
-        // {
-          inherit cargoArtifacts;
-          pname = "topiary";
-          cargoExtraArgs = "-p topiary-cli";
-          cargoTestExtraArgs = "--no-default-features";
+  topiary-cli = craneLib.buildPackage (commonArgs
+    // {
+      inherit cargoArtifacts;
+      pname = "topiary";
+      cargoExtraArgs = "-p topiary-cli";
+      cargoTestExtraArgs = "--no-default-features";
 
-          preConfigurePhases = pkgs.lib.optional prefetchGrammars "prepareTopiaryDefaultConfiguration";
+      postInstall = ''
+        install -Dm444 topiary-queries/queries/* -t $out/share/queries
+      '';
 
-          prepareTopiaryDefaultConfiguration =
-            pkgs.lib.optional prefetchGrammars (
-              let inherit (pkgs.callPackage ./prefetchLanguages.nix {}) prefetchLanguagesFile; in
-              "cp ${prefetchLanguagesFile ./topiary-config/languages.ncl} topiary-config/languages.ncl"
-            );
+      # Set TOPIARY_LANGUAGE_DIR to the Nix store
+      # for the build
+      TOPIARY_LANGUAGE_DIR = "${placeholder "out"}/share/queries";
 
-          postInstall = ''
-            install -Dm444 topiary-queries/queries/* -t $out/share/queries
-          '';
+      # Set TOPIARY_LANGUAGE_DIR to the working directory
+      # in a development shell
+      shellHook = ''
+        export TOPIARY_LANGUAGE_DIR=$PWD/queries
+      '';
 
-          # Set TOPIARY_LANGUAGE_DIR to the Nix store
-          # for the build
-          TOPIARY_LANGUAGE_DIR = "${placeholder "out"}/share/queries";
-
-          # Set TOPIARY_LANGUAGE_DIR to the working directory
-          # in a development shell
-          shellHook = ''
-            export TOPIARY_LANGUAGE_DIR=$PWD/queries
-          '';
-
-          meta.mainProgram = "topiary";
-        })
-    ) {};
+      meta.mainProgram = "topiary";
+    });
 
   topiary-queries = craneLib.buildPackage (commonArgs
     // {
