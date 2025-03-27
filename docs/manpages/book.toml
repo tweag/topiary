@@ -8,6 +8,9 @@ title = "Topiary"
 [build]
 build-dir = "man"
 
+[preprocessor.manmunge]
+command = "cargo run --manifest-path=mdbook-manmunge/Cargo.toml --locked"
+
 [output.man]
 output-dir = "."
 filename = "topiary.man"
