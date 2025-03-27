@@ -87,9 +87,6 @@
           withConfig = self.lib.${system}.withConfig topiaryPkgs.topiary-cli;
         };
 
-        topiary-cli-nix =
-          topiaryPkgs.topiary-cli.override { prefetchGrammars = true; };
-
         inherit (binPkgs)
           # FIXME: Broken
           # generate-coverage
