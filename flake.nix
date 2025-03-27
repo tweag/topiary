@@ -80,9 +80,12 @@
         inherit (topiaryPkgs)
           topiary-playground
           topiary-queries
-          topiary-cli
           topiary-book
           client-app;
+
+        topiary-cli = topiaryPkgs.topiary-cli // {
+          withConfig = self.lib.${system}.withConfig topiaryPkgs.topiary-cli;
+        };
 
         topiary-cli-nix =
           topiaryPkgs.topiary-cli.override { prefetchGrammars = true; };
