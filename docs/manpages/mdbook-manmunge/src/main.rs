@@ -1,8 +1,10 @@
 mod preprocess;
 
-use clap::{Parser, Subcommand};
-use preprocess::preprocess;
 use std::process::ExitCode;
+
+use clap::{Parser, Subcommand};
+
+use preprocess::preprocess;
 
 // Supported renderers
 const SUPPORTED: &[&str] = &["man"];
