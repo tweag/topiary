@@ -1,8 +1,11 @@
+mod preprocess;
+
 use clap::{Parser, Subcommand};
+use preprocess::preprocess;
 use std::process::ExitCode;
 
 // Supported renderers
-const SUPPORTED: &[&str] = &["mdbook-man"];
+const SUPPORTED: &[&str] = &["man"];
 
 #[derive(Debug, Parser)]
 #[command(
@@ -34,8 +37,10 @@ fn main() -> ExitCode {
 
     match args.command {
         None => {
-            // TODO
-            println!("Pre-process");
+            if let Err(error) = preprocess() {
+                eprintln!("Pre-processing failed: {error}");
+                return ExitCode::FAILURE;
+            }
         }
 
         Some(Commands::Supports { renderer }) => {

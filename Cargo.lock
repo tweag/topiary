@@ -3050,6 +3050,8 @@ dependencies = [
  "mdbook",
  "pulldown-cmark 0.13.0",
  "pulldown-cmark-to-cmark",
+ "semver",
+ "serde_json",
 ]
 
 [[package]]

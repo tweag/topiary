@@ -21,5 +21,7 @@ path = "src/main.rs"
 [dependencies]
 clap = { workspace = true, features = ["derive"] }
 mdbook = { workspace = true, default-features = false }
-pulldown-cmark.workspace = true
 pulldown-cmark-to-cmark.workspace = true
+pulldown-cmark.workspace = true
+semver.workspace = true
+serde_json.workspace = true
