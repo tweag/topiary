@@ -39,7 +39,7 @@ clap = { version = "4.5", features = ["env", "derive"] }
 clap_derive = "4.5"
 clap_complete = "4.5"
 criterion = "0.5"
-directories = "5.0"
+directories = "6.0"
 env_logger = "0.11"
 futures = "0.3.28"
 gix = { version = "0.70.0", features = ["blocking-http-transport-reqwest-rust-tls"] }
