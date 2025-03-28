@@ -106,7 +106,7 @@ interface %resource {
 }
 
 interface my-use-items {
-   use foo.{t1, t2};
+   use foo. { t1, t2, };
    // add trailing comma
    use newline-interface.{ a,
    list as collection,of,names

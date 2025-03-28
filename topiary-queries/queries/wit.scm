@@ -89,14 +89,17 @@
   (unstable_gate)
 ] @append_hardline
 
-; (ty (_ "," @append_space))
-
 (body
   .
   "{" @append_hardline @append_indent_start @prepend_space
   _
   "}" @prepend_hardline @prepend_indent_end
   .
+)
+(use_item
+  "{" @append_antispace @append_indent_start @prepend_antispace
+  (use_names_list)
+  "}" @prepend_antispace @prepend_indent_end
 )
 
 (enum_cases "," @append_hardline)
@@ -181,10 +184,9 @@
   .
   (line_comment)*
   .
-  ")"
-  .
   (#multi_line_only!)
 )
+
 (param_list
   (#delimiter! ",")
   (named_type) @append_delimiter
@@ -206,8 +208,6 @@
   .
   (line_comment)*
   .
-  ")"
-  .
   (#multi_line_only!)
 )
 
@@ -219,7 +219,20 @@
   .
   (line_comment)*
   .
-  ")"
-  .
   (#multi_line_only!)
+)
+
+(flags_items
+  (body
+    (#delimiter! ",")
+    (id) @append_delimiter
+    .
+    ","? @do_nothing
+    .
+    (line_comment)*
+    .
+    "}"
+    .
+    (#multi_line_only!)
+  )
 )

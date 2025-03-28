@@ -34,7 +34,6 @@ package wasmi:io:hello/epic@1.0.0;
 ```
 */
 package fs:filesystem@1.0.0;
-
 use wasi:io:print/stdout;
 use wasi:io:hello/epic as cool;
 // ==================
@@ -99,10 +98,10 @@ interface my-use-items {
   use wasi:http/types.{request};
   // add trailing comma
   use newline-interface.{
-    a,
-    list as collection,
-    of,
-    names,
+  a,
+  list as collection,
+  of,
+  names,
   };
   use my:dependency/the-interface.{more, names as foo};
   use wasi:http/types@1.0.0.{request, response};
