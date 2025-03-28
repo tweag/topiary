@@ -104,29 +104,42 @@ in
     cargoExtraArgs = "-p topiary-core";
   });
 
-  topiary-cli = craneLib.buildPackage (commonArgs
-    // {
-      inherit cargoArtifacts;
-      pname = "topiary";
-      cargoExtraArgs = "-p topiary-cli";
-      cargoTestExtraArgs = "--no-default-features";
+  topiary-cli =
+    let
+      topiary-cli-raw =
+        craneLib.buildPackage (commonArgs
+          // {
+            inherit cargoArtifacts;
+            pname = "topiary";
+            cargoExtraArgs = "-p topiary-cli";
+            cargoTestExtraArgs = "--no-default-features";
 
-      postInstall = ''
-        install -Dm444 topiary-queries/queries/* -t $out/share/queries
-      '';
+            postInstall = ''
+              install -Dm444 topiary-queries/queries/* -t $out/share/queries
+            '';
 
-      # Set TOPIARY_LANGUAGE_DIR to the Nix store
-      # for the build
-      TOPIARY_LANGUAGE_DIR = "${placeholder "out"}/share/queries";
+            # Set TOPIARY_LANGUAGE_DIR to the Nix store
+            # for the build
+            TOPIARY_LANGUAGE_DIR = "${placeholder "out"}/share/queries";
 
-      # Set TOPIARY_LANGUAGE_DIR to the working directory
-      # in a development shell
-      shellHook = ''
-        export TOPIARY_LANGUAGE_DIR=$PWD/queries
-      '';
+            # Set TOPIARY_LANGUAGE_DIR to the working directory
+            # in a development shell
+            shellHook = ''
+              export TOPIARY_LANGUAGE_DIR=$PWD/queries
+            '';
 
-      meta.mainProgram = "topiary";
-    });
+            meta.mainProgram = "topiary";
+          });
+
+      inherit (pkgs.callPackage ./prefetchLanguages.nix {})
+        fromNickelFile
+        makeWithConfiguration
+      ;
+    in
+      topiary-cli-raw // {
+        defaultConfiguration = fromNickelFile ./languages.ncl;
+        withConfiguration = makeWithConfiguration topiary-cli-raw;
+      };
 
   topiary-queries = craneLib.buildPackage (commonArgs
     // {
