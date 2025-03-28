@@ -94,26 +94,25 @@ let
   ## `$XDG_CONFIG_HOME/topiary/languages.ncl`, and will refuse
   ## `--configuration`. This can be useful to avoid non-reproducibility issues,
   ## or in combination with `prefetchLanguages`.
-  withConfiguration =
+  makeWithConfiguration =
     package:
     configuration:
     writeShellApplication {
       name = "topiary";
       text = "exec ${getExe package} -C ${toNickelFile "languages.ncl" configuration} \"$@\"";
-    };
+    } // { inherit configuration; };
 
-  ## Given a package for Topiary CLI and a configuration, return an attrset
-  ## compatible with https://github.com/cachix/git-hooks.nix.
-  gitHook =
+  ## Given a package for Topiary CLI (containing its configuration), return an
+  ## attrset compatible with https://github.com/cachix/git-hooks.nix.
+  makeGitHook =
     package:
-    configuration:
     {
       name = "topiary";
-      entry = "${getExe (withConfiguration package configuration)} format";
+      entry = "${getExe package} format";
       files =
         let
           inherit (lib) concatMap attrValues concatStringsSep;
-          extensions = concatMap (c: c.extensions) (attrValues configuration.languages);
+          extensions = concatMap (c: c.extensions) (attrValues package.configuration.languages);
         in
           "\\.(" + concatStringsSep "|" extensions + ")$";
     };
@@ -125,7 +124,7 @@ in
     prefetchLanguagesFile
     fromNickelFile
     toNickelFile
-    withConfiguration
-    gitHook
+    makeWithConfiguration
+    makeGitHook
     ;
 }
