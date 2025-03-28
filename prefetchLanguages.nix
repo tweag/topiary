@@ -96,7 +96,8 @@ let
   ## or in combination with `prefetchLanguages`.
   makeWithConfiguration =
     package:
-    configuration:
+    updateConfiguration:
+    let configuration = updateConfiguration package.configuration; in
     writeShellApplication {
       name = "topiary";
       text = "exec ${getExe package} -C ${toNickelFile "languages.ncl" configuration} \"$@\"";

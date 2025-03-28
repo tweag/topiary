@@ -137,7 +137,7 @@ in
       ;
     in
       topiary-cli-raw // {
-        defaultConfiguration = fromNickelFile ./languages.ncl;
+        configuration = fromNickelFile ./languages.ncl;
         withConfiguration = makeWithConfiguration topiary-cli-raw;
       };
 
