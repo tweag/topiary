@@ -68,6 +68,7 @@ This name should be decided amongst the team before the release.
 - [#867](https://github.com/tweag/topiary/pull/867) Enable coverage check and add code samples for OpenSCAD
 - [#869](https://github.com/tweag/topiary/pull/869) Disable parallel grammar building on Windows
 - [#908](https://github.com/tweag/topiary/pull/908) [#907](https://github.com/tweag/topiary/pull/907) [#939](https://github.com/tweag/topiary/pull/939) Various OCaml issues and improvements
+- [#953](https://github.com/tweag/topiary/pull/953) Coverage output when there are zero queries
 
 <!-- ### Security -->
 <!-- - <Vulnerabilities> -->
