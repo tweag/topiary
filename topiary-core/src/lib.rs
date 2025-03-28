@@ -301,7 +301,11 @@ pub fn coverage(
     let res = tree_sitter::check_query_coverage(&content, &language.query, &language.grammar)?;
 
     let queries_string = if res.missing_patterns.is_empty() {
-        "All queries are matched".into()
+        if res.cover_percentage == 0.0 {
+            "No queries found".into()
+        } else {
+            "All queries are matched".into()
+        }
     } else {
         format!(
             "Unmatched queries:\n{}",
