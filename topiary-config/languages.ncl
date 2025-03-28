@@ -134,7 +134,7 @@
       grammar = {
         source.git = {
           git = "https://github.com/mkatychev/tree-sitter-wit",
-          rev = "a0ccc351e5e868ec1f8135e97aa3b53c663cf2df",
+          rev = "953267de3e6f06a34f6c97a80237c3500d1252ed",
         },
       },
       extensions = ["wit"],

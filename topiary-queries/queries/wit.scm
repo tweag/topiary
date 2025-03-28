@@ -84,9 +84,9 @@
   ]* @do_nothing
 )
 [
-    (since_gate)
-    (deprecated_gate)
-    (unstable_gate)
+  (since_gate)
+  (deprecated_gate)
+  (unstable_gate)
 ] @append_hardline
 
 ; (ty (_ "," @append_space))
@@ -103,9 +103,9 @@
 (flags_items (body "," @append_hardline))
 (record_item (body "," @append_hardline))
 (variant_cases "," @append_hardline)
-; // ==================
-; // Delimiters
-; // ==================
+; ==================
+; Delimiters
+; ==================
 ; Never put a space before a comma or semicolon
 (
   ";" @append_hardline
@@ -115,7 +115,19 @@
     (line_comment)
   ]* @do_nothing
 )
-(named_type_list "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
+
+(param_list
+  "," @append_spaced_softline
+  .
+  [(block_comment) (line_comment)]* @do_nothing
+)
+
+(use_names_list
+  "," @append_spaced_softline
+  .
+  [(block_comment) (line_comment)]* @do_nothing
+) @prepend_empty_softline
+
 [
   ">"
   ")"
@@ -157,3 +169,57 @@
   "/"
   "."
 ] @prepend_antispace @append_antispace
+
+; ==================
+; Trailing Commas
+; ==================
+(use_names_list
+  (#delimiter! ",")
+  (use_names_item) @append_delimiter
+  .
+  ","? @do_nothing
+  .
+  (line_comment)*
+  .
+  ")"
+  .
+  (#multi_line_only!)
+)
+(param_list
+  (#delimiter! ",")
+  (named_type) @append_delimiter
+  .
+  ","? @do_nothing
+  .
+  (line_comment)*
+  .
+  ")"
+  .
+  (#multi_line_only!)
+)
+
+(variant_cases
+  (#delimiter! ",")
+  (variant_case) @append_delimiter
+  .
+  ","? @do_nothing
+  .
+  (line_comment)*
+  .
+  ")"
+  .
+  (#multi_line_only!)
+)
+
+(enum_cases
+  (#delimiter! ",")
+  (enum_case) @append_delimiter
+  .
+  ","? @do_nothing
+  .
+  (line_comment)*
+  .
+  ")"
+  .
+  (#multi_line_only!)
+)
