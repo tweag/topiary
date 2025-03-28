@@ -81,11 +81,8 @@
           topiary-playground
           topiary-queries
           topiary-book
+          topiary-cli
           client-app;
-
-        topiary-cli = topiaryPkgs.topiary-cli // {
-          withConfiguration = self.lib.${system}.withConfiguration topiaryPkgs.topiary-cli;
-        };
 
         inherit (binPkgs)
           # FIXME: Broken
@@ -103,15 +100,13 @@
         # and playground development has moved to the playground branch:
         # - clippy-wasm
         # - topiary-playground
-        inherit (topiaryPkgs) clippy fmt topiary-core audit benchmark;
-        topiary-cli = self.packages.${system}.topiary-cli;
+        inherit (topiaryPkgs) clippy fmt topiary-core audit benchmark topiary-cli;
 
-        ## Check that the `lib.pre-commit-hook` output builds/evaluates
-        ## correctly. `deepSeq e1 e2` evaluates `e1` strictly in depth before
-        ## returning `e2`. We use this trick because checks need to be
-        ## derivations, which `lib.pre-commit-hook` is not.
-        gitHook = with self; with lib.${system}; with packages.${system};
-          builtins.deepSeq (gitHook topiary-cli defaultConfiguration) pkgs.hello;
+        ## Check that the `lib.gitHook` output builds/evaluates correctly.
+        ## `deepSeq e1 e2` evaluates `e1` strictly in depth before returning
+        ## `e2`. We use this trick because checks need to be derivations, which
+        ## `lib.gitHook` is not.
+        gitHook = builtins.deepSeq self.lib.${system}.gitHook pkgs.hello;
       });
 
       devShells = forAllSystems ({ system, pkgs, craneLib, topiaryPkgs, binPkgs, ... }:
@@ -137,11 +132,12 @@
             prefetchLanguagesFile
             fromNickelFile
             toNickelFile
-            withConfiguration
-            gitHook
+            makeWithConfiguration
+            makeGitHook
           ;
 
           defaultConfiguration = fromNickelFile ./languages.ncl;
+          gitHook = makeGitHook self.packages.${system}.topiary-cli;
         });
     };
 }
