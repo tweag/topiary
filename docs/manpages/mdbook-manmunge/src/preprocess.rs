@@ -35,7 +35,7 @@ impl Preprocessor for MdbookMunge {
 
             match rewrite_chapter(chapter) {
                 Ok(result) => chapter.content = result,
-                Err(error) => eprintln!("Could not process chapter: {error}"),
+                Err(error) => log::error!("{}: Could not process chapter ({error})", chapter.name),
             }
         });
 
@@ -59,13 +59,13 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
                 Ok(_) => true,
 
                 Err(ParseError::RelativeUrlWithoutBase) => {
-                    eprintln!("{}: Stripping relative URL {dest_url}", chapter.name);
+                    log::info!("{}: Stripping relative URL {dest_url}", chapter.name);
                     strip_link = true;
                     false
                 }
 
                 Err(error) => {
-                    eprintln!(
+                    log::warn!(
                         "{}: Stripping unparsable URL {dest_url} ({error}).",
                         chapter.name
                     );
@@ -96,7 +96,7 @@ pub fn preprocess() -> Result<(), Error> {
     let version_req = VersionReq::parse(mdbook::MDBOOK_VERSION)?;
 
     if !version_req.matches(&book_version) {
-        eprintln!(
+        log::warn!(
             "Warning: {} uses mdBook v{}, but is being called from v{}",
             preprocessor.name(),
             mdbook::MDBOOK_VERSION,

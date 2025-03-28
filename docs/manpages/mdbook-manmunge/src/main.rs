@@ -3,6 +3,8 @@ mod preprocess;
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
+use env_logger::Builder;
+use log::LevelFilter;
 
 use preprocess::preprocess;
 
@@ -35,20 +37,21 @@ enum Commands {
 }
 
 fn main() -> ExitCode {
+    init_logger();
     let args = Args::parse();
 
     match args.command {
         None => {
             if let Err(error) = preprocess() {
-                eprintln!("Pre-processing failed: {error}");
+                log::error!("Pre-processing failed: {error}");
                 return ExitCode::FAILURE;
             }
         }
 
         Some(Commands::Supports { renderer }) => {
             if !SUPPORTED.iter().any(|&supported| renderer == supported) {
-                eprintln!("Unsupported pre-processor: {renderer}");
-                eprintln!("Supported pre-processors: {}", SUPPORTED.join(" "));
+                log::error!("Unsupported pre-processor: {renderer}");
+                log::info!("Supported pre-processors: {}", SUPPORTED.join(" "));
                 return ExitCode::FAILURE;
             }
         }
@@ -60,4 +63,17 @@ fn main() -> ExitCode {
     }
 
     ExitCode::SUCCESS
+}
+
+fn init_logger() {
+    let mut builder = Builder::new();
+
+    if let Ok(var) = std::env::var("RUST_LOG") {
+        builder.parse_filters(&var);
+    } else {
+        // if no RUST_LOG provided, default to logging at the Info level
+        builder.filter(None, LevelFilter::Info);
+    }
+
+    builder.init();
 }
