@@ -51,17 +51,17 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
     let parser = Parser::new_ext(&chapter.content, options);
 
     let mut strip_link = false;
-    let events = parser.filter(|event| match event {
-        Event::Start(Tag::Link { dest_url, .. }) => {
+    let events = parser.filter_map(|event| match event {
+        Event::Start(Tag::Link { ref dest_url, .. }) => {
             let url = Url::parse(dest_url);
 
             match url {
-                Ok(_) => true,
+                Ok(_) => Some(event),
 
                 Err(ParseError::RelativeUrlWithoutBase) => {
                     log::info!("{}: Stripping relative URL {dest_url}", chapter.name);
                     strip_link = true;
-                    false
+                    None
                 }
 
                 Err(error) => {
@@ -70,19 +70,21 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
                         chapter.name
                     );
                     strip_link = true;
-                    false
+                    None
                 }
             }
         }
 
         Event::End(TagEnd::Link) => {
-            let keep_link = !strip_link;
-            strip_link = false;
-
-            keep_link
+            if strip_link {
+                strip_link = false;
+                None
+            } else {
+                Some(event)
+            }
         }
 
-        _ => true,
+        _ => Some(event),
     });
 
     Ok(pulldown_cmark_to_cmark::cmark(events, &mut buf).map(|_| buf)?)
