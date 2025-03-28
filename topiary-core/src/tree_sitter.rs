@@ -540,6 +540,16 @@ pub fn check_query_coverage(
     let pattern_count = original_query.query.pattern_count();
     let query_content = &original_query.query_content;
 
+    // If there are no queries at all (e.g., when debugging) return early
+    // rather than dividing by zero
+    if pattern_count == 0 {
+        let cover_percentage = 0.0;
+        return Ok(CoverageData {
+            cover_percentage,
+            missing_patterns,
+        });
+    }
+
     // This particular test avoids a SIGSEGV error that occurs when trying
     // to count the matches of an empty query (see #481)
     if pattern_count == 1 {
