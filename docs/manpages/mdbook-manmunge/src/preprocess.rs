@@ -4,7 +4,7 @@ use mdbook::book::{Book, Chapter};
 use mdbook::errors::Error;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor, PreprocessorContext};
 use mdbook::BookItem;
-use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd};
+use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 use semver::{Version, VersionReq};
 use url::{ParseError, Url};
 
@@ -50,8 +50,10 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
     options.insert(Options::ENABLE_TABLES);
     let parser = Parser::new_ext(&chapter.content, options);
 
+    let mut strip_h1 = false;
     let mut strip_link = false;
     let events = parser.filter_map(|event| match event {
+        // String links with relative and unparsable URLs
         Event::Start(Tag::Link { ref dest_url, .. }) => {
             let url = Url::parse(dest_url);
 
@@ -84,6 +86,24 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
             }
         }
 
+        // Strip top-level headings, as mdbook-man uses the chapter heading from SUMMARY.md
+        Event::Start(Tag::Heading {
+            level: HeadingLevel::H1,
+            ..
+        }) => {
+            log::info!("{}: Stripping H1", chapter.name);
+            strip_h1 = true;
+            None
+        }
+
+        Event::End(TagEnd::Heading(HeadingLevel::H1)) => {
+            strip_h1 = false;
+            None
+        }
+
+        _ if strip_h1 => None,
+
+        // Everything else
         _ => Some(event),
     });
 
