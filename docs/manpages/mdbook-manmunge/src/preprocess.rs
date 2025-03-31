@@ -52,60 +52,63 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
 
     let mut strip_h1 = false;
     let mut strip_link = false;
-    let events = parser.filter_map(|event| match event {
-        // String links with relative and unparsable URLs
-        Event::Start(Tag::Link { ref dest_url, .. }) => {
-            let url = Url::parse(dest_url);
+    let events = parser
+        .flat_map(|event| match event {
+            // String links with relative and unparsable URLs
+            Event::Start(Tag::Link { ref dest_url, .. }) => {
+                let url = Url::parse(dest_url);
 
-            match url {
-                Ok(_) => Some(event),
+                match url {
+                    Ok(_) => vec![Some(event)],
 
-                Err(ParseError::RelativeUrlWithoutBase) => {
-                    log::info!("{}: Stripping relative URL {dest_url}", chapter.name);
-                    strip_link = true;
-                    None
-                }
+                    Err(ParseError::RelativeUrlWithoutBase) => {
+                        log::info!("{}: Stripping relative URL {dest_url}", chapter.name);
+                        strip_link = true;
+                        vec![None]
+                    }
 
-                Err(error) => {
-                    log::warn!(
-                        "{}: Stripping unparsable URL {dest_url} ({error}).",
-                        chapter.name
-                    );
-                    strip_link = true;
-                    None
+                    Err(error) => {
+                        log::warn!(
+                            "{}: Stripping unparsable URL {dest_url} ({error}).",
+                            chapter.name
+                        );
+                        strip_link = true;
+                        vec![None]
+                    }
                 }
             }
-        }
 
-        Event::End(TagEnd::Link) => {
-            if strip_link {
-                strip_link = false;
-                None
-            } else {
-                Some(event)
+            Event::End(TagEnd::Link) => {
+                if strip_link {
+                    strip_link = false;
+                    vec![None]
+                } else {
+                    vec![Some(event)]
+                }
             }
-        }
 
-        // Strip top-level headings, as mdbook-man uses the chapter heading from SUMMARY.md
-        Event::Start(Tag::Heading {
-            level: HeadingLevel::H1,
-            ..
-        }) => {
-            log::info!("{}: Stripping H1", chapter.name);
-            strip_h1 = true;
-            None
-        }
+            // Strip top-level headings, as mdbook-man uses the chapter heading from SUMMARY.md
+            Event::Start(Tag::Heading {
+                level: HeadingLevel::H1,
+                ..
+            }) => {
+                log::info!("{}: Stripping H1", chapter.name);
+                strip_h1 = true;
+                vec![None]
+            }
 
-        Event::End(TagEnd::Heading(HeadingLevel::H1)) => {
-            strip_h1 = false;
-            None
-        }
+            Event::End(TagEnd::Heading(HeadingLevel::H1)) => {
+                strip_h1 = false;
+                vec![None]
+            }
 
-        _ if strip_h1 => None,
+            _ if strip_h1 => vec![None],
 
-        // Everything else
-        _ => Some(event),
-    });
+            // Everything else
+            _ => vec![Some(event)],
+        })
+        // We have to flatten again so Some(e) -> e, and Nones disappear
+        .flatten();
 
     Ok(pulldown_cmark_to_cmark::cmark(events, &mut buf).map(|_| buf)?)
 }
