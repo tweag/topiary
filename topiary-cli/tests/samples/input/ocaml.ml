@@ -1404,3 +1404,17 @@ let {
   a = 1;
   b = 2;
 }
+
+(* #951 More dangling behaviour issues *)
+let foo =
+  (
+    match bar with
+    | [] | [] ->
+      qux
+  )
+
+  let foo = (
+    match bar with
+    | [], [] ->
+      qux
+  )
