@@ -52,6 +52,7 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
 
     let mut strip_h1 = false;
     let mut strip_link = false;
+
     let events = parser
         .flat_map(|event| match event {
             // String links with relative and unparsable URLs
@@ -103,6 +104,12 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
             }
 
             _ if strip_h1 => vec![None],
+
+            // Add an explicit space after a soft break to prevent hard wrapped lines in the input
+            // smushing together in the output
+            Event::SoftBreak => {
+                vec![Some(Event::SoftBreak), Some(Event::Text("\\ ".into()))]
+            }
 
             // Everything else
             _ => vec![Some(event)],
