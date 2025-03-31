@@ -880,6 +880,32 @@
     ) @prepend_begin_measuring_scope
   )
 )
+(_
+  (#scope_id! "dangling_list_like")
+  "|" @append_begin_scope
+  .
+  (match_case
+    .
+    (_
+      ; could be tuple pattern, or list pattern
+      (_
+        .
+        [
+          "("
+          "["
+          "[|"
+          "{"
+        ]
+        [
+          ")"
+          "]"
+          "|]"
+          "}"
+        ] @prepend_end_scope @prepend_end_measuring_scope
+      ) @prepend_begin_measuring_scope
+    )
+  )
+)
 
 ; We want to add a line when the regular scope is multi-line,
 ; But only if the (measured) custom scope is single-line.
