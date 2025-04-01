@@ -80,7 +80,7 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                     }
                     _ => {}
                 }
-                write!(buffer, "{}", content)?;
+                write!(buffer, "{content}")?;
             }
 
             Atom::Literal(s) => write!(buffer, "{s}")?,

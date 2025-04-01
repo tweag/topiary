@@ -364,7 +364,7 @@ where
         "wit" => Ok(topiary_queries::wit().into()),
 
         name => Err(TopiaryError::Bin(
-            format!("The specified language is unsupported: {}", name),
+            format!("The specified language is unsupported: {name}"),
             Some(CLIError::UnsupportedLanguage(name.to_string())),
         )),
     }
