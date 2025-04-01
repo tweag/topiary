@@ -53,16 +53,18 @@ world imports {
     foo: func (p: string) -> result<u32, aaa>;
   }
   import foo: func (p: string) -> result<u32, aaa>;
-} world world-one {
+}
+world world-one {
   import a: func ();
-} world world-two {
+}
+world world-two {
   import a: func ();
-} world union-my-world-a {
+}
+world union-my-world-a {
   include world-one;
-  include world-two with {
-    a as b
-  }
-} world union-my-world-b {
+  include world-two with {a as b}
+}
+world union-my-world-b {
   import a: func ();
   import b: func ();
 }
@@ -98,10 +100,10 @@ interface my-use-items {
   use wasi:http/types.{request};
   // add trailing comma
   use newline-interface.{
-  a,
-  list as collection,
-  of,
-  names,
+    a,
+    list as collection,
+    of,
+    names,
   };
   use my:dependency/the-interface.{more, names as foo};
   use wasi:http/types@1.0.0.{request, response};

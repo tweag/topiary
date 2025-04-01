@@ -93,13 +93,15 @@
   .
   "{" @append_hardline @append_indent_start @prepend_space
   _
-  "}" @prepend_hardline @prepend_indent_end
+  "}" @append_hardline @prepend_hardline @prepend_indent_end
   .
 )
-(use_item
-  "{" @append_antispace @append_indent_start @prepend_antispace
-  (use_names_list)
-  "}" @prepend_antispace @prepend_indent_end
+(definitions
+  .
+  "{" @append_empty_softline @append_indent_start
+  _
+  "}" @prepend_empty_softline @prepend_indent_end
+  .
 )
 
 (enum_cases "," @append_hardline)
@@ -125,26 +127,24 @@
   [(block_comment) (line_comment)]* @do_nothing
 )
 
-(use_names_list
-  "," @append_spaced_softline
-  .
-  [(block_comment) (line_comment)]* @do_nothing
-) @prepend_empty_softline
-
+(definitions
+  (_)
+    "," @append_spaced_softline
+    .
+    [(block_comment) (line_comment)]* @do_nothing
+  @prepend_empty_softline
+)
 [
   ">"
   ")"
   ","
   ";"
 ] @prepend_antispace
-
 "," @append_space
-
 [
   "<"
   "("
 ] @append_antispace
-
 (param_list
   .
   "(" @append_empty_softline @append_indent_start
@@ -166,7 +166,6 @@
 (named_type
   ":" @prepend_antispace @append_space
 )
-
 [
   "@"
   "/"
@@ -176,17 +175,17 @@
 ; ==================
 ; Trailing Commas
 ; ==================
-(use_names_list
+(definitions
   (#delimiter! ",")
-  (use_names_item) @append_delimiter
+  (_) @append_delimiter
   .
   ","? @do_nothing
   .
-  (line_comment)*
-  .
+  "}"
   (#multi_line_only!)
 )
-
+(definitions (_) "," @delete . "}" (#single_line_only!))
+(definitions "," @append_spaced_softline (#single_line_only!))
 (param_list
   (#delimiter! ",")
   (named_type) @append_delimiter
@@ -199,7 +198,6 @@
   .
   (#multi_line_only!)
 )
-
 (variant_cases
   (#delimiter! ",")
   (variant_case) @append_delimiter
@@ -210,7 +208,6 @@
   .
   (#multi_line_only!)
 )
-
 (enum_cases
   (#delimiter! ",")
   (enum_case) @append_delimiter
@@ -221,7 +218,6 @@
   .
   (#multi_line_only!)
 )
-
 (flags_items
   (body
     (#delimiter! ",")

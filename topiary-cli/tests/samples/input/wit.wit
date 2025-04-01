@@ -66,7 +66,7 @@ world world-two {import a:func();}
 
 world union-my-world-a {
    include world-one;
-       include world-two with {a as b }
+       include world-two with {a as b, }
 }
 
 world union-my-world-b {
