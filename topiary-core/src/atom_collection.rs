@@ -824,9 +824,7 @@ impl AtomCollection {
             .filter_map(|(scope_id, vec)| if vec.is_empty() { None } else { Some(scope_id) })
             .collect();
         if !still_opened.is_empty() {
-            log::warn!(
-                "Some measuring scopes have been left opened: {still_opened:?}"
-            );
+            log::warn!("Some measuring scopes have been left opened: {still_opened:?}");
             force_apply_modifications = true;
         }
 
@@ -849,9 +847,7 @@ impl AtomCollection {
                     if let Some(replacement) = modifications.remove(id) {
                         *atom = replacement;
                     } else {
-                        log::warn!(
-                            "Found scoped softline {atom:?}, but was unable to replace it."
-                        );
+                        log::warn!("Found scoped softline {atom:?}, but was unable to replace it.");
                         *atom = Atom::Empty;
                     }
                 } else if let Atom::ScopedConditional { id, .. } = atom {
