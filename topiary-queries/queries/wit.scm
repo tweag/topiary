@@ -129,10 +129,12 @@
 
 (definitions
   (_)
-    "," @append_spaced_softline
-    .
-    [(block_comment) (line_comment)]* @do_nothing
-  @prepend_empty_softline
+  "," @append_spaced_softline
+  .
+  [
+    (block_comment)
+    (line_comment)
+  ]* @do_nothing @prepend_empty_softline
 )
 [
   ">"

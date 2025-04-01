@@ -130,11 +130,11 @@
     },
 
     wit = {
-      # grammar.source.path = "/Users/mkatychev/Documents/tree-sitter/wit/build/parser.so",
       grammar = {
         source.git = {
           git = "https://github.com/mkatychev/tree-sitter-wit",
-          rev = "rc-1"
+          rev = " 0e0c7b4707ee8e32a369f1658b13d5044daaf4c8",
+          nixHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
         },
       },
       extensions = ["wit"],

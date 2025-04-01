@@ -4,14 +4,6 @@
 , crane
 , rust-overlay
 , craneLib
-  # tree-sitter-nickel is packaged in Nixpkgs, but it's an older version at the
-  # time of writing. Since updating it seems non trivial, and we need Topiary to
-  # be compatible with Nickel urgently (it is currently blocking for the CI), we
-  # use the tree-sitter-nickel flake directly.
-, tree-sitter-nickel
-  # tree-sitter-openscad and tree-sitter-wit are not in nixpkgs so use flakes directly
-, tree-sitter-openscad
-, tree-sitter-wit
 }:
 let
   inherit (pkgs.lib) fileset;
