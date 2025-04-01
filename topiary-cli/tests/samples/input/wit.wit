@@ -80,8 +80,7 @@ world union-my-world-b {
 // ==================
 interface %resource {
    resource blob {
-       constructor(
-       init:list<u8>);
+       constructor( init:list<u8>);
        write:func(bytes:list<u8>);
        read:func(n:u32)->list<u8>;
        merge:static func(lhs:blob,
@@ -90,8 +89,7 @@ interface %resource {
     }
 
     resource res {
-       constructor(
-       );
+       constructor( );
        fn1:func(p:string)->result<u32,aaa>;
        fn2:func(%p:borrow<string>)->result<u32,aaa>;
     }
@@ -107,6 +105,7 @@ interface %resource {
 
 interface my-use-items {
    use foo. { t1, t2, };
+  use wasi:http/types.{body};
    // add trailing comma
    use newline-interface.{ a,
    list as collection,of,names
@@ -130,7 +129,6 @@ interface types {
 
   // values of this type will be one of the specified cases
 variant human {
-    /// `doc` comment
    baby,
    child( u32),
    // add trailing comma

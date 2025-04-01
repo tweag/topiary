@@ -92,12 +92,17 @@ interface %resource {
   type canvas-id = u64;
   %foo: func (%bar: u32);
   %red-green-blue: func (%r: u32, %g: u32, %b: u32);
-  draw-line: func (canvas: canvas-id, from: point, to: point, thickness: dimension);
+  draw-line: func (
+    canvas: canvas-id,
+    from: point,
+    to: point,
+    thickness: dimension,
+  );
 }
 
 interface my-use-items {
   use foo.{t1, t2};
-  use wasi:http/types.{request};
+  use wasi:http/types.{body};
   // add trailing comma
   use newline-interface.{
     a,
