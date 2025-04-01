@@ -766,6 +766,7 @@
     "in"
     "of"
     "then"
+    "else"
     "="
     "+="
     ":"
@@ -777,62 +778,133 @@
   .
   (comment)*
   .
-  [
-    ; expressions
-    (_
-      .
-      [
-        "("
-        "["
-      ]
-    )
-    (list_expression)
-    (record_expression)
-    (array_expression)
-    ; types
-    (polymorphic_variant_type)
-    (record_declaration)
-  ] @append_end_scope @prepend_begin_measuring_scope @append_end_measuring_scope
+  (_
+    .
+    [
+      "("
+      "["
+      "[|"
+      "{"
+    ]
+    [
+      ")"
+      "]"
+      "|]"
+      "}"
+    ] @prepend_end_scope @prepend_end_measuring_scope
+  ) @prepend_begin_measuring_scope
 )
 (application_expression
   (#scope_id! "dangling_list_like")
   (_) @append_begin_scope
   .
-  [
-    ; expressions
-    (_
-      .
-      [
-        "("
-        "["
-      ]
-    )
-    (list_expression)
-    (record_expression)
-    (array_expression)
-  ] @append_end_scope @prepend_begin_measuring_scope @append_end_measuring_scope
+  (_
+    .
+    [
+      "("
+      "["
+      "[|"
+      "{"
+    ]
+    [
+      ")"
+      "]"
+      "|]"
+      "}"
+    ] @prepend_end_scope @prepend_end_measuring_scope
+  ) @prepend_begin_measuring_scope
+  .
 )
 (_
   (#scope_id! "dangling_list_like")
   "let" @append_begin_scope
   .
   (let_binding
-    [
-      (array_pattern)
-      (list_pattern)
-      (record_pattern)
-    ] @append_end_scope @prepend_begin_measuring_scope @append_end_measuring_scope
+    (_
+      .
+      [
+        "("
+        "["
+        "[|"
+        "{"
+      ]
+      [
+        ")"
+        "]"
+        "|]"
+        "}"
+      ] @prepend_end_scope @prepend_end_measuring_scope
+    ) @prepend_begin_measuring_scope
+    "="
   )
 )
 (constructor_pattern
   (#scope_id! "dangling_list_like")
   (_) @append_begin_scope
   .
-  [
-    (array_pattern)
-    (list_pattern)
-    (record_pattern)
-  ] @append_end_scope @prepend_begin_measuring_scope @append_end_measuring_scope
+  (_
+    .
+    [
+      "("
+      "["
+      "[|"
+      "{"
+    ]
+    [
+      ")"
+      "]"
+      "|]"
+      "}"
+    ] @prepend_end_scope @prepend_end_measuring_scope
+  ) @prepend_begin_measuring_scope
+)
+(_
+  (#scope_id! "dangling_list_like")
+  "|" @append_begin_scope
+  .
+  (match_case
+    (_
+      .
+      [
+        "("
+        "["
+        "[|"
+        "{"
+      ]
+      [
+        ")"
+        "]"
+        "|]"
+        "}"
+      ] @prepend_end_scope @prepend_end_measuring_scope
+    ) @prepend_begin_measuring_scope
+  )
+)
+(_
+  (#scope_id! "dangling_list_like")
+  "|" @append_begin_scope
+  .
+  (match_case
+    .
+    (_
+      ; could be tuple pattern, or list pattern
+      (_
+        .
+        [
+          "("
+          "["
+          "[|"
+          "{"
+        ]
+        [
+          ")"
+          "]"
+          "|]"
+          "}"
+        ] @prepend_end_scope @prepend_end_measuring_scope
+      ) @prepend_begin_measuring_scope
+    )
+  )
 )
 
 ; We want to add a line when the regular scope is multi-line,
@@ -851,8 +923,10 @@
 (_
   [
     (concat_operator)
+    "in"
     "of"
     "then"
+    "else"
     "="
     "+="
     ":"
@@ -863,29 +937,22 @@
   .
   (comment)*
   .
-  [
-    ; expressions
-    (_
-      ; dirty hack to skip `unit`
-      .
-      [
-        "("
-        "["
-      ]
-      _
-      [
-        ")"
-        "]"
-      ]
-      .
-    )
-    (list_expression)
-    (record_expression)
-    (array_expression)
-    ; types
-    (polymorphic_variant_type)
-    (record_declaration)
-  ] @append_indent_end
+  (_
+    .
+    [
+      "("
+      "["
+      "[|"
+      "{"
+    ]
+    [
+      ")"
+      "]"
+      "|]"
+      "}"
+    ] @prepend_indent_end
+    .
+  )
   .
   "="? @do_nothing ; Abort if we're in a let binding before the `=`
   (#single_line_scope_only! "dangling_list_like")
@@ -2053,20 +2120,74 @@
 ;   long_value_2;
 ;   long_value_3;
 ; ]
-(list_expression
+(
+  (
+    [
+      (concat_operator)
+      "in"
+      "then"
+      "else"
+      "="
+      "+="
+      ":"
+      "::"
+      "->"
+      "*"
+    ]
+  )
   .
-  "[" @append_indent_start @append_empty_scoped_softline
-  (#scope_id! "dangling_list_like")
-  "]" @prepend_indent_end @prepend_empty_scoped_softline
+  (list_expression
+    .
+    "[" @append_indent_start @append_empty_scoped_softline
+    (#scope_id! "dangling_list_like")
+    "]" @prepend_indent_end @prepend_empty_scoped_softline
+    .
+  )
+)
+(application_expression
+  (list_expression
+    .
+    "[" @append_indent_start @append_empty_scoped_softline
+    (#scope_id! "dangling_list_like")
+    "]" @prepend_indent_end @prepend_empty_scoped_softline
+    .
+  )
   .
 )
-
 (list_pattern
   .
   "[" @append_indent_start @append_empty_scoped_softline
   (#scope_id! "dangling_list_like")
   "]" @prepend_indent_end @prepend_empty_scoped_softline
   .
+)
+(list_pattern
+  .
+  "["
+  ";" @append_empty_scoped_softline
+  "]"
+  (#scope_id! "dangling_list_like")
+)
+(record_pattern
+  .
+  "{" @append_empty_scoped_softline
+  (#scope_id! "dangling_list_like")
+  "}" @prepend_empty_scoped_softline
+  .
+)
+(record_pattern
+  .
+  "{"
+  ";" @append_empty_scoped_softline
+  "}"
+  (#scope_id! "dangling_list_like")
+)
+(array_pattern
+  .
+  "[|"
+  ";" @append_empty_scoped_softline
+  "|]"
+  (#scope_id! "dangling_list_like")
 )
 
 ; Unfortunately, we can't process all polymorphic variant types:
@@ -2121,6 +2242,7 @@
     "("
     ")"
   )
+  "="? @do_nothing ; desist in let binding before equal
   (#single_line_scope_only! "dangling_list_like")
 )
 

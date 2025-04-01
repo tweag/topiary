@@ -73,7 +73,7 @@ let create n =
   let n = if n < 1 then 1 else n in
   let n = if n > Sys.max_string_length then Sys.max_string_length else n in
   let s = Bytes.create n in
-  {buffer = s; position = 0; length = n; initial_buffer = s}
+    {buffer = s; position = 0; length = n; initial_buffer = s}
 
 let contents b = Bytes.sub_string b.buffer 0 b.position
 let to_bytes b = Bytes.sub b.buffer 0 b.position
@@ -607,7 +607,7 @@ let long_function
     (long_argument_4 : int)
     : unit
   =
-  ()
+    ()
 
 let large_const =
   let val = 3 in
@@ -953,7 +953,7 @@ open Bar
 
 let _ =
   let open Baz in
-  ()
+    ()
 
 (* let module *)
 let x =
@@ -1171,7 +1171,7 @@ let eval_tree ~addr ~source_path (tree : Syn.tree) =
   let main = eval_tree_inner ~addr tree in
   let side = Emitted_trees.get () in
   let jobs = Jobs.get () in
-  {main; side; jobs}
+    {main; side; jobs}
 
 (* #660 dangling functions *)
 let foo x = fun y ->
@@ -1415,3 +1415,70 @@ type foo = {
   baz:
     [`Qux | `Bar];
 }
+
+(* #914 to #917 Edge cases in dangling behaviours *)
+let _ =
+  match foo with
+  | _ ->
+    (
+      match bar with
+      | [] -> None
+      | _ -> foo
+    )
+
+let _ =
+  match foo with
+  | _ ->
+    (
+      if path = [] then
+          ()
+      else
+          ()
+    )
+
+let foo : (bar, baz) qux =
+    ()
+
+let _ =
+  div
+    ~a: [a_id "page_nav"]
+    [
+      some stuff
+    ]
+
+let _ :: [
+  foo;
+  bar;
+  baz
+]
+=
+  [1; 2; 3; 4]
+
+let [|
+  a;
+  b;
+|]
+=
+  [|1; 2|]
+
+let {
+  a;
+  b;
+}
+= {
+  a = 1;
+  b = 2;
+}
+
+(* #951 More dangling behaviour issues *)
+let foo = (
+  match bar with
+  | [] | [] ->
+    qux
+)
+
+let foo = (
+  match bar with
+  | [], [] ->
+    qux
+)
