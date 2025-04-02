@@ -2,8 +2,6 @@
   languages = {
     bash = {
       extensions = ["sh", "bash"],
-      # Local grammar source:
-      # grammar.source.path = "~/tree-sitter/tree-sitter-bash/build/parser.so",
       grammar.source.git = {
         git = "https://github.com/tree-sitter/tree-sitter-bash.git",
         rev = "d1a1a3fe7189fdab5bd29a54d1df4a5873db5cb1",
