@@ -2,7 +2,13 @@
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   extends: ["config:recommended"],
 
+  // We want to use Renovate as a signal that things need updating.
+  // Unfortunately, setting this to 0 means "no rate limiting".
   prConcurrentLimit: 1,
+  prCreation: "not-pending",
+
+  // Only create PRs for minor and major updates; ignore patches
+  bumpVersion: "minor",
 
   reviewers: [
     "team:topiary-core-team"
@@ -13,7 +19,7 @@
     "web-playground/package.json",    // Not currently maintained (see `playground` branch)
   ],
 
-  // Enable Nix support
+  // Enable Nix support (experimental)
   nix: { enabled: true },
 
   // For Nix flake.lock and Cargo.lock
