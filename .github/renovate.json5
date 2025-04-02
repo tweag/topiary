@@ -7,6 +7,10 @@
   prConcurrentLimit: 1,
   prCreation: "not-pending",
 
+  // This is probably the best we can do for now!
+  dependencyDashboardHeader: "This issue lists Renovate updates to detected dependencies. Use these as a signal to perform a manual update; especially in the cases where Renovate fails.",
+  prHeader: "This PR is meant as a signal to perform a manual update on dependencies; especially in the case where Renovate fails.",
+
   // Only create PRs for minor and major updates; ignore patches
   bumpVersion: "minor",
 
