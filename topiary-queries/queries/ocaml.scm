@@ -758,15 +758,19 @@
 ; ]
 ;
 ; We use the `dangling_list_like` scope to "attach" the list-like node
-; to the `=` above it.
+; to the symbol preceding it.
 (_
   (#scope_id! "dangling_list_like")
   [
-    (concat_operator)
+    (_)
+    "let"
     "in"
     "of"
     "then"
     "else"
+    "private"
+    "|"
+    "%"
     "="
     "+="
     ":"
@@ -774,31 +778,16 @@
     "<-"
     "->"
     "*"
+    ","
   ] @append_begin_scope
+  .
+  _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
   .
   (comment)*
   .
   (_
     .
-    [
-      "("
-      "["
-      "[|"
-      "{"
-    ]
-    [
-      ")"
-      "]"
-      "|]"
-      "}"
-    ] @prepend_end_scope @prepend_end_measuring_scope
-  ) @prepend_begin_measuring_scope
-)
-(application_expression
-  (#scope_id! "dangling_list_like")
-  (_) @append_begin_scope
-  .
-  (_
+    _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
     .
     [
       "("
@@ -813,57 +802,40 @@
       "}"
     ] @prepend_end_scope @prepend_end_measuring_scope
   ) @prepend_begin_measuring_scope
-  .
 )
 (_
   (#scope_id! "dangling_list_like")
-  "let" @append_begin_scope
-  .
-  (let_binding
-    (_
-      .
-      [
-        "("
-        "["
-        "[|"
-        "{"
-      ]
-      [
-        ")"
-        "]"
-        "|]"
-        "}"
-      ] @prepend_end_scope @prepend_end_measuring_scope
-    ) @prepend_begin_measuring_scope
+  [
+    (_)
+    "let"
+    "in"
+    "of"
+    "then"
+    "else"
+    "private"
+    "|"
+    "%"
     "="
-  )
-)
-(constructor_pattern
-  (#scope_id! "dangling_list_like")
-  (_) @append_begin_scope
+    "+="
+    ":"
+    "::"
+    "<-"
+    "->"
+    "*"
+    ","
+  ] @append_begin_scope
+  .
+  _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
+  .
+  (comment)*
   .
   (_
     .
-    [
-      "("
-      "["
-      "[|"
-      "{"
-    ]
-    [
-      ")"
-      "]"
-      "|]"
-      "}"
-    ] @prepend_end_scope @prepend_end_measuring_scope
-  ) @prepend_begin_measuring_scope
-)
-(_
-  (#scope_id! "dangling_list_like")
-  "|" @append_begin_scope
-  .
-  (match_case
+    _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
+    .
     (_
+      .
+      _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
       .
       [
         "("
@@ -882,13 +854,41 @@
 )
 (_
   (#scope_id! "dangling_list_like")
-  "|" @append_begin_scope
+  [
+    (_)
+    "let"
+    "in"
+    "of"
+    "then"
+    "else"
+    "private"
+    "|"
+    "%"
+    "="
+    "+="
+    ":"
+    "::"
+    "<-"
+    "->"
+    "*"
+    ","
+  ] @append_begin_scope
   .
-  (match_case
+  _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
+  .
+  (comment)*
+  .
+  (_
+    .
+    _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
     .
     (_
-      ; could be tuple pattern, or list pattern
+      .
+      _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
+      .
       (_
+        .
+        _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
         .
         [
           "("
@@ -927,6 +927,7 @@
     "of"
     "then"
     "else"
+    "private"
     "="
     "+="
     ":"
@@ -934,6 +935,8 @@
     "<-"
     "*"
   ] @append_spaced_softline @append_indent_start
+  .
+  _? @do_nothing
   .
   (comment)*
   .
