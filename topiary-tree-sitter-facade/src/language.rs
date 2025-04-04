@@ -70,7 +70,7 @@ mod native {
 
         #[inline]
         pub fn version(&self) -> u32 {
-            u32::try_from(self.inner.version()).unwrap()
+            u32::try_from(self.inner.abi_version()).unwrap()
         }
     }
 

@@ -48,6 +48,7 @@ This name should be decided amongst the team before the release.
 <!-- - <New feature> -->
 - [#862](https://github.com/tweag/topiary/pull/862) Added support for the Simple Domain Modeling Language ([SDML](https://sdml.io)), thanks to @johnstonskj
 - [#884](https://github.com/tweag/topiary/pull/884) The Topiary Book
+- [#933](https://github.com/tweag/topiary/pull/933) Added support for WIT, thanks to @mkatychev
 - [#918](https://github.com/tweag/topiary/pull/918) Language prefetching utilities for Nix
 
 ### Changed
@@ -56,6 +57,7 @@ This name should be decided amongst the team before the release.
 - [#871](https://github.com/tweag/topiary/pull/871) Switch to `mold` linker for CI tests, thanks to @mkatychev
 - [#893](https://github.com/tweag/topiary/pull/893) Use `gix` lib instead of system `git`
 - [#896](https://github.com/tweag/topiary/pull/896) Use official grammar repo for OpenSCAD, thanks to @mkatychev
+- [#933](https://github.com/tweag/topiary/pull/933) Bump the `tree-sitter` dependency to 0.25, thanks to @mkatychev
 
 <!-- ### Deprecated -->
 <!-- - <Soon-to-be removed features> -->
@@ -83,7 +85,7 @@ This name should be decided amongst the team before the release.
 - [#786](https://github.com/tweag/topiary/pull/786) Re-introduce tests to check that all of the language queries are useful
 - [#832](https://github.com/tweag/topiary/pull/832) Added `typos-cli` configuration to workspace `Cargo.toml` for spellchecking, thanks to @mkatychev
 - [#838](https://github.com/tweag/topiary/pull/838) Added `@upper_case` and `@lower_case` captures, thanks to @ctdunc
-- [#845](https://github.com/tweag/topiary/pull/747) Added support for OpenSCAD, thanks to @mkatychev
+- [#845](https://github.com/tweag/topiary/pull/845) Added support for OpenSCAD, thanks to @mkatychev
 - [#851](https://github.com/tweag/topiary/pull/851) Added support for following symlinks when specifying input files for formatting
 
 ### Changed

@@ -70,3 +70,9 @@ pub fn toml() -> &'static str {
 pub fn tree_sitter_query() -> &'static str {
     include_str!("../queries/tree_sitter_query.scm")
 }
+
+/// Returns the Topiary-compatible query file for WIT.
+#[cfg(feature = "wit")]
+pub fn wit() -> &'static str {
+    include_str!("../queries/wit.scm")
+}

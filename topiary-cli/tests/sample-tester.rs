@@ -19,6 +19,7 @@ fn get_file_extension(language: &str) -> &str {
         "sdml" => "sdml",
         "toml" => "toml",
         "tree_sitter_query" => "scm",
+        "wit" => "wit",
         _ => panic!("Invalid language input: {language}"),
     }
 }
@@ -41,6 +42,7 @@ macro_rules! lang_test {
 mod test_fmt {
     use super::*;
 
+    #[allow(unused)]
     fn fmt_input(lang: &str) {
         let file = format!("{lang}.{}", get_file_extension(lang));
         let input = PathBuf::from(format!("tests/samples/input/{file}"));
@@ -90,6 +92,7 @@ mod test_fmt {
         "sdml",
         "toml",
         "tree_sitter_query",
+        "wit",
         fmt_input
     );
 
@@ -133,6 +136,7 @@ mod test_fmt {
 mod test_coverage {
     use super::*;
 
+    #[allow(unused)]
     fn coverage_input(lang: &str) {
         let file = format!("{lang}.{}", get_file_extension(lang));
         let input = PathBuf::from(format!("tests/samples/input/{file}"));
@@ -169,6 +173,7 @@ mod test_coverage {
         "sdml",
         "toml",
         "tree_sitter_query",
+        "wit",
         coverage_input
     );
 }

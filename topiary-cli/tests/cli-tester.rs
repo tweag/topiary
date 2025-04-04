@@ -1,19 +1,23 @@
-use std::{fmt, fs, fs::File, io::Write, path::PathBuf, sync::Once};
+use std::{fmt, sync::Once};
+#[cfg(any(feature = "json", feature = "toml"))]
+use {
+    std::{fs, fs::File, io::Write, path::PathBuf},
+    tempfile::TempDir,
+};
 
 use assert_cmd::Command;
-use predicates::{
-    prelude::PredicateBooleanExt,
-    str::{ends_with, starts_with},
-};
-use tempfile::TempDir;
 
 // Simple exemplar JSON and TOML state, to verify the formatter
 // is doing something... and hopefully the right thing
+#[cfg(feature = "json")]
 const JSON_INPUT: &str = r#"{   "test"  :123}"#;
+#[cfg(feature = "json")]
 const JSON_EXPECTED: &str = r#"{ "test": 123 }
 "#;
 
+#[cfg(feature = "toml")]
 const TOML_INPUT: &str = r#"   test=    123"#;
+#[cfg(feature = "toml")]
 const TOML_EXPECTED: &str = r#"test = 123
 "#;
 
@@ -50,9 +54,11 @@ pub fn initialize() {
 // However, removing it means that the directory is dropped at the end of the new() function, which causes it to be deleted.
 // This causes the path to the state file to be invalid and breaks the tests.
 // So, we keep the TempDir around so the tests don't break.
+#[cfg(any(feature = "json", feature = "toml"))]
 #[allow(dead_code)]
 struct State(TempDir, PathBuf);
 
+#[cfg(any(feature = "json", feature = "toml"))]
 impl State {
     fn new(payload: &str, extension: &str) -> Self {
         let tmp_dir = TempDir::new().unwrap();
@@ -219,6 +225,11 @@ fn test_fmt_invalid() {
 #[test]
 #[cfg(feature = "json")]
 fn test_vis() {
+    use predicates::{
+        prelude::PredicateBooleanExt,
+        str::{ends_with, starts_with},
+    };
+
     initialize();
     let mut topiary = Command::cargo_bin("topiary").unwrap();
 

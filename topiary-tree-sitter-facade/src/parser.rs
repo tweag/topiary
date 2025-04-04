@@ -26,7 +26,9 @@ mod native {
 
         #[allow(clippy::missing_safety_doc)]
         #[inline]
+        #[warn(deprecated)]
         pub unsafe fn cancellation_flag(&self) -> Option<&AtomicUsize> {
+            #[allow(deprecated)]
             self.inner.cancellation_flag()
         }
 
@@ -57,7 +59,7 @@ mod native {
             old_tree: Option<&Tree>,
         ) -> Result<Option<Tree>, ParserError> {
             let old_tree = old_tree.map(|tree| &tree.inner);
-            Ok(self.inner.parse_utf16(text, old_tree).map(Into::into))
+            Ok(self.inner.parse_utf16_le(text, old_tree).map(Into::into))
         }
 
         #[inline]
@@ -74,7 +76,7 @@ mod native {
             let old_tree = old_tree.map(|tree| &tree.inner);
             Ok(self
                 .inner
-                .parse_utf16_with(&mut callback, old_tree)
+                .parse_utf16_le_with_options(&mut callback, old_tree, None)
                 .map(Into::into))
         }
 
@@ -92,7 +94,7 @@ mod native {
             let old_tree = old_tree.map(|tree| &tree.inner);
             Ok(self
                 .inner
-                .parse_with(&mut callback, old_tree)
+                .parse_with_options(&mut callback, old_tree, None)
                 .map(Into::into))
         }
 
@@ -109,7 +111,9 @@ mod native {
 
         #[allow(clippy::missing_safety_doc)]
         #[inline]
+        #[warn(deprecated)]
         pub unsafe fn set_cancellation_flag(&mut self, flag: Option<&AtomicUsize>) {
+            #[allow(deprecated)]
             self.inner.set_cancellation_flag(flag);
         }
 
@@ -130,7 +134,9 @@ mod native {
         }
 
         #[inline]
+        #[warn(deprecated)]
         pub fn set_timeout_micros(&mut self, timeout_micros: f64) {
+            #[allow(deprecated)]
             self.inner.set_timeout_micros(timeout_micros as u64)
         }
 
@@ -140,8 +146,11 @@ mod native {
         }
 
         #[inline]
+        #[warn(deprecated)]
         pub fn timeout_micros(&self) -> f64 {
-            self.inner.timeout_micros() as f64
+            #[allow(deprecated)]
+            let timeout = self.inner.timeout_micros();
+            timeout as f64
         }
     }
 

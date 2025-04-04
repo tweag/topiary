@@ -460,7 +460,7 @@ mod tests {
         .unwrap();
 
         let formatted = String::from_utf8(output).unwrap();
-        log::debug!("{}", formatted);
+        log::debug!("{formatted}");
 
         pretty_assert_eq(expected, &formatted);
     }
