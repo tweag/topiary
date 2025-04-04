@@ -4,7 +4,7 @@ use mdbook::book::{Book, Chapter};
 use mdbook::errors::Error;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor, PreprocessorContext};
 use mdbook::BookItem;
-use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
+use pulldown_cmark::{CodeBlockKind, Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 use semver::{Version, VersionReq};
 use url::{ParseError, Url};
 
@@ -43,6 +43,56 @@ impl Preprocessor for MdbookMunge {
     }
 }
 
+#[derive(Clone)]
+struct VerbatimRewrite<'parse> {
+    events: Vec<Box<Event<'parse>>>,
+}
+
+impl<'parse> VerbatimRewrite<'parse> {
+    fn new() -> Self {
+        Self { events: Vec::new() }
+    }
+
+    fn event_type(event: &Event<'parse>) -> &'parse str {
+        match event {
+            Event::Start(Tag::List(_)) | Event::End(TagEnd::List(_)) => "list",
+            Event::Start(Tag::Table(_)) | Event::End(TagEnd::Table) => "table",
+            _ => unreachable!(),
+        }
+    }
+
+    fn append(&mut self, event: Event<'parse>) {
+        self.events.push(Box::new(event));
+    }
+
+    // TODO This almost works as expected, however the re-rendering to Markdown is not great in
+    // some cases. In particular:
+    // * Ordered lists are regurgitated with `1.` for each item.
+    // * Tables are not padded to have uniform column widths
+    fn rewrite(self) -> Vec<Option<Event<'parse>>> {
+        let mut buf = String::new();
+
+        vec![
+            // Open a code fence
+            Some(Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(
+                "".into(),
+            )))),
+            // Render the consumed events as Markdown
+            Some(Event::Text(
+                pulldown_cmark_to_cmark::cmark(
+                    self.events.into_iter().map(|boxed| *boxed),
+                    &mut buf,
+                )
+                .map(|_| buf)
+                .unwrap()
+                .into(),
+            )),
+            // Closing code fence
+            Some(Event::End(TagEnd::CodeBlock)),
+        ]
+    }
+}
+
 fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
     let mut buf = String::with_capacity(chapter.content.len());
 
@@ -52,6 +102,7 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
 
     let mut strip_h1 = false;
     let mut strip_link = false;
+    let mut verbatim: Option<VerbatimRewrite> = None;
 
     let events = parser
         .flat_map(|event| match event {
@@ -105,10 +156,62 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
 
             _ if strip_h1 => vec![None],
 
-            // Add an explicit space after a soft break to prevent hard wrapped lines in the input
-            // smushing together in the output
+            // Slurp up lists and tables and then rewrite them as Markdown within a code fence
+            Event::Start(Tag::List(_)) | Event::Start(Tag::Table(_)) => {
+                if verbatim.is_some() {
+                    log::error!(
+                        "{}: Nested verbatim structure found; skipping.",
+                        chapter.name
+                    );
+                } else {
+                    log::info!(
+                        "{}: Slurping in {}",
+                        chapter.name,
+                        VerbatimRewrite::event_type(&event)
+                    );
+
+                    let mut v = VerbatimRewrite::new();
+                    v.append(event);
+                    verbatim = Some(v);
+                }
+
+                vec![None]
+            }
+
+            Event::End(TagEnd::List(_)) | Event::End(TagEnd::Table) => {
+                if verbatim.is_none() {
+                    log::error!(
+                        "{}: Unexpected end of verbatim structure found.",
+                        chapter.name
+                    );
+
+                    return vec![None];
+                }
+
+                log::info!(
+                    "{}: Regurgitating {} structure verbatim",
+                    chapter.name,
+                    VerbatimRewrite::event_type(&event)
+                );
+
+                let mut regurgitate = verbatim.clone().unwrap();
+                verbatim = None;
+
+                regurgitate.append(event);
+                regurgitate.rewrite()
+            }
+
+            _ if verbatim.is_some() => {
+                if let Some(verbatim_events) = verbatim.as_mut() {
+                    verbatim_events.append(event);
+                }
+                vec![None]
+            }
+
+            // Convert soft breaks into an explicit space, to prevent hard wrapped lines in the
+            // input getting smushed together in the output
             Event::SoftBreak => {
-                vec![Some(Event::SoftBreak), Some(Event::Text("\\ ".into()))]
+                vec![Some(Event::Text("\\ ".into()))]
             }
 
             // Everything else
