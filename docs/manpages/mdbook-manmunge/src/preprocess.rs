@@ -55,7 +55,8 @@ impl<'parse> VerbatimRewrite<'parse> {
 
     fn event_type(event: &Event<'parse>) -> &'parse str {
         match event {
-            Event::Start(Tag::List(_)) | Event::End(TagEnd::List(_)) => "list",
+            Event::Start(Tag::List(Some(_))) | Event::End(TagEnd::List(true)) => "ordered list",
+            Event::Start(Tag::List(None)) | Event::End(TagEnd::List(false)) => "unordered list",
             Event::Start(Tag::Table(_)) | Event::End(TagEnd::Table) => "table",
             _ => unreachable!(),
         }
