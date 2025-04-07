@@ -67,8 +67,8 @@ impl<'parse> VerbatimRewrite<'parse> {
 
     // TODO This almost works as expected, however the re-rendering to Markdown is not great in
     // some cases. In particular:
-    // * Ordered lists are regurgitated with `1.` for each item.
     // * Tables are not padded to have uniform column widths
+    // * Back slashes (e.g., in Windows paths) are not escaped
     fn rewrite(self) -> Vec<Option<Event<'parse>>> {
         let mut buf = String::new();
 
@@ -79,11 +79,16 @@ impl<'parse> VerbatimRewrite<'parse> {
             )))),
             // Render the consumed events as Markdown
             Some(Event::Text(
-                pulldown_cmark_to_cmark::cmark(
+                pulldown_cmark_to_cmark::cmark_with_options(
                     self.events.into_iter().map(|boxed| *boxed),
                     &mut buf,
+                    pulldown_cmark_to_cmark::Options {
+                        increment_ordered_list_bullets: true,
+                        ..pulldown_cmark_to_cmark::Options::default()
+                    },
                 )
                 .map(|_| buf)
+                // We assume it's not going to fail because it's effectively a round-trip
                 .unwrap()
                 .into(),
             )),
