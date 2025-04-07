@@ -68,7 +68,6 @@ impl<'parse> VerbatimRewrite<'parse> {
     // TODO This almost works as expected, however the re-rendering to Markdown is not great in
     // some cases. In particular:
     // * Tables are not padded to have uniform column widths
-    // * Back slashes (e.g., in Windows paths) are not escaped
     fn rewrite(self) -> Vec<Option<Event<'parse>>> {
         let mut buf = String::new();
 
@@ -90,6 +89,8 @@ impl<'parse> VerbatimRewrite<'parse> {
                 .map(|_| buf)
                 // We assume it's not going to fail because it's effectively a round-trip
                 .unwrap()
+                // Escape backslashes (i.e., in Windows paths)
+                .replace("\\", "\\\\")
                 .into(),
             )),
             // Closing code fence
