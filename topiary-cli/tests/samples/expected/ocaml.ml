@@ -1483,7 +1483,7 @@ let foo = (
     qux
 )
 
-(* #956 #957 Dangling behaviour issues, yet again *)
+(* #956 #957 #965 Dangling behaviour issues, yet again *)
 let _ =
   foo
     (
@@ -1495,4 +1495,10 @@ let _ =
     (
       let%tag {bar} = baz in
         ()
+    )
+
+let _ =
+  foo
+    (fun {bar} ->
+      bar
     )
