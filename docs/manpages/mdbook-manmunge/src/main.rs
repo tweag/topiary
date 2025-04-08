@@ -1,4 +1,5 @@
 mod preprocess;
+mod verbatim;
 
 use std::process::ExitCode;
 
