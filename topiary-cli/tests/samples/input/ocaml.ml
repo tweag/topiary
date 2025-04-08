@@ -1418,3 +1418,17 @@ let foo =
     | [], [] ->
       qux
   )
+
+(* #956 #957 Dangling behaviour issues, yet again *)
+let _ =
+  foo
+    (
+      bar {baz} qux
+    )
+
+let _ =
+  foo
+    (
+      let%tag {bar} = baz in
+      ()
+    )
