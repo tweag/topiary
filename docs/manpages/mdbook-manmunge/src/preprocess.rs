@@ -4,9 +4,11 @@ use mdbook::book::{Book, Chapter};
 use mdbook::errors::Error;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor, PreprocessorContext};
 use mdbook::BookItem;
-use pulldown_cmark::{CodeBlockKind, Event, HeadingLevel, Options, Parser, Tag, TagEnd};
+use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 use semver::{Version, VersionReq};
 use url::{ParseError, Url};
+
+use crate::verbatim::{Cmark, Verbatim};
 
 struct MdbookMunge;
 
@@ -43,60 +45,12 @@ impl Preprocessor for MdbookMunge {
     }
 }
 
-#[derive(Clone)]
-struct VerbatimRewrite<'parse> {
-    events: Vec<Box<Event<'parse>>>,
-}
-
-impl<'parse> VerbatimRewrite<'parse> {
-    fn new() -> Self {
-        Self { events: Vec::new() }
-    }
-
-    fn event_type(event: &Event<'parse>) -> &'parse str {
-        match event {
-            Event::Start(Tag::List(Some(_))) | Event::End(TagEnd::List(true)) => "ordered list",
-            Event::Start(Tag::List(None)) | Event::End(TagEnd::List(false)) => "unordered list",
-            Event::Start(Tag::Table(_)) | Event::End(TagEnd::Table) => "table",
-            _ => unreachable!(),
-        }
-    }
-
-    fn append(&mut self, event: Event<'parse>) {
-        self.events.push(Box::new(event));
-    }
-
-    // TODO This almost works as expected, however the re-rendering to Markdown is not great in
-    // some cases. In particular:
-    // * Tables are not padded to have uniform column widths
-    fn rewrite(self) -> Vec<Option<Event<'parse>>> {
-        let mut buf = String::new();
-
-        vec![
-            // Open a code fence
-            Some(Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(
-                "".into(),
-            )))),
-            // Render the consumed events as Markdown
-            Some(Event::Text(
-                pulldown_cmark_to_cmark::cmark_with_options(
-                    self.events.into_iter().map(|boxed| *boxed),
-                    &mut buf,
-                    pulldown_cmark_to_cmark::Options {
-                        increment_ordered_list_bullets: true,
-                        ..pulldown_cmark_to_cmark::Options::default()
-                    },
-                )
-                .map(|_| buf)
-                // We assume it's not going to fail because it's effectively a round-trip
-                .unwrap()
-                // Escape backslashes (i.e., in Windows paths)
-                .replace("\\", "\\\\")
-                .into(),
-            )),
-            // Closing code fence
-            Some(Event::End(TagEnd::CodeBlock)),
-        ]
+fn event_type<'parse>(event: &Event<'parse>) -> &'static str {
+    match event {
+        Event::Start(Tag::List(Some(_))) | Event::End(TagEnd::List(true)) => "ordered list",
+        Event::Start(Tag::List(None)) | Event::End(TagEnd::List(false)) => "unordered list",
+        Event::Start(Tag::Table(_)) | Event::End(TagEnd::Table) => "table",
+        _ => unreachable!(),
     }
 }
 
@@ -109,7 +63,7 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
 
     let mut strip_h1 = false;
     let mut strip_link = false;
-    let mut verbatim: Option<VerbatimRewrite> = None;
+    let mut verbatim: Option<Box<dyn Verbatim>> = None;
 
     let events = parser
         .flat_map(|event| match event {
@@ -171,46 +125,46 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
                         chapter.name
                     );
                 } else {
-                    log::info!(
-                        "{}: Slurping in {}",
-                        chapter.name,
-                        VerbatimRewrite::event_type(&event)
-                    );
+                    log::info!("{}: Slurping in {}", chapter.name, event_type(&event));
 
-                    let mut v = VerbatimRewrite::new();
-                    v.append(event);
-                    verbatim = Some(v);
+                    let mut verbatim_events = Box::new(Cmark::new());
+                    verbatim_events.consume(event);
+                    verbatim = Some(verbatim_events);
                 }
 
                 vec![None]
             }
 
             Event::End(TagEnd::List(_)) | Event::End(TagEnd::Table) => {
-                if verbatim.is_none() {
+                if let Some(mut verbatim_events) = verbatim.take() {
+                    log::info!(
+                        "{}: Regurgitating {} structure verbatim",
+                        chapter.name,
+                        event_type(&event)
+                    );
+
+                    verbatim_events.consume(event);
+                    match verbatim_events.emit() {
+                        Ok(events) => events.iter().map(|event| Some(event.clone())).collect(),
+
+                        Err(error) => {
+                            log::error!("{}: Could not regurgitate; {error}", chapter.name);
+                            vec![None]
+                        }
+                    }
+                } else {
                     log::error!(
                         "{}: Unexpected end of verbatim structure found.",
                         chapter.name
                     );
 
-                    return vec![None];
+                    vec![None]
                 }
-
-                log::info!(
-                    "{}: Regurgitating {} structure verbatim",
-                    chapter.name,
-                    VerbatimRewrite::event_type(&event)
-                );
-
-                let mut regurgitate = verbatim.clone().unwrap();
-                verbatim = None;
-
-                regurgitate.append(event);
-                regurgitate.rewrite()
             }
 
             _ if verbatim.is_some() => {
                 if let Some(verbatim_events) = verbatim.as_mut() {
-                    verbatim_events.append(event);
+                    verbatim_events.consume(event);
                 }
                 vec![None]
             }
