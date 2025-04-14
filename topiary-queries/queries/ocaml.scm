@@ -780,6 +780,10 @@
     "->"
     "*"
     ","
+    "("
+    "["
+    "[|"
+    "{"
   ] @append_begin_scope
   .
   _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
@@ -825,6 +829,10 @@
     "->"
     "*"
     ","
+    "("
+    "["
+    "[|"
+    "{"
   ] @append_begin_scope
   .
   _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
@@ -875,6 +883,10 @@
     "->"
     "*"
     ","
+    "("
+    "["
+    "[|"
+    "{"
   ] @append_begin_scope
   .
   _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
@@ -1615,6 +1627,7 @@
   (#scope_id! "function_application")
   (_
     [
+      "("
       "["
       "[|"
       "{"
@@ -1629,6 +1642,7 @@
   (#scope_id! "function_application")
   (_
     [
+      "("
       "["
       "[|"
       "{"
