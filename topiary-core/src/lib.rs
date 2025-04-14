@@ -259,7 +259,7 @@ pub fn formatter(
             log::info!("Pretty-print output");
             let rendered = pretty::render(
                 &atoms[..],
-                // Default to "  " is the language has no indentation specified
+                // Default to "  " if the language has no indentation specified
                 language.indent.as_ref().map_or("  ", |v| v.as_str()),
             )?;
 
