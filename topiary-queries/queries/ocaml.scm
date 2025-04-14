@@ -1626,6 +1626,9 @@
 (application_expression
   (#scope_id! "function_application")
   (_
+    .
+    _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
+    .
     [
       "("
       "["
@@ -1641,6 +1644,9 @@
 (application_expression
   (#scope_id! "function_application")
   (_
+    .
+    _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
+    .
     [
       "("
       "["
