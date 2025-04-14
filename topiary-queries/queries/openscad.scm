@@ -268,6 +268,8 @@
   .
   ","? @do_nothing
   .
+  (line_comment)*
+  .
   "]"
   .
   (#multi_line_only!)

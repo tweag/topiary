@@ -172,7 +172,7 @@ my_fn = fn1(
   [
     1,
     2,
-    3,
+    3, // comment
   ],
   true,
 );
