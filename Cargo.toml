@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.6.0"
+version = "0.6.1"
 edition = "2021"
 authors = ["Tweag"]
 homepage = "https://topiary.tweag.io"
@@ -84,7 +84,9 @@ opt-level = 3
 [profile.release.package.lalrpop]
 opt-level = 3
 
-[workspace.metadata.typos]
-files.extend-exclude = [
+[workspace.metadata]
+typos.files.extend-exclude = [
   "/topiary-cli/tests/samples",
 ]
+
+crane.name = "topiary"

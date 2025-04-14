@@ -61,6 +61,8 @@ pub struct AtomCollection {
     line_break_after: HashSet<usize>,
     /// Used to generate unique IDs
     counter: usize,
+    /// Used to depth of nested grammar injections
+    injection_depth: usize,
 }
 
 impl AtomCollection {
@@ -80,6 +82,7 @@ impl AtomCollection {
             line_break_before: HashSet::new(),
             line_break_after: HashSet::new(),
             counter: 0,
+            injection_depth: 0,
         }
     }
 
@@ -217,6 +220,8 @@ impl AtomCollection {
         }
 
         match name {
+            "injection.language" => {}
+            "injection.contet" => {}
             "allow_blank_line_before" => {
                 if self.blank_lines_before.contains(&node.id()) {
                     self.prepend(Atom::Blankline, node, predicates);

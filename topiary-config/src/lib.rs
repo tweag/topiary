@@ -92,6 +92,24 @@ impl Configuration {
             .ok_or(TopiaryConfigError::UnknownLanguage(name.to_string()))
     }
 
+    /// Convenience alias to detect the Language from a given file extension string.
+    ///
+    /// # Errors
+    ///
+    /// If the file extension is not supported, a `FormatterError` will be returned.
+    pub fn get_language_by_extension(&self, extension: &str) -> TopiaryConfigResult<&Language> {
+        for lang in &self.languages {
+            if lang
+                .config
+                .extensions
+                .contains::<String>(&extension.to_string())
+            {
+                return Ok(lang);
+            }
+        }
+        return Err(TopiaryConfigError::UnknownExtension(extension.to_string()));
+    }
+
     /// Prefetch a language per its configuration
     ///
     /// # Errors
@@ -185,16 +203,7 @@ impl Configuration {
     pub fn detect<P: AsRef<Path>>(&self, path: P) -> TopiaryConfigResult<&Language> {
         let pb = &path.as_ref().to_path_buf();
         if let Some(extension) = pb.extension().map(|ext| ext.to_string_lossy()) {
-            for lang in &self.languages {
-                if lang
-                    .config
-                    .extensions
-                    .contains::<String>(&extension.to_string())
-                {
-                    return Ok(lang);
-                }
-            }
-            return Err(TopiaryConfigError::UnknownExtension(extension.to_string()));
+            return self.get_language_by_extension(&extension);
         }
         Err(TopiaryConfigError::NoExtension(pb.clone()))
     }

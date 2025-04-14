@@ -398,7 +398,7 @@ checksum = "f46ad14479a25103f283c0f10005961cf086d8dc42205bb44c46ac563475dca6"
 
 [[package]]
 name = "client-app"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "tokio",
  "topiary-config",
@@ -3874,7 +3874,7 @@ dependencies = [
 
 [[package]]
 name = "topiary-cli"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "assert_cmd",
  "async-scoped",
@@ -3899,7 +3899,7 @@ dependencies = [
 
 [[package]]
 name = "topiary-config"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -3922,7 +3922,7 @@ dependencies = [
 
 [[package]]
 name = "topiary-core"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "criterion",
  "env_logger",
@@ -3946,7 +3946,7 @@ dependencies = [
 
 [[package]]
 name = "topiary-playground"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "itertools 0.11.0",
  "topiary-config",
@@ -3958,11 +3958,11 @@ dependencies = [
 
 [[package]]
 name = "topiary-queries"
-version = "0.6.0"
+version = "0.6.1"
 
 [[package]]
 name = "topiary-tree-sitter-facade"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "js-sys",
  "streaming-iterator",
@@ -3977,7 +3977,7 @@ dependencies = [
 
 [[package]]
 name = "topiary-web-tree-sitter-sys"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
