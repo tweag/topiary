@@ -71,6 +71,7 @@ This name should be decided amongst the team before the release.
 - [#869](https://github.com/tweag/topiary/pull/869) Disable parallel grammar building on Windows
 - [#908](https://github.com/tweag/topiary/pull/908) [#907](https://github.com/tweag/topiary/pull/907) [#939](https://github.com/tweag/topiary/pull/939) [#955](https://github.com/tweag/topiary/pull/955) [#964](https://github.com/tweag/topiary/pull/964) [#967](https://github.com/tweag/topiary/pull/967) Various OCaml issues and improvements
 - [#953](https://github.com/tweag/topiary/pull/953) Coverage output when there are zero queries
+- [#974](https://github.com/tweag/topiary/pull/974) No longer remove trailing spaces after pretty-printing
 
 <!-- ### Security -->
 <!-- - <Vulnerabilities> -->
