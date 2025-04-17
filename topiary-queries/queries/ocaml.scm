@@ -780,6 +780,10 @@
     "->"
     "*"
     ","
+    "("
+    "["
+    "[|"
+    "{"
   ] @append_begin_scope
   .
   _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
@@ -825,6 +829,10 @@
     "->"
     "*"
     ","
+    "("
+    "["
+    "[|"
+    "{"
   ] @append_begin_scope
   .
   _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
@@ -875,6 +883,10 @@
     "->"
     "*"
     ","
+    "("
+    "["
+    "[|"
+    "{"
   ] @append_begin_scope
   .
   _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
@@ -1614,7 +1626,11 @@
 (application_expression
   (#scope_id! "function_application")
   (_
+    .
+    _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
+    .
     [
+      "("
       "["
       "[|"
       "{"
@@ -1628,7 +1644,11 @@
 (application_expression
   (#scope_id! "function_application")
   (_
+    .
+    _? @do_nothing ; Ad hoc hack to prevent anchor from skipping non-named nodes
+    .
     [
+      "("
       "["
       "[|"
       "{"
@@ -2144,56 +2164,49 @@
   .
   (list_expression
     .
-    "[" @append_indent_start @append_empty_scoped_softline
-    (#scope_id! "dangling_list_like")
-    "]" @prepend_indent_end @prepend_empty_scoped_softline
+    "[" @append_indent_start @append_empty_softline
+    "]" @prepend_indent_end @prepend_empty_softline
     .
   )
 )
 (application_expression
   (list_expression
     .
-    "[" @append_indent_start @append_empty_scoped_softline
-    (#scope_id! "dangling_list_like")
-    "]" @prepend_indent_end @prepend_empty_scoped_softline
+    "[" @append_indent_start @append_empty_softline
+    "]" @prepend_indent_end @prepend_empty_softline
     .
   )
   .
 )
 (list_pattern
   .
-  "[" @append_indent_start @append_empty_scoped_softline
-  (#scope_id! "dangling_list_like")
-  "]" @prepend_indent_end @prepend_empty_scoped_softline
+  "[" @append_indent_start @append_empty_softline
+  "]" @prepend_indent_end @prepend_empty_softline
   .
 )
 (list_pattern
   .
   "["
-  ";" @append_empty_scoped_softline
+  ";" @append_empty_softline
   "]"
-  (#scope_id! "dangling_list_like")
 )
 (record_pattern
   .
-  "{" @append_empty_scoped_softline
-  (#scope_id! "dangling_list_like")
-  "}" @prepend_empty_scoped_softline
+  "{" @append_empty_softline
+  "}" @prepend_empty_softline
   .
 )
 (record_pattern
   .
   "{"
-  ";" @append_empty_scoped_softline
+  ";" @append_empty_softline
   "}"
-  (#scope_id! "dangling_list_like")
 )
 (array_pattern
   .
   "[|"
-  ";" @append_empty_scoped_softline
+  ";" @append_empty_softline
   "|]"
-  (#scope_id! "dangling_list_like")
 )
 
 ; Unfortunately, we can't process all polymorphic variant types:
@@ -2206,9 +2219,8 @@
   ]
   (polymorphic_variant_type
     .
-    "[" @append_indent_start @append_empty_scoped_softline
-    (#scope_id! "dangling_list_like")
-    "]" @prepend_indent_end @prepend_empty_scoped_softline
+    "[" @append_indent_start @append_empty_softline
+    "]" @prepend_indent_end @prepend_empty_softline
     .
   )
 )
@@ -2221,9 +2233,8 @@
   ]
   (constructed_type
     .
-    "(" @append_indent_start @append_empty_scoped_softline
-    (#scope_id! "dangling_list_like")
-    ")" @prepend_indent_end @prepend_empty_scoped_softline
+    "(" @append_indent_start @append_empty_softline
+    ")" @prepend_indent_end @prepend_empty_softline
   )
 )
 (
@@ -2234,9 +2245,8 @@
   (constructed_type
     .
     "("
-    "," @append_spaced_scoped_softline
+    "," @append_spaced_softline
     ")"
-    (#scope_id! "dangling_list_like")
   )
 )
 (
@@ -2254,9 +2264,8 @@
 
 (array_expression
   .
-  "[|" @append_indent_start @append_empty_scoped_softline
-  (#scope_id! "dangling_list_like")
-  "|]" @prepend_indent_end @prepend_empty_scoped_softline
+  "[|" @append_indent_start @append_empty_softline
+  "|]" @prepend_indent_end @prepend_empty_softline
   .
 )
 
