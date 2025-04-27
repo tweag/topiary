@@ -56,9 +56,15 @@
   "="
   "?"
   ":"
-  (parenthesized_expression)
   (assignments)
 ] @prepend_space @append_space
+
+(parenthesized_expression) @prepend_space
+(
+  (parenthesized_expression) @append_space
+  .
+  ","? @do_nothing
+)
 
 ; Colon should have whitespace trimmed in a range delimiter
 (range ":" @prepend_antispace @append_antispace)
@@ -263,7 +269,7 @@
 (list "," @delete . "]" . (#single_line_only!))
 (list
   (#delimiter! ",")
-  (expression) @append_delimiter
+  [(expression) (list_comprehension)] @append_delimiter
   .
   ","? @do_nothing
   .
