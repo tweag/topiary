@@ -94,6 +94,7 @@
     "else"
     (block_comment)
     (line_comment)
+    ";"
   ]* @do_nothing
 )
 
@@ -135,7 +136,6 @@
   "[" @append_antispace
   "]" @prepend_antispace
 )
-(list "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 (assignments "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 (parameters "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 (";" @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
@@ -223,7 +223,6 @@
   .
 )
 (assignments "," @delete . ")" . (#single_line_only!))
-(assignments "," @append_spaced_softline)
 
 (arguments "," @append_input_softline)
 (arguments "," @delete . ")" . (#single_line_only!))
@@ -235,7 +234,7 @@
 )
 (arguments
   (#delimiter! ",")
-  (_) @append_delimiter
+  (expression) @append_delimiter
   .
   ","? @do_nothing
   .
@@ -264,7 +263,7 @@
 (list "," @delete . "]" . (#single_line_only!))
 (list
   (#delimiter! ",")
-  (_) @append_delimiter
+  (expression) @append_delimiter
   .
   ","? @do_nothing
   .
@@ -274,6 +273,7 @@
   .
   (#multi_line_only!)
 )
+(list "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 
 ; differentiate parameter definitions from parameter invocation,
 ; module/function definitions have param separation while
