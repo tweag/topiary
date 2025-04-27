@@ -37,10 +37,10 @@ atoms immediately following a hardline will now be prefixed with the
 appropriate indent string, until the respective "indentation end" atom
 is reached.
 
-## Whitespace trimming
+## Vertical whitespace trimming
 
-The output from pretty printing can leave trailing horizontal whitespace
-(at the ends of lines) and vertical whitespace (at the end of the file).
+The output from pretty printing can leave too much or too few vertical
+whitespace (at the end of the file).
 This final step clears that up.
 
 <div class="warning">

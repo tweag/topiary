@@ -12,7 +12,6 @@
 
 use std::io;
 
-use itertools::Itertools;
 use pretty_assertions::StrComparison;
 use tree_sitter::Position;
 
@@ -260,16 +259,18 @@ pub fn formatter(
             log::info!("Pretty-print output");
             let rendered = pretty::render(
                 &atoms[..],
-                // Default to "  " is the language has no indentation specified
+                // Default to "  " if the language has no indentation specified
                 language.indent.as_ref().map_or("  ", |v| v.as_str()),
             )?;
-            let trimmed = trim_whitespace(&rendered);
+
+            // Add a final line break if missing
+            let rendered = format!("{}\n", rendered.trim());
 
             if !skip_idempotence {
-                idempotence_check(&trimmed, language, tolerate_parsing_errors)?;
+                idempotence_check(&rendered, language, tolerate_parsing_errors)?;
             }
 
-            write!(output, "{trimmed}")?;
+            write!(output, "{rendered}")?;
         }
 
         Operation::Visualise { output_format } => {
@@ -332,13 +333,6 @@ fn read_input(input: &mut dyn io::Read) -> Result<String, io::Error> {
     let mut content = String::new();
     input.read_to_string(&mut content)?;
     Ok(content)
-}
-
-/// Trim whitespace from the end of each line,
-/// then trim any leading/trailing new lines,
-/// finally reinstate the new line at EOF.
-fn trim_whitespace(s: &str) -> String {
-    format!("{}\n", s.lines().map(str::trim_end).join("\n").trim())
 }
 
 /// Perform the idempotence check. Given the already formatted content of the

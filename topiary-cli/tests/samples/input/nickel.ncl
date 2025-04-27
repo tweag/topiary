@@ -1,5 +1,16 @@
 {
   regression_tests = [
+    # Issue 973: Trailing whitespaces are semantically relevant
+    {
+      a =
+        std.string.split
+          " "
+          m%"
+          line one with trailing space 
+          line two
+        "%
+        |> std.array.at 6
+    },
     # Issue 680
     {
       config
