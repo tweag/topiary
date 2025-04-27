@@ -134,7 +134,7 @@ list1 = [
 
 list2 = [
   1,
-  2 /* block comment */
+  2, /* block comment */
 ];
 arguments1 = foo(
   1,

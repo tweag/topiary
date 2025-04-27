@@ -216,7 +216,7 @@
   .
   ","? @do_nothing
   .
-  (line_comment)*
+  [(block_comment) (line_comment)]*
   .
   ")"
   .
@@ -244,7 +244,7 @@
   .
   ","? @do_nothing
   .
-  (line_comment)*
+  [(block_comment) (line_comment)]*
   .
   ")"
   .
@@ -273,7 +273,7 @@
   .
   ","? @do_nothing
   .
-  (line_comment)*
+  [(block_comment) (line_comment)]*
   .
   "]"
   .
