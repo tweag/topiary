@@ -57,14 +57,8 @@
   "?"
   ":"
   (assignments)
+  ((parenthesized_expression) . _)
 ] @prepend_space @append_space
-
-(parenthesized_expression) @prepend_space
-(
-  (parenthesized_expression) @append_space
-  .
-  ","? @do_nothing
-)
 
 ; Colon should have whitespace trimmed in a range delimiter
 (range ":" @prepend_antispace @append_antispace)
@@ -147,8 +141,10 @@
 (";" @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 
 ; Never put a space before a comma
-("," @prepend_antispace)
-(";" @prepend_antispace)
+[
+  ","
+  ";"
+] @prepend_antispace
 
 ; Don't insert spaces between the operator and their expression operand
 ; '-x' v.s. '- x'
