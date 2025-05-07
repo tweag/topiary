@@ -75,3 +75,11 @@ Topiary is available on the [Arch user repository](https://aur.archlinux.org/pac
 ```sh
 yay -S topiary
 ```
+
+## Homebrew
+
+Topiary is available on [Homebrew](https://formulae.brew.sh/formula/topiary):
+
+```sh
+brew install topiary
+```
