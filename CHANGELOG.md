@@ -72,6 +72,7 @@ This name should be decided amongst the team before the release.
 - [#908](https://github.com/tweag/topiary/pull/908) [#907](https://github.com/tweag/topiary/pull/907) [#939](https://github.com/tweag/topiary/pull/939) [#955](https://github.com/tweag/topiary/pull/955) [#964](https://github.com/tweag/topiary/pull/964) [#967](https://github.com/tweag/topiary/pull/967) [#975](https://github.com/tweag/topiary/pull/975) Various OCaml issues and improvements
 - [#953](https://github.com/tweag/topiary/pull/953) Coverage output when there are zero queries
 - [#974](https://github.com/tweag/topiary/pull/974) No longer remove trailing spaces after pretty-printing
+- [#867](https://github.com/tweag/topiary/pull/972) Fixed [#969](https://github.com/tweag/topiary/issues/969) unhandled trailing comment in multiline list for OpenSCAD, thanks to @mkatychev
 
 <!-- ### Security -->
 <!-- - <Vulnerabilities> -->

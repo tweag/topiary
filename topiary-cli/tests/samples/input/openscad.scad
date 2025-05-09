@@ -96,6 +96,20 @@ module my_cylinder() {
   cube();
 }
 
+list1 = [
+  1,
+  2 // comment
+];
+
+list2 = [
+  1, 2 /* block comment */ ];
+arguments1= foo(1,
+(point2[1] - point1[1]) / (point2[0] - point1[0]) // comment
+);
+arguments2= foo(1,
+2 , // comment
+);
+
 // ================================================================================
 // Modifiers
 // ================================================================================
@@ -129,6 +143,7 @@ echo("this can precede an expression") true;
 fn = function(x) echo("this is x") x;
 echo(fn ? "truthy" : "falsey");
 echo(function(y) y ? "first" : "second");
+
 
 // ================================================================================
 // Lists/Ternaries
