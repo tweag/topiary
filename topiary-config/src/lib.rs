@@ -141,6 +141,24 @@ impl Configuration {
         }
     }
 
+    /// Prefetches and builds the desired language.
+    /// This can be beneficial to speed up future startup time.
+    ///
+    /// # Errors
+    ///
+    /// If the language could not be found or the Grammar could not be build, a `TopiaryConfigError` is returned.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn prefetch_language<T>(&self, language: T, force: bool) -> TopiaryConfigResult<()>
+    where
+        T: AsRef<str> + fmt::Display,
+    {
+        let tmp_dir = tempdir()?;
+        let tmp_dir_path = tmp_dir.path().to_owned();
+        let l = self.get_language(language)?;
+        Configuration::fetch_language(l, force, &tmp_dir_path)?;
+        Ok(())
+    }
+
     /// Prefetches and builds all known languages.
     /// This can be beneficial to speed up future startup time.
     ///

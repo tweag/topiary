@@ -158,9 +158,10 @@ async fn run() -> CLIResult<()> {
             println!("{nickel_config}")
         }
 
-        Commands::Prefetch { force } => {
-            config.prefetch_languages(force)?;
-        }
+        Commands::Prefetch { force, language } => match language {
+            Some(l) => config.prefetch_language(l, force)?,
+            _ => config.prefetch_languages(force)?,
+        },
 
         Commands::Coverage { input } => {
             // We are guaranteed (by clap) to have exactly one input, so it's safe to unwrap

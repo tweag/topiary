@@ -15,7 +15,7 @@ Commands:
   format      Format inputs
   visualise   Visualise the input's Tree-sitter parse tree
   config      Print the current configuration
-  prefetch    Prefetch all languages in the configuration
+  prefetch    Prefetch languages in the configuration
   coverage    Checks how much of the tree-sitter query is used
   completion  Generate shell completion script
   help        Print this message or the help of the given subcommand(s)

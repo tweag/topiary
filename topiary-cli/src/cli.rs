@@ -152,12 +152,15 @@ pub enum Commands {
     #[command(alias = "cfg", display_order = 3)]
     Config,
 
-    /// Prefetch all languages in the configuration
+    /// Prefetch languages in the configuration
     #[command(display_order = 4)]
     Prefetch {
         /// Re-fetch existing grammars if they already exist
         #[arg(short, long)]
         force: bool,
+
+        /// Fetch specified language (if not provided, all languages are prefetched)
+        language: Option<String>,
     },
 
     /// Checks how much of the tree-sitter query is used

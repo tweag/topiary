@@ -7,9 +7,12 @@ time, the grammars can be prefetched and compiled.
 <!-- DO NOT REMOVE THE "usage:{start,end}" COMMENTS -->
 <!-- usage:start -->
 ```
-Prefetch all languages in the configuration
+Prefetch languages in the configuration
 
-Usage: topiary prefetch [OPTIONS]
+Usage: topiary prefetch [OPTIONS] [LANGUAGE]
+
+Arguments:
+  [LANGUAGE]  Fetch specified language (if not provided, all languages are prefetched)
 
 Options:
   -f, --force                          Re-fetch existing grammars if they already exist
