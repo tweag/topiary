@@ -56,8 +56,8 @@
   "="
   "?"
   ":"
-  (parenthesized_expression)
   (assignments)
+  ((parenthesized_expression) . _)
 ] @prepend_space @append_space
 
 ; Colon should have whitespace trimmed in a range delimiter
@@ -94,6 +94,7 @@
     "else"
     (block_comment)
     (line_comment)
+    ";"
   ]* @do_nothing
 )
 
@@ -135,14 +136,15 @@
   "[" @append_antispace
   "]" @prepend_antispace
 )
-(list "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 (assignments "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 (parameters "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 (";" @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 
 ; Never put a space before a comma
-("," @prepend_antispace)
-(";" @prepend_antispace)
+[
+  ","
+  ";"
+] @prepend_antispace
 
 ; Don't insert spaces between the operator and their expression operand
 ; '-x' v.s. '- x'
@@ -210,7 +212,7 @@
   .
   ","? @do_nothing
   .
-  (line_comment)*
+  [(block_comment) (line_comment)]*
   .
   ")"
   .
@@ -223,7 +225,6 @@
   .
 )
 (assignments "," @delete . ")" . (#single_line_only!))
-(assignments "," @append_spaced_softline)
 
 (arguments "," @append_input_softline)
 (arguments "," @delete . ")" . (#single_line_only!))
@@ -235,11 +236,11 @@
 )
 (arguments
   (#delimiter! ",")
-  (_) @append_delimiter
+  (expression) @append_delimiter
   .
   ","? @do_nothing
   .
-  (line_comment)*
+  [(block_comment) (line_comment)]*
   .
   ")"
   .
@@ -264,14 +265,17 @@
 (list "," @delete . "]" . (#single_line_only!))
 (list
   (#delimiter! ",")
-  (_) @append_delimiter
+  [(expression) (list_comprehension)] @append_delimiter
   .
   ","? @do_nothing
+  .
+  [(block_comment) (line_comment)]*
   .
   "]"
   .
   (#multi_line_only!)
 )
+(list "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 
 ; differentiate parameter definitions from parameter invocation,
 ; module/function definitions have param separation while
