@@ -4,6 +4,8 @@ use std::fmt::Write;
 use itertools::Itertools;
 use pulldown_cmark::{CodeBlockKind, Event, Tag, TagEnd};
 
+/* Error handling ********************************************************************************/
+
 #[derive(Debug)]
 pub struct Error(String);
 
@@ -19,13 +21,15 @@ trait ErrorString: ToString {}
 
 impl<T: ErrorString> From<T> for Error {
     fn from(value: T) -> Self {
-        Error(value.to_string())
+        Self(value.to_string())
     }
 }
 
 impl ErrorString for &str {}
 impl ErrorString for std::fmt::Error {}
 impl ErrorString for pulldown_cmark_to_cmark::Error {}
+
+/* Escaping **************************************************************************************/
 
 trait Escape {
     fn escape_backslashes(&self) -> Cow<str>;
@@ -37,6 +41,8 @@ impl Escape for String {
         self.replace("\\", "\\\\").into()
     }
 }
+
+/* Verbatim trait ********************************************************************************/
 
 pub trait Verbatim<'parse> {
     /// Consume pulldown_cmark event
@@ -57,6 +63,8 @@ pub trait Verbatim<'parse> {
         ])
     }
 }
+
+/* Verbatim Markdown rendering *******************************************************************/
 
 /// Consume pulldown_cmark events and render them as Markdown
 #[derive(Clone)]
@@ -91,14 +99,16 @@ impl<'parse> Verbatim<'parse> for Cmark<'parse> {
     }
 }
 
-// TODO Implement Table renderer as impl of Verbatim
+/* Verbatim table rendering **********************************************************************/
 
+/// Table cell alignment
 enum Alignment {
     Left,
     Right,
     Centre,
 }
 
+/// Table column
 struct Column {
     header: String,
     alignment: Alignment,
@@ -114,7 +124,7 @@ impl Column {
         let header = header.into();
         let width = header.len();
 
-        Column {
+        Self {
             header,
             alignment,
             data: Vec::new(),
@@ -144,13 +154,15 @@ impl Column {
     }
 }
 
+/// Table row type
 enum Row {
     Header,
     Rule,
     Data(usize),
 }
 
-pub struct Table {
+/// Table
+struct Table {
     columns: Vec<Column>,
 }
 
@@ -161,10 +173,12 @@ impl Table {
         }
     }
 
+    /// The height of the tallest column
     fn height(&self) -> usize {
-        self.columns.iter().map(Column::height).next().unwrap_or(0)
+        self.columns.iter().map(Column::height).max().unwrap_or(0)
     }
 
+    /// Does the table have any columns or rows?
     fn is_empty(&self) -> bool {
         self.columns.is_empty() || self.height() == 0
     }
@@ -179,7 +193,11 @@ impl Table {
             .all(|length| length == first)
     }
 
+    /// Write table row to output
     fn write_row(&self, output: &mut impl Write, row: Row) -> std::fmt::Result {
+        // Empty cell contents, when columns have ragged lengths
+        let empty = "".to_string();
+
         writeln!(
             output,
             "| {} |",
@@ -190,7 +208,7 @@ impl Table {
                     let content = match row {
                         Row::Header => &column.header,
                         Row::Rule => &"-".repeat(column.width),
-                        Row::Data(idx) => &column.data[idx],
+                        Row::Data(idx) => column.data.get(idx).unwrap_or(&empty),
                     };
 
                     match column.alignment {
@@ -212,27 +230,48 @@ impl Table {
     }
 }
 
-impl<'parse> Verbatim<'parse> for Table {
+impl std::fmt::Display for Table {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.is_empty() {
+            log::warn!("Formatting table with no columns or rows");
+        }
+
+        if !self.is_consistent() {
+            log::warn!("Formatting table with ragged column lengths");
+        }
+
+        self.write_row(f, Row::Header)?;
+        self.write_row(f, Row::Rule)?;
+        for row in 0..self.height() {
+            self.write_row(f, Row::Data(row))?;
+        }
+
+        Ok(())
+    }
+}
+
+/// Consume pulldown_cmark table events and render them as a formatted table; similar to a Markdown
+/// table, with equal column spacing and padding
+pub struct CmarkTable<'parse> {
+    table: Table,
+    current_cell: Vec<Event<'parse>>,
+}
+
+impl CmarkTable<'_> {
+    pub fn new() -> Self {
+        Self {
+            table: Table::new(),
+            current_cell: Vec::new(),
+        }
+    }
+}
+
+impl<'parse> Verbatim<'parse> for CmarkTable<'parse> {
     fn consume(&mut self, event: Event<'parse>) {
         todo!()
     }
 
     fn render(&self) -> Result<String, Error> {
-        if self.is_empty() {
-            return Err("Table has no columns or rows".into());
-        }
-
-        if !self.is_consistent() {
-            return Err("Table has inconsistent column lengths".into());
-        }
-
-        let mut output = String::new();
-        self.write_row(&mut output, Row::Header)?;
-        self.write_row(&mut output, Row::Rule)?;
-        for row in 0..self.height() {
-            self.write_row(&mut output, Row::Data(row))?;
-        }
-
-        Ok(output)
+        Ok(self.table.to_string())
     }
 }
