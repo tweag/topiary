@@ -26,6 +26,7 @@ impl<T: ErrorString> From<T> for Error {
 }
 
 impl ErrorString for &str {}
+impl ErrorString for String {}
 impl ErrorString for std::fmt::Error {}
 impl ErrorString for pulldown_cmark_to_cmark::Error {}
 
@@ -67,7 +68,6 @@ pub trait Verbatim<'parse> {
 /* Verbatim Markdown rendering *******************************************************************/
 
 /// Consume pulldown_cmark events and render them as Markdown
-#[derive(Clone)]
 pub struct Cmark<'parse> {
     events: Vec<Event<'parse>>,
 }
@@ -87,7 +87,7 @@ impl<'parse> Verbatim<'parse> for Cmark<'parse> {
         let mut buf = String::new();
 
         pulldown_cmark_to_cmark::cmark_with_options(
-            self.events.clone().into_iter(),
+            self.events.iter(),
             &mut buf,
             pulldown_cmark_to_cmark::Options {
                 increment_ordered_list_bullets: true,
@@ -161,7 +161,7 @@ enum Row {
     Data(usize),
 }
 
-/// Table
+/// Columnar table
 struct Table {
     columns: Vec<Column>,
 }
@@ -191,6 +191,22 @@ impl Table {
             .iter()
             .map(Column::height)
             .all(|length| length == first)
+    }
+
+    /// Add (empty) column to table
+    fn add_column<T: Into<String>>(&mut self, header: T, alignment: Alignment) {
+        let column = Column::new(header, alignment);
+        self.columns.push(column);
+    }
+
+    /// Insert datum into column by its index
+    fn try_insert<T: Into<String>>(&mut self, column_idx: usize, datum: T) -> Result<(), Error> {
+        if let Some(column) = self.columns.get_mut(column_idx) {
+            column.insert(datum);
+            Ok(())
+        } else {
+            Err(format!("Cannot insert datum into column {column_idx}: Out of bounds").into())
+        }
     }
 
     /// Write table row to output
@@ -251,18 +267,31 @@ impl std::fmt::Display for Table {
 }
 
 /// Consume pulldown_cmark table events and render them as a formatted table; similar to a Markdown
-/// table, with equal column spacing and padding
+/// table, per Cmark (above), but with equal column spacing (see Byron/pulldown-cmark-to-cmark#105)
 pub struct CmarkTable<'parse> {
     table: Table,
-    current_cell: Vec<Event<'parse>>,
+
+    // State to build the next cell for the table
+    cursor: Option<usize>,
+    buffer: Vec<Event<'parse>>,
 }
 
 impl CmarkTable<'_> {
     pub fn new() -> Self {
         Self {
             table: Table::new(),
-            current_cell: Vec::new(),
+
+            cursor: None,
+            buffer: Vec::new(),
         }
+    }
+
+    /// Render the contents of the current cell buffer, emptying it in the process
+    fn render_cell(&mut self) -> Result<String, Error> {
+        let mut buf = String::new();
+        pulldown_cmark_to_cmark::cmark(self.buffer.drain(..), &mut buf)?;
+
+        Ok(buf)
     }
 }
 
