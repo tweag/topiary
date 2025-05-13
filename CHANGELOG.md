@@ -50,6 +50,7 @@ This name should be decided amongst the team before the release.
 - [#884](https://github.com/tweag/topiary/pull/884) The Topiary Book
 - [#933](https://github.com/tweag/topiary/pull/933) Added support for WIT, thanks to @mkatychev
 - [#918](https://github.com/tweag/topiary/pull/918) Language prefetching utilities for Nix
+- [#987](https://github.com/tweag/topiary/pull/987) Support for prefetching a single language, thanks to @ErinvanderVeen
 
 ### Changed
 <!-- - <Changes in existing functionality> -->
