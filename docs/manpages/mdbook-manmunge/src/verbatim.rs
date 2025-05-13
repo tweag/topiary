@@ -1,46 +1,31 @@
 use std::borrow::Cow;
-use std::fmt::{Display, Write};
+use std::fmt::Write;
 
 use itertools::Itertools;
 use pulldown_cmark::{CodeBlockKind, Event, Tag, TagEnd};
 
 #[derive(Debug)]
-pub struct Error {
-    message: String,
-}
+pub struct Error(String);
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "{}", self.message)
+        writeln!(f, "{}", self.0)
     }
 }
 
 impl std::error::Error for Error {}
 
-// TODO Can the following From impls be abstracted?...
-impl From<std::fmt::Error> for Error {
-    fn from(value: std::fmt::Error) -> Self {
-        Error {
-            message: value.to_string(),
-        }
+trait ErrorString: ToString {}
+
+impl<T: ErrorString> From<T> for Error {
+    fn from(value: T) -> Self {
+        Error(value.to_string())
     }
 }
 
-impl From<&str> for Error {
-    fn from(value: &str) -> Self {
-        Error {
-            message: value.to_string(),
-        }
-    }
-}
-
-impl From<pulldown_cmark_to_cmark::Error> for Error {
-    fn from(value: pulldown_cmark_to_cmark::Error) -> Self {
-        Self {
-            message: value.to_string(),
-        }
-    }
-}
+impl ErrorString for &str {}
+impl ErrorString for std::fmt::Error {}
+impl ErrorString for pulldown_cmark_to_cmark::Error {}
 
 trait Escape {
     fn escape_backslashes(&self) -> Cow<str>;
