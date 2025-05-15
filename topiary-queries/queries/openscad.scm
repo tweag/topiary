@@ -76,7 +76,7 @@
 ; formatting.
 (
   [
-   (transform_chain)
+    (transform_chain)
     (var_declaration)
     (function_item)
     (module_item)
@@ -101,10 +101,9 @@
 
 (line_comment) @append_hardline
 (
- ";" @append_hardline
- [(line_comment) (block_comment)] @do_nothing
+  ";" @append_hardline
+  [(line_comment) (block_comment)] @do_nothing
 )
-
 
 (block_comment) @multi_line_indent_all
 
