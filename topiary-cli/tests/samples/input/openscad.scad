@@ -214,4 +214,3 @@ fn_list = [each function ()10];
 echo(bisector_angle_offset=bisector_angle_offset);
 prev_angle = atan2((prev - point).y, (prev - point).x);
 echo(prev_angle=prev_angle);
-
