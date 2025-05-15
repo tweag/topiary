@@ -46,7 +46,8 @@ translate([1, 0, 0]) {
   difference() {
     translate([0, 1, 0])
       translate([1, 0, 0]) rotate([0, 90, 0])
-          cylinder(); cube();
+          cylinder();
+    cube();
   }
 }
 
@@ -157,6 +158,7 @@ translate(1) #!cube();
 rotate([90]) %translate()
     #cube();
 
+
 // ================================================================================
 // Assertions/Echoes
 // ================================================================================
@@ -242,3 +244,12 @@ let_each = [for (i = [0:1]) let (a = 90) each arc(angle=a)];
 let_for = [let (i = [0:1]) for (i = i) let (a = 90) each arc(angle=a)];
 let_if = [for (i = [0:1]) let (a = 360) if (is_def(isect)) isect];
 fn_list = [each function() 10];
+
+// ================================================================================
+// ISSUES
+// ================================================================================
+
+// https://github.com/Leathong/openscad-LSP/issues/48
+echo(bisector_angle_offset=bisector_angle_offset);
+prev_angle = atan2((prev - point).y, (prev - point).x);
+echo(prev_angle=prev_angle);
