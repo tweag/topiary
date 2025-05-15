@@ -100,10 +100,6 @@
 )
 
 (line_comment) @append_hardline
-(
-  ";" @append_hardline
-  [(line_comment) (block_comment)] @do_nothing
-)
 
 (block_comment) @multi_line_indent_all
 
@@ -145,7 +141,7 @@
 (parameters "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 (";" @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 
-; Never put a space before a comma
+; Never put a space before a comma semicolon or period/full stop
 [
   ","
   ";"
