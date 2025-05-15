@@ -76,6 +76,7 @@
 ; formatting.
 (
   [
+   (transform_chain)
     (var_declaration)
     (function_item)
     (module_item)
@@ -99,6 +100,11 @@
 )
 
 (line_comment) @append_hardline
+(
+ ";" @append_hardline
+ [(line_comment) (block_comment)] @do_nothing
+)
+
 
 (block_comment) @multi_line_indent_all
 
@@ -144,6 +150,7 @@
 [
   ","
   ";"
+  "."
 ] @prepend_antispace
 
 ; Don't insert spaces between the operator and their expression operand
