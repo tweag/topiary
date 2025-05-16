@@ -2,7 +2,7 @@ name: Build and deploy website
 
 on:
   push:
-    branches: main
+    # branches: main
 
 jobs:
   # Build the WASM-based web playground's assets
