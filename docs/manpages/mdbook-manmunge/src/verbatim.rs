@@ -49,16 +49,16 @@ pub trait Verbatim<'parse> {
     /// Consume pulldown_cmark event
     fn consume(&mut self, event: Event<'parse>);
 
-    /// Render consumed events as verbatim plain text
-    fn render(&self) -> Result<String, Error>;
+    /// Drain the consumed event and render them as verbatim plain text
+    fn drain(&mut self) -> Result<String, Error>;
 
     /// Emit pulldown_cmark events within a code fence
-    fn emit(&self) -> Result<Vec<Event<'parse>>, Error> {
+    fn emit(&mut self) -> Result<Vec<Event<'parse>>, Error> {
         Ok(vec![
             // Opening code fence
             Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced("".into()))),
             // Verbatim contents
-            Event::Text(self.render()?.escape_backslashes().into_owned().into()),
+            Event::Text(self.drain()?.escape_backslashes().into_owned().into()),
             // Closing code fence
             Event::End(TagEnd::CodeBlock),
         ])
@@ -83,11 +83,11 @@ impl<'parse> Verbatim<'parse> for Cmark<'parse> {
         self.events.push(event);
     }
 
-    fn render(&self) -> Result<String, Error> {
+    fn drain(&mut self) -> Result<String, Error> {
         let mut buf = String::new();
 
         pulldown_cmark_to_cmark::cmark_with_options(
-            self.events.iter(),
+            self.events.drain(..),
             &mut buf,
             pulldown_cmark_to_cmark::Options {
                 increment_ordered_list_bullets: true,
@@ -273,7 +273,7 @@ pub struct CmarkTable<'parse> {
 
     // State to build the next cell for the table
     cursor: Option<usize>,
-    buffer: Vec<Event<'parse>>,
+    buffer: Cmark<'parse>,
 }
 
 impl CmarkTable<'_> {
@@ -282,16 +282,13 @@ impl CmarkTable<'_> {
             table: Table::new(),
 
             cursor: None,
-            buffer: Vec::new(),
+            buffer: Cmark::new(),
         }
     }
 
     /// Render the contents of the current cell buffer, emptying it in the process
     fn render_cell(&mut self) -> Result<String, Error> {
-        let mut buf = String::new();
-        pulldown_cmark_to_cmark::cmark(self.buffer.drain(..), &mut buf)?;
-
-        Ok(buf)
+        self.buffer.drain()
     }
 }
 
@@ -300,7 +297,7 @@ impl<'parse> Verbatim<'parse> for CmarkTable<'parse> {
         todo!()
     }
 
-    fn render(&self) -> Result<String, Error> {
+    fn drain(&mut self) -> Result<String, Error> {
         Ok(self.table.to_string())
     }
 }
