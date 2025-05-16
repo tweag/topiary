@@ -267,7 +267,23 @@ impl std::fmt::Display for Table {
 }
 
 /// Consume pulldown_cmark table events and render them as a formatted table; similar to a Markdown
-/// table, per Cmark (above), but with equal column spacing (see Byron/pulldown-cmark-to-cmark#105)
+/// table, per Cmark (above), but with equal column spacing and correct cell alignment (see
+/// Byron/pulldown-cmark-to-cmark#105).
+///
+/// For example, Cmark will output something like this:
+///     ```
+///     |Heading|Another Heading|xyz|
+///     |:------|--------------:|:-:|
+///     |foo|bar|a|
+///     |quux|abc123|Centred|
+///     ```
+/// Whereas CmarkTable will output something like this:
+///     ```
+///     | Heading | Another Heading |   xyz   |
+///     | ------- | --------------- | ------- |
+///     | foo     |             bar |    x    |
+///     | quux    |          abc123 | Centred |
+///     ```
 pub struct CmarkTable<'parse> {
     table: Table,
 
