@@ -7,10 +7,9 @@
 {
   lib,
   fetchgit,
-  nickel,
-  runCommandNoCC,
-  writeText,
   tree-sitter,
+  toNickelFile,
+  fromNickelFile,
 }:
 
 let
@@ -18,14 +17,17 @@ let
     attrNames
     concatStringsSep
     mapAttrs
-    readFile
-    toJSON
-    fromJSON
     baseNameOf
     ;
-  inherit (lib) warn;
-  inherit (lib.strings) removeSuffix;
-  inherit (lib.attrsets) updateManyAttrsByPath;
+  inherit (lib)
+    warn
+    ;
+  inherit (lib.strings)
+    removeSuffix
+    ;
+  inherit (lib.attrsets)
+    updateManyAttrsByPath
+    ;
 
   prefetchLanguageSourceGit =
     name: source:
@@ -63,22 +65,6 @@ let
     mapAttrs (name: updateByPath [ "grammar" "source" ] (prefetchLanguageSource name))
   );
 
-  toNickelFile =
-    name: e:
-    let
-      jsonFile = writeText "${removeSuffix ".ncl" name}.json" (toJSON e);
-    in
-    writeText name "import \"${jsonFile}\"";
-
-  fromNickelFile =
-    path:
-    let
-      jsonDrv = runCommandNoCC "${removeSuffix ".ncl" (baseNameOf path)}.json" { } ''
-        ${nickel}/bin/nickel export ${path} > $out
-      '';
-    in
-    fromJSON (readFile "${jsonDrv}");
-
   ## Same as `prefetchLanguages`, but expects a path to a Nickel file, and
   ## produces a path to another Nickel file.
   prefetchLanguagesFile =
@@ -92,7 +78,5 @@ in
   inherit
     prefetchLanguages
     prefetchLanguagesFile
-    fromNickelFile
-    toNickelFile
     ;
 }
