@@ -18,6 +18,13 @@ let
     defaultConfigFile
     defaultConfigPrefetched
     defaultConfigPrefetchedFile
+    wrapWithConfig
+    wrapWithConfigFile
+    ;
+
+  inherit (pkgs.callPackage ./gitHook.nix { inherit defaultConfigPrefetched wrapWithConfig; })
+    gitHook
+    gitHookBin
     ;
 
 in
@@ -33,6 +40,10 @@ in
       defaultConfigFile
       defaultConfigPrefetched
       defaultConfigPrefetchedFile
+      wrapWithConfig
+      wrapWithConfigFile
+      gitHook
+      gitHookBin
       ;
   };
 }

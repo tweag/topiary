@@ -1,4 +1,6 @@
 {
+  writeShellApplication,
+
   fromNickelFile,
   toNickelFile,
   prefetchLanguages,
@@ -10,6 +12,16 @@ let
   defaultConfigPrefetched = prefetchLanguages defaultConfig;
   defaultConfigPrefetchedFile = toNickelFile "languages-prefetched.ncl" defaultConfigPrefetched;
 
+  wrapWithConfigFile =
+    topiary: topiaryConfigFile:
+    writeShellApplication {
+      name = "topiary";
+      text = ''exec ${topiary}/bin/topiary -C ${topiaryConfigFile} "$@"'';
+    };
+
+  wrapWithConfig =
+    topiary: topiaryConfig: wrapWithConfigFile topiary (toNickelFile "languages.ncl" topiaryConfig);
+
 in
 {
   inherit
@@ -17,5 +29,7 @@ in
     defaultConfigFile
     defaultConfigPrefetched
     defaultConfigPrefetchedFile
+    wrapWithConfig
+    wrapWithConfigFile
     ;
 }
