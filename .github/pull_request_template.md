@@ -35,3 +35,10 @@ Checklist before merging, wherever relevant:
 
 - [ ] `CHANGELOG.md` updated
 - [ ] Documentation (The Topiary Book, `README.md`, etc.) up-to-date
+<!----------------------------------------------------------------------
+If the PR solves a formatting issue for a supported language,
+or generally improves formatting, please make sure to include a
+regression test showcasing the fix/improvement to:
+`topiary-cli/tests/samples/{input,expected}/mylanguage.lang`
+----------------------------------------------------------------------->
+- [ ] Updated regression tests

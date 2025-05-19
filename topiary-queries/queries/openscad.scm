@@ -101,8 +101,6 @@
 
 (line_comment) @append_hardline
 
-(block_comment) @multi_line_indent_all
-
 ; Allow line break after block comments
 (
   (block_comment)
