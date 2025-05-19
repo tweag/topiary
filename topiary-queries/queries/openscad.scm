@@ -137,7 +137,6 @@
 )
 (assignments "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 (parameters "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
-(";" @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 
 ; Never put a space before a comma semicolon or period/full stop
 [
