@@ -13,6 +13,13 @@ let
     prefetchLanguagesFile
     ;
 
+  inherit (pkgs.callPackage ./config.nix { inherit fromNickelFile toNickelFile prefetchLanguages; })
+    defaultConfig
+    defaultConfigFile
+    defaultConfigPrefetched
+    defaultConfigPrefetchedFile
+    ;
+
 in
 
 {
@@ -22,6 +29,10 @@ in
       toNickelFile
       prefetchLanguages
       prefetchLanguagesFile
+      defaultConfig
+      defaultConfigFile
+      defaultConfigPrefetched
+      defaultConfigPrefetchedFile
       ;
   };
 }

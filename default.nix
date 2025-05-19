@@ -119,8 +119,8 @@ in
 
           prepareTopiaryDefaultConfiguration =
             pkgs.lib.optional prefetchGrammars (
-              let inherit ((import ./nix { inherit pkgs; }).lib) prefetchLanguagesFile; in
-              "cp ${prefetchLanguagesFile ./topiary-config/languages.ncl} topiary-config/languages.ncl"
+              let inherit ((import ./nix { inherit pkgs; }).lib) defaultConfigPrefetchedFile; in
+              "cp ${defaultConfigPrefetchedFile} topiary-config/languages.ncl"
             );
 
           postInstall = ''
