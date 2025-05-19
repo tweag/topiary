@@ -1,0 +1,16 @@
+[book]
+authors = ["The Topiary Core Team"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Topiary"
+
+[build]
+build-dir = "man"
+
+[preprocessor.manmunge]
+command = "cargo run --package mdbook-manmunge --locked"
+
+[output.man]
+output-dir = "."
+filename = "topiary.man"
