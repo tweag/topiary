@@ -49,7 +49,7 @@ pub trait Verbatim<'parse> {
     /// Consume pulldown_cmark event
     fn consume(&mut self, event: Event<'parse>);
 
-    /// Drain the consumed event and render them as verbatim plain text
+    /// Drain the consumed events and render them as verbatim plain text
     fn drain(&mut self) -> Result<String, Error>;
 
     /// Emit pulldown_cmark events within a code fence
