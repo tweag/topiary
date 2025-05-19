@@ -158,7 +158,7 @@ nickel = {
 > by Topiary itself, those look like `~/.cache/topiary/<LANGUAGE>/<GIT_HASH>.so`
 > (or the equivalent for your platform).
 
-For usage in Nix, a `prefetchLanguages.nix` file provides utilities allowing to
+For usage in Nix, a `nix/prefetchLanguages.nix` file provides utilities allowing to
 transform a Topiary configuration into one where languages have been pre-fetched
 and pre-compiled in Nix derivations. The only caveat is that, for each Git
 source, the configuration must contain a `nixHash` for that source. For instance:

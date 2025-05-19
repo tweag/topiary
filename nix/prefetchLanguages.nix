@@ -18,7 +18,6 @@ let
     attrNames
     concatStringsSep
     mapAttrs
-    toFile
     readFile
     toJSON
     fromJSON
