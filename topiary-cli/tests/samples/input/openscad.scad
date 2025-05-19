@@ -125,7 +125,7 @@ arguments1= foo(1,
 (point2[1] - point1[1]) / (point2[0] - point1[0]) // comment
 );
 arguments2= foo(1,
-2 , // comment
+2 // comment
 );
 
 // ================================================================================
