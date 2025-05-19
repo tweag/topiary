@@ -1,4 +1,22 @@
 // ================================================================================
+// Regression examples
+// ================================================================================
+
+// Issue #997
+
+/*
+Here is a
+block comment
+*/
+
+module foo() {
+  /*
+  Here is another
+  block comment
+  */
+}
+
+// ================================================================================
 // Variables/Imports
 // ================================================================================
 include <my_path/my_lib.scad>;
@@ -205,4 +223,3 @@ let_each = [for(i = [0:1]) let(a=90) each arc(angle=a)];
 let_for = [let (i=[0:1]) for(i = i) let(a=90) each arc(angle=a)];
 let_if = [for(i = [0:1]) let(a=360) if (is_def(isect)) isect];
 fn_list = [each function ()10];
-

@@ -74,6 +74,7 @@ This name should be decided amongst the team before the release.
 - [#953](https://github.com/tweag/topiary/pull/953) Coverage output when there are zero queries
 - [#974](https://github.com/tweag/topiary/pull/974) No longer remove trailing spaces after pretty-printing
 - [#867](https://github.com/tweag/topiary/pull/972) Fixed [#969](https://github.com/tweag/topiary/issues/969) unhandled trailing comment in multiline list for OpenSCAD, thanks to @mkatychev
+- [#999](https://github.com/tweag/topiary/pull/999) Fixed [#997](https://github.com/tweag/topiary/issues/997) erroneous spacing of block comments in OpenSCAD
 
 <!-- ### Security -->
 <!-- - <Vulnerabilities> -->
