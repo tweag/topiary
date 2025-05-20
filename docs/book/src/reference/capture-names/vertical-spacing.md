@@ -294,6 +294,22 @@ prepended) to them.
 )
 ```
 
+> **Note**\
+> If you wish to insert empty lines -- that is, two line breaks --
+> between nodes, this can be emulated with [`@append_delimiter` /
+> `@prepend_delimiter`](insertion-and-deletion.md#append_delimiter--prepend_delimiter).
+> For example:
+>
+> ```scheme
+> (
+>   (block) @append_delimiter
+>   .
+>   (_)
+>
+>   (#delimiter! "\n\n")
+> )
+> ```
+
 ## `@append_empty_softline` / `@prepend_empty_softline`
 
 The matched nodes will have an empty softline appended (or,
