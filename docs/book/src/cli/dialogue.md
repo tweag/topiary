@@ -3,15 +3,23 @@
 ## Environment variables
 
 Topiary needs to find [language query files](../getting-started/on-tree-sitter.md)
-(`*.scm`) to function properly. By default, Topiary looks for a
-`languages` directory in the current working directory.
+(`*.scm`) to function properly. By default, Topiary looks for these
+under the following search paths, from highest to lowest priority:
 
-This won't work if you are running Topiary from a directory other than
-its repository. In order to use Topiary without this restriction, **you
-must set the environment variable `TOPIARY_LANGUAGE_DIR` to point to the
-directory where Topiary's language query files are located**.
+<!-- This probably should change: see Issue #1003 -->
+1. Per the `TOPIARY_LANGUAGE_DIR` environment variable, as set at
+   runtime.
+2. A built-in value, which was set by the `TOPIARY_LANGUAGE_DIR`
+   environment variable at build time.
+3. `topiary-queries/queries` in the current working directory.
+4. `topiary-queries/queries` in the parent of the current directory.
 
-By default, you should set it to `<local path of the topiary
+That is to say, if you are running Topiary from a directory other than
+its repository, **you must set the environment variable
+`TOPIARY_LANGUAGE_DIR` to point to the directory where Topiary's
+language query files are located**.
+
+By default, you should set it to `<local path of the Topiary
 repository>/topiary-queries/queries`, for example:
 
 ```sh
