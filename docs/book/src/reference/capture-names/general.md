@@ -230,7 +230,7 @@ counter-intuitive. Consider, for instance, the following query:
 ```
 
 One might assume that this query only matches the final element in the
-list but this is not true. Since we did not explicitly march a parent
+list but this is not true. Since we did not explicitly match a parent
 node, the engine will match on every `list_entry`. After all, when
 looking only at the nodes in the query, the `list_entry` is indeed the
 last node.
