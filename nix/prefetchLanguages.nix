@@ -57,16 +57,28 @@ let
 
   updateByPath = path: update: updateManyAttrsByPath [ { inherit path update; } ];
 
-  ## Given a Topiary configuration as a Nix value, returns the same
-  ## configuration, except all language sources have been replaced by a
-  ## prefetched and precompiled one. This requires the presence of a `nixHash`
-  ## for all sources.
+  /**
+    ```
+    prefetchLanguages : TopiaryConfig -> TopiaryConfig
+    ```
+
+    Given a Topiary configuration as a Nix value, returns the same
+    configuration, except all language sources have been replaced by a
+    prefetched and precompiled one. This requires the presence of a `nixHash`
+    for all sources.
+  */
   prefetchLanguages = updateByPath [ "languages" ] (
     mapAttrs (name: updateByPath [ "grammar" "source" ] (prefetchLanguageSource name))
   );
 
-  ## Same as `prefetchLanguages`, but expects a path to a Nickel file, and
-  ## produces a path to another Nickel file.
+  /**
+    ```
+    prefetchLanguagesFile : File -> File
+    ```
+
+    Same as `prefetchLanguages`, but expects a path to a Nickel file, and
+    produces a path to another Nickel file.
+  */
   prefetchLanguagesFile =
     topiaryConfigFile:
     toNickelFile "${removeSuffix ".ncl" (baseNameOf topiaryConfigFile)}-prefetched.ncl" (

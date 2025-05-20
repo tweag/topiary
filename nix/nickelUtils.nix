@@ -16,6 +16,11 @@ let
     removeSuffix
     ;
 
+  /**
+    ```
+    toNickelFile : Any -> File
+    ```
+  */
   toNickelFile =
     name: e:
     let
@@ -23,6 +28,11 @@ let
     in
     writeText name "import \"${jsonFile}\"";
 
+  /**
+    ```
+    fromNickelFile : File -> Any
+    ```
+  */
   fromNickelFile =
     path:
     let
