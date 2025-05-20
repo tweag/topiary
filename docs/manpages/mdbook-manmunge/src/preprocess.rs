@@ -1,13 +1,13 @@
 use std::io;
 
 use mdbook::book::{Book, Chapter};
-use mdbook::errors::Error;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor, PreprocessorContext};
 use mdbook::BookItem;
 use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 use semver::{Version, VersionReq};
 use url::{ParseError, Url};
 
+use crate::error::Error;
 use crate::verbatim::{Cmark, Verbatim};
 
 struct MdbookMunge;
@@ -23,7 +23,7 @@ impl Preprocessor for MdbookMunge {
         "manmunge"
     }
 
-    fn run(&self, _ctx: &PreprocessorContext, mut book: Book) -> Result<Book, Error> {
+    fn run(&self, _ctx: &PreprocessorContext, mut book: Book) -> mdbook::errors::Result<Book> {
         // We don't have any arguments yet, but if/when we do, they can be extracted from
         // `ctx.config.get_preprocessor(self.name())`
 

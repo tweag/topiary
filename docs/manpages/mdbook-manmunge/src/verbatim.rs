@@ -1,34 +1,10 @@
 use std::borrow::Cow;
 use std::fmt::Write;
 
+use crate::error::Error;
+
 use itertools::Itertools;
 use pulldown_cmark::{CodeBlockKind, Event, Tag, TagEnd};
-
-/* Error handling ********************************************************************************/
-
-#[derive(Debug)]
-pub struct Error(String);
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "{}", self.0)
-    }
-}
-
-impl std::error::Error for Error {}
-
-trait ErrorString: ToString {}
-
-impl<T: ErrorString> From<T> for Error {
-    fn from(value: T) -> Self {
-        Self(value.to_string())
-    }
-}
-
-impl ErrorString for &str {}
-impl ErrorString for String {}
-impl ErrorString for std::fmt::Error {}
-impl ErrorString for pulldown_cmark_to_cmark::Error {}
 
 /* Escaping **************************************************************************************/
 

@@ -1,3 +1,5 @@
+mod error;
+mod postprocess;
 mod preprocess;
 mod verbatim;
 
@@ -7,6 +9,7 @@ use clap::{Parser, Subcommand};
 use env_logger::Builder;
 use log::LevelFilter;
 
+use postprocess::postprocess;
 use preprocess::preprocess;
 
 // Supported renderers
@@ -58,8 +61,10 @@ fn main() -> ExitCode {
         }
 
         Some(Commands::PostProcess) => {
-            // TODO
-            println!("Post-process");
+            if let Err(error) = postprocess() {
+                log::error!("Post-processing failed: {error}");
+                return ExitCode::FAILURE;
+            }
         }
     }
 
