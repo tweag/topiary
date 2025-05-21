@@ -16,6 +16,11 @@ module foo() {
   */
 }
 
+// https://github.com/Leathong/openscad-LSP/issues/48
+echo(bisector_angle_offset=bisector_angle_offset);
+prev_angle = atan2((prev - point).y, (prev - point).x);
+echo(prev_angle=prev_angle);
+
 // ================================================================================
 // Variables/Imports
 // ================================================================================
@@ -261,12 +266,3 @@ let_each = [for (i = [0:1]) let (a = 90) each arc(angle=a)];
 let_for = [let (i = [0:1]) for (i = i) let (a = 90) each arc(angle=a)];
 let_if = [for (i = [0:1]) let (a = 360) if (is_def(isect)) isect];
 fn_list = [each function() 10];
-
-// ================================================================================
-// ISSUES
-// ================================================================================
-
-// https://github.com/Leathong/openscad-LSP/issues/48
-echo(bisector_angle_offset=bisector_angle_offset);
-prev_angle = atan2((prev - point).y, (prev - point).x);
-echo(prev_angle=prev_angle);
