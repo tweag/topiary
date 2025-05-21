@@ -26,3 +26,4 @@ impl ErrorString for pulldown_cmark_to_cmark::Error {}
 impl ErrorString for semver::Error {}
 impl ErrorString for serde_json::Error {}
 impl ErrorString for std::fmt::Error {}
+impl ErrorString for std::io::Error {}
