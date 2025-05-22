@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.6.0"
+version = "0.6.1"
 edition = "2021"
 authors = ["Tweag"]
 homepage = "https://topiary.tweag.io"
@@ -72,11 +72,11 @@ wasm-bindgen-futures = "0.4"
 wasm-bindgen-test = "0.3"
 web-sys = "0.3"
 
-topiary-web-tree-sitter-sys = { version = "0.6.0", path = "./topiary-web-tree-sitter-sys" }
-topiary-tree-sitter-facade = { version = "0.6.0", path = "./topiary-tree-sitter-facade" }
-topiary-core = { version = "0.6.0", path = "./topiary-core" }
-topiary-config = { version = "0.6.0", path = "./topiary-config" }
-topiary-queries = { version = "0.6.0", path = "./topiary-queries" }
+topiary-web-tree-sitter-sys = { version = "0.6.1", path = "./topiary-web-tree-sitter-sys" }
+topiary-tree-sitter-facade = { version = "0.6.1", path = "./topiary-tree-sitter-facade" }
+topiary-core = { version = "0.6.1", path = "./topiary-core" }
+topiary-config = { version = "0.6.1", path = "./topiary-config" }
+topiary-queries = { version = "0.6.1", path = "./topiary-queries" }
 
 [profile.dev.package.lalrpop]
 opt-level = 3
