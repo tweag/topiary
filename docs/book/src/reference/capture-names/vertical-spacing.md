@@ -283,17 +283,6 @@ removed.
 The matched nodes will have a line break appended (or, respectively,
 prepended) to them.
 
-### Example
-
-```scheme
-; Consecutive definitions must be separated by line breaks
-(
-  (value_definition) @append_hardline
-  .
-  (value_definition)
-)
-```
-
 > **Note**\
 > If you wish to insert empty lines -- that is, two line breaks --
 > between nodes, this can be emulated with [`@append_delimiter` /
@@ -309,6 +298,21 @@ prepended) to them.
 >   (#delimiter! "\n\n")
 > )
 > ```
+>
+> However, bear in mind that Topiary's normal [post-processing](../formatting-pipeline.md#atom-processing)
+> that squashes runs of whitespace will not apply, so queries must be
+> written with care to avoid extra, unintended line breaks.
+
+### Example
+
+```scheme
+; Consecutive definitions must be separated by line breaks
+(
+  (value_definition) @append_hardline
+  .
+  (value_definition)
+)
+```
 
 ## `@append_empty_softline` / `@prepend_empty_softline`
 
