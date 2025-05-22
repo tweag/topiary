@@ -110,7 +110,11 @@
         ## correctly. `deepSeq e1 e2` evaluates `e1` strictly in depth before
         ## returning `e2`. We use this trick because checks need to be
         ## derivations, which `lib.pre-commit-hook` is not.
-        pre-commit-hook = builtins.deepSeq self.lib.${system}.pre-commit-hook pkgs.hello;
+        git-hook = builtins.deepSeq (
+          self.lib.${system}.gitHook {
+            bin = self.packages.${system}.topiary-cli;
+          }
+        ) pkgs.hello;
       });
 
       devShells = forAllSystems ({ system, pkgs, craneLib, topiaryPkgs, binPkgs, ... }:
@@ -128,15 +132,8 @@
           wasm = pkgs.callPackage ./shell.nix { checks = self.checks.${system}; craneLib = topiaryPkgs.passthru.craneLibWasm; inherit binPkgs; };
         });
 
-      ## For easy use in https://github.com/cachix/git-hooks.nix
-      lib = forAllSystems ({ system, lib, ... }: {
-        pre-commit-hook = {
-          enable = true;
-          name = "topiary";
-          description = "A general code formatter based on tree-sitter.";
-          entry = "${lib.getExe self.packages.${system}.topiary-cli} fmt";
-          types = [ "text" ];
-        };
-      });
+      ## REVIEW: In my ideal world, everything (not just lib) would be just
+      ## defined in ./nix, and the flake would only expose things.
+      lib = forAllSystems ({ pkgs, ... }: (import ./nix { inherit pkgs; }).lib);
     };
 }

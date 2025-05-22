@@ -7,10 +7,9 @@
 {
   lib,
   fetchgit,
-  nickel,
-  runCommandNoCC,
-  writeText,
   tree-sitter,
+  toNickelFile,
+  fromNickelFile,
 }:
 
 let
@@ -18,15 +17,17 @@ let
     attrNames
     concatStringsSep
     mapAttrs
-    toFile
-    readFile
-    toJSON
-    fromJSON
     baseNameOf
     ;
-  inherit (lib) warn;
-  inherit (lib.strings) removeSuffix;
-  inherit (lib.attrsets) updateManyAttrsByPath;
+  inherit (lib)
+    warn
+    ;
+  inherit (lib.strings)
+    removeSuffix
+    ;
+  inherit (lib.attrsets)
+    updateManyAttrsByPath
+    ;
 
   prefetchLanguageSourceGit =
     name: source:
@@ -56,32 +57,28 @@ let
 
   updateByPath = path: update: updateManyAttrsByPath [ { inherit path update; } ];
 
-  ## Given a Topiary configuration as a Nix value, returns the same
-  ## configuration, except all language sources have been replaced by a
-  ## prefetched and precompiled one. This requires the presence of a `nixHash`
-  ## for all sources.
+  /**
+    ```
+    prefetchLanguages : TopiaryConfig -> TopiaryConfig
+    ```
+
+    Given a Topiary configuration as a Nix value, returns the same
+    configuration, except all language sources have been replaced by a
+    prefetched and precompiled one. This requires the presence of a `nixHash`
+    for all sources.
+  */
   prefetchLanguages = updateByPath [ "languages" ] (
     mapAttrs (name: updateByPath [ "grammar" "source" ] (prefetchLanguageSource name))
   );
 
-  toNickelFile =
-    name: e:
-    let
-      jsonFile = writeText "${removeSuffix ".ncl" name}.json" (toJSON e);
-    in
-    writeText name "import \"${jsonFile}\"";
+  /**
+    ```
+    prefetchLanguagesFile : File -> File
+    ```
 
-  fromNickelFile =
-    path:
-    let
-      jsonDrv = runCommandNoCC "${removeSuffix ".ncl" (baseNameOf path)}.json" { } ''
-        ${nickel}/bin/nickel export ${path} > $out
-      '';
-    in
-    fromJSON (readFile "${jsonDrv}");
-
-  ## Same as `prefetchLanguages`, but expects a path to a Nickel file, and
-  ## produces a path to another Nickel file.
+    Same as `prefetchLanguages`, but expects a path to a Nickel file, and
+    produces a path to another Nickel file.
+  */
   prefetchLanguagesFile =
     topiaryConfigFile:
     toNickelFile "${removeSuffix ".ncl" (baseNameOf topiaryConfigFile)}-prefetched.ncl" (
@@ -93,7 +90,5 @@ in
   inherit
     prefetchLanguages
     prefetchLanguagesFile
-    fromNickelFile
-    toNickelFile
     ;
 }
