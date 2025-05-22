@@ -220,7 +220,7 @@ impl GitSource {
         // when dropped
         let tmp_dir = tempfile::tempdir()?;
 
-        self.fetch_and_compile_with_dir(name, library_path, false, tmp_dir.into_path())
+        self.fetch_and_compile_with_dir(name, library_path, false, tmp_dir.keep())
     }
 
     /// This function is heavily inspired by the one used in Nickel:
