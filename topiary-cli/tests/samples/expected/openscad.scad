@@ -16,6 +16,11 @@ module foo() {
   */
 }
 
+// https://github.com/Leathong/openscad-LSP/issues/48
+echo(bisector_angle_offset=bisector_angle_offset);
+prev_angle = atan2((prev - point).y, (prev - point).x);
+echo(prev_angle=prev_angle);
+
 // ================================================================================
 // Variables/Imports
 // ================================================================================
@@ -64,7 +69,8 @@ translate([1, 0, 0]) {
   difference() {
     translate([0, 1, 0])
       translate([1, 0, 0]) rotate([0, 90, 0])
-          cylinder(); cube();
+          cylinder();
+    cube();
   }
 }
 
@@ -156,11 +162,11 @@ list2 = [
 ];
 arguments1 = foo(
   1,
-  (point2[1] - point1[1]) / (point2[0] - point1[0]), // comment
+  (point2[1] - point1[1]) / (point2[0] - point1[0]) // comment
 );
 arguments2 = foo(
   1,
-  2, // comment
+  2 // comment
 );
 
 // ================================================================================
@@ -210,7 +216,7 @@ my_fn = fn1(
     2,
     3,
   ],
-  true,
+  true
 );
 
 function affine3d_rot_from_to(from, to) =
@@ -219,7 +225,7 @@ function affine3d_rot_from_to(from, to) =
   assert(len(from) == len(to))
   let (
     from = unit(point3d(from)),
-    to = unit(point3d(to)),
+    to = unit(point3d(to))
   ) approx(from, to) ? affine3d_identity()
   : from.z == 0 && to.z == 0 ? affine3d_zrot(v_theta(point2d(to)) - v_theta(point2d(from)))
   : let (
@@ -227,7 +233,7 @@ function affine3d_rot_from_to(from, to) =
     ang = vector_angle(from, to),
     c = cos(ang),
     c2 = 1 - c,
-    s = sin(ang),
+    s = sin(ang)
     // double indent a list preceded by list expression
   ) [
       [1, 0, 0, 0],

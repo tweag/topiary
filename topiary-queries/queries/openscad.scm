@@ -76,6 +76,7 @@
 ; formatting.
 (
   [
+    (transform_chain)
     (var_declaration)
     (function_item)
     (module_item)
@@ -136,12 +137,12 @@
 )
 (assignments "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 (parameters "," @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
-(";" @append_spaced_softline . [(block_comment) (line_comment)]* @do_nothing)
 
-; Never put a space before a comma
+; Never put a space before a comma semicolon or period/full stop
 [
   ","
   ";"
+  "."
 ] @prepend_antispace
 
 ; Don't insert spaces between the operator and their expression operand
@@ -204,18 +205,20 @@
 (var_declaration . (assignment . (identifier) . "=" @append_input_softline))
 
 (assignments) @append_space
-(assignments
-  (#delimiter! ",")
-  (assignment) @append_delimiter
-  .
-  ","? @do_nothing
-  .
-  [(block_comment) (line_comment)]*
-  .
-  ")"
-  .
-  (#multi_line_only!)
-)
+; OS2021 does not support trailing commas in assignments
+; https://github.com/Leathong/openscad-LSP/issues/51#issuecomment-2891821939
+; (assignments
+;   (#delimiter! ",")
+;   (assignment) @append_delimiter
+;   .
+;   ","? @do_nothing
+;   .
+;   [(block_comment) (line_comment)]*
+;   .
+;   ")"
+;   .
+;   (#multi_line_only!)
+; )
 (assignments
   .
   "(" @append_empty_softline @append_indent_start
@@ -232,18 +235,19 @@
   ")" @prepend_indent_end @prepend_empty_softline @prepend_antispace
   .
 )
-(arguments
-  (#delimiter! ",")
-  (expression) @append_delimiter
-  .
-  ","? @do_nothing
-  .
-  [(block_comment) (line_comment)]*
-  .
-  ")"
-  .
-  (#multi_line_only!)
-)
+; OS2021 does not support trailing commas in arguments
+; (arguments
+;   (#delimiter! ",")
+;   (expression) @append_delimiter
+;   .
+;   ","? @do_nothing
+;   .
+;   [(block_comment) (line_comment)]*
+;   .
+;   ")"
+;   .
+;   (#multi_line_only!)
+; )
 
 (parameters "," @append_input_softline)
 (parameters "," @delete . ")" . (#single_line_only!))
@@ -261,6 +265,7 @@
   .
 )
 (list "," @delete . "]" . (#single_line_only!))
+
 (list
   (#delimiter! ",")
   [(expression) (list_comprehension)] @append_delimiter
