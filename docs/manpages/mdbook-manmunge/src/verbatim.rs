@@ -23,7 +23,7 @@ impl Escape for String {
 
 pub trait Verbatim<'parse> {
     /// Consume pulldown_cmark event
-    fn consume(&mut self, event: Event<'parse>);
+    fn consume(&mut self, event: Event<'parse>) -> Result<(), Error>;
 
     /// Drain the consumed events and render them as verbatim plain text
     fn drain_to_string(&mut self) -> Result<String, Error>;
@@ -60,8 +60,9 @@ impl Cmark<'_> {
 }
 
 impl<'parse> Verbatim<'parse> for Cmark<'parse> {
-    fn consume(&mut self, event: Event<'parse>) {
+    fn consume(&mut self, event: Event<'parse>) -> Result<(), Error> {
         self.events.push(event);
+        Ok(())
     }
 
     fn drain_to_string(&mut self) -> Result<String, Error> {
@@ -323,7 +324,7 @@ impl<'parse> Verbatim<'parse> for CmarkTable<'parse> {
     //   End(Table)
     //
     // These need slurping into our CmarkTable struct
-    fn consume(&mut self, event: Event<'parse>) {
+    fn consume(&mut self, event: Event<'parse>) -> Result<(), Error> {
         match event {
             Event::Start(Tag::Table(alignments)) => {
                 self.align_buffer = alignments.into_iter().map(Alignment::from).collect();
@@ -343,25 +344,21 @@ impl<'parse> Verbatim<'parse> for CmarkTable<'parse> {
             }
 
             Event::End(TagEnd::TableCell) => {
-                if let Ok(cell_contents) = self.cell_buffer.drain_to_string() {
-                    // TODO Push rendered contents into appropriate column, or create a new column
-                    // if it doesn't yet exist
-                    todo!()
-                } else {
-                    // FIXME? Is failing the right thing to do here? Verbatim::consume currently
-                    // doesn't return a Result, but it could...
-                    log::error!("Could not render table cell");
-                    std::process::exit(1);
-                }
+                let cell_contents = self.cell_buffer.drain_to_string()?;
+
+                // TODO Push rendered contents into appropriate column, or create a new column
+                // if it doesn't yet exist
             }
 
             // Consume everything else into the current cell buffer
             event => {
                 if !is_table_event(&event) {
-                    self.cell_buffer.consume(event);
+                    self.cell_buffer.consume(event)?;
                 }
             }
         }
+
+        Ok(())
     }
 
     fn drain_to_string(&mut self) -> Result<String, Error> {

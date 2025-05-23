@@ -128,8 +128,13 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
                     log::info!("{}: Slurping in {}", chapter.name, event_type(&event));
 
                     let mut verbatim_events = Box::new(Cmark::new());
-                    verbatim_events.consume(event);
-                    verbatim = Some(verbatim_events);
+                    match verbatim_events.consume(event) {
+                        Ok(()) => verbatim = Some(verbatim_events),
+
+                        Err(error) => {
+                            log::error!("{}: Could not consume Markdown; {error}", chapter.name)
+                        }
+                    }
                 }
 
                 vec![None]
@@ -143,12 +148,18 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
                         event_type(&event)
                     );
 
-                    verbatim_events.consume(event);
-                    match verbatim_events.emit() {
-                        Ok(events) => events.iter().map(|event| Some(event.clone())).collect(),
+                    match verbatim_events.consume(event) {
+                        Ok(()) => match verbatim_events.emit() {
+                            Ok(events) => events.iter().map(|event| Some(event.clone())).collect(),
+
+                            Err(error) => {
+                                log::error!("{}: Could not regurgitate; {error}", chapter.name);
+                                vec![None]
+                            }
+                        },
 
                         Err(error) => {
-                            log::error!("{}: Could not regurgitate; {error}", chapter.name);
+                            log::error!("{}: Could not consume Markdown; {error}", chapter.name);
                             vec![None]
                         }
                     }
@@ -164,7 +175,9 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
 
             _ if verbatim.is_some() => {
                 if let Some(verbatim_events) = verbatim.as_mut() {
-                    verbatim_events.consume(event);
+                    if let Err(error) = verbatim_events.consume(event) {
+                        log::error!("{}: Could not consume Markdown; {error}", chapter.name);
+                    }
                 }
                 vec![None]
             }
