@@ -84,6 +84,7 @@ impl<'parse> Verbatim<'parse> for Cmark<'parse> {
 /* Verbatim table rendering **********************************************************************/
 
 /// Table cell alignment
+#[derive(Clone, Copy)]
 enum Alignment {
     Left,
     Right,
@@ -212,10 +213,10 @@ impl Table {
             self.columns
                 .iter()
                 .map(|column| {
-                    let width = column.width;
+                    let width = column.width();
                     let content = match row {
                         Row::Header => &column.header,
-                        Row::Rule => &"-".repeat(column.width),
+                        Row::Rule => &"-".repeat(width),
                         Row::Data(idx) => column.data.get(idx).unwrap_or(&empty),
                     };
 
@@ -344,10 +345,23 @@ impl<'parse> Verbatim<'parse> for CmarkTable<'parse> {
             }
 
             Event::End(TagEnd::TableCell) => {
-                let cell_contents = self.cell_buffer.drain_to_string()?;
+                let cell_contents = self.render_cell()?;
 
-                // TODO Push rendered contents into appropriate column, or create a new column
-                // if it doesn't yet exist
+                if self.in_header {
+                    // Look-up alignment for header
+                    // (This information should be available at this point)
+                    let alignment = self
+                        .align_buffer
+                        .get(self.col_cursor)
+                        .ok_or(Error::from("Unexpected header cell found"))?;
+
+                    self.table.add_column(cell_contents, *alignment);
+                } else {
+                    self.table.try_insert(self.col_cursor, cell_contents)?;
+                }
+
+                // Advance cursor to next column
+                self.col_cursor += 1;
             }
 
             // Consume everything else into the current cell buffer

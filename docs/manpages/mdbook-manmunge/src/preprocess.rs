@@ -8,7 +8,7 @@ use semver::{Version, VersionReq};
 use url::{ParseError, Url};
 
 use crate::error::Error;
-use crate::verbatim::{Cmark, Verbatim};
+use crate::verbatim::{Cmark, CmarkTable, Verbatim};
 
 struct MdbookMunge;
 
@@ -127,7 +127,12 @@ fn rewrite_chapter(chapter: &mut Chapter) -> Result<String, Error> {
                 } else {
                     log::info!("{}: Slurping in {}", chapter.name, event_type(&event));
 
-                    let mut verbatim_events = Box::new(Cmark::new());
+                    let mut verbatim_events: Box<dyn Verbatim> = match event {
+                        Event::Start(Tag::List(_)) => Box::new(Cmark::new()),
+                        Event::Start(Tag::Table(_)) => Box::new(CmarkTable::new()),
+                        _ => unreachable!(),
+                    };
+
                     match verbatim_events.consume(event) {
                         Ok(()) => verbatim = Some(verbatim_events),
 
