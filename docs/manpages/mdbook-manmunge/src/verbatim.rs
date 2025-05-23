@@ -26,7 +26,7 @@ pub trait Verbatim<'parse> {
     fn consume(&mut self, event: Event<'parse>);
 
     /// Drain the consumed events and render them as verbatim plain text
-    fn drain(&mut self) -> Result<String, Error>;
+    fn drain_to_string(&mut self) -> Result<String, Error>;
 
     /// Emit pulldown_cmark events within a code fence
     fn emit(&mut self) -> Result<Vec<Event<'parse>>, Error> {
@@ -34,7 +34,12 @@ pub trait Verbatim<'parse> {
             // Opening code fence
             Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced("".into()))),
             // Verbatim contents
-            Event::Text(self.drain()?.escape_backslashes().into_owned().into()),
+            Event::Text(
+                self.drain_to_string()?
+                    .escape_backslashes()
+                    .into_owned()
+                    .into(),
+            ),
             // Closing code fence
             Event::End(TagEnd::CodeBlock),
         ])
@@ -59,7 +64,7 @@ impl<'parse> Verbatim<'parse> for Cmark<'parse> {
         self.events.push(event);
     }
 
-    fn drain(&mut self) -> Result<String, Error> {
+    fn drain_to_string(&mut self) -> Result<String, Error> {
         let mut buf = String::new();
 
         pulldown_cmark_to_cmark::cmark_with_options(
@@ -82,6 +87,16 @@ enum Alignment {
     Left,
     Right,
     Centre,
+}
+
+impl From<pulldown_cmark::Alignment> for Alignment {
+    fn from(value: pulldown_cmark::Alignment) -> Self {
+        match value {
+            pulldown_cmark::Alignment::Right => Alignment::Right,
+            pulldown_cmark::Alignment::Center => Alignment::Centre,
+            _ => Alignment::Left,
+        }
+    }
 }
 
 /// Table column
@@ -263,9 +278,11 @@ impl std::fmt::Display for Table {
 pub struct CmarkTable<'parse> {
     table: Table,
 
-    // State to build the next cell for the table
-    cursor: Option<usize>,
-    buffer: Cmark<'parse>,
+    // State to build the table, cell-by-cell
+    align_buffer: Vec<Alignment>,
+    in_header: bool,
+    col_cursor: usize,
+    cell_buffer: Cmark<'parse>,
 }
 
 impl CmarkTable<'_> {
@@ -273,23 +290,96 @@ impl CmarkTable<'_> {
         Self {
             table: Table::new(),
 
-            cursor: None,
-            buffer: Cmark::new(),
+            align_buffer: Vec::new(),
+            in_header: false,
+            col_cursor: 0,
+            cell_buffer: Cmark::new(),
         }
     }
 
     /// Render the contents of the current cell buffer, emptying it in the process
     fn render_cell(&mut self) -> Result<String, Error> {
-        self.buffer.drain()
+        self.cell_buffer.drain_to_string()
     }
 }
 
 impl<'parse> Verbatim<'parse> for CmarkTable<'parse> {
+    // Cmark table events are emitted like so:
+    //
+    //   Start(Table([Alignments..]))
+    //     Start(TableHead)
+    //       Start(TableCell)
+    //         <Cell content events>
+    //       End(TableCell)
+    //       <x Alignments...>
+    //     End(TableHead)
+    //     Start(TableRow)
+    //       Start(TableCell)
+    //         <Cell content events>
+    //       End(TableCell)
+    //       <x Alignments...>
+    //     End(TableRow)
+    //     <x Rows...>
+    //   End(Table)
+    //
+    // These need slurping into our CmarkTable struct
     fn consume(&mut self, event: Event<'parse>) {
-        todo!()
+        match event {
+            Event::Start(Tag::Table(alignments)) => {
+                self.align_buffer = alignments.into_iter().map(Alignment::from).collect();
+            }
+
+            Event::Start(Tag::TableHead) => {
+                self.in_header = true;
+                self.col_cursor = 0;
+            }
+
+            Event::End(TagEnd::TableHead) => {
+                self.in_header = false;
+            }
+
+            Event::Start(Tag::TableRow) => {
+                self.col_cursor = 0;
+            }
+
+            Event::End(TagEnd::TableCell) => {
+                if let Ok(cell_contents) = self.cell_buffer.drain_to_string() {
+                    // TODO Push rendered contents into appropriate column, or create a new column
+                    // if it doesn't yet exist
+                    todo!()
+                } else {
+                    // FIXME? Is failing the right thing to do here? Verbatim::consume currently
+                    // doesn't return a Result, but it could...
+                    log::error!("Could not render table cell");
+                    std::process::exit(1);
+                }
+            }
+
+            // Consume everything else into the current cell buffer
+            event => {
+                if !is_table_event(&event) {
+                    self.cell_buffer.consume(event);
+                }
+            }
+        }
     }
 
-    fn drain(&mut self) -> Result<String, Error> {
+    fn drain_to_string(&mut self) -> Result<String, Error> {
         Ok(self.table.to_string())
     }
+}
+
+/// Is the Cmark event a table event?
+fn is_table_event(event: &Event) -> bool {
+    matches!(
+        event,
+        Event::Start(Tag::Table(_))
+            | Event::Start(Tag::TableHead)
+            | Event::Start(Tag::TableRow)
+            | Event::Start(Tag::TableCell)
+            | Event::End(TagEnd::Table)
+            | Event::End(TagEnd::TableHead)
+            | Event::End(TagEnd::TableRow)
+            | Event::End(TagEnd::TableCell)
+    )
 }
