@@ -15,6 +15,7 @@ pub fn postprocess() -> Result<(), Error> {
     for line in std::io::stdin().lines() {
         match line? {
             // Update the title line with the correct section number (1) and a custom section name
+            // TODO These probably shouldn't be hardcoded...
             line if line.starts_with(".TH") => {
                 println!(".TH TOPIARY 1 \"\" \"\" \"Topiary Manual\"");
             }
