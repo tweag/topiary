@@ -1,12 +1,13 @@
 use std::borrow::Cow;
 use std::fmt::Write;
+use std::iter;
 
 use crate::error::Error;
 
 use itertools::Itertools;
 use pulldown_cmark::{CodeBlockKind, Event, Tag, TagEnd};
 
-/* Escaping **************************************************************************************/
+/* Utilities *************************************************************************************/
 
 trait Escape {
     fn escape_backslashes(&self) -> Cow<str>;
@@ -14,8 +15,46 @@ trait Escape {
 
 impl Escape for String {
     fn escape_backslashes(&self) -> Cow<str> {
-        // FIXME Only escape backslashes
-        self.replace("\\", "\\\\").into()
+        let mut iter = self.char_indices();
+        while let Some((idx, chr)) = iter.next() {
+            if chr == '\\' {
+                let mut buffer = String::with_capacity(self.len() * 2);
+                buffer.push_str(&self[..idx]);
+
+                let tail = iter::once((idx, chr)).chain(iter);
+                for (_, chr) in tail {
+                    if chr == '\\' {
+                        buffer.push('\\');
+                    }
+                    buffer.push(chr);
+                }
+
+                return Cow::Owned(buffer);
+            }
+        }
+
+        Cow::Borrowed(self)
+    }
+}
+
+trait IsTable {
+    fn is_table(&self) -> bool;
+}
+
+/// Is the Cmark event a table event?
+impl IsTable for Event<'_> {
+    fn is_table(&self) -> bool {
+        matches!(
+            self,
+            Event::Start(Tag::Table(_))
+                | Event::Start(Tag::TableHead)
+                | Event::Start(Tag::TableRow)
+                | Event::Start(Tag::TableCell)
+                | Event::End(TagEnd::Table)
+                | Event::End(TagEnd::TableHead)
+                | Event::End(TagEnd::TableRow)
+                | Event::End(TagEnd::TableCell)
+        )
     }
 }
 
@@ -366,7 +405,7 @@ impl<'parse> Verbatim<'parse> for CmarkTable<'parse> {
 
             // Consume everything else into the current cell buffer
             event => {
-                if !is_table_event(&event) {
+                if !event.is_table() {
                     self.cell_buffer.consume(event)?;
                 }
             }
@@ -378,19 +417,4 @@ impl<'parse> Verbatim<'parse> for CmarkTable<'parse> {
     fn drain_to_string(&mut self) -> Result<String, Error> {
         Ok(self.table.to_string())
     }
-}
-
-/// Is the Cmark event a table event?
-fn is_table_event(event: &Event) -> bool {
-    matches!(
-        event,
-        Event::Start(Tag::Table(_))
-            | Event::Start(Tag::TableHead)
-            | Event::Start(Tag::TableRow)
-            | Event::Start(Tag::TableCell)
-            | Event::End(TagEnd::Table)
-            | Event::End(TagEnd::TableHead)
-            | Event::End(TagEnd::TableRow)
-            | Event::End(TagEnd::TableCell)
-    )
 }
