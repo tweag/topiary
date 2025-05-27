@@ -3,18 +3,47 @@ members = ["cargo:."]
 
 # Config for 'dist'
 [dist]
+
 # The preferred dist version to use in CI (Cargo.toml SemVer syntax)
 cargo-dist-version = "0.28.0"
+
 # CI backends to support
 ci = "github"
+
 # The installers to generate for each app
 installers = ["shell"]
+
 # Target platforms to build apps for (Rust target-triple syntax)
-targets = ["aarch64-apple-darwin", "aarch64-unknown-linux-gnu", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]
+targets = [
+  "aarch64-apple-darwin",
+  "aarch64-unknown-linux-gnu",
+  "x86_64-apple-darwin",
+  "x86_64-unknown-linux-gnu",
+  "x86_64-pc-windows-msvc"
+]
+
 # Path that installers should place binaries in
 install-path = "CARGO_HOME"
+
 # Whether to install an updater program
 install-updater = false
 
+########################################################################
+
+# Custom runner set-up to workaround ubuntu-20.04 deprecation
+# See https://github.com/axodotdev/cargo-dist/issues/1760#issuecomment-2769218034
+
 [dist.github-custom-runners]
 global = "ubuntu-latest"
+
+[dist.github-custom-runners.x86_64-unknown-linux-gnu]
+runner = "ubuntu-latest"
+
+[dist.github-custom-runners.aarch64-unknown-linux-gnu]
+runner = "ubuntu-latest"
+
+[dist.github-custom-runners.aarch64-pc-windows-msvc]
+# https://github.com/axodotdev/cargo-dist/blob/c8ba950c63f9c38c77782912ec6cdb6807bd0fbd/cargo-dist/src/backend/ci/github.rs#L678-L688
+runner = "ubuntu-latest"
+host = "x86_64-unknown-linux-gnu"
+container = { image = "messense/cargo-xwin", host = "x86_64-unknown-linux-musl", package_manager = "apt" }
