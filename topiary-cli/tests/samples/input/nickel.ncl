@@ -205,6 +205,17 @@ foo
     x + y,
   ],
 
+  # Include expressions
+
+  includes = let x = 1,
+  y = 2, z = 3, a = 4, in
+{include x,include y,
+include [x,  y,   z],
+  include a | String | doc "hello",
+  include a | String |
+doc "hello" | optional,
+},
+
   # Nickel standard library as of 44aef1672a09a76a71946fbf822713747ab7b9df
 
   array = {

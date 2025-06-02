@@ -398,7 +398,7 @@ checksum = "f46ad14479a25103f283c0f10005961cf086d8dc42205bb44c46ac563475dca6"
 
 [[package]]
 name = "client-app"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "tokio",
  "topiary-config",
@@ -3882,7 +3882,7 @@ checksum = "bfb942dfe1d8e29a7ee7fcbde5bd2b9a25fb89aa70caea2eba3bee836ff41076"
 
 [[package]]
 name = "topiary-cli"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "assert_cmd",
  "async-scoped",
@@ -3907,7 +3907,7 @@ dependencies = [
 
 [[package]]
 name = "topiary-config"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "anyhow",
  "clap",
@@ -3930,7 +3930,7 @@ dependencies = [
 
 [[package]]
 name = "topiary-core"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "criterion",
  "env_logger",
@@ -3954,7 +3954,7 @@ dependencies = [
 
 [[package]]
 name = "topiary-playground"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "itertools 0.11.0",
  "topiary-config",
@@ -3966,11 +3966,11 @@ dependencies = [
 
 [[package]]
 name = "topiary-queries"
-version = "0.6.1"
+version = "0.6.2"
 
 [[package]]
 name = "topiary-tree-sitter-facade"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "js-sys",
  "streaming-iterator",
@@ -3985,7 +3985,7 @@ dependencies = [
 
 [[package]]
 name = "topiary-web-tree-sitter-sys"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -4137,12 +4137,13 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter-nickel"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e8b3a80d772b47cef3145983c0f431f7af2c93088695c516d7a89e68216f854"
+checksum = "e91969fe1870f826c74d4bcf28dbf27cf7d805f6b202e8701203733a23c863f5"
 dependencies = [
  "cc",
  "tree-sitter",
+ "tree-sitter-language",
 ]
 
 [[package]]

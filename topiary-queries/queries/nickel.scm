@@ -12,8 +12,8 @@
 ; Allow a blank line before the following nodes
 [
   (comment)
-  (record_field)
-  (record_last_field)
+  (field_decl)
+  (last_field)
 ] @allow_blank_line_before
 
 ; Allow blank lines to appear between a let bind and its result
@@ -44,6 +44,7 @@
     "optional"
     "priority"
     "or"
+    "include"
     "|"
     ":"
     "?"
@@ -617,7 +618,7 @@
 ; Unlike records, arrays should never have internal spacing, similar to
 ; parentheticals. (This is a conscious choice by the Nickel team; see
 ; Issue #407.)
-; NOTE This rule also applies to array patterns
+; NOTE This rule also applies to array patterns and include lists
 (_
   (#scope_id! "container")
   .
@@ -642,8 +643,8 @@
 (
   (#scope_id! "container")
   [
-    (record_field)
-    (record_last_field)
+    (field_decl)
+    (last_field)
     (field_pattern)
     (last_field_pat)
     (match_branch)
@@ -651,6 +652,7 @@
     (pattern)
     (last_elem_pat)
     (enum)
+    (ident)
   ]
   .
   ["," ";"] @append_spaced_scoped_softline
