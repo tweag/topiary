@@ -44,10 +44,10 @@ This name should be decided amongst the team before the release.
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.6.1...HEAD)
 
-<!--
 ### Added
-- <New feature>
+- [#1015](https://github.com/tweag/topiary/pull/1015) Add support for include expressions to Nickel formatting
 
+<!--
 ### Changed
 - <Changes in existing functionality>
 
