@@ -281,7 +281,9 @@ impl Table {
 impl std::fmt::Display for Table {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.is_empty() {
-            log::warn!("Formatting table with no columns or rows");
+            log::error!("Formatting table with no columns or rows");
+            write!(f, "")?;
+            return Ok(());
         }
 
         if !self.is_consistent() {
@@ -415,6 +417,159 @@ impl<'parse> Verbatim<'parse> for CmarkTable<'parse> {
     }
 
     fn drain_to_string(&mut self) -> Result<String, Error> {
-        Ok(self.table.to_string())
+        let output = self.table.to_string();
+        self.table = Table::new(); // Simulate drain
+
+        Ok(output)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pulldown_cmark::Event;
+
+    #[test]
+    fn test_escape_backslashes_no_backslashes() {
+        let input = "hello world".to_string();
+        let result = input.escape_backslashes();
+        assert_eq!(result, "hello world");
+    }
+
+    #[test]
+    fn test_escape_backslashes_with_backslashes() {
+        let input = "hello\\world\\\\test".to_string();
+        let result = input.escape_backslashes();
+        assert_eq!(result, "hello\\\\world\\\\\\\\test");
+    }
+
+    #[test]
+    fn test_cmark_drain_to_string() {
+        let mut cmark = Cmark::new();
+
+        let events = vec![
+            Event::Text("Hello ".into()),
+            Event::Code("world".into()),
+            Event::Text("!".into()),
+        ];
+
+        for event in events {
+            cmark.consume(event).unwrap();
+        }
+
+        let result = cmark.drain_to_string().unwrap();
+        assert_eq!(result, "Hello `world`!");
+
+        // Verify that draining empties the events
+        let second_result = cmark.drain_to_string().unwrap();
+        assert_eq!(second_result, "");
+    }
+
+    #[test]
+    fn test_table_rendering() {
+        let mut table = Table::new();
+
+        // Create a table with different alignments
+        table.add_column("Left", Alignment::Left);
+        table.add_column("Right", Alignment::Right);
+        table.add_column("Centre", Alignment::Centre);
+
+        table.try_insert(0, "short").unwrap();
+        table.try_insert(1, "longer text").unwrap();
+        table.try_insert(2, "mid").unwrap();
+
+        table.try_insert(0, "a").unwrap();
+        table.try_insert(1, "b").unwrap();
+        table.try_insert(2, "centred").unwrap();
+
+        let result = table.to_string();
+        let lines: Vec<&str> = result.lines().collect();
+        assert_eq!(lines.len(), 4); // Header + rule + 2 data rows
+
+        assert_eq!(lines[0], "| Left  |       Right | Centre  |");
+        assert_eq!(lines[1], "| ----- | ----------- | ------- |");
+        assert_eq!(lines[2], "| short | longer text |   mid   |");
+        assert_eq!(lines[3], "| a     |           b | centred |");
+    }
+
+    #[test]
+    fn test_empty_table() {
+        let table = Table::new();
+        let result = table.to_string();
+        assert_eq!(result, "");
+    }
+
+    #[test]
+    fn test_cmark_table_round_trip() {
+        use pulldown_cmark::{Alignment, Tag, TagEnd};
+
+        let mut cmark_table = CmarkTable::new();
+
+        // Create table events for a simple 3x2 table with different alignments
+        let events = vec![
+            Event::Start(Tag::Table(vec![
+                Alignment::Left,
+                Alignment::Right,
+                Alignment::Center,
+            ])),
+            // Header row
+            Event::Start(Tag::TableHead),
+            Event::Start(Tag::TableCell),
+            Event::Text("Name".into()),
+            Event::End(TagEnd::TableCell),
+            Event::Start(Tag::TableCell),
+            Event::Text("Score".into()),
+            Event::End(TagEnd::TableCell),
+            Event::Start(Tag::TableCell),
+            Event::Text("Grade".into()),
+            Event::End(TagEnd::TableCell),
+            Event::End(TagEnd::TableHead),
+            // Data row 1
+            Event::Start(Tag::TableRow),
+            Event::Start(Tag::TableCell),
+            Event::Text("Alice".into()),
+            Event::End(TagEnd::TableCell),
+            Event::Start(Tag::TableCell),
+            Event::Text("95".into()),
+            Event::End(TagEnd::TableCell),
+            Event::Start(Tag::TableCell),
+            Event::Text("A".into()),
+            Event::End(TagEnd::TableCell),
+            Event::End(TagEnd::TableRow),
+            // Data row 2
+            Event::Start(Tag::TableRow),
+            Event::Start(Tag::TableCell),
+            Event::Text("Bob".into()),
+            Event::End(TagEnd::TableCell),
+            Event::Start(Tag::TableCell),
+            Event::Text("87".into()),
+            Event::End(TagEnd::TableCell),
+            Event::Start(Tag::TableCell),
+            Event::Text("B+".into()),
+            Event::End(TagEnd::TableCell),
+            Event::End(TagEnd::TableRow),
+            Event::End(TagEnd::Table),
+        ];
+
+        // Consume all events
+        for event in events {
+            cmark_table.consume(event).unwrap();
+        }
+
+        // Render the table
+        let result = cmark_table.drain_to_string().unwrap();
+
+        // Verify the output format
+        let lines: Vec<&str> = result.lines().collect();
+        assert_eq!(lines.len(), 4); // Header + rule + 2 data rows
+
+        assert_eq!(lines[0], "| Name  | Score | Grade |");
+        assert_eq!(lines[1], "| ----- | ----- | ----- |");
+        assert_eq!(lines[2], "| Alice |    95 |   A   |");
+        assert_eq!(lines[3], "| Bob   |    87 |  B+   |");
+
+        // Verify that draining empties the table (should be empty after first drain)
+        let second_result = cmark_table.drain_to_string().unwrap();
+        assert_eq!(second_result, "");
     }
 }
