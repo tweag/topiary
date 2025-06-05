@@ -24,7 +24,7 @@ let
         ./Cargo.toml
         ./languages.ncl
         ./examples
-        ./prefetchLanguages.nix
+        (fileset.fromSource ./nix)
         ./topiary-core
         ./topiary-cli
         ./topiary-config
@@ -119,8 +119,8 @@ in
 
           prepareTopiaryDefaultConfiguration =
             pkgs.lib.optional prefetchGrammars (
-              let inherit (pkgs.callPackage ./prefetchLanguages.nix {}) prefetchLanguagesFile; in
-              "cp ${prefetchLanguagesFile ./topiary-config/languages.ncl} topiary-config/languages.ncl"
+              let inherit ((import ./nix { inherit pkgs; }).lib) defaultConfigPrefetchedFile; in
+              "cp ${defaultConfigPrefetchedFile} topiary-config/languages.ncl"
             );
 
           postInstall = ''
