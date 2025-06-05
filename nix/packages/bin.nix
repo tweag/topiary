@@ -1,5 +1,14 @@
 { pkgs, writeShellApplication }:
-{
+
+let
+  inherit (builtins)
+    readFile
+    ;
+
+  inherit (pkgs.lib)
+    optionals
+    ;
+
   # FIXME: Broken
   # TODO: Don't use rustup to install these components but just use Nix
   # generate-coverage = writeShellApplication {
@@ -11,23 +20,25 @@
   #     rustup
   #   ];
 
-  #   text = builtins.readFile ./generate-coverage.sh;
+  #   text = readFile ../../bin/generate-coverage.sh;
   # };
 
   playground = writeShellApplication {
     name = "playground";
 
-    runtimeInputs = with pkgs; pkgs.lib.optionals (!stdenv.isDarwin) [
-      inotify-tools
-    ];
+    runtimeInputs =
+      with pkgs;
+      optionals (!stdenv.isDarwin) [
+        inotify-tools
+      ];
 
-    text = builtins.readFile ./playground.sh;
+    text = readFile ../../bin/playground.sh;
   };
 
   update-wasm-app = writeShellApplication {
     name = "update-wasm-app";
 
-    text = builtins.readFile ./update-wasm-app.sh;
+    text = readFile ../../bin/update-wasm-app.sh;
   };
 
   update-wasm-grammars = writeShellApplication {
@@ -40,7 +51,7 @@
       tree-sitter
     ];
 
-    text = builtins.readFile ./update-wasm-grammars.sh;
+    text = readFile ../../bin/update-wasm-grammars.sh;
   };
 
   verify-documented-usage = writeShellApplication {
@@ -51,6 +62,15 @@
       gnused
     ];
 
-    text = builtins.readFile ./verify-documented-usage.sh;
+    text = readFile ../../bin/verify-documented-usage.sh;
   };
+
+in
+{
+  inherit
+    playground
+    update-wasm-app
+    update-wasm-grammars
+    verify-documented-usage
+    ;
 }
