@@ -1,56 +1,82 @@
-{ pkgs, writeShellApplication }:
 {
+  lib,
+  stdenv,
+  writeShellApplication,
+
+  inotify-tools,
+  emscripten,
+  git,
+  nickel,
+  tree-sitter,
+  diffutils,
+  gnused,
+}:
+
+let
+  inherit (builtins)
+    readFile
+    ;
+
   # FIXME: Broken
   # TODO: Don't use rustup to install these components but just use Nix
   # generate-coverage = writeShellApplication {
   #   name = "generate-coverage";
 
-  #   runtimeInputs = with pkgs; [
+  #   runtimeInputs = [
   #     cacert
   #     grcov
   #     rustup
   #   ];
 
-  #   text = builtins.readFile ./generate-coverage.sh;
+  #   text = readFile ../../bin/generate-coverage.sh;
   # };
 
   playground = writeShellApplication {
     name = "playground";
 
-    runtimeInputs = with pkgs; pkgs.lib.optionals (!stdenv.isDarwin) [
+    runtimeInputs = lib.optionals (!stdenv.isDarwin) [
       inotify-tools
     ];
 
-    text = builtins.readFile ./playground.sh;
+    text = readFile ../../bin/playground.sh;
   };
 
   update-wasm-app = writeShellApplication {
     name = "update-wasm-app";
 
-    text = builtins.readFile ./update-wasm-app.sh;
+    text = readFile ../../bin/update-wasm-app.sh;
   };
 
   update-wasm-grammars = writeShellApplication {
     name = "update-wasm-grammars";
 
-    runtimeInputs = with pkgs; [
+    runtimeInputs = [
       emscripten
       git
       nickel
       tree-sitter
     ];
 
-    text = builtins.readFile ./update-wasm-grammars.sh;
+    text = readFile ../../bin/update-wasm-grammars.sh;
   };
 
   verify-documented-usage = writeShellApplication {
     name = "verify-documented-usage";
 
-    runtimeInputs = with pkgs; [
+    runtimeInputs = [
       diffutils
       gnused
     ];
 
-    text = builtins.readFile ./verify-documented-usage.sh;
+    text = readFile ../../bin/verify-documented-usage.sh;
   };
+
+in
+{
+  inherit
+    playground
+    update-wasm-app
+    update-wasm-grammars
+    verify-documented-usage
+    ;
 }
