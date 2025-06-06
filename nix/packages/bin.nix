@@ -1,4 +1,16 @@
-{ pkgs, writeShellApplication }:
+{
+  lib,
+  stdenv,
+  writeShellApplication,
+
+  inotify-tools,
+  emscripten,
+  git,
+  nickel,
+  tree-sitter,
+  diffutils,
+  gnused,
+}:
 
 let
   inherit (builtins)
@@ -10,7 +22,7 @@ let
   # generate-coverage = writeShellApplication {
   #   name = "generate-coverage";
 
-  #   runtimeInputs = with pkgs; [
+  #   runtimeInputs = [
   #     cacert
   #     grcov
   #     rustup
@@ -22,11 +34,9 @@ let
   playground = writeShellApplication {
     name = "playground";
 
-    runtimeInputs =
-      with pkgs;
-      lib.optionals (!stdenv.isDarwin) [
-        inotify-tools
-      ];
+    runtimeInputs = lib.optionals (!stdenv.isDarwin) [
+      inotify-tools
+    ];
 
     text = readFile ../../bin/playground.sh;
   };
@@ -40,7 +50,7 @@ let
   update-wasm-grammars = writeShellApplication {
     name = "update-wasm-grammars";
 
-    runtimeInputs = with pkgs; [
+    runtimeInputs = [
       emscripten
       git
       nickel
@@ -53,7 +63,7 @@ let
   verify-documented-usage = writeShellApplication {
     name = "verify-documented-usage";
 
-    runtimeInputs = with pkgs; [
+    runtimeInputs = [
       diffutils
       gnused
     ];
