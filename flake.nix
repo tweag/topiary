@@ -28,7 +28,10 @@
     let
       forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
 
-      nix = forAllSystems (
+      # NOTE: This flake is only a wrapper providing dependencies lock and
+      # interface. All the logic lives in the `nix` directory. We import it here
+      # bundled for all systems as a `topiaryNix`.
+      topiaryNix = forAllSystems (
         system:
         let
           pkgs = import nixpkgs { inherit system; };
@@ -41,9 +44,9 @@
 
     in
     {
-      packages = forAllSystems (system: nix.${system}.packages);
-      lib = forAllSystems (system: nix.${system}.lib);
-      checks = forAllSystems (system: nix.${system}.checks);
-      devShells = forAllSystems (system: nix.${system}.devShells);
+      packages = forAllSystems (system: topiaryNix.${system}.packages);
+      lib = forAllSystems (system: topiaryNix.${system}.lib);
+      checks = forAllSystems (system: topiaryNix.${system}.checks);
+      devShells = forAllSystems (system: topiaryNix.${system}.devShells);
     };
 }
