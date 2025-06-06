@@ -241,7 +241,4 @@ in
     ;
 
   default = topiary-cli;
-
-  # REVIEW: Do we really want to keep this extra package?
-  topiary-cli-nix = topiary-cli.override { prefetchGrammars = true; };
 }
