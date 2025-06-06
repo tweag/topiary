@@ -1,7 +1,7 @@
-{
-  pkgs,
-  advisory-db,
-  craneLib,
+{ pkgs
+, advisory-db
+, craneLib
+,
 }:
 
 let
@@ -123,45 +123,47 @@ let
     }
   );
 
-  topiary-cli = makeOverridable (
-    {
-      prefetchGrammars ? false,
-    }:
-    craneLib.buildPackage (
-      commonArgs
-      // {
-        inherit cargoArtifacts;
-        pname = "topiary";
-        cargoExtraArgs = "-p topiary-cli";
-        cargoTestExtraArgs = "--no-default-features";
+  topiary-cli = makeOverridable
+    (
+      { prefetchGrammars ? false
+      ,
+      }:
+      craneLib.buildPackage (
+        commonArgs
+        // {
+          inherit cargoArtifacts;
+          pname = "topiary";
+          cargoExtraArgs = "-p topiary-cli";
+          cargoTestExtraArgs = "--no-default-features";
 
-        preConfigurePhases = optional prefetchGrammars "prepareTopiaryDefaultConfiguration";
+          preConfigurePhases = optional prefetchGrammars "prepareTopiaryDefaultConfiguration";
 
-        prepareTopiaryDefaultConfiguration = optional prefetchGrammars (
-          let
-            inherit (pkgs.callPackage ../../prefetchLanguages.nix { }) prefetchLanguagesFile;
-          in
-          "cp ${prefetchLanguagesFile ../../topiary-config/languages.ncl} topiary-config/languages.ncl"
-        );
+          prepareTopiaryDefaultConfiguration = optional prefetchGrammars (
+            let
+              inherit (pkgs.callPackage ../../prefetchLanguages.nix { }) prefetchLanguagesFile;
+            in
+            "cp ${prefetchLanguagesFile ../../topiary-config/languages.ncl} topiary-config/languages.ncl"
+          );
 
-        postInstall = ''
-          install -Dm444 topiary-queries/queries/* -t $out/share/queries
-        '';
+          postInstall = ''
+            install -Dm444 topiary-queries/queries/* -t $out/share/queries
+          '';
 
-        # Set TOPIARY_LANGUAGE_DIR to the Nix store
-        # for the build
-        TOPIARY_LANGUAGE_DIR = "${placeholder "out"}/share/queries";
+          # Set TOPIARY_LANGUAGE_DIR to the Nix store
+          # for the build
+          TOPIARY_LANGUAGE_DIR = "${placeholder "out"}/share/queries";
 
-        # Set TOPIARY_LANGUAGE_DIR to the working directory
-        # in a development shell
-        shellHook = ''
-          export TOPIARY_LANGUAGE_DIR=$PWD/queries
-        '';
+          # Set TOPIARY_LANGUAGE_DIR to the working directory
+          # in a development shell
+          shellHook = ''
+            export TOPIARY_LANGUAGE_DIR=$PWD/queries
+          '';
 
-        meta.mainProgram = "topiary";
-      }
+          meta.mainProgram = "topiary";
+        }
+      )
     )
-  ) { };
+    { };
 
   topiary-queries = craneLib.buildPackage (
     commonArgs
@@ -224,19 +226,65 @@ let
     '';
   };
 
-  mdbook-manmunge = craneLib.buildPackage (
-    commonArgs
-    // {
-      inherit cargoArtifacts;
-      pname = "mdbook-manmunge";
-      cargoExtraArgs = "-p mdbook-manmunge";
+  mdbook-manmunge =
+    let
+      crateInfo = craneLib.crateNameFromCargoToml { cargoToml = ../../docs/manpages/mdbook-manmunge/Cargo.toml; };
+    in
+    craneLib.buildPackage (
+      commonArgs
+      // {
+        inherit cargoArtifacts;
+        inherit (crateInfo) pname version;
+        cargoExtraArgs = "-p mdbook-manmunge";
 
-      meta = {
-        description = "mdBook pre- and post-processor to help munge (a subset of) the Topiary Book into manpages with mdbook-man";
-        mainProgram = "mdbook-manmunge";
-      };
-    }
-  );
+        meta = {
+          description = "mdBook pre- and post-processor to help munge (a subset of) the Topiary Book into manpages with mdbook-man";
+          mainProgram = "mdbook-manmunge";
+        };
+      }
+    );
+
+  topiary-manpages = pkgs.stdenv.mkDerivation {
+    pname = "topiary-manpages";
+    version = "1.0";
+
+    src = fileset.toSource {
+      root = ../..;
+      fileset = fileset.unions [
+        ../../docs/manpages
+        ../../docs/book/src/cli
+      ];
+    };
+
+    nativeBuildInputs = with pkgs; [
+      gzip
+      mdbook
+      mdbook-man
+      mdbook-manmunge
+    ];
+
+    preBuild = ''
+      cd docs/manpages
+
+      # Swap the symlink with a copy of the Topiary Book CLI content
+      rm -f src/cli
+      cp -r ../book/src/cli src/cli
+    '';
+
+    buildPhase = ''
+      cd docs/manpages
+      make all
+    '';
+
+    installPhase = ''
+      mkdir -p $out/share/man/man1
+      cp man/topiary.1.gz $out/share/man/man1/
+    '';
+
+    meta = {
+      description = "Topiary manpages";
+    };
+  };
 
 in
 {
@@ -253,7 +301,7 @@ in
     topiary-queries
     topiary-playground
     topiary-book
-    mdbook-manmunge
+    topiary-manpages
     ;
 
   default = topiary-cli;
