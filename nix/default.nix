@@ -15,14 +15,30 @@ let
 
   pkgs' = pkgs.appendOverlays [
     overlays.wasm-bindgen-cli
-    overlays.callPackageNoOverrides
     rust-overlay.overlays.default
   ];
-  inherit (pkgs') callPackageNoOverrides;
+
+  # A simpler version of `callPackage` that only works on files and does not
+  # rely on `makeOverridable`, to avoid polluting the output.
+  callPackageNoOverrides =
+    file: args:
+    let
+      fn = import file;
+      auto-args = builtins.intersectAttrs (builtins.functionArgs fn) pkgs';
+      final-args = auto-args // args;
+    in
+    fn final-args;
 
   craneLib = crane.mkLib pkgs;
 
-  inherit (callPackageNoOverrides ./packages { inherit advisory-db craneLib; })
+  inherit
+    (callPackageNoOverrides ./packages {
+      inherit
+        advisory-db
+        craneLib
+        callPackageNoOverrides
+        ;
+    })
     topiaryPkgs
     binPkgs
     ;
@@ -31,6 +47,7 @@ let
   # unexpected behaviours in subsequent `callPackage` statements.
   topiaryLib = callPackageNoOverrides ./lib {
     inherit (topiaryPkgs) topiary-cli;
+    inherit callPackageNoOverrides;
   };
 
   checks = callPackageNoOverrides ./checks {
