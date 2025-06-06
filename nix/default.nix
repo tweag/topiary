@@ -1,7 +1,10 @@
 {
   pkgs ? import <nixpkgs> { },
 
-  # REVIEW: Probably hard to provide without a flake
+  # The following dependencies are hard to provide without using flakes, making
+  # our “you don't have to use flakes” claim deceptive. We keep it like this for
+  # now, and if someone complains we can find another solution. Context in
+  # https://github.com/tweag/topiary/pull/1026#discussion_r2131778007
   advisory-db,
   crane,
   rust-overlay,
