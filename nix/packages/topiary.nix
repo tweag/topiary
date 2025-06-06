@@ -37,6 +37,7 @@ let
         ../../topiary-queries
         ../../topiary-tree-sitter-facade
         ../../topiary-web-tree-sitter-sys
+        ../../docs/manpages/mdbook-manmunge
         ../.
       ];
     };
@@ -223,6 +224,20 @@ let
     '';
   };
 
+  mdbook-manmunge = craneLib.buildPackage (
+    commonArgs
+    // {
+      inherit cargoArtifacts;
+      pname = "mdbook-manmunge";
+      cargoExtraArgs = "-p mdbook-manmunge";
+
+      meta = {
+        description = "mdBook pre- and post-processor to help munge (a subset of) the Topiary Book into manpages with mdbook-man";
+        mainProgram = "mdbook-manmunge";
+      };
+    }
+  );
+
 in
 {
   inherit
@@ -238,6 +253,7 @@ in
     topiary-queries
     topiary-playground
     topiary-book
+    mdbook-manmunge
     ;
 
   default = topiary-cli;
