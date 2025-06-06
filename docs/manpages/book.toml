@@ -9,7 +9,6 @@ title = "Topiary"
 build-dir = "man"
 
 [preprocessor.manmunge]
-command = "cargo run --package mdbook-manmunge --locked"
 
 [output.man]
 output-dir = "."
