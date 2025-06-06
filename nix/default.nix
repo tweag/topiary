@@ -24,16 +24,16 @@ let
     binPkgs
     ;
 
-  # NOTE: The name clashes with nixpkgs' lib, so one needs to be careful in
-  # subsequent `inherit` statements.
-  lib = callPackageNoOverrides ./lib {
+  # NOTE: The name could clashes with nixpkgs' lib, which could lead to
+  # unexpected behaviours in subsequent `callPackage` statements.
+  topiaryLib = callPackageNoOverrides ./lib {
     inherit (topiaryPkgs) topiary-cli;
   };
 
   checks = callPackageNoOverrides ./checks {
     inherit (pkgs') hello;
     inherit topiaryPkgs;
-    inherit (lib) pre-commit-hook;
+    inherit (topiaryLib) pre-commit-hook;
   };
 
   devShells = callPackageNoOverrides ./devShells {
@@ -53,10 +53,6 @@ in
   # the get-go, where everything gets merged in `packages/default.nix` and we
   # only manipulate the `packages` set?
   packages = topiaryPkgs // binPkgs;
-
-  inherit
-    lib
-    checks
-    devShells
-    ;
+  lib = topiaryLib;
+  inherit checks devShells;
 }
