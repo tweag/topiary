@@ -5,10 +5,6 @@ let
     readFile
     ;
 
-  inherit (pkgs.lib)
-    optionals
-    ;
-
   # FIXME: Broken
   # TODO: Don't use rustup to install these components but just use Nix
   # generate-coverage = writeShellApplication {
@@ -28,7 +24,7 @@ let
 
     runtimeInputs =
       with pkgs;
-      optionals (!stdenv.isDarwin) [
+      lib.optionals (!stdenv.isDarwin) [
         inotify-tools
       ];
 

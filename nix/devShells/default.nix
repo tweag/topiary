@@ -11,18 +11,17 @@
     inherit craneLib binPkgs checks;
   };
 
-  light = callPackage ./devShell.nix {
-    checks = # checksLight
-      {
-        inherit (topiaryPkgs)
-          clippy
-          fmt
-          topiary-core
-          topiary-cli
-          ;
-      };
+  minimal = callPackage ./devShell.nix {
+    checks = {
+      inherit (checks)
+        clippy
+        fmt
+        topiary-core
+        topiary-cli
+        ;
+    };
     inherit craneLib binPkgs;
-    optionals = false;
+    includeExtraPackages = false;
   };
 
   wasm = callPackage ./devShell.nix {

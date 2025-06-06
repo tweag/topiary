@@ -3,7 +3,7 @@
   checks ? { },
   craneLib,
   binPkgs,
-  optionals ? true,
+  includeExtraPackages ? true,
 }:
 
 craneLib.devShell (
@@ -11,7 +11,7 @@ craneLib.devShell (
     inherit checks;
   }
   // (
-    if optionals then
+    if includeExtraPackages then
       {
         packages =
           with pkgs;

@@ -1,7 +1,7 @@
 {
   pkgs ? import <nixpkgs> { },
 
-  ## REVIEW: Probably hard to provide without a flake
+  # REVIEW: Probably hard to provide without a flake
   advisory-db,
   crane,
   rust-overlay,
@@ -10,8 +10,6 @@
 let
   overlays = import ./overlays;
 
-  ## REVIEW: Do we want to do this gymnastics here ourselves, or would we rather
-  ## expect that the `pkgs` we receive satisfies it?
   pkgs' = pkgs.appendOverlays [
     overlays.wasm-bindgen-cli
     overlays.callPackageNoOverrides
@@ -26,8 +24,8 @@ let
     binPkgs
     ;
 
-  ## NOTE: The name clashes with nixpkgs' lib, so one needs to be careful in
-  ## subsequent `inherit` statements.
+  # NOTE: The name clashes with nixpkgs' lib, so one needs to be careful in
+  # subsequent `inherit` statements.
   lib = callPackageNoOverrides ./lib {
     inherit (topiaryPkgs) topiary-cli;
   };
@@ -49,11 +47,11 @@ let
 
 in
 {
-  ## REVIEW: I have kept the separation between “Topiary” vs. “Bin” packages,
-  ## and I plug it throughout the Nix code, only to flatten it at the very end
-  ## because that's what flakes want. Maybe we want a flatter organisation from
-  ## the get-go, where everything gets merged in `packages/default.nix` and we
-  ## only manipulate the `packages` set?
+  # REVIEW: I have kept the separation between “Topiary” vs. “Bin” packages,
+  # and I plug it throughout the Nix code, only to flatten it at the very end
+  # because that's what flakes want. Maybe we want a flatter organisation from
+  # the get-go, where everything gets merged in `packages/default.nix` and we
+  # only manipulate the `packages` set?
   packages = topiaryPkgs // binPkgs;
 
   inherit

@@ -1,8 +1,8 @@
 final: _:
 
 {
-  ## A simpler version of `callPackage` that only works on files and does not
-  ## rely on `makeOverridable`, to avoid polluting the output.
+  # A simpler version of `callPackage` that only works on files and does not
+  # rely on `makeOverridable`, to avoid polluting the output.
   callPackageNoOverrides =
     file: args:
     let
