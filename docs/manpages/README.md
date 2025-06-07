@@ -18,11 +18,11 @@ $ sudo make install
 
 By default the man pages will be installed to
 `/usr/share/man/man1/topiary.1.gz`. The `/usr/share/man` prefix can be
-overridden by setting the `PREFIX` variable. For example:
+overridden by setting the `MAN_DIR` variable. For example:
 
 ```console
 $ make
-$ sudo make install PREFIX=/opt/topiary/share/man
+$ sudo make install MAN_DIR=/opt/topiary/share/man
 ```
 
 > [!NOTE]

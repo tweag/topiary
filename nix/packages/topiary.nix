@@ -269,8 +269,8 @@ let
     '';
 
     installPhase = ''
-      mkdir -p $out/share/man/man1
-      cp man/topiary.1.gz $out/share/man/man1/
+      MAN_DIR=$out/share/man \
+      make install
     '';
 
     meta = {

@@ -1,12 +1,12 @@
-SOURCES := book.toml src
+SOURCES := book.toml $(shell find src -type f 2>/dev/null)
 
 NAME := topiary
 BUILD_DIR := man
 BUILD_PREFIX := $(BUILD_DIR)/$(NAME)
 
-PREFIX := /usr/share/man
+MAN_DIR ?= /usr/share/man
 
-# We assume that mdbook-manmunge is available in the $PATH. This
+# NOTE We assume that mdbook-manmunge is available in the $PATH. This
 # Makefile does not build mdbook-manmunge from source.
 MDBOOK_MANMUNGE := mdbook-manmunge
 
@@ -20,21 +20,22 @@ $(BUILD_PREFIX).1.gz: $(BUILD_PREFIX).man
 $(BUILD_PREFIX).man: $(SOURCES)
 	mdbook build
 
-install: $(PREFIX)/man1/$(NAME).1.gz
+install: $(MAN_DIR)/man1/$(NAME).1.gz
 
-$(PREFIX)/man1/$(NAME).1.gz: $(BUILD_PREFIX).1.gz
+$(MAN_DIR)/man1/$(NAME).1.gz: $(BUILD_PREFIX).1.gz $(MAN_DIR)/man1
 	install \
-	  --owner root \
-	  --group root \
 	  --mode 0644 \
 	  --no-target-directory \
 	  "$<" \
 	  "$@"
 
+$(MAN_DIR)/man1:
+	mkdir -p "$@"
+
 uninstall:
-	rm -rf "$(PREFIX)/man1/$(NAME).1.gz"
+	rm -rf "$(MAN_DIR)/man1/$(NAME).1.gz"
 
 clean:
 	rm -rf "$(BUILD_DIR)"
 
-.PHONEY: all install uninstall clean
+.PHONY: all install uninstall clean
