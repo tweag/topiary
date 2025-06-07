@@ -263,14 +263,6 @@ let
       mdbook-manmunge
     ];
 
-    preBuild = ''
-      cd docs/manpages
-
-      # Swap the symlink with a copy of the Topiary Book CLI content
-      rm -f src/cli
-      cp -r ../book/src/cli src/cli
-    '';
-
     buildPhase = ''
       cd docs/manpages
       make all
