@@ -47,10 +47,10 @@ This name should be decided amongst the team before the release.
 ### Added
 - [#1015](https://github.com/tweag/topiary/pull/1015) Add support for include expressions to Nickel formatting
 
-<!--
 ### Changed
-- <Changes in existing functionality>
+- [#1031](https://github.com/tweag/topiary/pull/1031) Removed the Bash rewrite rule for converting POSIX `[` to Bash's `[[`
 
+<!--
 ### Deprecated
 - <Soon-to-be removed features>
 

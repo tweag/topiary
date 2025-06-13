@@ -539,16 +539,9 @@
 
 ;; Test Commands
 
-; Convert sh-style [ ... ] tests to Bash-style [[ ... ]]
-; FIXME This breaks _sometimes_, but I don't know why :(
 (test_command
-  "[" @append_delimiter
-  (#delimiter! "[ ")
-)
-
-(test_command
-  "]" @prepend_delimiter
-  (#delimiter! " ]")
+  "[" @append_space
+  "]" @prepend_space
 )
 
 (test_command
