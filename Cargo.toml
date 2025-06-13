@@ -76,7 +76,7 @@ topiary-web-tree-sitter-sys = { version = "0.6.1", path = "./topiary-web-tree-si
 topiary-tree-sitter-facade = { version = "0.6.1", path = "./topiary-tree-sitter-facade" }
 topiary-core = { version = "0.6.1", path = "./topiary-core" }
 topiary-config = { version = "0.6.2", path = "./topiary-config" }
-topiary-queries = { version = "0.6.2", path = "./topiary-queries" }
+topiary-queries = { version = "0.6.3", path = "./topiary-queries" }
 
 [profile.dev.package.lalrpop]
 opt-level = 3
