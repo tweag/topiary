@@ -34,8 +34,7 @@ env_logger = { workspace = true }
 test-log = { workspace = true }
 tokio-test = { workspace = true }
 topiary-config.workspace = true
-topiary-queries = { workspace = true, features = ["json"] }
-tree-sitter-nickel.workspace = true
+topiary-queries = { workspace = true, features = ["json", "nickel"] }
 
 [[bench]]
 name = "benchmark"

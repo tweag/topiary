@@ -3998,7 +3998,6 @@ dependencies = [
  "topiary-tree-sitter-facade",
  "topiary-web-tree-sitter-sys",
  "tree-sitter",
- "tree-sitter-nickel",
 ]
 
 [[package]]
@@ -4190,17 +4189,6 @@ dependencies = [
  "tree-sitter-highlight",
  "tree-sitter-tags",
  "url",
-]
-
-[[package]]
-name = "tree-sitter-nickel"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e91969fe1870f826c74d4bcf28dbf27cf7d805f6b202e8701203733a23c863f5"
-dependencies = [
- "cc",
- "tree-sitter",
- "tree-sitter-language",
 ]
 
 [[package]]

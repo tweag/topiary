@@ -64,7 +64,6 @@ toml = "0.8"
 tree-sitter = "0.25"         # NOTE Update tree-sitter-loader to match
 tree-sitter-loader = "0.25"  # NOTE Align with tree-sitter
 tree-sitter-language = "0.1"
-tree-sitter-nickel = "0.4"
 unescape = "0.1"
 wasm-bindgen = "=0.2.100"
 wasm-bindgen-futures = "0.4"
