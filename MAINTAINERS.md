@@ -65,6 +65,8 @@
 > [!IMPORTANT]
 > See [below](#releasing-new-configuration-and-queries) for details on
 > how to do interim releases of `topiary-config` or `topiary-queries`.
+> These subpackages are now versioned independently from Topiary (core,
+> etc.), so their versions will diverge.
 
 - Update lockfiles and the release workflow. Lockfiles should be kept up
   to date by the Renovate bot, but it's worth doing manually when
@@ -166,18 +168,10 @@ dissimilar from a usual release:
    `topiary-config` and/or `topiary-queries` will need to be updated in
    the root and their respective `Cargo.toml` files.
 
-   The versioning scheme that has been chosen for these subpackages
-   should be as follows:
-
-   - `MAJOR.MINOR.PATCH`, matching those of `topiary-core`, when doing a
-     full release. For example: `0.6.1`.
-
-   - `MAJOR.MINOR.PATCH-YYYYMMDD`, when doing an interim release. That
-     is, matching the `topiary-core` version, with the date appended.
-     For example: `0.6.1-20250925`.
-
-   There should be no need to update lockfiles, etc. so the above can
-   simply be pushed to follow the usual approval-and-merge process.
+   The version of these subpackages should bump their respective patch
+   version (e.g., `0.6.1` would become `0.6.2`), but not the workspace
+   version. As these are no longer tied to the Topiary version, they
+   will gradually diverge.
 
 2. Do not tag the release, as this will trigger `dist` into cutting a
    full release. However, importantly, the new version of the respective
