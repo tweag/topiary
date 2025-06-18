@@ -3,15 +3,21 @@
 man pages for Topiary are generated from a subset of the [Topiary
 Book](../book); specifically the Topiary CLI chapters. The same
 mechanism is used to create man pages as the Topiary Book: [mdBook],
-using the [`mdbook-man`][man] renderer and a pre- and post-processor
-written by the Topiary team.
+using the [`mdbook-man`][mdbook-man] renderer and a pre- and
+post-processor written by the Topiary team.
 
 ## Getting started
 
 > [!IMPORTANT]
-> [mdBook (`mdbook`)][mdbook], [`mdbook-man`][man] and
-> [`mdbook-manmunge`][manmunge] must be in your `$PATH`. See the
-> respective links for installation instructions.
+> [mdBook (`mdbook`)][mdbook], `mdbook-man` and
+> [`mdbook-manmunge`][mdbook-manmunge] must be in your `$PATH`. See the
+> respective links for installation instructions, _except_ for
+> `mdbook-man`. This must be installed from GitHub as the latest release
+> (0.1) is not sufficient:
+>
+> ```console
+> $ cargo install --git https://github.com/vv9k/mdbook-man.git
+> ```
 
 To build the man pages and install, run:
 
@@ -32,7 +38,7 @@ $ sudo make install MAN_DIR=/opt/topiary/share/man
 ### Using Nix
 
 The Topiary Nix devshell provides mdBook and `mdbook-manmunge`, leaving
-you to build and install `mdbook-manmunge` (see [below][manmunge]).
+you to build and install `mdbook-manmunge` (see [below][mdbook-manmunge]).
 
 Alternatively, a package exists that will build the man pages as its
 derivation output, handling all the dependencies for you. For example:
@@ -64,5 +70,5 @@ $ cargo install --path mdbook-manmunge
 
 <!-- Links -->
 [mdbook]: https://rust-lang.github.io/mdBook
-[man]: https://github.com/vv9k/mdbook-man
-[manmunge]: #mdbook-manmunge
+[mdbook-man]: https://github.com/vv9k/mdbook-man
+[mdbook-manmunge]: #mdbook-manmunge
