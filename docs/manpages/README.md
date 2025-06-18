@@ -68,6 +68,12 @@ $ cargo install --path mdbook-manmunge
 > You will need to include Cargo's binary directory (e.g.,
 > `~/.cargo/bin`) in your `$PATH`.
 
+> [!NOTE]
+> `mdbook-manmunge` _may_ complain about different versions of mdBook
+> (i.e., the caller vs. its internal dependency) when it is run.
+> Anecdotally, this can be ignored for now, however breaking changes may
+> be introduced in the future.
+
 <!-- Links -->
 [mdbook]: https://rust-lang.github.io/mdBook
 [mdbook-man]: https://github.com/vv9k/mdbook-man
