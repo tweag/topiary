@@ -4,25 +4,14 @@ use std::fs;
 use std::io;
 use topiary_core::{formatter, Language, Operation, TopiaryQuery};
 
-async fn format() {
-    let input = fs::read_to_string("../topiary-cli/tests/samples/input/nickel.ncl").unwrap();
-    let query_content = fs::read_to_string("../topiary-queries/queries/nickel.scm").unwrap();
-    let nickel = tree_sitter_nickel::LANGUAGE;
-
+async fn format(input: &String, language: &Language) {
     let mut input = input.as_bytes();
     let mut output = io::BufWriter::new(Vec::new());
-
-    let language: Language = Language {
-        name: "nickel".to_owned(),
-        query: TopiaryQuery::new(&nickel.into(), &query_content).unwrap(),
-        grammar: tree_sitter_nickel::LANGUAGE.into(),
-        indent: None,
-    };
 
     formatter(
         &mut input,
         &mut output,
-        &language,
+        language,
         Operation::Format {
             skip_idempotence: true,
             tolerate_parsing_errors: false,
@@ -32,9 +21,27 @@ async fn format() {
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
+    let input = fs::read_to_string("../topiary-cli/tests/samples/input/nickel.ncl").unwrap();
+
+    let (grammar, query) = {
+        let config = topiary_config::Configuration::default();
+        let nickel = config.get_language("nickel").unwrap();
+
+        (nickel.grammar().unwrap(), topiary_queries::nickel())
+    };
+
+    let language = Language {
+        name: "nickel".to_owned(),
+        query: TopiaryQuery::new(&grammar, query).unwrap(),
+        grammar,
+        indent: None,
+    };
+
     c.bench_function("format_nickel", |b| {
-        b.to_async(FuturesExecutor).iter(format);
+        b.to_async(FuturesExecutor)
+            .iter(|| format(&input, &language));
     });
 }
+
 criterion_group!(benches, criterion_benchmark);
 criterion_main!(benches);
