@@ -13,6 +13,7 @@
 /// WIT [grammar](https://component-model.bytecodealliance.org/design/wit.html) for tree-sitter
 package tree-sitter:wit
 @1.0.0;
+
 package topiary:wit@1.0.0;
 package wasmi:io:hello;
 package wasmi :io:hello /
@@ -47,7 +48,7 @@ use wasi:io:hello/epic as cool;
 world imports{
     import streams; export streams;
     // The component implements the `scan` function
-   export scan:func()->list<u8 >;
+   export scan:func()->list<u8 >;  // inline-comment
 
    import iface-name:interface {
        type some-name=u32;foo:func(p:string)->result<u32,aaa>;
@@ -84,8 +85,8 @@ interface %resource {
        write:func(bytes:list<u8>);
        read:func(n:u32)->list<u8>;
        merge:static func(lhs:blob,
-       // add trailing comma
-       rhs:blob)->blob;
+       rhs:blob // add trailing comma
+       )->blob;
     }
 
     resource res {

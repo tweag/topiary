@@ -25,14 +25,16 @@
 
 ; Allow blank line before
 [
-  (interface_item)
-  (type_item)
   (enum_items)
-  (variant_items)
-  (resource_item)
-  (record_item)
   (flags_items)
+  (interface_item)
+  (line_comment)
+  (package_decl)
+  (record_item)
+  (resource_item)
   (type_item)
+  (variant_items)
+  (world_item)
 ] @allow_blank_line_before
 
 [

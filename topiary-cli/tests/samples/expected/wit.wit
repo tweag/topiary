@@ -11,6 +11,7 @@
 */
 /// WIT [grammar](https://component-model.bytecodealliance.org/design/wit.html) for tree-sitter
 package tree-sitter:wit@1.0.0;
+
 package topiary:wit@1.0.0;
 package wasmi:io:hello;
 package wasmi:io:hello/epic@1.0.0;
@@ -43,30 +44,30 @@ world imports {
   import streams;
   export streams;
   // The component implements the `scan` function
-  export scan: func () -> list<u8>;
+  export scan: func() -> list<u8>; // inline-comment
   import iface-name: interface {
     type some-name = u32;
-    foo: func (p: string) -> result<u32, aaa>;
+    foo: func(p: string) -> result<u32, aaa>;
   }
   export iface-name: interface {
     type some-name = u32;
-    foo: func (p: string) -> result<u32, aaa>;
+    foo: func(p: string) -> result<u32, aaa>;
   }
-  import foo: func (p: string) -> result<u32, aaa>;
+  import foo: func(p: string) -> result<u32, aaa>;
 }
 world world-one {
-  import a: func ();
+  import a: func();
 }
 world world-two {
-  import a: func ();
+  import a: func();
 }
 world union-my-world-a {
   include world-one;
   include world-two with {a as b}
 }
 world union-my-world-b {
-  import a: func ();
-  import b: func ();
+  import a: func();
+  import b: func();
 }
 // ==================
 // Resources and Use Items
@@ -74,25 +75,24 @@ world union-my-world-b {
 interface %resource {
   resource blob {
     constructor(init: list<u8>);
-    write: func (bytes: list<u8>);
-    read: func (n: u32) -> list<u8>;
-    merge: static func (
+    write: func(bytes: list<u8>);
+    read: func(n: u32) -> list<u8>;
+    merge: static func(
       lhs: blob,
-      // add trailing comma
-      rhs: blob,
+      rhs: blob, // add trailing comma
     ) -> blob;
   }
 
   resource res {
     constructor();
-    fn1: func (p: string) -> result<u32, aaa>;
-    fn2: func (%p: borrow<string>) -> result<u32, aaa>;
+    fn1: func(p: string) -> result<u32, aaa>;
+    fn2: func(%p: borrow<string>) -> result<u32, aaa>;
   }
 
   type canvas-id = u64;
-  %foo: func (%bar: u32);
-  %red-green-blue: func (%r: u32, %g: u32, %b: u32);
-  draw-line: func (
+  %foo: func(%bar: u32);
+  %red-green-blue: func(%r: u32, %g: u32, %b: u32);
+  draw-line: func(
     canvas: canvas-id,
     from: point,
     to: point,
@@ -164,10 +164,10 @@ interface types {
 interface stream-async {
   resource file {
     constructor();
-    is-closed: func () -> bool;
-    read: async func (num-bytes: u32) -> result<list<u8>>;
-    from-bytes: static func (bytes: list<u8>) -> file;
-    from-stream: static async func (bytes: stream<u8>) -> file;
+    is-closed: func() -> bool;
+    read: async func(num-bytes: u32) -> result<list<u8>>;
+    from-bytes: static func(bytes: list<u8>) -> file;
+    from-stream: static async func(bytes: stream<u8>) -> file;
   }
 }
 // ==================
