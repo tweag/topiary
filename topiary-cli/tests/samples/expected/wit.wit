@@ -108,7 +108,7 @@ interface my-use-items {
     a,
     list as collection,
     of,
-    names,
+    names, // comment
   };
   use my:dependency/the-interface.{more, names as foo};
   use wasi:http/types@1.0.0.{request, response};
