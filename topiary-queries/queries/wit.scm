@@ -143,8 +143,11 @@
   ")"
   ","
   ";"
+  (param_list)
 ] @prepend_antispace
+
 "," @append_space
+
 [
   "<"
   "("
@@ -196,7 +199,7 @@
   .
   ","? @do_nothing
   .
-  (line_comment)*
+  [(block_comment) (line_comment)]*
   .
   ")"
   .
@@ -208,7 +211,7 @@
   .
   ","? @do_nothing
   .
-  (line_comment)*
+  [(block_comment) (line_comment)]*
   .
   (#multi_line_only!)
 )
@@ -218,7 +221,7 @@
   .
   ","? @do_nothing
   .
-  (line_comment)*
+  [(block_comment) (line_comment)]*
   .
   (#multi_line_only!)
 )
@@ -229,7 +232,7 @@
     .
     ","? @do_nothing
     .
-    (line_comment)*
+    [(block_comment) (line_comment)]*
     .
     "}"
     .
