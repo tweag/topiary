@@ -67,7 +67,9 @@ world world-two {import a:func();}
 
 world union-my-world-a {
    include world-one;
-       include world-two with {a as b, }
+       include world-two with {a as b,
+       c as d // comment
+       }
 }
 
 world union-my-world-b {
@@ -107,9 +109,9 @@ interface %resource {
 interface my-use-items {
    use foo. { t1, t2, };
   use wasi:http/types.{body};
-   // add trailing comma
    use newline-interface.{ a,
-   list as collection,of,names // comment
+   list as collection,of,names // add trailing comma
+
    };
    use my:dependency/the-interface .{more,names as foo};
    use wasi:http/types@1.0.0.{request,response};
@@ -139,15 +141,13 @@ variant human {
 
   // similar to `variant`, but no type payloads
  enum errno {too-big,
-  // add trailing comma
- too-small,too-fast,too-slow }
+ too-small,too-fast,too-slow  // add trailing comma
+ }
 
   // a bitflags type
  flags permissions {
    read,
-   write,
-   // add trailing comma
-   exec
+   write, exec // add trailing comma
  }
 
   // type aliases are allowed to primitive types and additionally here are some

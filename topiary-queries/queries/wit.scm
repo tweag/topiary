@@ -184,9 +184,11 @@
 ; ==================
 (definitions
   (#delimiter! ",")
-  (_) @append_delimiter
+  (use_names_item) @append_delimiter
   .
   ","? @do_nothing
+  .
+  [(block_comment) (line_comment)]*
   .
   "}"
   (#multi_line_only!)
