@@ -3300,9 +3300,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.27"
+version = "0.23.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "730944ca083c1c233a75c09f199e973ca499344a2b7ba9e755c457e86fb4a321"
+checksum = "7160e3e10bf4535308537f3c4e1641468cd0e485175d6163087c0393c7d46643"
 dependencies = [
  "once_cell",
  "ring",
@@ -3980,11 +3980,11 @@ dependencies = [
  "test-log",
  "tokio",
  "tokio-test",
+ "topiary-config",
+ "topiary-queries",
  "topiary-tree-sitter-facade",
  "topiary-web-tree-sitter-sys",
  "tree-sitter",
- "tree-sitter-json",
- "tree-sitter-nickel",
 ]
 
 [[package]]
@@ -4148,16 +4148,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tree-sitter-json"
-version = "0.24.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d727acca406c0020cffc6cf35516764f36c8e3dc4408e5ebe2cb35a947ec471"
-dependencies = [
- "cc",
- "tree-sitter-language",
-]
-
-[[package]]
 name = "tree-sitter-language"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4186,17 +4176,6 @@ dependencies = [
  "tree-sitter-highlight",
  "tree-sitter-tags",
  "url",
-]
-
-[[package]]
-name = "tree-sitter-nickel"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e91969fe1870f826c74d4bcf28dbf27cf7d805f6b202e8701203733a23c863f5"
-dependencies = [
- "cc",
- "tree-sitter",
- "tree-sitter-language",
 ]
 
 [[package]]

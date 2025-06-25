@@ -49,6 +49,7 @@ This name should be decided amongst the team before the release.
 
 ### Changed
 - [#1031](https://github.com/tweag/topiary/pull/1031) Removed the Bash rewrite rule for converting POSIX `[` to Bash's `[[`
+- [#1032](https://github.com/tweag/topiary/pull/1032) Replaced test dependencies on Tree-sitter grammars with dynamic loading
 
 <!--
 ### Deprecated
