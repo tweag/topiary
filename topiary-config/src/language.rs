@@ -86,6 +86,7 @@ impl Language {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
+    #[allow(clippy::result_large_err)]
     pub fn find_query_file(&self) -> TopiaryConfigResult<PathBuf> {
         let basename = PathBuf::from(self.name.as_str()).with_extension("scm");
 
@@ -170,6 +171,7 @@ impl Language {
     }
 
     #[cfg(target_arch = "wasm32")]
+    #[allow(clippy::result_large_err)]
     pub async fn grammar(&self) -> TopiaryConfigResult<topiary_tree_sitter_facade::Language> {
         let language_name = self.name.as_str();
 

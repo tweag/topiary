@@ -2,7 +2,7 @@
 
 use std::{env::current_dir, ffi::OsString, fmt, io::Cursor, path::PathBuf};
 
-use crate::error::TopiaryConfigError;
+use crate::error::{TopiaryConfigError, TopiaryConfigResult};
 
 /// Sources of Nickel configuration
 #[derive(Debug, Clone)]
@@ -105,7 +105,8 @@ impl Source {
         }
     }
 
-    pub fn read(&self) -> Result<Vec<u8>, TopiaryConfigError> {
+    #[allow(clippy::result_large_err)]
+    pub fn read(&self) -> TopiaryConfigResult<Vec<u8>> {
         match self {
             Self::Builtin => Ok(self.builtin_nickel().into_bytes()),
             Self::File(path) => std::fs::read_to_string(path)
