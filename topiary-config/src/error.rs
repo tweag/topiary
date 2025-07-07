@@ -3,6 +3,7 @@ use std::{error, fmt, io, path, result};
 pub type TopiaryConfigResult<T> = result::Result<T, TopiaryConfigError>;
 
 #[derive(Debug)]
+#[allow(clippy::large_enum_variant)]
 pub enum TopiaryConfigError {
     FileNotFound(path::PathBuf),
     UnknownLanguage(String),
