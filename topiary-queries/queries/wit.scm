@@ -78,7 +78,7 @@
     (since_gate)
     (deprecated_gate)
     (unstable_gate)
-  ] @append_spaced_softline @prepend_hardline
+  ] @append_spaced_softline
   .
   [
     (block_comment)
@@ -173,11 +173,13 @@
 (named_type
   ":" @prepend_antispace @append_space
 )
+; Function signatures need proper spacing
 [
   "@"
   "/"
-  "."
 ] @prepend_antispace @append_antispace
+
+; Dot should have no space for use paths
 
 ; ==================
 ; Trailing Commas
@@ -241,3 +243,13 @@
     (#multi_line_only!)
   )
 )
+
+; Handle trailing comma comments for enum and flags
+(enum_cases "," @append_space . (line_comment))
+(flags_items (body "," @append_space . (line_comment)))
+
+; Handle inline comments after semicolons
+(";" . (line_comment) @prepend_space)
+
+; Keep inline comments on same line as export/import statements
+([(import_item) (export_item)] . (line_comment) @prepend_space)

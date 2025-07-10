@@ -64,8 +64,8 @@ world world-two {
 world union-my-world-a {
   include world-one;
   include world-two with {
-      a as b,
-      c as d // comment
+    a as b,
+    c as d // inline-comment-trailing-comma
   }
 }
 world union-my-world-b {
@@ -82,7 +82,7 @@ interface %resource {
     read: func(n: u32) -> list<u8>;
     merge: static func(
       lhs: blob,
-      rhs: blob, // add trailing comma
+      rhs: blob, // inline-comment-trailing-comma
     ) -> blob;
   }
 
@@ -110,8 +110,7 @@ interface my-use-items {
     a,
     list as collection,
     of,
-    names, // add trailing comma
-
+    names, // inline-comment-trailing-comma
   };
   use my:dependency/the-interface.{more, names as foo};
   use wasi:http/types@1.0.0.{request, response};
@@ -131,21 +130,20 @@ interface types {
   variant human {
     baby,
     child(u32),
-    // add trailing comma
-    fixed-size(list<bool, 1>),
+    fixed-size(list<bool, 1>), // inline-comment-trailing-comma
   }
   // similar to `variant`, but no type payloads
   enum errno {
     too-big,
     too-small,
     too-fast,
-    too-slow, // add trailing comma
+    too-slow, // inline-comment-trailing-comma
   }
   // a bitflags type
   flags permissions {
     read,
     write,
-    exec, // add trailing comma
+    exec, // inline-comment-trailing-comma
   }
   // type aliases are allowed to primitive types and additionally here are some
   // examples of other types
