@@ -8,7 +8,9 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os:
+          - ubuntu-latest
+          - macos-14  # TODO Revert to macos-latest; see #1043
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
