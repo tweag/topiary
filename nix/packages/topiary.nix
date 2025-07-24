@@ -2,6 +2,7 @@
   pkgs,
   advisory-db,
   craneLib,
+  prefetchLanguagesFile,
 }:
 
 let
@@ -29,7 +30,6 @@ let
         ../../Cargo.toml
         ../../languages.ncl
         ../../examples
-        ../../prefetchLanguages.nix
         ../../topiary-core
         ../../topiary-cli
         ../../topiary-config
@@ -137,9 +137,6 @@ let
         preConfigurePhases = optional prefetchGrammars "prepareTopiaryDefaultConfiguration";
 
         prepareTopiaryDefaultConfiguration = optional prefetchGrammars (
-          let
-            inherit (pkgs.callPackage ../../prefetchLanguages.nix { }) prefetchLanguagesFile;
-          in
           "cp ${prefetchLanguagesFile ../../topiary-config/languages.ncl} topiary-config/languages.ncl"
         );
 
