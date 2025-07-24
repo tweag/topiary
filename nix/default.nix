@@ -31,7 +31,9 @@ let
 
   craneLib = crane.mkLib pkgs;
 
-  topiaryUtils = callPackageNoOverrides ./utils { inherit callPackageNoOverrides; };
+  topiaryUtils = callPackageNoOverrides ./utils {
+    inherit callPackageNoOverrides;
+  };
 
   inherit
     (callPackageNoOverrides ./packages {
@@ -50,13 +52,13 @@ let
   # unexpected behaviours in subsequent `callPackage` statements.
   topiaryLib = callPackageNoOverrides ./lib {
     inherit (topiaryPkgs) topiary-cli;
-    inherit callPackageNoOverrides;
+    inherit callPackageNoOverrides topiaryUtils;
   };
 
   checks = callPackageNoOverrides ./checks {
     inherit (pkgs') hello;
     inherit topiaryPkgs;
-    inherit (topiaryLib) pre-commit-hook;
+    inherit (topiaryLib) gitHook;
   };
 
   devShells = callPackageNoOverrides ./devShells {
