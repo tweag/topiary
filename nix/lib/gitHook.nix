@@ -46,6 +46,18 @@ let
         languages = filterAttrs (lang: _: !(elem lang excludeLanguages)) config.languages;
       };
 
+  /**
+    This function exposes the derivation providing `/bin/topiary` in `gitHookFor`.
+    It is meant for clients wanting to get a Git hook but also acquire the same
+    Topiary, for instance to expose it in their environment. See `gitHookFor` for a
+    description of the arguments.
+
+    # Type
+
+    ```
+    gitHookBinFor : AttrSet -> Derivation
+    ```
+  */
   gitHookBinFor =
     inputs@{
       package ? topiary-cli,
@@ -56,6 +68,34 @@ let
       config = filterConfig inputs;
     };
 
+  /**
+    A Git hook compatible with https://github.com/cachix/git-hooks.nix, and that
+    runs `topiary format` on the staged files.
+
+    # Type
+
+    ```
+    gitHookFor : AttrSet -> AttrSet
+    ```
+
+    # Arguments
+
+    package
+    : A derivation providing `topiary-cli`. Defaults to the one shipped with
+      this library.
+
+    config
+    : The Topiary configuration to use; defaults to a prefetched version of
+      `topiary-config/languages.ncl` shipped with this library.
+
+    includeLanguages
+    : A list of languages to include from the configuration. The hook will not
+      process the others. Defaults to all the languages of the configuration.
+
+    excludeLanguages
+    : A list of languages to exclude from the hook. One cannot use both
+      `includeLanguages` and `excludeLanguages`.
+  */
   gitHookFor = inputs: {
     enable = false;
     name = "topiary";
@@ -68,15 +108,30 @@ let
       "\\.(" + concatStringsSep "|" extensions + ")$";
   };
 
+  /**
+    ```
+    gitHook : AttrSet
+    ```
+
+    Same as `gitHookFor {}`.
+  */
   gitHook = gitHookFor { };
+
+  /**
+    ```
+    gitHookBin : Derivation
+    ```
+
+    Same as `gitHookBinFor {}`.
+  */
   gitHookBin = gitHookBinFor { };
 
 in
 {
   inherit
     gitHookFor
-    gitHook
     gitHookBinFor
+    gitHook
     gitHookBin
     ;
 }

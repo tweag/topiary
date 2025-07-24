@@ -24,6 +24,15 @@ let
 
   updateByPath = path: update: updateManyAttrsByPath [ { inherit path update; } ];
 
+  /**
+    Transforms a JSON-able Nix value into a Nickel file.
+
+    # Type
+
+    ```
+    toNickelFile : Any -> File
+    ```
+  */
   toNickelFile =
     name: e:
     let
@@ -31,6 +40,15 @@ let
     in
     writeText name "import \"${jsonFile}\"";
 
+  /**
+    Converts a JSON-able Nickel file into a Nix value.
+
+    # Type
+
+    ```
+    fromNickelFile : File -> Any
+    ```
+  */
   fromNickelFile =
     path:
     let
