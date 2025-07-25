@@ -3,6 +3,7 @@
   advisory-db,
   craneLib,
   prefetchLanguagesFile,
+  mdbook-generate-nix-documentation,
 }:
 
 let
@@ -206,11 +207,18 @@ let
     pname = "topiary-book";
     version = "1.0";
 
-    src = ../../docs/book;
+    src = fileset.toSource {
+      root = ../..;
+      fileset = fileset.unions [
+        ../../docs/book
+        ../.
+      ];
+    };
 
-    nativeBuildInputs = [ pkgs.mdbook ];
+    nativeBuildInputs = [ pkgs.mdbook mdbook-generate-nix-documentation ];
 
     buildPhase = ''
+      cd docs/book
       mdbook build
     '';
 
