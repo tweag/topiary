@@ -2,6 +2,8 @@
   pkgs,
   advisory-db,
   craneLib,
+  prefetchLanguagesFile,
+  mdbook-generate-nix-documentation,
 }:
 
 let
@@ -29,7 +31,6 @@ let
         ../../Cargo.toml
         ../../languages.ncl
         ../../examples
-        ../../prefetchLanguages.nix
         ../../topiary-core
         ../../topiary-cli
         ../../topiary-config
@@ -137,9 +138,6 @@ let
         preConfigurePhases = optional prefetchGrammars "prepareTopiaryDefaultConfiguration";
 
         prepareTopiaryDefaultConfiguration = optional prefetchGrammars (
-          let
-            inherit (pkgs.callPackage ../../prefetchLanguages.nix { }) prefetchLanguagesFile;
-          in
           "cp ${prefetchLanguagesFile ../../topiary-config/languages.ncl} topiary-config/languages.ncl"
         );
 
@@ -209,11 +207,18 @@ let
     pname = "topiary-book";
     version = "1.0";
 
-    src = ../../docs/book;
+    src = fileset.toSource {
+      root = ../..;
+      fileset = fileset.unions [
+        ../../docs/book
+        ../.
+      ];
+    };
 
-    nativeBuildInputs = [ pkgs.mdbook ];
+    nativeBuildInputs = [ pkgs.mdbook mdbook-generate-nix-documentation ];
 
     buildPhase = ''
+      cd docs/book
       mdbook build
     '';
 
