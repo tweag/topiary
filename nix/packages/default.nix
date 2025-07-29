@@ -10,7 +10,6 @@ let
 
   topiaryPkgs = callPackageNoOverrides ./topiary.nix {
     inherit advisory-db craneLib prefetchLanguagesFile;
-    inherit (binPkgs) mdbook-generate-nix-documentation;
   };
 in
 

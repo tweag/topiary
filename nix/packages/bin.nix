@@ -33,10 +33,10 @@ let
   #   text = readFile ../../bin/generate-coverage.sh;
   # };
 
-  mdbook-generate-nix-documentation = writeShellApplication {
-    name = "mdbook-generate-nix-documentation";
-    runtimeInputs = [ nixdoc jq ];
-    text = readFile ../../bin/mdbook-generate-nix-documentation.sh;
+  generate-nix-documentation = writeShellApplication {
+    name = "generate-nix-documentation";
+    runtimeInputs = [ nixdoc ];
+    text = readFile ../../bin/generate-nix-documentation.sh;
   };
 
   playground = writeShellApplication {
@@ -82,7 +82,7 @@ let
 in
 {
   inherit
-    mdbook-generate-nix-documentation
+    generate-nix-documentation
     playground
     update-wasm-app
     update-wasm-grammars

@@ -3,7 +3,6 @@
   advisory-db,
   craneLib,
   prefetchLanguagesFile,
-  mdbook-generate-nix-documentation,
 }:
 
 let
@@ -215,7 +214,7 @@ let
       ];
     };
 
-    nativeBuildInputs = [ pkgs.mdbook mdbook-generate-nix-documentation ];
+    nativeBuildInputs = [ pkgs.mdbook ];
 
     buildPhase = ''
       cd docs/book

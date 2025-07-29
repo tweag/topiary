@@ -30,7 +30,7 @@ craneLib.devShell (
             # Our own scripts
             # FIXME: Broken
             # generate-coverage
-            mdbook-generate-nix-documentation
+            generate-nix-documentation
             update-wasm-app
             update-wasm-grammars
             verify-documented-usage

@@ -54,6 +54,9 @@ jobs:
       - name: Verify that usage in README.md matches CLI output
         run: nix run .#verify-documented-usage
 
+      - name: Verify that documentation in book/nix.md matches Nix files
+        run: nix run .#generate-nix-documentation -- check
+
   build-windows:
     # Note: GitHub's Windows runners have a Rust toolchain installed
     # https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
