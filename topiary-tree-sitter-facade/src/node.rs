@@ -150,13 +150,8 @@ mod native {
         }
 
         #[inline]
-        pub fn language_name(&self) -> &'static str {
-            // this should not panic as topiary-tree-sitter-facade does not use tree-sitter older than
-            // 0.25
-            self.inner
-                .language()
-                .name()
-                .expect("unexpected tree-sitter parser older than 0.25")
+        pub fn language_name(&self) -> Option<&'static str> {
+            self.inner.language().name()
         }
 
         #[inline]

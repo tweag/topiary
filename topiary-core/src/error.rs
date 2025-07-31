@@ -88,7 +88,7 @@ impl fmt::Display for FormatterError {
 
             Self::Parsing(span) => {
                 let report = miette::Report::new(ErrorSpan::from(span));
-                write!(f, "{report}")
+                write!(f, "{report:?}")
             }
 
             Self::PatternDoesNotMatch => {

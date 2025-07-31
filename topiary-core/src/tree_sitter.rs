@@ -351,7 +351,7 @@ impl NodeSpan {
         Self {
             span,
             range: node.range(),
-            language: node.language_name(),
+            language: node.language_name().unwrap_or_default(),
             content: None,
             source: String::new(),
         }
@@ -395,7 +395,7 @@ pub fn parse(
 
 // returns first error node encountered
 fn check_for_error_nodes(node: &Node) -> Result<(), NodeSpan> {
-    if node.kind() == "ERROR" {
+    if node.is_error() {
         return Err(NodeSpan::new(node));
     }
 
