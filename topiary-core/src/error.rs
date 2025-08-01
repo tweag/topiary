@@ -25,7 +25,7 @@ pub enum FormatterError {
     Internal(String, Option<Box<dyn Error>>),
 
     // Tree-sitter could not parse the input without errors.
-    Parsing(NodeSpan),
+    Parsing(Box<NodeSpan>),
     /// The query contains a pattern that had no match in the input file.
     PatternDoesNotMatch,
 
@@ -54,15 +54,17 @@ pub enum IoError {
 
 impl FormatterError {
     pub fn with_content(self, content: String) -> Self {
-        if let Self::Parsing(span) = self {
-            return Self::Parsing(span.with_content(content));
+        if let Self::Parsing(mut span) = self {
+            *span = span.with_content(content);
+            return Self::Parsing(span);
         }
         self
     }
 
     pub fn with_source(self, source: String) -> Self {
-        if let Self::Parsing(span) = self {
-            return Self::Parsing(span.with_source(source));
+        if let Self::Parsing(mut span) = self {
+            *span = span.with_source(source);
+            return Self::Parsing(span);
         }
         self
     }
@@ -202,7 +204,7 @@ impl From<topiary_tree_sitter_facade::ParserError> for FormatterError {
 
 impl From<NodeSpan> for FormatterError {
     fn from(span: NodeSpan) -> Self {
-        Self::Parsing(span)
+        Self::Parsing(Box::new(span))
     }
 }
 
@@ -232,15 +234,15 @@ impl std::fmt::Display for ErrorSpan {
 
 impl std::error::Error for ErrorSpan {}
 
-impl From<&NodeSpan> for ErrorSpan {
-    fn from(span: &NodeSpan) -> Self {
+impl From<&Box<NodeSpan>> for ErrorSpan {
+    fn from(span: &Box<NodeSpan>) -> Self {
         let NodeSpan {
             span,
             language,
             content,
             source: name,
             range,
-        } = span;
+        } = span.deref();
         Self {
             src: NamedSource::new(name, content.clone().unwrap_or_default())
                 .with_language(*language),
