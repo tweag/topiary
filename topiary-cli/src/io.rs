@@ -3,7 +3,7 @@ use std::{
     fmt::{self, Display},
     fs::File,
     io::{self, Read, Result, Seek, Write},
-    path::{Path, PathBuf},
+    path::PathBuf,
 };
 
 use tempfile::tempfile;

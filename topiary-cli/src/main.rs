@@ -12,8 +12,7 @@ use std::{
 };
 
 use error::Benign;
-use io::InputFile;
-use topiary_core::{coverage, formatter, FormatterError, Operation};
+use topiary_core::{coverage, formatter, Operation};
 
 use crate::{
     cli::Commands,

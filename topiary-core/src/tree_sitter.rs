@@ -2,9 +2,9 @@
 // streaming_iterator::StreamingIterator
 #![cfg_attr(target_arch = "wasm32", allow(unused_imports))]
 
-use std::{borrow::Cow, collections::HashSet, fmt::Display, path::PathBuf};
+use std::{collections::HashSet, fmt::Display};
 
-use miette::{SourceOffset, SourceSpan};
+use miette::SourceSpan;
 use serde::Serialize;
 
 use topiary_tree_sitter_facade::{
@@ -333,6 +333,7 @@ pub fn apply_query(
     Ok(atoms)
 }
 
+/// Represents the code span for a given tree-sitter node
 #[derive(Debug)]
 pub struct NodeSpan {
     pub span: SourceSpan,

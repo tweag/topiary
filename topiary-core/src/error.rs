@@ -1,7 +1,7 @@
 //! This module defines all errors that might be propagated out of the library,
 //! including all of the trait implementations one might expect for Errors.
 
-use std::{borrow::Cow, error::Error, fmt, io, ops::Deref, path::Path, str, string};
+use std::{error::Error, fmt, io, ops::Deref, str, string};
 
 use miette::{Diagnostic, NamedSource, SourceSpan};
 use topiary_tree_sitter_facade::Range;
