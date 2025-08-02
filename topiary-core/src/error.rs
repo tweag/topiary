@@ -61,9 +61,9 @@ impl FormatterError {
         self
     }
 
-    pub fn with_source(self, source: String) -> Self {
+    pub fn with_location(self, location: String) -> Self {
         if let Self::Parsing(mut span) = self {
-            *span = span.with_source(source);
+            *span = span.with_location(location);
             return Self::Parsing(span);
         }
         self
@@ -236,18 +236,14 @@ impl std::error::Error for ErrorSpan {}
 
 impl From<&Box<NodeSpan>> for ErrorSpan {
     fn from(span: &Box<NodeSpan>) -> Self {
-        let NodeSpan {
-            span,
-            language,
-            content,
-            source: name,
-            range,
-        } = span.deref();
         Self {
-            src: NamedSource::new(name, content.clone().unwrap_or_default())
-                .with_language(*language),
-            span: *span,
-            range: *range,
+            src: NamedSource::new(
+                span.location.clone().unwrap_or_default(),
+                span.content.clone().unwrap_or_default(),
+            )
+            .with_language(span.language),
+            span: span.source_span(),
+            range: span.range,
         }
     }
 }

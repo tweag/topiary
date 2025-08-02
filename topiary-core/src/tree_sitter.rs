@@ -336,36 +336,38 @@ pub fn apply_query(
 /// Represents the code span for a given tree-sitter node
 #[derive(Debug)]
 pub struct NodeSpan {
-    pub span: SourceSpan,
     pub(crate) range: Range,
-    pub language: &'static str,
     // source code contents
     pub content: Option<String>,
-    // source location of node
-    pub source: String,
+    // source code location
+    pub location: Option<String>,
+    pub language: &'static str,
 }
 
 impl NodeSpan {
     /// Creates a new [`Self`] without source text or language
     pub fn new(node: &Node) -> Self {
-        let span = (node.start_byte() as usize..=node.end_byte() as usize).into();
         Self {
-            span,
             range: node.range(),
-            language: node.language_name().unwrap_or_default(),
             content: None,
-            source: String::new(),
+            location: None,
+            language: node.language_name().unwrap_or_default(),
         }
     }
+    /// Creates a [`SourceSpan`] from the node's byte range
+    pub fn source_span(&self) -> SourceSpan {
+        (self.range.start_byte() as usize..=self.range.end_byte() as usize).into()
+    }
+
     /// Adds source text to [`Self`] for adding context to display
-    pub fn with_content(mut self, source_content: String) -> Self {
-        self.content = Some(source_content);
+    pub fn with_content(mut self, content: String) -> Self {
+        self.content = Some(content);
         self
     }
 
     /// Adds span origin name to [`Self`] for adding context to display
-    pub fn with_source(mut self, source: String) -> Self {
-        self.source = source;
+    pub fn with_location(mut self, location: String) -> Self {
+        self.location = Some(location);
         self
     }
 }

@@ -6,7 +6,7 @@ mod native {
     };
     use std::{borrow::Cow, convert::TryFrom};
 
-    #[derive(Clone, Eq, Hash, PartialEq)]
+    #[derive(Clone, Copy, Eq, Hash, PartialEq)]
     pub struct Node<'tree> {
         pub(crate) inner: tree_sitter::Node<'tree>,
     }
