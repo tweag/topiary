@@ -12,7 +12,15 @@ programmer who wrote the input that the node in question should be
 formatted as multi-line; while any other nodes will be formatted as
 single-line. Whenever a query match has inserted a softline, it will be
 expanded to a line break if the node is multi-line (otherwise it will be
-formatted depending on the capture name used). See:
+formatted depending on the capture name used).
+
+At the capture name level, a node marked with a softline capture name
+will be considered multi-line based on the multi-line-ness of its
+immediate parent node in the CST. Another way to look at this is that
+these capture names are a "convenience" over their [scoped](scopes.md)
+equivalent, with the scope implicitly set to the parent node.
+
+See:
 
 - [`@append_hardline` / `@prepend_hardline`](#append_hardline--prepend_hardline)
 - [`@append_empty_softline` / `@prepend_empty_softline`](#append_empty_softline--prepend_empty_softline)
