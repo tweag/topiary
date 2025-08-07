@@ -11,7 +11,7 @@
 */
 */
 /// WIT [grammar](https://component-model.bytecodealliance.org/design/wit.html) for tree-sitter
-package tree-sitter:wit
+packag tree-sitter:wit
 @1.0.0;
 package topiary:wit@1.0.0;
 package wasmi:io:hello;
