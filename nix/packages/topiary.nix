@@ -223,6 +223,25 @@ let
     '';
   };
 
+  # More dragons be here ;)
+  # This runs the Topiary CLI in a controlled PTY for stable output
+  # while testing in CI (90 columns and no ANSI extensions)
+  topiary-wrapped = pkgs.writeShellApplication {
+    name = "topiary-wrapped";
+
+    runtimeInputs = [
+      topiary-cli
+      pkgs.expect
+    ];
+
+    text = ''
+      export COLUMNS=90
+      export NO_COLOR=1
+
+      unbuffer topiary "$@"
+    '';
+  };
+
 in
 {
   inherit
@@ -238,6 +257,7 @@ in
     topiary-queries
     topiary-playground
     topiary-book
+    topiary-wrapped
     ;
 
   default = topiary-cli;
