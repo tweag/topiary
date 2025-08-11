@@ -10,9 +10,16 @@ In particular, Topiary goes through the CST nodes and detects all that
 span more than one line. This is interpreted as an indication from the
 programmer who wrote the input that the node in question should be
 formatted as multi-line; while any other nodes will be formatted as
-single-line. Whenever a query match has inserted a softline, it will be
-expanded to a line break if the node is multi-line (otherwise it will be
-formatted depending on the capture name used). See:
+single-line.
+
+Whenever a query match inserts a softline, the softline will be expanded
+to a line break if the **immediate parent of the node marked with the
+softline capture** spans more than one line. Another way to look at this
+is that these capture names are a convenience over their
+[scoped](scopes.md) equivalent, with the scope implicitly set to the
+parent node.
+
+See:
 
 - [`@append_hardline` / `@prepend_hardline`](#append_hardline--prepend_hardline)
 - [`@append_empty_softline` / `@prepend_empty_softline`](#append_empty_softline--prepend_empty_softline)
