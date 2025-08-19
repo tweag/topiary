@@ -6,7 +6,7 @@ mod native {
     };
     use std::{borrow::Cow, convert::TryFrom};
 
-    #[derive(Clone, Eq, Hash, PartialEq)]
+    #[derive(Clone, Copy, Eq, Hash, PartialEq)]
     pub struct Node<'tree> {
         pub(crate) inner: tree_sitter::Node<'tree>,
     }
@@ -147,6 +147,11 @@ mod native {
         #[inline]
         pub fn language(&self) -> LanguageRef<'_> {
             self.inner.language().into()
+        }
+
+        #[inline]
+        pub fn language_name(&self) -> Option<&'static str> {
+            self.inner.language().name()
         }
 
         #[inline]
