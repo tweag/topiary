@@ -4194,9 +4194,9 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter-nickel"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e91969fe1870f826c74d4bcf28dbf27cf7d805f6b202e8701203733a23c863f5"
+checksum = "f7bb930cf314466ad3ca1e45c876bbbca228f66fe92db8a087796cf8f26d3ba8"
 dependencies = [
  "cc",
  "tree-sitter",

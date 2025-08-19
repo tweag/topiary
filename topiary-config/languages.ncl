@@ -46,8 +46,8 @@
       extensions = ["ncl"],
       grammar.source.git = {
         git = "https://github.com/nickel-lang/tree-sitter-nickel",
-        rev = "9a05ab045c000cf37f02cff5c4de32b081444244",
-        nixHash = "sha256-IvlUwNO/wLLPuqCZf0NtSxMdDx+4ASYYOobklY/97aQ=",
+        rev = "488ee4e6af15e10dd4be527777c9ba18a817d407",
+        nixHash = "sha256-CMlf80y1te30HwjT9ykHeg6xvQc/lcCCHDMVGs7oVXQ=",
       },
     },
 
