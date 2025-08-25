@@ -49,4 +49,5 @@
   - [Insertion and deletion](reference/capture-names/insertion-and-deletion.md)
   - [Modification](reference/capture-names/modification.md)
 - [Rust library](reference/library.md)
+- [Nix API](reference/nix.md)
 - [Related tools](reference/related.md)

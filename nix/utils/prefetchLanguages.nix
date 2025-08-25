@@ -11,6 +11,8 @@
   runCommandNoCC,
   writeText,
   tree-sitter,
+  toNickelFile,
+  fromNickelFile,
 }:
 
 let
@@ -56,32 +58,32 @@ let
 
   updateByPath = path: update: updateManyAttrsByPath [ { inherit path update; } ];
 
-  ## Given a Topiary configuration as a Nix value, returns the same
-  ## configuration, except all language sources have been replaced by a
-  ## prefetched and precompiled one. This requires the presence of a `nixHash`
-  ## for all sources.
+  /**
+    Given a Topiary configuration as a Nix value, returns the same
+    configuration, except all language sources have been replaced by a
+    prefetched and precompiled one. This requires the presence of a `nixHash`
+    for all sources.
+
+    # Type
+
+    ```
+    prefetchLanguages : TopiaryConfig -> TopiaryConfig
+    ```
+  */
   prefetchLanguages = updateByPath [ "languages" ] (
     mapAttrs (name: updateByPath [ "grammar" "source" ] (prefetchLanguageSource name))
   );
 
-  toNickelFile =
-    name: e:
-    let
-      jsonFile = writeText "${removeSuffix ".ncl" name}.json" (toJSON e);
-    in
-    writeText name "import \"${jsonFile}\"";
+  /**
+    Same as `prefetchLanguages`, but expects a path to a Nickel file, and
+    produces a path to another Nickel file.
 
-  fromNickelFile =
-    path:
-    let
-      jsonDrv = runCommandNoCC "${removeSuffix ".ncl" (baseNameOf path)}.json" { } ''
-        ${nickel}/bin/nickel export ${path} > $out
-      '';
-    in
-    fromJSON (readFile "${jsonDrv}");
+    # Type
 
-  ## Same as `prefetchLanguages`, but expects a path to a Nickel file, and
-  ## produces a path to another Nickel file.
+    ```
+    prefetchLanguagesFile : File -> File
+    ```
+  */
   prefetchLanguagesFile =
     topiaryConfigFile:
     toNickelFile "${removeSuffix ".ncl" (baseNameOf topiaryConfigFile)}-prefetched.ncl" (
@@ -93,7 +95,5 @@ in
   inherit
     prefetchLanguages
     prefetchLanguagesFile
-    fromNickelFile
-    toNickelFile
     ;
 }
