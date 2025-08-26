@@ -1,15 +1,20 @@
 #!/usr/bin/env sh
+
+## This file generates or checks the Nix API documentation for the Topiary book.
+## This is mostly a wrapper around `nixdoc` with the right options and paths.
+
 set -euC
 
 ## This file should run from the source of the repository. We check that this
 ## looks like it.
-if ! [ -d nix/ ] || ! [ -d docs ]; then
+if ! [ -d nix/ ] || ! [ -d docs/ ]; then
     printf >& 'This does not look like the root of the Topiary directory, because\n'
     printf >& 'I cannot find a nix/ or docs/ directory. Aborting.\n'
     exit 2
 fi
 
 ## Crawl Nix files with `nixdoc` and generate documentation in Markdown format.
+## Note that both `nix/utils` and `nix/lib` end up merged into `lib`.
 printf >&2 'Generating documentation... '
 content=$(
     printf '# Nix API\n\n'
@@ -56,7 +61,7 @@ case $mode in
         else
             printf >&2 'it does not.\n'
             printf >&2 'Here is the diff (red = generated; green = current):\n\n%s\n\n' "$diff"
-            printf >&2 'Regenerate documentation by running %s.\n' "$(basename "$0")"
+            printf >&2 'Regenerate documentation by running:\n%s.\n' "$(basename "$0")"
             exit 1
         fi
         ;;
