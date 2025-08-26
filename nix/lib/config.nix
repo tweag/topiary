@@ -1,7 +1,7 @@
 {
   writeShellApplication,
   fromNickelFile,
-  toNickelFile,
+  toJSONFile,
   prefetchLanguages,
 }:
 
@@ -43,7 +43,7 @@ let
   defaultConfigPrefetched = prefetchLanguages defaultConfig;
 
   /**
-    Same as `defaultConfigPrefetched` but as a Nickel file.
+    Same as `defaultConfigPrefetched` but as a JSON file, consumable by Nickel.
 
     # Type
 
@@ -51,7 +51,7 @@ let
     defaultConfigFilePrefetched : File
     ```
   */
-  defaultConfigFilePrefetched = toNickelFile "languages-prefetched.ncl" defaultConfigPrefetched;
+  defaultConfigFilePrefetched = toJSONFile "languages-prefetched.json" defaultConfigPrefetched;
 
   /**
     Same as `wrapWithConfig` but with the configuration as a Nickel file.
@@ -86,7 +86,7 @@ let
     { package, config }:
     wrapWithConfigFile {
       inherit package;
-      configFile = toNickelFile "languages.ncl" config;
+      configFile = toJSONFile "languages.json" config;
     };
 
 in

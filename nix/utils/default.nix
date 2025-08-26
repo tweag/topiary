@@ -4,13 +4,13 @@
 
 let
   inherit (callPackageNoOverrides ./nickelUtils.nix { })
-    toNickelFile
+    toJSONFile
     fromNickelFile
     ;
 
   inherit
     (callPackageNoOverrides ./prefetchLanguages.nix {
-      inherit toNickelFile fromNickelFile;
+      inherit toJSONFile fromNickelFile;
     })
     prefetchLanguages
     prefetchLanguagesFile
@@ -19,7 +19,7 @@ in
 
 {
   inherit
-    toNickelFile
+    toJSONFile
     fromNickelFile
     prefetchLanguages
     prefetchLanguagesFile

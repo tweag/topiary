@@ -1,9 +1,5 @@
 {
   lib,
-  writeShellApplication,
-  fromNickelFile,
-  toNickelFile,
-  prefetchLanguages,
   topiary-cli,
   wrapWithConfig,
   defaultConfigPrefetched,

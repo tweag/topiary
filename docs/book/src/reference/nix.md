@@ -17,14 +17,15 @@ Converts a JSON-able Nickel file into a Nix value.
 fromNickelFile : File -> Any
 ```
 
-## `lib.toNickelFile` {#lib.toNickelFile}
+## `lib.toJSONFile` {#lib.toJSONFile}
 
-Transforms a JSON-able Nix value into a Nickel file.
+Transforms a JSON-able Nix value into a JSON file. This file can be consumed
+by Nickel directly.
 
 ### Type
 
 ```
-toNickelFile : Any -> File
+toJSONFile : Any -> File
 ```
 
 
@@ -45,7 +46,7 @@ prefetchLanguages : TopiaryConfig -> TopiaryConfig
 ## `lib.prefetchLanguagesFile` {#lib.prefetchLanguagesFile}
 
 Same as `prefetchLanguages`, but expects a path to a Nickel file, and
-produces a path to another Nickel file.
+produces a path to a JSON file, which can be consumed by Nickel.
 
 ### Type
 
@@ -90,7 +91,7 @@ defaultConfigFile : File
 
 ## `lib.defaultConfigFilePrefetched` {#lib.defaultConfigFilePrefetched}
 
-Same as `defaultConfigPrefetched` but as a Nickel file.
+Same as `defaultConfigPrefetched` but as a JSON file, consumable by Nickel.
 
 ### Type
 

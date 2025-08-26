@@ -7,7 +7,7 @@
 let
   inherit
     (callPackageNoOverrides ./config.nix {
-      inherit (topiaryUtils) fromNickelFile toNickelFile prefetchLanguages;
+      inherit (topiaryUtils) fromNickelFile toJSONFile prefetchLanguages;
     })
     defaultConfig
     defaultConfigFile
@@ -20,7 +20,6 @@ let
   inherit
     (callPackageNoOverrides ./gitHook.nix {
       inherit topiary-cli defaultConfigPrefetched wrapWithConfig;
-      inherit (topiaryUtils) prefetchLanguages toNickelFile fromNickelFile;
     })
     gitHookFor
     gitHook

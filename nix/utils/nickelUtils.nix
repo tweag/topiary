@@ -1,44 +1,32 @@
 {
   lib,
-  fetchgit,
   nickel,
   runCommandNoCC,
   writeText,
-  tree-sitter,
 }:
 
 let
   inherit (builtins)
-    attrNames
-    concatStringsSep
-    mapAttrs
-    toFile
     readFile
     toJSON
     fromJSON
     baseNameOf
     ;
-  inherit (lib) warn;
-  inherit (lib.strings) removeSuffix;
-  inherit (lib.attrsets) updateManyAttrsByPath;
-
-  updateByPath = path: update: updateManyAttrsByPath [ { inherit path update; } ];
+  inherit (lib.strings)
+    removeSuffix
+    ;
 
   /**
-    Transforms a JSON-able Nix value into a Nickel file.
+    Transforms a JSON-able Nix value into a JSON file. This file can be consumed
+    by Nickel directly.
 
     # Type
 
     ```
-    toNickelFile : Any -> File
+    toJSONFile : Any -> File
     ```
   */
-  toNickelFile =
-    name: e:
-    let
-      jsonFile = writeText "${removeSuffix ".ncl" name}.json" (toJSON e);
-    in
-    writeText name "import \"${jsonFile}\"";
+  toJSONFile = name: e: writeText name (toJSON e);
 
   /**
     Converts a JSON-able Nickel file into a Nix value.
@@ -62,6 +50,6 @@ in
 {
   inherit
     fromNickelFile
-    toNickelFile
+    toJSONFile
     ;
 }

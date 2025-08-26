@@ -11,7 +11,7 @@
   runCommandNoCC,
   writeText,
   tree-sitter,
-  toNickelFile,
+  toJSONFile,
   fromNickelFile,
 }:
 
@@ -76,7 +76,7 @@ let
 
   /**
     Same as `prefetchLanguages`, but expects a path to a Nickel file, and
-    produces a path to another Nickel file.
+    produces a path to a JSON file, which can be consumed by Nickel.
 
     # Type
 
@@ -86,7 +86,7 @@ let
   */
   prefetchLanguagesFile =
     topiaryConfigFile:
-    toNickelFile "${removeSuffix ".ncl" (baseNameOf topiaryConfigFile)}-prefetched.ncl" (
+    toJSONFile "${removeSuffix ".ncl" (baseNameOf topiaryConfigFile)}-prefetched.json" (
       prefetchLanguages (fromNickelFile topiaryConfigFile)
     );
 
