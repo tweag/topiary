@@ -15,7 +15,7 @@ mod native {
         }
 
         #[inline]
-        pub fn field_name(&self) -> Option<Cow<str>> {
+        pub fn field_name(&self) -> Option<Cow<'_, str>> {
             self.inner.field_name().map(Into::into)
         }
 

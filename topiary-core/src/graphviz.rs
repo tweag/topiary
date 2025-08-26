@@ -6,7 +6,7 @@ use crate::{tree_sitter::SyntaxNode, FormatterResult};
 
 /// Doubly escapes whitespace (\n and \t) so it is
 /// rendered as the escaped value in the GraphViz output
-fn escape(input: &str) -> Cow<str> {
+fn escape(input: &str) -> Cow<'_, str> {
     // No allocation happens for an empty string
     let mut buffer = String::new();
 
