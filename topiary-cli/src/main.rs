@@ -87,7 +87,7 @@ async fn run() -> CLIResult<()> {
                                         },
                                     )
                                     .map_err(|e| {
-                                        e.with_source(format!("{}", buf_input.get_ref().source()))
+                                        e.with_location(format!("{}", buf_input.get_ref().source()))
                                     })?;
                                 }
 
@@ -154,7 +154,7 @@ async fn run() -> CLIResult<()> {
                     output_format: format.into(),
                 },
             )
-            .map_err(|e| e.with_source(format!("{}", buf_input.get_ref().source())))?;
+            .map_err(|e| e.with_location(format!("{}", buf_input.get_ref().source())))?;
         }
 
         Commands::Config => {
@@ -186,7 +186,7 @@ async fn run() -> CLIResult<()> {
             let mut buf_output = BufWriter::new(output);
 
             coverage(&mut buf_input, &mut buf_output, &language)
-                .map_err(|e| e.with_source(format!("{}", buf_input.get_ref().source())))?;
+                .map_err(|e| e.with_location(format!("{}", buf_input.get_ref().source())))?;
         }
 
         Commands::Completion { shell } => {
