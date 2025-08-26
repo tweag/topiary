@@ -55,7 +55,7 @@
       extensions = ["ml"],
       grammar.source.git = {
         git = "https://github.com/tree-sitter/tree-sitter-ocaml.git",
-        rev = "a45fda5fe73cda92f2593d16340b3f6bd46674b8",
+        rev = "3ef7c00b29e41e3a0c1d18e82ea37c64d72b93fc",
         subdir = "grammars/ocaml",
         nixHash = "sha256-u8R3JvjaOrW6kCX1hNTGMl86HnKAoopSMvHr8Sj0i04=",
       },
