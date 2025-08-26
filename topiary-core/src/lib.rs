@@ -388,8 +388,8 @@ mod tests {
     use test_log::test;
 
     use crate::{
-        error::FormatterError, formatter, test_utils::pretty_assert_eq, Language, Operation,
-        TopiaryQuery,
+        error::FormatterError, formatter, test_utils::pretty_assert_eq, tree_sitter::NodeSpan,
+        Language, Operation, TopiaryQuery,
     };
 
     /// Attempt to parse invalid json, expecting a failure
@@ -415,11 +415,9 @@ mod tests {
                 tolerate_parsing_errors: false,
             },
         ) {
-            Err(FormatterError::Parsing {
-                start_line: 1,
-                end_line: 1,
-                ..
-            }) => {}
+            // start end == 1
+            Err(FormatterError::Parsing(node))
+                if node.start_line() == 1 && node.end_line() == 1 => {}
             result => {
                 panic!("Expected a parsing error on line 1, but got {result:?}");
             }

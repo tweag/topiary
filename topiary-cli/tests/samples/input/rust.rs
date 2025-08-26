@@ -14,7 +14,7 @@ pub fn node_kind_for_id(&self, id: u16) -> &'static str {
 
 // More comments.
 
-enum OneLine  Leaf { content: String, /* comment */ id: usize /* another comment */, size: usize, }, Hardline { content: String, id: usize, }, Space, } // End of line comment
+enum OneLine { Leaf { content: String, /* comment */ id: usize /* another comment */, size: usize, }, Hardline { content: String, id: usize, }, Space, } // End of line comment
 
 enum ExpandEnum {
     Leaf { content: String, /* Comment between fields. */ id: usize, size: usize, },

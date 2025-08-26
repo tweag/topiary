@@ -45,6 +45,16 @@ mod native {
             let inner = self.inner.start_point;
             Point { inner }
         }
+
+        #[inline]
+        pub fn start_line(&self) -> usize {
+            self.inner.start_point.row
+        }
+
+        #[inline]
+        pub fn end_line(&self) -> usize {
+            self.inner.end_point.row
+        }
     }
 
     impl std::fmt::Debug for Range {

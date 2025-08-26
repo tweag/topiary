@@ -372,6 +372,14 @@ impl NodeSpan {
     }
 }
 
+impl std::ops::Deref for NodeSpan {
+    type Target = Range;
+
+    fn deref(&self) -> &Self::Target {
+        &self.range
+    }
+}
+
 /// Parses some string into a syntax tree, given a tree-sitter grammar.
 pub fn parse(
     content: &str,
