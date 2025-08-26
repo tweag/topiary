@@ -1,5 +1,5 @@
 {
-  hello,
+  emptyFile,
   topiaryPkgs,
   gitHook,
 }:
@@ -25,5 +25,5 @@ in
   # Check that the `lib.gitHook` output builds/evaluates correctly. `deepSeq e1
   # e2` evaluates `e1` strictly in depth before returning `e2`. We use this
   # trick because checks need to be derivations, which `lib.gitHook` is not.
-  gitHook = deepSeq gitHook hello;
+  gitHook = deepSeq gitHook emptyFile;
 }
