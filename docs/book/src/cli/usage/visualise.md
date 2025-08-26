@@ -11,8 +11,9 @@ input.ocaml | dot -T png -o output.png`.
 ```
 Visualise the input's Tree-sitter parse tree
 
-Visualise generates a graph representation of the parse tree that can be rendered by external
-visualisation tools, such as Graphviz. By default, the output is in the DOT format.
+Visualise generates a graph representation of the parse tree that can be rendered by
+external visualisation tools, such as Graphviz. By default, the output is in the DOT
+format.
 
 Usage: topiary visualise [OPTIONS] <--language <LANGUAGE>|FILE>
 
@@ -20,18 +21,18 @@ Arguments:
   [FILE]
           Input file (omit to read from stdin)
 
-          Language detection and query selection is automatic, mapped from file extensions defined
-          in the Topiary configuration.
+          Language detection and query selection is automatic, mapped from file extensions
+          defined in the Topiary configuration.
 
 Options:
   -f, --format <FORMAT>
           Visualisation format
 
-          [default: dot]
-
           Possible values:
           - dot:  GraphViz DOT serialisation
           - json: JSON serialisation
+
+          [default: dot]
 
   -l, --language <LANGUAGE>
           Topiary language identifier (when formatting stdin)

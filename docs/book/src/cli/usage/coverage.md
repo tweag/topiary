@@ -16,8 +16,8 @@ Arguments:
   [FILE]
           Input file (omit to read from stdin)
 
-          Language detection and query selection is automatic, mapped from file extensions defined
-          in the Topiary configuration.
+          Language detection and query selection is automatic, mapped from file extensions
+          defined in the Topiary configuration.
 
 Options:
   -l, --language <LANGUAGE>
