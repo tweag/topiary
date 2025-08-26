@@ -19,6 +19,17 @@ let
     elem
     ;
 
+  /**
+    This function filters a Topiary configuration (as a Nix value) to include or
+    exclude the given languages. See `gitHookFor` for a more thorough
+    description of the arguments.
+
+    # Type
+
+    ```
+    filterConfig : AttrSet -> AttrSet
+    ```
+  */
   filterConfig =
     {
       config ? defaultConfigPrefetched,
@@ -27,6 +38,8 @@ let
       ...
     }:
     let
+      ## Language names that are listed in `includeLanguages` or
+      ## `excludeLanguages` but absent from `config.languages`.
       unsupportedLanguages = filter (lang: !(config.languages ? ${lang})) (
         (if includeLanguages == null then [ ] else includeLanguages) ++ excludeLanguages
       );
@@ -36,15 +49,9 @@ let
     else if unsupportedLanguages != [ ] then
       throw "gitHook: unsupported languages: ${concatStringsSep ", " unsupportedLanguages}."
     else if includeLanguages != null then
-      config
-      // {
-        languages = filterAttrs (lang: _: elem lang includeLanguages) config.languages;
-      }
+      config // { languages = filterAttrs (lang: _: elem lang includeLanguages) config.languages; }
     else
-      config
-      // {
-        languages = filterAttrs (lang: _: !(elem lang excludeLanguages)) config.languages;
-      };
+      config // { languages = filterAttrs (lang: _: !(elem lang excludeLanguages)) config.languages; };
 
   /**
     This function exposes the derivation providing `/bin/topiary` in `gitHookFor`.
@@ -90,11 +97,14 @@ let
 
     includeLanguages
     : A list of languages to include from the configuration. The hook will not
-      process the others. Defaults to all the languages of the configuration.
+      process the others. All the languages in this list must be present in
+      `config.languages`. Defaults to `null`, which represents all the languages
+      of the configuration.
 
     excludeLanguages
     : A list of languages to exclude from the hook. One cannot use both
-      `includeLanguages` and `excludeLanguages`.
+      `includeLanguages` and `excludeLanguages`. All the languages in this list
+      must be present in `config.languages`. Defaults to `[]`.
   */
   gitHookFor = inputs: {
     enable = false;

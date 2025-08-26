@@ -149,11 +149,14 @@ config
 
 includeLanguages
 : A list of languages to include from the configuration. The hook will not
-  process the others. Defaults to all the languages of the configuration.
+  process the others. All the languages in this list must be present in
+  `config.languages`. Defaults to `null`, which represents all the languages
+  of the configuration.
 
 excludeLanguages
 : A list of languages to exclude from the hook. One cannot use both
-  `includeLanguages` and `excludeLanguages`.
+  `includeLanguages` and `excludeLanguages`. All the languages in this list
+  must be present in `config.languages`. Defaults to `[]`.
 
 ## `lib.gitHookBinFor` {#lib.gitHookBinFor}
 
