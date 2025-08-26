@@ -3,7 +3,6 @@ set -euC
 
 ## This file should run from the source of the repository. We check that this
 ## looks like it.
-##
 if ! [ -d nix/ ] || ! [ -d docs ]; then
     printf >& 'This does not look like the root of the Topiary directory, because\n'
     printf >& 'I cannot find a nix/ or docs/ directory. Aborting.\n'
@@ -11,7 +10,6 @@ if ! [ -d nix/ ] || ! [ -d docs ]; then
 fi
 
 ## Crawl Nix files with `nixdoc` and generate documentation in Markdown format.
-##
 printf >&2 'Generating documentation... '
 content=$(
     printf '# Nix API\n\n'
@@ -33,7 +31,6 @@ content=$(
 printf >&2 'done.\n'
 
 ## Grab the requested mode from command line...
-##
 case $# in
     0) mode=generate ;;
     1) mode=$1 ;;
@@ -42,7 +39,6 @@ esac
 
 ## If the mode is to `generate`, then write the file. If the mode is to `check`,
 ## then diff with the file and report. Otherwise, complain.
-##
 readonly target=docs/book/src/reference/nix.md
 case $mode in
     generate)
