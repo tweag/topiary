@@ -135,7 +135,7 @@ mod native {
         }
 
         #[inline]
-        pub fn kind(&self) -> Cow<str> {
+        pub fn kind(&self) -> Cow<'_, str> {
             self.inner.kind().into()
         }
 
@@ -223,7 +223,7 @@ mod native {
 
         #[inline]
         #[allow(clippy::wrong_self_convention)]
-        pub fn to_sexp(&self) -> Cow<str> {
+        pub fn to_sexp(&self) -> Cow<'_, str> {
             self.inner.to_sexp().into()
         }
 
