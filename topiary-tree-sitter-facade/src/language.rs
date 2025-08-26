@@ -39,7 +39,7 @@ mod native {
         }
 
         #[inline]
-        pub fn field_name_for_id(&self, field_id: u16) -> Option<Cow<str>> {
+        pub fn field_name_for_id(&self, field_id: u16) -> Option<Cow<'_, str>> {
             self.inner.field_name_for_id(field_id).map(Into::into)
         }
 
@@ -54,7 +54,7 @@ mod native {
         }
 
         #[inline]
-        pub fn node_kind_for_id(&self, id: u16) -> Option<Cow<str>> {
+        pub fn node_kind_for_id(&self, id: u16) -> Option<Cow<'_, str>> {
             self.inner.node_kind_for_id(id).map(Into::into)
         }
 
