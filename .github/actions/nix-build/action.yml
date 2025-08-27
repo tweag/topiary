@@ -25,7 +25,7 @@ runs:
     uses: cachix/cachix-action@v16
     with:
       name: tweag-topiary
-      authToken: "${{ input.auth_token }}"
+      authToken: "${{ inputs.auth_token }}"
 
   - name: Set up frontend cache
     uses: actions/cache@v4
