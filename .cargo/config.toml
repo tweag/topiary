@@ -1,4 +1,3 @@
 # https://github.com/bevyengine/bevy/blob/653c10371e546176059bb779844c0569c0190b6b/.cargo/config_fast_builds#L16
 [target.x86_64-pc-windows-msvc]
 linker = "rust-lld.exe"
-rustflags = ["-Zshare-generics=y"]
