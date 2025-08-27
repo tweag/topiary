@@ -388,8 +388,8 @@ mod tests {
     use test_log::test;
 
     use crate::{
-        error::FormatterError, formatter, test_utils::pretty_assert_eq,
-        Language, Operation, TopiaryQuery,
+        error::FormatterError, formatter, test_utils::pretty_assert_eq, Language, Operation,
+        TopiaryQuery,
     };
 
     /// Attempt to parse invalid json, expecting a failure

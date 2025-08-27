@@ -212,9 +212,7 @@ impl GitSource {
         name: &str,
         library_path: PathBuf,
     ) -> Result<(), TopiaryConfigFetchingError> {
-        log::info!(
-            "{name}: Language Grammar not found, attempting to fetch and compile it"
-        );
+        log::info!("{name}: Language Grammar not found, attempting to fetch and compile it");
         // Create a temporary directory to clone the repository to. We could
         // cached the repositories, but the additional disk space is probably
         // not worth the benefits gained by caching. The tempdir is deleted
