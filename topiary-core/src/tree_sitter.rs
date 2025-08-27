@@ -526,6 +526,9 @@ pub fn check_query_coverage(
     original_query: &TopiaryQuery,
     grammar: &topiary_tree_sitter_facade::Language,
 ) -> FormatterResult<CoverageData> {
+    use rayon::iter::{IntoParallelIterator, ParallelIterator};
+    use topiary_tree_sitter_facade::QueryError;
+
     let tree = parse(input_content, grammar, false)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
@@ -564,31 +567,44 @@ pub fn check_query_coverage(
         });
     }
 
-    let mut ok_patterns = 0.0;
-    for i in 0..pattern_count {
-        // We don't need to use TopiaryQuery in this test since we have no need
-        // for duplicate versions of the query_content string, instead we create the query
-        // manually.
-        let mut query = Query::new(grammar, query_content)
-            .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
-        query.disable_pattern(i);
-        let mut cursor = QueryCursor::new();
-        let match_count = query.matches(&root, source, &mut cursor).count();
-        if match_count == ref_match_count {
-            let index_start = query.start_byte_for_pattern(i);
-            let index_end = if i == pattern_count - 1 {
-                query_content.len()
-            } else {
-                query.start_byte_for_pattern(i + 1)
+    let missing_patterns: Vec<String> = (0..pattern_count)
+        .into_par_iter()
+        .map(|i| {
+            // We don't need to use TopiaryQuery in this test since we have no need
+            // for duplicate versions of the query_content string, instead we create the query
+            // manually.
+            Query::new(grammar, query_content).map(|mut q| {
+                q.disable_pattern(i);
+                (i, q)
+            })
+        })
+        .filter_map(|res| {
+            let (i, query) = match res {
+                Ok((i, query)) => (i, query),
+                Err(e) => {
+                    return Some(Err(e));
+                }
             };
-            let pattern_content = &query_content[index_start..index_end];
-            missing_patterns.push(pattern_content.into());
-        } else {
-            ok_patterns += 1.0;
-        }
-    }
+            let mut cursor = QueryCursor::new();
+            let match_count = query.matches(&root, source, &mut cursor).count();
+            if match_count == ref_match_count {
+                let index_start = query.start_byte_for_pattern(i);
+                let index_end = if i == pattern_count - 1 {
+                    query_content.len()
+                } else {
+                    query.start_byte_for_pattern(i + 1)
+                };
+                let pattern_content = &query_content[index_start..index_end];
 
-    let cover_percentage = ok_patterns / pattern_count as f32;
+                return Some(Ok(pattern_content.into()));
+            }
+            None
+        })
+        .collect::<Result<_, QueryError>>()
+        .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
+
+    let ok_patterns = pattern_count - missing_patterns.len();
+    let cover_percentage = ok_patterns as f32 / pattern_count as f32;
     Ok(CoverageData {
         cover_percentage,
         missing_patterns,
