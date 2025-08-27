@@ -45,7 +45,7 @@ This name should be decided amongst the team before the release.
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.6.1...HEAD)
 
 ### Added
-- [#1069](https://github.com/tweag/topiary/pull/1069) split CI nix dependent tests into seperate jobs, thanks to @mkatychev
+- [#1069](https://github.com/tweag/topiary/pull/1069) split CI nix dependent tests into separate jobs, thanks to @mkatychev
 - [#1015](https://github.com/tweag/topiary/pull/1015) Add support for include expressions to Nickel formatting
 
 ### Changed
