@@ -417,7 +417,7 @@ mod tests {
         ) {
             // start end == 1
             Err(FormatterError::Parsing(node))
-                if node.start_line() == 1 && node.end_line() == 1 => {}
+                if node.start_point().row() == 0 && node.end_point().row() == 0 => {}
             result => {
                 panic!("Expected a parsing error on line 1, but got {result:?}");
             }
