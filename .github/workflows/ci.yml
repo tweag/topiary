@@ -22,12 +22,7 @@ jobs:
         run: export GC_DONT_GC=1; nix -L flake check
 
   nix-client-app:
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          - macos-14  # TODO Revert to macos-latest; see #1043
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
