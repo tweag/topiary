@@ -310,7 +310,7 @@ pub fn coverage(
     } else {
         format!(
             "Unmatched queries:\n{}",
-            &res.missing_patterns[..].join("\n"),
+            &res.missing_patterns[..].join("\n===\n\n"),
         )
     };
 

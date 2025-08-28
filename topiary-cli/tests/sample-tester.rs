@@ -154,6 +154,8 @@ mod test_coverage {
             .expect("Failed to run `topiary coverage`");
 
         if !output.status.success() {
+            println!("{}", String::from_utf8_lossy(&output.stderr));
+            println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
             panic!("Insufficient coverage of \"{file}\"")
         }
     }
