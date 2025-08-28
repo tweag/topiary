@@ -212,10 +212,7 @@ impl GitSource {
         name: &str,
         library_path: PathBuf,
     ) -> Result<(), TopiaryConfigFetchingError> {
-        log::info!(
-            "{}: Language Grammar not found, attempting to fetch and compile it",
-            name
-        );
+        log::info!("{name}: Language Grammar not found, attempting to fetch and compile it");
         // Create a temporary directory to clone the repository to. We could
         // cached the repositories, but the additional disk space is probably
         // not worth the benefits gained by caching. The tempdir is deleted
@@ -235,7 +232,7 @@ impl GitSource {
         tmp_dir: PathBuf,
     ) -> Result<(), TopiaryConfigFetchingError> {
         if !force && library_path.is_file() {
-            log::info!("{}: Built grammar already exists; nothing to do", name);
+            log::info!("{name}: Built grammar already exists; nothing to do");
             return Ok(());
         }
         let tmp_dir = tmp_dir.join(name);

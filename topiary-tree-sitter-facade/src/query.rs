@@ -39,7 +39,7 @@ mod native {
         }
 
         #[inline]
-        pub fn general_predicates(&self, index: usize) -> Vec<QueryPredicate> {
+        pub fn general_predicates(&self, index: usize) -> Vec<QueryPredicate<'_>> {
             self.inner
                 .general_predicates(index)
                 .iter()
