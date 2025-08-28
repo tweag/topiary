@@ -19,7 +19,10 @@ jobs:
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
       - name: Clippy, test, and benchmark
-        run: export GC_DONT_GC=1; nix -L flake check
+        env:
+          # Disable Nix garbage collection
+          GC_DONT_GC: 1
+        run: nix -L flake check
 
   nix-client-app:
     runs-on: ubuntu-latest
