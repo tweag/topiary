@@ -527,7 +527,7 @@ pub fn check_query_coverage(
     grammar: &topiary_tree_sitter_facade::Language,
 ) -> FormatterResult<CoverageData> {
     use rayon::iter::{IntoParallelIterator, ParallelIterator};
-    use topiary_tree_sitter_facade::QueryError;
+    
 
     let tree = parse(input_content, grammar, false)?;
     let root = tree.root_node();
