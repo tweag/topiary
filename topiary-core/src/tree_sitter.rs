@@ -527,7 +527,6 @@ pub fn check_query_coverage(
     grammar: &topiary_tree_sitter_facade::Language,
 ) -> FormatterResult<CoverageData> {
     use rayon::iter::{IntoParallelIterator, ParallelIterator};
-    
 
     let tree = parse(input_content, grammar, false)?;
     let root = tree.root_node();
@@ -590,27 +589,17 @@ pub fn check_query_coverage(
                 .next()
                 .is_some();
             if !pattern_has_matches {
-                let mut pattern_found = false;
-                let mut pattern_content: Vec<&str> = pattern_content
-                    .trim_end()
-                    .lines()
-                    .rev()
-                    .filter(|line| {
-                        // drop comment lines until the first non-comment line is encountered
-                        if pattern_found {
-                            return true;
-                        }
-                        // strip trailing comment lines, they likely belong to the subsequent pattern
-                        let is_comment_line = line.trim_start().starts_with(';');
-                        if !is_comment_line {
-                            pattern_found = true;
-                            return true;
-                        }
-                        false
+                let trimmed_end_idx = pattern_content
+                    .rmatch_indices('\n')
+                    .map(|(i, _)| i)
+                    .find_map(|i| {
+                        let line = pattern_content[i..].trim_start();
+                        let is_pattern_line = !line.is_empty() && !line.starts_with(';');
+                        is_pattern_line.then_some(i + 2)
                     })
-                    .collect();
-                pattern_content.reverse();
-                return Some(pattern_content.join("\n"));
+                    .unwrap_or(pattern_content.len());
+
+                return Some(pattern_content[..trimmed_end_idx].into());
             }
             None
         })
