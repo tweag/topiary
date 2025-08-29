@@ -47,6 +47,7 @@ This name should be decided amongst the team before the release.
 ### Added
 - [#1015](https://github.com/tweag/topiary/pull/1015) Add support for include expressions to Nickel formatting
 - [#1049](https://github.com/tweag/topiary/pull/1015) Add support for rich grammar parsing errors using miette, thanks to @mkatychev
+- [#1069](https://github.com/tweag/topiary/pull/1069) split CI nix dependent tests into separate jobs, thanks to @mkatychev
 - [#1070](https://github.com/tweag/topiary/pull/1070) Implemented parallelism for query coverage, thanks to @mkatychev
 
 ### Changed

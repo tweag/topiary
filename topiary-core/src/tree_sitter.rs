@@ -608,7 +608,7 @@ fn check_predicates(predicates: &QueryPredicates) -> FormatterResult<()> {
 
 #[cfg(not(target_arch = "wasm32"))]
 /// Check if the input tests all patterns in the query, by successively disabling
-/// all pattern. If disabling a pattern does not decrease the number of matches,
+/// all patterns. If disabling a pattern does not decrease the number of matches,
 /// then that pattern originally matched nothing in the input.
 pub fn check_query_coverage(
     input_content: &str,
