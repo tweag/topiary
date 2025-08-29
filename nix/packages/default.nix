@@ -2,14 +2,15 @@
   callPackageNoOverrides,
   advisory-db,
   craneLib,
+  prefetchLanguagesFile,
 }:
 
 let
-  topiaryPkgs = callPackageNoOverrides ./topiary.nix {
-    inherit advisory-db craneLib;
-  };
-
   binPkgs = callPackageNoOverrides ./bin.nix { };
+
+  topiaryPkgs = callPackageNoOverrides ./topiary.nix {
+    inherit advisory-db craneLib prefetchLanguagesFile;
+  };
 in
 
 {
