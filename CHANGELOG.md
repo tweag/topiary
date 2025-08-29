@@ -46,6 +46,7 @@ This name should be decided amongst the team before the release.
 
 ### Added
 - [#1015](https://github.com/tweag/topiary/pull/1015) Add support for include expressions to Nickel formatting
+- [#1049](https://github.com/tweag/topiary/pull/1015) Add support for rich grammar parsing errors using miette, thanks to @mkatychev
 
 ### Changed
 - [#1031](https://github.com/tweag/topiary/pull/1031) Removed the Bash rewrite rule for converting POSIX `[` to Bash's `[[`

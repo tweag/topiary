@@ -8,7 +8,7 @@ mod native {
 
     impl QueryPredicate<'_> {
         #[inline]
-        pub fn operator(&self) -> Cow<str> {
+        pub fn operator(&self) -> Cow<'_, str> {
             Cow::Borrowed(&self.inner.operator)
         }
 
@@ -64,7 +64,7 @@ mod wasm {
 
     impl QueryPredicate {
         #[inline]
-        pub fn operator(&self) -> Cow<str> {
+        pub fn operator(&self) -> Cow<'_, str> {
             Cow::Owned(self.inner.operator().as_string().unwrap())
         }
 
