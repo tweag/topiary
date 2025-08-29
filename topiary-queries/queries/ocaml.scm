@@ -523,8 +523,6 @@
   ]
   (#single_line_scope_only! "dangling_list_like")
 )
-; "->" must not always be followed by a softline, we explicitly enumerate
-; "->" must not always be followed by a softline, we explicitly enumerate
 (typed_label
   ":" @append_spaced_softline
 )
