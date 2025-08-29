@@ -61,6 +61,11 @@ mod native {
         pub fn start_byte_for_pattern(&self, pattern_index: usize) -> usize {
             self.inner.start_byte_for_pattern(pattern_index)
         }
+
+        #[inline]
+        pub fn end_byte_for_pattern(&self, pattern_index: usize) -> usize {
+            self.inner.end_byte_for_pattern(pattern_index)
+        }
     }
 
     impl std::fmt::Debug for Query {

@@ -568,7 +568,6 @@ pub fn check_query_coverage(
     grammar: &topiary_tree_sitter_facade::Language,
 ) -> FormatterResult<CoverageData> {
     use rayon::iter::{IntoParallelIterator, ParallelIterator};
-    use topiary_tree_sitter_facade::QueryError;
 
     let tree = parse(input_content, grammar, false)?;
     let root = tree.root_node();
@@ -608,41 +607,44 @@ pub fn check_query_coverage(
         });
     }
 
+    let query = &original_query.query;
     let missing_patterns: Vec<String> = (0..pattern_count)
         .into_par_iter()
-        .map(|i| {
-            // We don't need to use TopiaryQuery in this test since we have no need
-            // for duplicate versions of the query_content string, instead we create the query
-            // manually.
-            Query::new(grammar, query_content).map(|mut q| {
-                q.disable_pattern(i);
-                (i, q)
-            })
-        })
-        .filter_map(|res| {
-            let (i, query) = match res {
-                Ok((i, query)) => (i, query),
-                Err(e) => {
-                    return Some(Err(e));
-                }
-            };
-            let mut cursor = QueryCursor::new();
-            let match_count = query.matches(&root, source, &mut cursor).count();
-            if match_count == ref_match_count {
-                let index_start = query.start_byte_for_pattern(i);
-                let index_end = if i == pattern_count - 1 {
-                    query_content.len()
-                } else {
-                    query.start_byte_for_pattern(i + 1)
-                };
-                let pattern_content = &query_content[index_start..index_end];
+        .filter_map(|i| {
+            // The TreeSitter API doesn't support splitting a query per pattern subqueries.
+            // We do so manually here by using the `query_content` and `query` fields for the same
+            // `TopiaryQuery` object.
 
-                return Some(Ok(pattern_content.into()));
+            let start_idx = query.start_byte_for_pattern(i);
+            let end_idx = query.end_byte_for_pattern(i);
+            // SAFETY: the index range provided is returned directly from the inner `Query` object
+            let pattern_content = unsafe { query_content.get_unchecked(start_idx..end_idx) };
+            // All child patterns of a non-empty `Query` object created through `Query::new` are guaranteed
+            // to create their own valid `Query` by referencing their pattern byte range.
+            let pattern_query = Query::new(grammar, pattern_content)
+                .expect("unable to create subquery of valid query, this is a bug");
+
+            let mut cursor = QueryCursor::new();
+            let pattern_has_matches = pattern_query
+                .matches(&root, source, &mut cursor)
+                .next()
+                .is_some();
+            if !pattern_has_matches {
+                let trimmed_end_idx = pattern_content
+                    .rmatch_indices('\n')
+                    .map(|(i, _)| i)
+                    .find_map(|i| {
+                        let line = pattern_content[i..].trim_start();
+                        let is_pattern_line = !line.is_empty() && !line.starts_with(';');
+                        is_pattern_line.then_some(i + 2)
+                    })
+                    .unwrap_or(pattern_content.len());
+
+                return Some(pattern_content[..trimmed_end_idx].into());
             }
             None
         })
-        .collect::<Result<_, QueryError>>()
-        .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
+        .collect();
 
     let ok_patterns = pattern_count - missing_patterns.len();
     let cover_percentage = ok_patterns as f32 / pattern_count as f32;
