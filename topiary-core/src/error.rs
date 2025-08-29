@@ -129,14 +129,21 @@ impl Error for FormatterError {
 // the library and binary code have been completely separated (see Issue #303).
 impl From<io::Error> for FormatterError {
     fn from(e: io::Error) -> Self {
-        match e.kind() {
-            io::ErrorKind::NotFound => Self::Io(IoError::Filesystem("File not found".into(), e)),
+        IoError::from(e).into()
+    }
+}
 
-            _ => Self::Io(IoError::Filesystem(
-                "Could not read or write to file".into(),
-                e,
-            )),
+impl From<io::Error> for IoError {
+    fn from(e: io::Error) -> Self {
+        match e.kind() {
+            io::ErrorKind::NotFound => IoError::Filesystem("File not found".into(), e),
+            _ => IoError::Filesystem("Could not read or write to file".into(), e),
         }
+    }
+}
+impl From<IoError> for FormatterError {
+    fn from(e: IoError) -> Self {
+        Self::Io(e)
     }
 }
 

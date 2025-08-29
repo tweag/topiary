@@ -10,15 +10,21 @@
 //! More details can be found on
 //! [GitHub](https://github.com/tweag/topiary).
 
-use std::io;
+use std::{borrow::Cow, fmt::Display, io};
 
+use miette::{
+    diagnostic, Diagnostic, Error, LabeledSpan, MietteDiagnostic, NamedSource, Report, Severity,
+    SourceSpan,
+};
 use pretty_assertions::StrComparison;
 use tree_sitter::Position;
 
 pub use crate::{
     error::{FormatterError, IoError},
     language::Language,
-    tree_sitter::{apply_query, CoverageData, SyntaxNode, TopiaryQuery, Visualisation},
+    tree_sitter::{
+        apply_query, check_query_coverage, CoverageData, SyntaxNode, TopiaryQuery, Visualisation,
+    },
 };
 
 mod atom_collection;
@@ -285,47 +291,6 @@ pub fn formatter(
     };
 
     Ok(())
-}
-
-pub fn coverage(
-    input: &mut impl io::Read,
-    output: &mut impl io::Write,
-    language: &Language,
-) -> FormatterResult<()> {
-    let content = read_input(input).map_err(|e| {
-        FormatterError::Io(IoError::Filesystem(
-            "Failed to read input contents".into(),
-            e,
-        ))
-    })?;
-
-    let res = tree_sitter::check_query_coverage(&content, &language.query, &language.grammar)?;
-
-    let queries_string = if res.missing_patterns.is_empty() {
-        if res.cover_percentage == 0.0 {
-            "No queries found".into()
-        } else {
-            "All queries are matched".into()
-        }
-    } else {
-        format!(
-            "Unmatched queries:\n{}",
-            &res.missing_patterns[..].join("\n===\n\n"),
-        )
-    };
-
-    write!(
-        output,
-        "Query coverage: {:.2}%\n{}\n",
-        res.cover_percentage * 100.0,
-        queries_string,
-    )?;
-
-    if res.cover_percentage == 1.0 {
-        Ok(())
-    } else {
-        Err(FormatterError::PatternDoesNotMatch)
-    }
 }
 
 /// Simple helper function to read the full content of an io Read stream
