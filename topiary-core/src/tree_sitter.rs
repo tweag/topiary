@@ -4,7 +4,7 @@
 
 use std::{collections::HashSet, fmt::Display};
 
-use miette::{diagnostic, Diagnostic, LabeledSpan, Severity, SourceCode, SourceSpan};
+use miette::{Diagnostic, LabeledSpan, Severity, SourceSpan};
 use serde::Serialize;
 
 use topiary_tree_sitter_facade::{

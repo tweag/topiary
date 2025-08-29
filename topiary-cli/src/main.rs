@@ -12,7 +12,7 @@ use std::{
 };
 
 use error::Benign;
-use topiary_core::{check_query_coverage, formatter, IoError, Operation};
+use topiary_core::{check_query_coverage, formatter, Operation};
 
 use crate::{
     cli::Commands,
@@ -187,22 +187,22 @@ async fn run() -> CLIResult<()> {
             let mut buf_input = BufReader::new(input);
             let mut buf_output = BufWriter::new(output);
 
-            let mut input_content = read_input(&mut buf_input)?;
+            let input_content = read_input(&mut buf_input)?;
 
             let coverage_data =
                 check_query_coverage(&input_content, &language.query, &language.grammar)
                     .map_err(|e| e.with_location(buf_input.get_ref().source().to_string()))?;
             let coverage_res = coverage_data.get_result();
 
-            let query_source = buf_input.get_ref().query.to_string();
-            let query_content = language.query.query_content;
-            let source_code =
-                NamedSource::new(buf_input.get_ref().query.to_string(), query_content)
-                    .with_language(&language.name);
+            let query_source = NamedSource::new(
+                buf_input.get_ref().query.to_string(),
+                language.query.query_content,
+            )
+            .with_language(&language.name);
             write!(
                 &mut buf_output,
                 "{:?}",
-                Report::new(coverage_data).with_source_code(source_code)
+                Report::new(coverage_data).with_source_code(query_source)
             )?;
 
             coverage_res?;

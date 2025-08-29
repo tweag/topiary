@@ -10,12 +10,8 @@
 //! More details can be found on
 //! [GitHub](https://github.com/tweag/topiary).
 
-use std::{borrow::Cow, fmt::Display, io};
+use std::io;
 
-use miette::{
-    diagnostic, Diagnostic, Error, LabeledSpan, MietteDiagnostic, NamedSource, Report, Severity,
-    SourceSpan,
-};
 use pretty_assertions::StrComparison;
 use tree_sitter::Position;
 
