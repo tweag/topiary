@@ -3,6 +3,11 @@
 
 use std::{error::Error, fmt, io, ops::Deref, str, string};
 
+use miette::{Diagnostic, NamedSource, SourceSpan};
+use topiary_tree_sitter_facade::Range;
+
+use crate::tree_sitter::NodeSpan;
+
 /// The various errors the formatter may return.
 #[derive(Debug)]
 pub enum FormatterError {
@@ -19,14 +24,8 @@ pub enum FormatterError {
     /// An internal error occurred. This is a bug. Please log an issue.
     Internal(String, Option<Box<dyn Error>>),
 
-    /// Tree-sitter could not parse the input without errors.
-    Parsing {
-        start_line: u32,
-        start_column: u32,
-        end_line: u32,
-        end_column: u32,
-    },
-
+    // Tree-sitter could not parse the input without errors.
+    Parsing(Box<NodeSpan>),
     /// The query contains a pattern that had no match in the input file.
     PatternDoesNotMatch,
 
@@ -53,6 +52,24 @@ pub enum IoError {
     Generic(String, Option<Box<dyn Error>>),
 }
 
+impl FormatterError {
+    pub fn with_content(self, content: String) -> Self {
+        if let Self::Parsing(mut span) = self {
+            *span = span.with_content(content);
+            return Self::Parsing(span);
+        }
+        self
+    }
+
+    pub fn with_location(self, location: String) -> Self {
+        if let Self::Parsing(mut span) = self {
+            *span = span.with_location(location);
+            return Self::Parsing(span);
+        }
+        self
+    }
+}
+
 impl fmt::Display for FormatterError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let please_log_message = "If this happened with the built-in query files, it is a bug. It would be\nhelpful if you logged this error at\nhttps://github.com/tweag/topiary/issues/new?assignees=&labels=type%3A+bug&template=bug_report.md";
@@ -71,13 +88,9 @@ impl fmt::Display for FormatterError {
                 )
             }
 
-            Self::Parsing {
-                start_line,
-                start_column,
-                end_line,
-                end_column,
-            } => {
-                write!(f, "Parsing error between line {start_line}, column {start_column} and line {end_line}, column {end_column}")
+            Self::Parsing(span) => {
+                let report = miette::Report::new(ErrorSpan::from(span));
+                write!(f, "{report:?}")
             }
 
             Self::PatternDoesNotMatch => {
@@ -100,7 +113,7 @@ impl Error for FormatterError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             Self::Idempotence
-            | Self::Parsing { .. }
+            | Self::Parsing(_)
             | Self::PatternDoesNotMatch
             | Self::Io(IoError::Generic(_, None)) => None,
             Self::Internal(_, source) => source.as_ref().map(Deref::deref),
@@ -186,5 +199,51 @@ impl From<topiary_tree_sitter_facade::LanguageError> for FormatterError {
 impl From<topiary_tree_sitter_facade::ParserError> for FormatterError {
     fn from(e: topiary_tree_sitter_facade::ParserError) -> Self {
         Self::Internal("Error while parsing".into(), Some(Box::new(e)))
+    }
+}
+
+impl From<NodeSpan> for FormatterError {
+    fn from(span: NodeSpan) -> Self {
+        Self::Parsing(Box::new(span))
+    }
+}
+
+#[derive(Diagnostic, Debug)]
+struct ErrorSpan {
+    #[source_code]
+    src: NamedSource<String>,
+    #[label("(ERROR) node")]
+    span: SourceSpan,
+    range: Range,
+}
+
+impl std::fmt::Display for ErrorSpan {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let start = self.range.start_point();
+        let end = self.range.end_point();
+        write!(
+            f,
+            "Parsing error between line {}, column {} and line {}, column {}",
+            start.row(),
+            start.column(),
+            end.row(),
+            end.column()
+        )
+    }
+}
+
+impl std::error::Error for ErrorSpan {}
+
+impl From<&Box<NodeSpan>> for ErrorSpan {
+    fn from(span: &Box<NodeSpan>) -> Self {
+        Self {
+            src: NamedSource::new(
+                span.location.clone().unwrap_or_default(),
+                span.content.clone().unwrap_or_default(),
+            )
+            .with_language(span.language),
+            span: span.source_span(),
+            range: span.range,
+        }
     }
 }

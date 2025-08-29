@@ -33,12 +33,12 @@ mod native {
         }
 
         #[inline]
-        pub fn language(&self) -> Option<LanguageRef> {
+        pub fn language(&self) -> Option<LanguageRef<'_>> {
             self.inner.language().map(Into::into)
         }
 
         #[inline]
-        pub fn logger(&self) -> Option<LoggerReturn> {
+        pub fn logger(&self) -> Option<LoggerReturn<'_, '_>> {
             self.inner.logger().map(LoggerReturn::new)
         }
 

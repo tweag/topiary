@@ -4,10 +4,11 @@
 
 use std::{collections::HashSet, fmt::Display};
 
+use miette::SourceSpan;
 use serde::Serialize;
 
 use topiary_tree_sitter_facade::{
-    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate, Tree,
+    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate, Range, Tree,
 };
 
 use streaming_iterator::StreamingIterator;
@@ -332,6 +333,53 @@ pub fn apply_query(
     Ok(atoms)
 }
 
+/// Represents the code span for a given tree-sitter node
+#[derive(Debug)]
+pub struct NodeSpan {
+    pub(crate) range: Range,
+    // source code contents
+    pub content: Option<String>,
+    // source code location
+    pub location: Option<String>,
+    pub language: &'static str,
+}
+
+impl NodeSpan {
+    /// Creates a new [`Self`] without source text or language
+    pub fn new(node: &Node) -> Self {
+        Self {
+            range: node.range(),
+            content: None,
+            location: None,
+            language: node.language_name().unwrap_or_default(),
+        }
+    }
+    /// Creates a [`SourceSpan`] from the node's byte range
+    pub fn source_span(&self) -> SourceSpan {
+        (self.range.start_byte() as usize..=self.range.end_byte() as usize).into()
+    }
+
+    /// Adds source text to [`Self`] for adding context to display
+    pub fn with_content(mut self, content: String) -> Self {
+        self.content = Some(content);
+        self
+    }
+
+    /// Adds span origin name to [`Self`] for adding context to display
+    pub fn with_location(mut self, location: String) -> Self {
+        self.location = Some(location);
+        self
+    }
+}
+
+impl std::ops::Deref for NodeSpan {
+    type Target = Range;
+
+    fn deref(&self) -> &Self::Target {
+        &self.range
+    }
+}
+
 /// Parses some string into a syntax tree, given a tree-sitter grammar.
 pub fn parse(
     content: &str,
@@ -349,24 +397,17 @@ pub fn parse(
 
     // Fail parsing if we don't get a complete syntax tree.
     if !tolerate_parsing_errors {
-        check_for_error_nodes(&tree.root_node())?;
+        check_for_error_nodes(&tree.root_node())
+            .map_err(|e| e.with_content(content.to_string()))?;
     }
 
     Ok(tree)
 }
 
-fn check_for_error_nodes(node: &Node) -> FormatterResult<()> {
-    if node.kind() == "ERROR" {
-        let start = node.start_position();
-        let end = node.end_position();
-
-        // Report 1-based lines and columns.
-        return Err(FormatterError::Parsing {
-            start_line: start.row() + 1,
-            start_column: start.column() + 1,
-            end_line: end.row() + 1,
-            end_column: end.column() + 1,
-        });
+// returns first error node encountered
+fn check_for_error_nodes(node: &Node) -> Result<(), NodeSpan> {
+    if node.is_error() {
+        return Err(NodeSpan::new(node));
     }
 
     for child in node.children(&mut node.walk()) {

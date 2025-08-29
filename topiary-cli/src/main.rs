@@ -85,7 +85,10 @@ async fn run() -> CLIResult<()> {
                                             skip_idempotence,
                                             tolerate_parsing_errors,
                                         },
-                                    )?;
+                                    )
+                                    .map_err(|e| {
+                                        e.with_location(format!("{}", buf_input.get_ref().source()))
+                                    })?;
                                 }
 
                                 buf_output.into_inner()?.persist()?;
@@ -150,7 +153,8 @@ async fn run() -> CLIResult<()> {
                 Operation::Visualise {
                     output_format: format.into(),
                 },
-            )?;
+            )
+            .map_err(|e| e.with_location(format!("{}", buf_input.get_ref().source())))?;
         }
 
         Commands::Config => {
@@ -181,7 +185,8 @@ async fn run() -> CLIResult<()> {
             let mut buf_input = BufReader::new(input);
             let mut buf_output = BufWriter::new(output);
 
-            coverage(&mut buf_input, &mut buf_output, &language)?
+            coverage(&mut buf_input, &mut buf_output, &language)
+                .map_err(|e| e.with_location(format!("{}", buf_input.get_ref().source())))?;
         }
 
         Commands::Completion { shell } => {
