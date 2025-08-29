@@ -241,7 +241,7 @@ impl CoverageData {
 
 impl std::fmt::Display for CoverageData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}: {}", self.status_msg(), self.missing_patterns.len())
+        write!(f, "{}", self.status_msg())
     }
 }
 impl std::error::Error for CoverageData {}
