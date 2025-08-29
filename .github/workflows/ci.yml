@@ -65,7 +65,7 @@ jobs:
       - name: Build the topiary-cli and test those tests that cannot be performed in Nix
         run: nix develop --command bash -c "cargo test -p topiary-cli --features experimental"
 
-  build-windows:
+  test-windows:
     # Note: GitHub's Windows runners have a Rust toolchain installed
     # https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
     runs-on: windows-latest
