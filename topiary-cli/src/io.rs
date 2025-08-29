@@ -112,7 +112,7 @@ impl fmt::Display for InputSource {
 pub struct InputFile<'cfg> {
     source: InputSource,
     language: &'cfg topiary_config::language::Language,
-    query: QuerySource,
+    pub(crate) query: QuerySource,
 }
 
 impl InputFile<'_> {
@@ -148,6 +148,13 @@ impl InputFile<'_> {
     pub fn query(&self) -> &QuerySource {
         &self.query
     }
+}
+
+/// Simple helper function to read the full content of an io Read stream
+pub(crate) fn read_input(input: &mut dyn io::Read) -> Result<String> {
+    let mut content = String::new();
+    input.read_to_string(&mut content)?;
+    Ok(content)
 }
 
 impl Read for InputFile<'_> {
