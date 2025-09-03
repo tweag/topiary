@@ -4,7 +4,7 @@
 
 use std::{collections::HashSet, fmt::Display};
 
-use miette::{Diagnostic, LabeledSpan, Severity, SourceSpan};
+use miette::{LabeledSpan, Severity, SourceSpan};
 use serde::Serialize;
 
 use topiary_tree_sitter_facade::{
@@ -220,9 +220,9 @@ pub struct CoverageData {
 
 impl CoverageData {
     fn status_msg(&self) -> String {
-        match self.missing_patterns.len() {
-            0 if self.cover_percentage == 0.0 => "No queries found".into(),
-            0 => "All queries are matched".into(),
+        match self.cover_percentage {
+            0.0 if self.missing_patterns.is_empty() => "No queries found".into(),
+            1.0 => "All queries are matched".into(),
             _ => format!("Unmatched queries: {}", self.missing_patterns.len()),
         }
     }
@@ -231,6 +231,7 @@ impl CoverageData {
         self.cover_percentage == 1.0
     }
 
+    /// Returns an error if coverage is not 100%
     pub fn get_result(&self) -> Result<(), FormatterError> {
         if !self.full_coverage() {
             return Err(FormatterError::PatternDoesNotMatch);
@@ -246,17 +247,17 @@ impl std::fmt::Display for CoverageData {
 }
 impl std::error::Error for CoverageData {}
 
-impl Diagnostic for CoverageData {
+impl miette::Diagnostic for CoverageData {
     fn severity(&self) -> Option<miette::Severity> {
-        if self.cover_percentage == 1.0 {
-            Severity::Advice
-        } else {
-            Severity::Error
+        match self.cover_percentage {
+            1.0 => Severity::Advice,
+            0.0 => Severity::Warning,
+            _ => Severity::Error,
         }
         .into()
     }
     fn labels(&self) -> Option<Box<dyn Iterator<Item = LabeledSpan> + '_>> {
-        Some(Box::new(self.missing_patterns.clone().into_iter()))
+        Some(Box::new(self.missing_patterns.iter().cloned()))
     }
 
     fn help<'a>(&'a self) -> Option<Box<dyn Display + 'a>> {
