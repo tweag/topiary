@@ -4,7 +4,7 @@
 
 use std::{collections::HashSet, fmt::Display};
 
-use miette::SourceSpan;
+use miette::{LabeledSpan, Severity, SourceSpan};
 use serde::Serialize;
 
 use topiary_tree_sitter_facade::{
@@ -215,7 +215,56 @@ impl Display for LocalQueryMatch<'_> {
 // A struct to store the result of a query coverage check
 pub struct CoverageData {
     pub cover_percentage: f32,
-    pub missing_patterns: Vec<String>,
+    pub missing_patterns: Vec<LabeledSpan>,
+}
+
+impl CoverageData {
+    fn status_msg(&self) -> String {
+        match self.cover_percentage {
+            0.0 if self.missing_patterns.is_empty() => "No queries found".into(),
+            1.0 => "All queries are matched".into(),
+            _ => format!("Unmatched queries: {}", self.missing_patterns.len()),
+        }
+    }
+
+    fn full_coverage(&self) -> bool {
+        self.cover_percentage == 1.0
+    }
+
+    /// Returns an error if coverage is not 100%
+    pub fn get_result(&self) -> Result<(), FormatterError> {
+        if !self.full_coverage() {
+            return Err(FormatterError::PatternDoesNotMatch);
+        }
+        Ok(())
+    }
+}
+
+impl std::fmt::Display for CoverageData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.status_msg())
+    }
+}
+impl std::error::Error for CoverageData {}
+
+impl miette::Diagnostic for CoverageData {
+    fn severity(&self) -> Option<miette::Severity> {
+        match self.cover_percentage {
+            1.0 => Severity::Advice,
+            0.0 => Severity::Warning,
+            _ => Severity::Error,
+        }
+        .into()
+    }
+    fn labels(&self) -> Option<Box<dyn Iterator<Item = LabeledSpan> + '_>> {
+        Some(Box::new(self.missing_patterns.iter().cloned()))
+    }
+
+    fn help<'a>(&'a self) -> Option<Box<dyn Display + 'a>> {
+        let msg = format!("Query coverage: {:.2}%", self.cover_percentage * 100.0);
+
+        Some(Box::new(msg))
+    }
 }
 
 /// Applies a query to an input content and returns a collection of atoms.
@@ -567,6 +616,7 @@ pub fn check_query_coverage(
     original_query: &TopiaryQuery,
     grammar: &topiary_tree_sitter_facade::Language,
 ) -> FormatterResult<CoverageData> {
+    use miette::LabeledSpan;
     use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
     let tree = parse(input_content, grammar, false)?;
@@ -580,8 +630,10 @@ pub fn check_query_coverage(
         .query
         .matches(&root, source, &mut cursor)
         .count();
+
     let pattern_count = original_query.query.pattern_count();
     let query_content = &original_query.query_content;
+    let query = &original_query.query;
 
     // If there are no queries at all (e.g., when debugging) return early
     // rather than dividing by zero
@@ -598,7 +650,10 @@ pub fn check_query_coverage(
     if pattern_count == 1 {
         let mut cover_percentage = 1.0;
         if ref_match_count == 0 {
-            missing_patterns.push(query_content.into());
+            missing_patterns.push(LabeledSpan::new_with_span(
+                Some("empty query".into()),
+                SourceSpan::from(0..query_content.len()),
+            ));
             cover_percentage = 0.0
         }
         return Ok(CoverageData {
@@ -607,8 +662,7 @@ pub fn check_query_coverage(
         });
     }
 
-    let query = &original_query.query;
-    let missing_patterns: Vec<String> = (0..pattern_count)
+    let missing_patterns: Vec<LabeledSpan> = (0..pattern_count)
         .into_par_iter()
         .filter_map(|i| {
             // The TreeSitter API doesn't support splitting a query per pattern subqueries.
@@ -636,11 +690,13 @@ pub fn check_query_coverage(
                     .find_map(|i| {
                         let line = pattern_content[i..].trim_start();
                         let is_pattern_line = !line.is_empty() && !line.starts_with(';');
-                        is_pattern_line.then_some(i + 2)
+                        is_pattern_line.then_some(start_idx + i + 2)
                     })
                     .unwrap_or(pattern_content.len());
-
-                return Some(pattern_content[..trimmed_end_idx].into());
+                return Some(LabeledSpan::new_with_span(
+                    Some("unmatched".into()),
+                    SourceSpan::from(start_idx..trimmed_end_idx),
+                ));
             }
             None
         })

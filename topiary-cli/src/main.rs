@@ -7,19 +7,21 @@ mod visualisation;
 
 use std::{
     error::Error,
-    io::{BufReader, BufWriter},
+    io::{BufReader, BufWriter, Write},
     process::ExitCode,
 };
 
 use error::Benign;
-use topiary_core::{coverage, formatter, Operation};
+use topiary_core::{check_query_coverage, formatter, Operation};
 
 use crate::{
     cli::Commands,
     error::{CLIError, CLIResult, TopiaryError},
-    io::{Inputs, OutputFile},
+    io::{read_input, Inputs, OutputFile},
     language::LanguageDefinitionCache,
 };
+
+use miette::{NamedSource, Report};
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -185,8 +187,25 @@ async fn run() -> CLIResult<()> {
             let mut buf_input = BufReader::new(input);
             let mut buf_output = BufWriter::new(output);
 
-            coverage(&mut buf_input, &mut buf_output, &language)
-                .map_err(|e| e.with_location(format!("{}", buf_input.get_ref().source())))?;
+            let input_content = read_input(&mut buf_input)?;
+
+            let coverage_data =
+                check_query_coverage(&input_content, &language.query, &language.grammar)
+                    .map_err(|e| e.with_location(buf_input.get_ref().source().to_string()))?;
+            let coverage_res = coverage_data.get_result();
+
+            let query_source = NamedSource::new(
+                buf_input.get_ref().query.to_string(),
+                language.query.query_content,
+            )
+            .with_language(&language.name);
+            write!(
+                &mut buf_output,
+                "{:?}",
+                Report::new(coverage_data).with_source_code(query_source)
+            )?;
+
+            coverage_res?;
         }
 
         Commands::Completion { shell } => {
