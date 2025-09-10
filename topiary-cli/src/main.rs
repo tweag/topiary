@@ -16,8 +16,6 @@ use tabled::{settings::Style, Table};
 use topiary_config::source::Source;
 use topiary_core::{check_query_coverage, formatter, Operation};
 
-#[cfg(feature = "nickel")]
-use crate::io::format_config;
 use crate::{
     cli::Commands,
     error::{CLIError, CLIResult, TopiaryError},
@@ -192,7 +190,7 @@ async fn run() -> CLIResult<()> {
             // Don't fail on error but merely log the event since the original `nickel_config` is
             // already valid.
             #[cfg(feature = "nickel")]
-            if format_config(&config, &nickel_config)
+            if io::format_config(&config, &nickel_config)
                 .await
                 .inspect_err(|e| {
                     // nickel may not be present in user config so log as info
