@@ -2,13 +2,14 @@ use std::{
     ffi::OsString,
     fmt::{self, Display},
     fs::File,
-    io::{self, Read, Result, Seek, Write},
+    io::{self, BufWriter, Read, Result, Seek, Write},
     path::PathBuf,
 };
 
+use nickel_lang_core::term::RichTerm;
 use tempfile::tempfile;
 use topiary_config::Configuration;
-use topiary_core::{Language, TopiaryQuery};
+use topiary_core::{formatter, Language, Operation, TopiaryQuery};
 
 use crate::{
     cli::{AtLeastOneInput, ExactlyOneInput, FromStdin},
@@ -409,4 +410,24 @@ where
             Some(CLIError::UnsupportedLanguage(name.to_string())),
         )),
     }
+}
+
+// convenience function to bundle nickel config formatting errors in one return value
+pub(crate) async fn format_config(config: &Configuration, nickel_term: &RichTerm) -> CLIResult<()> {
+    let nickel_config = format!("{nickel_term}");
+    let mut formatted_config = BufWriter::new(OutputFile::Stdout);
+    // if errors are encountered in formatting, return
+    let language = to_language_from_config(config, "nickel").await?;
+
+    formatter(
+        &mut nickel_config.as_bytes(),
+        &mut formatted_config,
+        &language,
+        Operation::Format {
+            skip_idempotence: true,
+            tolerate_parsing_errors: false,
+        },
+    )?;
+
+    Ok(())
 }

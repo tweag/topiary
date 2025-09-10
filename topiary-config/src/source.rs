@@ -21,6 +21,65 @@ impl From<Source> for nickel_lang_core::program::Input<Cursor<String>, OsString>
 }
 
 impl Source {
+    /// Iterate through valid sources of configuration, in priority order (highest to lowest):
+    ///
+    /// 1. `file`, passed as a CLI argument/environment variable
+    /// 2. `.topiary/languages.ncl` (or equivalent)
+    /// 3. `~/.config/topiary/languages.ncl`
+    /// 4. OS configuration directory (if different from #3)
+    /// 5. Built-in configuration: [`Self::builtin_nickel`]
+    pub fn config_sources(
+        file: &Option<PathBuf>,
+    ) -> impl Iterator<Item = (&'static str, Option<Self>)> {
+        println!("{:?}", find_os_configuration_dir_config());
+        [
+            ("CLI", file.clone()),
+            ("workspace", find_workspace_configuration_dir_config()),
+            // Certain platforms have alternate config directories (macOS)
+            // polyfill for linux-like `find_os_configuration_dir_config()`
+            #[cfg(any(
+                target_os = "windows",
+                target_os = "macos",
+                target_os = "ios",
+                target_arch = "wasm32"
+            ))]
+            (
+                "home",
+                std::env::home_dir().map(|home| home.join(".config/topiary/languages.ncl")),
+            ),
+            (
+                "OS",
+                Some(find_os_configuration_dir_config().join("languages.ncl")),
+            ),
+        ]
+        .into_iter()
+        // If a provided path is a directory, attach `languages.ncl` to the end of the `PathBuf`.
+        .map(|(hint, candidate)| {
+            let candidate = candidate.map(|mut path| {
+                if path.is_dir() {
+                    path = path.join("languages.ncl");
+                }
+
+                Self::File(path)
+            });
+            (hint, candidate)
+        })
+        // add built-in config last
+        .chain(std::iter::once(("built-in", Some(Self::Builtin))))
+    }
+
+    // return an iterator containing all config sources that have been shown to exist
+    fn valid_config_sources(file: &Option<PathBuf>) -> impl Iterator<Item = (&'static str, Self)> {
+        Self::config_sources(file).filter_map(|(hint, candidate)| {
+            let candidate = candidate?;
+            if !candidate.exists() {
+                log::debug!("configuration file not found: {}.", candidate);
+                return None;
+            }
+
+            Some((hint, candidate))
+        })
+    }
     /// Return all valid configuration sources.
     /// See [`Self::config_sources`].
     pub fn fetch_all(file: &Option<PathBuf>) -> Vec<Self> {
@@ -38,42 +97,11 @@ impl Source {
             .collect()
     }
 
-    /// Iterate through valid sources of configuration, in priority order (highest to lowest):
-    ///
-    /// 1. `file`, passed as a CLI argument/environment variable
-    /// 2. `.topiary/languages.ncl` (or equivalent)
-    /// 3. `~/.config/topiary/languages.ncl`
-    /// 4. OS configuration directory (if different from #3)
-    /// 5. Built-in configuration: [`Self::builtin_nickel`]
-    pub fn config_sources(
-        file: &Option<PathBuf>,
-    ) -> impl Iterator<Item = (&'static str, Option<Self>)> {
-        [
-            ("CLI", file.clone()),
-            ("workspace", find_workspace_configuration_dir_config()),
-            // Certain platforms have alternate config directories (macOS)
-            // polyfill for linux-like `find_os_configuration_dir_config()`
-            #[cfg(any(
-                target_os = "windows",
-                target_os = "macos",
-                target_os = "ios",
-                target_arch = "wasm32"
-            ))]
-            (
-                "~/.config",
-                std::env::home_dir().map(|home| home.join(".config/topiary")),
-            ),
-            ("OS", Some(find_os_configuration_dir_config())),
-        ]
-        .into_iter()
-        .map(|(hint, candidate)| (hint, Self::find(&candidate).map(Self::File)))
-        // add
-        .chain(std::iter::once(("built-in", Some(Self::Builtin))))
-    }
-
-    // all config sources that have been shown to exist
-    fn valid_config_sources(file: &Option<PathBuf>) -> impl Iterator<Item = (&'static str, Self)> {
-        Self::config_sources(file).filter_map(|(h, c)| c.map(|source| (h, source)))
+    fn exists(&self) -> bool {
+        match self {
+            Source::Builtin => true,
+            Source::File(path) => path.exists(),
+        }
     }
 
     /// Return a valid source of configuration with the highest priority.
@@ -84,27 +112,6 @@ impl Source {
             .expect("built-in should always be present");
         log::info!("Using {hint}-specified configuration: {source}");
         source
-    }
-
-    /// Attempts to find a configuration file, given a `path` parameter. If `path` is `None`, then
-    /// the function returns `None`.
-    /// Otherwise, if the path is a directory, then it attempts to find a `languages.ncl` file
-    /// within that directory. If the file exists, then it returns `Some(path.join("languages.ncl"))`.
-    /// If the file does not exist, then it logs a message and returns `None`. If the path is a file,
-    /// then it returns `Some(path)`.
-    fn find(path: &Option<PathBuf>) -> Option<PathBuf> {
-        let candidate = path.clone().map(|path| {
-            if path.is_dir() {
-                return path.join("languages.ncl");
-            }
-            path
-        })?;
-        if candidate.exists() {
-            Some(candidate)
-        } else {
-            log::debug!("configuration file not found: {}.", candidate.display());
-            None
-        }
     }
 
     #[allow(clippy::result_large_err)]
@@ -125,7 +132,7 @@ impl Source {
 impl fmt::Display for Source {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Builtin => write!(f, "Built-in configuration"),
+            Self::Builtin => write!(f, "<built-in>"),
 
             Self::File(path) => {
                 // If the configuration is provided through a file, then we know by this point that
@@ -134,7 +141,7 @@ impl fmt::Display for Source {
                 // fail if the shell has cleaned things up from under us; in which case, we
                 // fallback to the original `path`.
                 let config = path.canonicalize().unwrap_or(path.clone());
-                write!(f, "{}", config.to_string_lossy())
+                write!(f, "{}", config.display())
             }
         }
     }

@@ -12,9 +12,15 @@ use std::{
 };
 
 use error::Benign;
+use tabled::{
+    settings::{object::Rows, panel::Header, themes::ColumnNames, Panel, Style},
+    Table,
+};
 use topiary_config::source::Source;
 use topiary_core::{check_query_coverage, formatter, Operation};
 
+#[cfg(feature = "nickel")]
+use crate::io::format_config;
 use crate::{
     cli::Commands,
     error::{CLIError, CLIResult, TopiaryError},
@@ -171,34 +177,34 @@ async fn run() -> CLIResult<()> {
 
                             (format!("{s}"), exists)
                         })
-                        .unwrap_or_else(|| ("path unknown".to_string(), false));
+                        .unwrap_or_else(|| ("<unknown>".to_string(), false));
                     (hint, source, exists)
                 })
                 .collect::<Vec<_>>();
-            println!("{:?}", sources);
+
+            let mut table = Table::builder(sources);
+            table.remove_record(0);
+            table.insert_record(0, ["source", "path", "exists"]);
+            println!("{}", table.build().with(Style::modern_rounded()));
         }
 
         Commands::Config {
             show_sources: false,
         } => {
-            // Output the collated nickel configuration
+            // Output the collated nickel configuration.
+            // Don't fail on error but merely log the event since the original `nickel_config` is
+            // already valid.
             #[cfg(feature = "nickel")]
+            if format_config(&config, &nickel_config)
+                .await
+                .inspect_err(|e| {
+                    // nickel may not be present in user config so log as info
+                    log::info!("Config formatting error: {}", e);
+                })
+                .is_ok()
             {
-                let nickel_config = format!("{nickel_config}");
-                let mut formatted_config = BufWriter::new(OutputFile::Stdout);
-                let language = to_language_from_config(&config, "nickel").await?;
-
-                formatter(
-                    &mut nickel_config.as_bytes(),
-                    &mut formatted_config,
-                    &language,
-                    Operation::Format {
-                        skip_idempotence: true,
-                        tolerate_parsing_errors: false,
-                    },
-                )?;
+                return Ok(());
             }
-            #[cfg(not(feature = "nickel"))]
             println!("{nickel_config}");
         }
 
