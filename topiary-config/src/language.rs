@@ -85,6 +85,10 @@ impl Language {
         Self { name, config }
     }
 
+    pub fn indent(&self) -> Option<String> {
+        self.config.indent.clone()
+    }
+
     #[cfg(not(target_arch = "wasm32"))]
     #[allow(clippy::result_large_err)]
     pub fn find_query_file(&self) -> TopiaryConfigResult<PathBuf> {

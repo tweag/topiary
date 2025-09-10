@@ -48,6 +48,16 @@ impl Display for QuerySource {
     }
 }
 
+impl QuerySource {
+    async fn get_content(&self) -> CLIResult<String> {
+        let contents = match self {
+            Self::Path(query) => tokio::fs::read_to_string(query).await?,
+            Self::BuiltIn(contents) => contents.to_owned(),
+        };
+        Ok(contents)
+    }
+}
+
 /// Unified interface for input sources. We either have input from:
 /// * Standard input, in which case we need to specify the language and, optionally, query override
 /// * A sequence of files
@@ -120,17 +130,14 @@ impl InputFile<'_> {
     #[allow(clippy::result_large_err)]
     pub async fn to_language(&self) -> CLIResult<Language> {
         let grammar = self.language().grammar()?;
-        let contents = match &self.query {
-            QuerySource::Path(query) => tokio::fs::read_to_string(query).await?,
-            QuerySource::BuiltIn(contents) => contents.to_owned(),
-        };
-        let query = TopiaryQuery::new(&grammar, &contents)?;
+        let query_contents = self.query.get_content().await?;
+        let query = TopiaryQuery::new(&grammar, &query_contents)?;
 
         Ok(Language {
             name: self.language.name.clone(),
             query,
             grammar,
-            indent: self.language().config.indent.clone(),
+            indent: self.language().indent(),
         })
     }
 
@@ -148,6 +155,25 @@ impl InputFile<'_> {
     pub fn query(&self) -> &QuerySource {
         &self.query
     }
+}
+
+pub(crate) async fn to_language_from_config<T: AsRef<str>>(
+    config: &Configuration,
+    name: T,
+) -> CLIResult<Language> {
+    let config_language = config.get_language(name.as_ref())?;
+    let grammar = config_language.grammar()?;
+    let query_content = to_query_from_language(config_language)?
+        .get_content()
+        .await?;
+    let query = TopiaryQuery::new(&grammar, &query_content)?;
+
+    Ok(Language {
+        name: name.as_ref().to_string(),
+        query,
+        grammar,
+        indent: config_language.indent(),
+    })
 }
 
 /// Simple helper function to read the full content of an io Read stream

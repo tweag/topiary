@@ -12,12 +12,13 @@ use std::{
 };
 
 use error::Benign;
+use topiary_config::source::Source;
 use topiary_core::{check_query_coverage, formatter, Operation};
 
 use crate::{
     cli::Commands,
     error::{CLIError, CLIResult, TopiaryError},
-    io::{read_input, Inputs, OutputFile},
+    io::{read_input, to_language_from_config, Inputs, OutputFile},
     language::LanguageDefinitionCache,
 };
 
@@ -38,10 +39,9 @@ async fn main() -> ExitCode {
 async fn run() -> CLIResult<()> {
     let args = cli::get_args()?;
 
-    let (config, nickel_config) = topiary_config::Configuration::fetch(
-        args.global.merge_configuration,
-        &args.global.configuration,
-    )?;
+    let file_config = &args.global.configuration;
+    let (config, nickel_config) =
+        topiary_config::Configuration::fetch(args.global.merge_configuration, file_config)?;
 
     // Delegate by subcommand
     match args.command {
@@ -159,9 +159,47 @@ async fn run() -> CLIResult<()> {
             .map_err(|e| e.with_location(format!("{}", buf_input.get_ref().source())))?;
         }
 
-        Commands::Config => {
+        Commands::Config { show_sources: true } => {
+            let sources = Source::config_sources(file_config)
+                .map(|(hint, source)| {
+                    let (source, exists) = source
+                        .map(|s| {
+                            let exists = match s {
+                                Source::File(ref file) => file.exists(),
+                                Source::Builtin => true,
+                            };
+
+                            (format!("{s}"), exists)
+                        })
+                        .unwrap_or_else(|| ("path unknown".to_string(), false));
+                    (hint, source, exists)
+                })
+                .collect::<Vec<_>>();
+            println!("{:?}", sources);
+        }
+
+        Commands::Config {
+            show_sources: false,
+        } => {
             // Output the collated nickel configuration
-            println!("{nickel_config}")
+            #[cfg(feature = "nickel")]
+            {
+                let nickel_config = format!("{nickel_config}");
+                let mut formatted_config = BufWriter::new(OutputFile::Stdout);
+                let language = to_language_from_config(&config, "nickel").await?;
+
+                formatter(
+                    &mut nickel_config.as_bytes(),
+                    &mut formatted_config,
+                    &language,
+                    Operation::Format {
+                        skip_idempotence: true,
+                        tolerate_parsing_errors: false,
+                    },
+                )?;
+            }
+            #[cfg(not(feature = "nickel"))]
+            println!("{nickel_config}");
         }
 
         Commands::Prefetch { force, language } => match language {

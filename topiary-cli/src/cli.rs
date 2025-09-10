@@ -150,7 +150,11 @@ pub enum Commands {
 
     /// Print the current configuration
     #[command(alias = "cfg", display_order = 3)]
-    Config,
+    Config {
+        /// Display config sources that topiary looks through
+        #[arg(short, long)]
+        show_sources: bool,
+    },
 
     /// Prefetch languages in the configuration
     #[command(display_order = 4)]
