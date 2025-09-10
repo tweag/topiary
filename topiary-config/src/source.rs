@@ -36,6 +36,7 @@ impl Source {
             ("workspace", find_workspace_configuration_dir_config()),
             // Certain platforms have alternate config directories (macOS)
             // polyfill for linux-like `find_os_configuration_dir_config()`
+            // https://docs.rs/directories/latest/src/directories/lib.rs.html#38-43
             #[cfg(any(
                 target_os = "windows",
                 target_os = "macos",
