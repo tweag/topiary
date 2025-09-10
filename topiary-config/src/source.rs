@@ -31,7 +31,6 @@ impl Source {
     pub fn config_sources(
         file: &Option<PathBuf>,
     ) -> impl Iterator<Item = (&'static str, Option<Self>)> {
-        println!("{:?}", find_os_configuration_dir_config());
         [
             ("CLI", file.clone()),
             ("workspace", find_workspace_configuration_dir_config()),
