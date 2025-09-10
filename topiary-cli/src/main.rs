@@ -12,10 +12,7 @@ use std::{
 };
 
 use error::Benign;
-use tabled::{
-    settings::{object::Rows, panel::Header, themes::ColumnNames, Panel, Style},
-    Table,
-};
+use tabled::{settings::Style, Table};
 use topiary_config::source::Source;
 use topiary_core::{check_query_coverage, formatter, Operation};
 
@@ -24,7 +21,7 @@ use crate::io::format_config;
 use crate::{
     cli::Commands,
     error::{CLIError, CLIResult, TopiaryError},
-    io::{read_input, to_language_from_config, Inputs, OutputFile},
+    io::{read_input, Inputs, OutputFile},
     language::LanguageDefinitionCache,
 };
 
