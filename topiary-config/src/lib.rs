@@ -22,10 +22,9 @@ use crate::error::TopiaryConfigFetchingError;
 #[cfg(not(target_arch = "wasm32"))]
 use tempfile::tempdir;
 
-use crate::{
-    error::{TopiaryConfigError, TopiaryConfigResult},
-    source::Source,
-};
+use crate::error::{TopiaryConfigError, TopiaryConfigResult};
+
+pub use source::Source;
 
 /// The configuration of the Topiary.
 ///

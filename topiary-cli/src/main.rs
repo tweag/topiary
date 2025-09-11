@@ -163,17 +163,12 @@ async fn run() -> CLIResult<()> {
         Commands::Config { show_sources: true } => {
             let sources = Source::config_sources(file_config)
                 .map(|(hint, source)| {
-                    let (source, exists) = source
-                        .map(|s| {
-                            let exists = match s {
-                                Source::File(ref file) => file.exists(),
-                                Source::Builtin => true,
-                            };
-
-                            (format!("{s}"), exists)
-                        })
-                        .unwrap_or_else(|| ("<unknown>".to_string(), false));
-                    (hint, source, exists)
+                    let languages_config = source.languages_config();
+                    (
+                        hint,
+                        format!("{languages_config}"),
+                        languages_config.exists(),
+                    )
                 })
                 .collect::<Vec<_>>();
 
