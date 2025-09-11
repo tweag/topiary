@@ -51,13 +51,8 @@ impl Source {
 
         sources.append(&mut vec![
             ("workspace", workspace_config_dir()),
-            #[cfg(any(
-                target_os = "windows",
-                target_os = "macos",
-                target_os = "ios",
-                target_arch = "wasm32"
-            ))]
-            ("home", unix_home_config_dir()),
+            #[cfg(target_os = "macos")]
+            ("unix-home", unix_home_config_dir()),
             ("OS", os_config_dir()),
             // add built-in config to end
             ("built-in", Self::Builtin),
@@ -198,12 +193,7 @@ fn workspace_config_dir() -> Source {
 /// polyfill for linux-like `os_config_dir()`
 /// https://docs.rs/directories/latest/src/directories/lib.rs.html#38-43
 /// Directory is not guaranteed to exist.
-#[cfg(any(
-    target_os = "windows",
-    target_os = "macos",
-    target_os = "ios",
-    target_arch = "wasm32"
-))]
+#[cfg(target_os = "macos")]
 fn unix_home_config_dir() -> Source {
     let dir = std::env::home_dir()
         .unwrap_or_default()
