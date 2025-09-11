@@ -171,7 +171,8 @@ async fn run() -> CLIResult<()> {
                 .map(|(hint, source)| {
                     let languages_exists = bool_emoji(source.languages_exists());
                     let queries_exists =
-                        bool_emoji(source.queries_dir().map(|p| p.exists()).unwrap_or(false));
+                    // Should Source::Builtin always return true for queries?
+                        bool_emoji(source.queries_dir().map(|p| p.exists()).unwrap_or(true));
                     (hint, format!("{source}"), languages_exists, queries_exists)
                 })
                 .collect::<Vec<_>>();
