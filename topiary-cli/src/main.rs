@@ -161,20 +161,24 @@ async fn run() -> CLIResult<()> {
         }
 
         Commands::Config { show_sources: true } => {
+            let bool_emoji = |b: bool| {
+                match b {
+                    true => "\u{2705}",  // Check Mark
+                    false => "\u{274C}", // Cross Mark
+                }
+            };
             let sources = Source::config_sources(file_config)
                 .map(|(hint, source)| {
-                    let languages_config = source.languages_config();
-                    (
-                        hint,
-                        format!("{languages_config}"),
-                        languages_config.exists(),
-                    )
+                    let languages_exists = bool_emoji(source.languages_exists());
+                    let queries_exists =
+                        bool_emoji(source.queries_dir().map(|p| p.exists()).unwrap_or(false));
+                    (hint, format!("{source}"), languages_exists, queries_exists)
                 })
                 .collect::<Vec<_>>();
 
             let mut table = Table::builder(sources);
             table.remove_record(0);
-            table.insert_record(0, ["source", "path", "exists"]);
+            table.insert_record(0, ["source", "path", "languages.ncl", "queries"]);
             println!("{}", table.build().with(Style::modern_rounded()));
         }
 

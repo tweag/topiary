@@ -1,6 +1,12 @@
 //! Configuration for Topiary can be sourced from either that which is built-in, or from disk.
 
-use std::{env::current_dir, ffi::OsString, fmt, io::Cursor, path::PathBuf};
+use std::{
+    env::current_dir,
+    ffi::OsString,
+    fmt,
+    io::Cursor,
+    path::{Path, PathBuf},
+};
 
 use crate::error::{TopiaryConfigError, TopiaryConfigResult};
 
@@ -60,8 +66,8 @@ impl Source {
         sources.into_iter()
     }
 
-    // return expected query directory associated with self
-    pub(crate) fn query_dir(&self) -> Option<PathBuf> {
+    /// Return expected query directory associated with the source path
+    pub fn queries_dir(&self) -> Option<PathBuf> {
         match self {
             Source::Builtin => None,
             Source::Directory(dir) => Some(dir.join("queries")),
@@ -70,24 +76,27 @@ impl Source {
     }
 
     // return a config file if able uses `languages.ncl` for directories
-    pub fn languages_config(&self) -> Self {
+    pub fn languages_file(&self) -> Option<PathBuf> {
         match self {
-            // no-op for built-in
-            Source::Builtin | Source::File(_) => self.clone(),
-            Source::Directory(dir) => Self::File(dir.join("languages.ncl")),
+            Source::Builtin => None,
+            Source::File(file) => Some(file.clone()),
+            Source::Directory(dir) => Some(dir.join("languages.ncl")),
         }
     }
 
     // return an iterator containing all config sources that have been shown to exist
     fn valid_config_sources(file: &Option<PathBuf>) -> impl Iterator<Item = (&'static str, Self)> {
         Self::config_sources(file).filter_map(|(hint, candidate)| {
-            let languages_config = candidate.languages_config();
-            if !languages_config.exists() {
+            if matches!(candidate, Self::Builtin) {
+                return Some((hint, candidate));
+            }
+            let languages_file = candidate.languages_file().unwrap();
+            if !languages_file.exists() {
                 log::debug!("configuration file not found: {}.", candidate);
                 return None;
             }
 
-            Some((hint, languages_config))
+            Some((hint, Self::File(languages_file)))
         })
     }
     /// Return all valid configuration sources.
@@ -108,10 +117,11 @@ impl Source {
     }
 
     /// Checks if a given [`Self`] variant can be found as a path or value
-    pub fn exists(&self) -> bool {
+    pub fn languages_exists(&self) -> bool {
         match self {
             Source::Builtin => true,
-            Source::File(path) | Source::Directory(path) => path.exists(),
+            Source::File(file) => file.exists(),
+            Source::Directory(dir) => dir.join("languages.ncl").exists(),
         }
     }
 
@@ -130,16 +140,20 @@ impl Source {
         match self {
             Self::Builtin => Ok(self.builtin_nickel().into_bytes()),
 
-            Self::Directory(_) => self.languages_config().read(),
-            Self::File(path) => std::fs::read_to_string(path)
-                .map_err(TopiaryConfigError::Io)
-                .map(|s| s.into_bytes()),
+            Self::Directory(dir) => read_to_string(&dir.join("languages.ncl")),
+            Self::File(path) => read_to_string(path),
         }
     }
 
     fn builtin_nickel(&self) -> String {
         include_str!("../languages.ncl").to_string()
     }
+}
+
+fn read_to_string(path: &Path) -> TopiaryConfigResult<Vec<u8>> {
+    std::fs::read_to_string(path)
+        .map_err(TopiaryConfigError::Io)
+        .map(|s| s.into_bytes())
 }
 
 impl fmt::Display for Source {
