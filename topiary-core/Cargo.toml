@@ -25,7 +25,7 @@ tokio = { workspace = true, features = ["macros", "rt"] }
 topiary-tree-sitter-facade = { workspace = true }
 tree-sitter = { workspace = true }
 rayon = { workspace = true }
-thiserror = "2.0.16"
+thiserror = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 futures = { workspace = true }
