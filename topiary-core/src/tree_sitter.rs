@@ -284,6 +284,23 @@ pub fn apply_query(
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<AtomCollection> {
     let tree = parse(input_content, grammar, tolerate_parsing_errors)?;
+    apply_query_tree(tree, input_content, query)
+}
+
+/// Applies a query to a tree and returns a collection of atoms.
+///
+/// # Errors
+///
+/// This function can return an error if:
+/// - The query content cannot be parsed by the grammar.
+/// - The input exhaustivity check fails.
+/// - A found predicate could not be parsed or is malformed.
+/// - A unknown capture name was encountered in the query.
+pub fn apply_query_tree(
+    tree: Tree,
+    input_content: &str,
+    query: &TopiaryQuery,
+) -> FormatterResult<AtomCollection> {
     let root = tree.root_node();
     let source = input_content.as_bytes();
 
