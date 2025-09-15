@@ -239,6 +239,31 @@ pub fn formatter(
         ))
     })?;
 
+    let tree = match operation {
+        Operation::Format {
+            tolerate_parsing_errors,
+            ..
+        } => tree_sitter::parse(&content, &language.grammar, tolerate_parsing_errors)?,
+        Operation::Visualise { .. } => tree_sitter::parse(&content, &language.grammar, false)?,
+    };
+
+    formatter_tree(tree, &content, output, language, operation)?;
+
+    Ok(())
+}
+
+/// The function that takes a tree and formats, or visualises an output.
+///
+/// # Errors
+///
+/// If formatting fails for any reason, a `FormatterError` will be returned.
+pub fn formatter_tree(
+    tree: topiary_tree_sitter_facade::Tree,
+    input_content: &str,
+    output: &mut impl io::Write,
+    language: &Language,
+    operation: Operation,
+) -> FormatterResult<()> {
     match operation {
         Operation::Format {
             skip_idempotence,
@@ -247,12 +272,7 @@ pub fn formatter(
             // All the work related to tree-sitter and the query is done here
             log::info!("Apply Tree-sitter query");
 
-            let mut atoms = tree_sitter::apply_query(
-                &content,
-                &language.query,
-                &language.grammar,
-                tolerate_parsing_errors,
-            )?;
+            let mut atoms = tree_sitter::apply_query_tree(tree, input_content, &language.query)?;
 
             // Various post-processing of whitespace
             atoms.post_process();
@@ -276,7 +296,6 @@ pub fn formatter(
         }
 
         Operation::Visualise { output_format } => {
-            let tree = tree_sitter::parse(&content, &language.grammar, false)?;
             let root: SyntaxNode = tree.root_node().into();
 
             match output_format {
@@ -285,7 +304,6 @@ pub fn formatter(
             };
         }
     };
-
     Ok(())
 }
 
