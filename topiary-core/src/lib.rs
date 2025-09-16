@@ -261,9 +261,9 @@ pub fn formatter_str(
         _ => false,
     };
 
-    let tree = tree_sitter::parse(&input, &language.grammar, tolerate_parsing_errors)?;
+    let tree = tree_sitter::parse(input, &language.grammar, tolerate_parsing_errors)?;
 
-    formatter_tree(tree, &input, output, language, operation)?;
+    formatter_tree(tree, input, output, language, operation)?;
 
     Ok(())
 }
