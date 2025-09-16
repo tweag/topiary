@@ -50,6 +50,7 @@ This name should be decided amongst the team before the release.
 - [#1069](https://github.com/tweag/topiary/pull/1069) split CI nix dependent tests into separate jobs, thanks to @mkatychev
 - [#1070](https://github.com/tweag/topiary/pull/1070) Implemented parallelism for query coverage, thanks to @mkatychev
 - [#1070](https://github.com/tweag/topiary/pull/1072) Add source spans to query coverage results, thanks to @mkatychev
+- [#1080](https://github.com/tweag/topiary/pull/1080) Allow formatting existing tree-sitter trees, thanks to @shadr 
 
 ### Changed
 - [#1031](https://github.com/tweag/topiary/pull/1031) Removed the Bash rewrite rule for converting POSIX `[` to Bash's `[[`
