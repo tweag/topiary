@@ -239,6 +239,20 @@ pub fn formatter(
         ))
     })?;
 
+    formatter_str(&content, output, language, operation)
+}
+
+/// The function that takes a string slice and formats, or visualises an output.
+///
+/// # Errors
+///
+/// If formatting fails for any reason, a `FormatterError` will be returned.
+pub fn formatter_str(
+    input: &str,
+    output: &mut impl io::Write,
+    language: &Language,
+    operation: Operation,
+) -> FormatterResult<()> {
     let tolerate_parsing_errors = match operation {
         Operation::Format {
             tolerate_parsing_errors,
@@ -247,9 +261,9 @@ pub fn formatter(
         _ => false,
     };
 
-    let tree = tree_sitter::parse(&content, &language.grammar, tolerate_parsing_errors)?;
+    let tree = tree_sitter::parse(&input, &language.grammar, tolerate_parsing_errors)?;
 
-    formatter_tree(tree, &content, output, language, operation)?;
+    formatter_tree(tree, &input, output, language, operation)?;
 
     Ok(())
 }
