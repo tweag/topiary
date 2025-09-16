@@ -239,13 +239,15 @@ pub fn formatter(
         ))
     })?;
 
-    let tree = match operation {
+    let tolerate_parsing_errors = match operation {
         Operation::Format {
             tolerate_parsing_errors,
             ..
-        } => tree_sitter::parse(&content, &language.grammar, tolerate_parsing_errors)?,
-        Operation::Visualise { .. } => tree_sitter::parse(&content, &language.grammar, false)?,
+        } => tolerate_parsing_errors,
+        _ => false,
     };
+
+    let tree = tree_sitter::parse(&content, &language.grammar, tolerate_parsing_errors)?;
 
     formatter_tree(tree, &content, output, language, operation)?;
 
