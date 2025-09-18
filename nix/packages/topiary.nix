@@ -58,7 +58,7 @@ let
         openssl.dev
       ]
       ++ optionals stdenv.isDarwin [
-        darwin.apple_sdk.frameworks.Security
+        apple-sdk
       ];
   };
 
