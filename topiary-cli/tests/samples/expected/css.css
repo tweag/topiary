@@ -6,6 +6,11 @@
   color: firebrick;
 }
 
+/* Issue 1084 */
+.Metric-range--0-¼ {
+  --Metric-track-gradient: var(--greenLight), var(--green), var(--yellowLight) 27%, var(--yellow), var(--orangeLight) 53%, var(--orange), var(--red) 81%, var(--red);
+}
+
 /*--------------------------------------------------------------------*/
 
 /*!
