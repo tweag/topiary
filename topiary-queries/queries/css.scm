@@ -62,6 +62,11 @@
 )
 
 (
+  (comment) @prepend_spaced_scoped_softline
+  (#scope_id! "left_juxtaposed_comment")
+)
+
+(
   (comment) @prepend_begin_scope
   .
   (_) @append_end_scope
@@ -70,23 +75,8 @@
 )
 
 (
-  (comment) @prepend_space
-  (#single_line_scope_only! "left_juxtaposed_comment")
-)
-
-(
-  (comment) @prepend_hardline
-  (#multi_line_scope_only! "left_juxtaposed_comment")
-)
-
-(
-  (comment) @append_space
-  (#single_line_scope_only! "right_juxtaposed_comment")
-)
-
-(
-  (comment) @append_hardline
-  (#multi_line_scope_only! "right_juxtaposed_comment")
+  (comment) @append_spaced_scoped_softline
+  (#scope_id! "right_juxtaposed_comment")
 )
 
 ; Allow blank lines before any declaration in a block except the first one
