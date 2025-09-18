@@ -105,8 +105,18 @@
 )
 
 ; Appends hardline between declaration
-(declaration
-  ";" @append_hardline
+(
+  (declaration
+    ";" @append_hardline
+  )
+  .
+  (comment)? @do_nothing
+)
+
+(
+  (_)
+  .
+  (comment) @prepend_space @append_hardline
 )
 
 ; Add space between values after a property name
