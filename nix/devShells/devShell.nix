@@ -20,9 +20,11 @@ craneLib.devShell (
             cargo-dist
             cargo-flamegraph
             rust-analyzer
+
             jq
             nixdoc
             mdbook
+            mdbook-man
 
             pkg-config
             openssl.dev
