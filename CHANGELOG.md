@@ -47,11 +47,16 @@ This name should be decided amongst the team before the release.
 ### Added
 - [#921](https://github.com/tweag/topiary/pull/921) man pages for the Topiary CLI
 - [#1015](https://github.com/tweag/topiary/pull/1015) Add support for include expressions to Nickel formatting
+- [#1049](https://github.com/tweag/topiary/pull/1015) Add support for rich grammar parsing errors using miette, thanks to @mkatychev
+- [#1069](https://github.com/tweag/topiary/pull/1069) split CI nix dependent tests into separate jobs, thanks to @mkatychev
+- [#1070](https://github.com/tweag/topiary/pull/1070) Implemented parallelism for query coverage, thanks to @mkatychev
+- [#1070](https://github.com/tweag/topiary/pull/1072) Add source spans to query coverage results, thanks to @mkatychev
+- [#1080](https://github.com/tweag/topiary/pull/1080) Allow formatting existing tree-sitter trees, thanks to @shadr 
+
+### Changed
+- [#1031](https://github.com/tweag/topiary/pull/1031) Removed the Bash rewrite rule for converting POSIX `[` to Bash's `[[`
 
 <!--
-### Changed
-- <Changes in existing functionality>
-
 ### Deprecated
 - <Soon-to-be removed features>
 

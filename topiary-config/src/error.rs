@@ -3,6 +3,7 @@ use std::{error, fmt, io, path, result};
 pub type TopiaryConfigResult<T> = result::Result<T, TopiaryConfigError>;
 
 #[derive(Debug)]
+#[allow(clippy::large_enum_variant)]
 pub enum TopiaryConfigError {
     FileNotFound(path::PathBuf),
     UnknownLanguage(String),
@@ -44,10 +45,10 @@ impl fmt::Display for TopiaryConfigError {
             TopiaryConfigError::Io(error) => write!(f, "We encountered an io error: {error}"),
             TopiaryConfigError::Missing => write!(f, "A configuration file is missing. If you passed a configuration file, make sure it exists."),
             TopiaryConfigError::TreeSitterFacade(_) => write!(f, "We could not load the grammar for the given language"),
-            TopiaryConfigError::Nickel(e) => write!(f, "Nickel error: {:#?}\n\nDid you forget to add a \"priority\" annotation in your config file?", e),
-            TopiaryConfigError::NickelDeserialization(e) => write!(f, "Nickel error: {:#?}", e),
+            TopiaryConfigError::Nickel(e) => write!(f, "Nickel error: {e:#?}\n\nDid you forget to add a \"priority\" annotation in your config file?"),
+            TopiaryConfigError::NickelDeserialization(e) => write!(f, "Nickel error: {e:#?}"),
             #[cfg(not(target_arch = "wasm32"))]
-            TopiaryConfigError::Fetching(e) => write!(f, "Error Fetching Language: {}", e),
+            TopiaryConfigError::Fetching(e) => write!(f, "Error Fetching Language: {e}"),
         }
     }
 }
@@ -56,14 +57,14 @@ impl fmt::Display for TopiaryConfigError {
 impl fmt::Display for TopiaryConfigFetchingError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            TopiaryConfigFetchingError::Git(e) => write!(f, "Git error: {:?}", e),
+            TopiaryConfigFetchingError::Git(e) => write!(f, "Git error: {e:?}"),
             TopiaryConfigFetchingError::Build(e) => {
                 write!(f, "Compilation error: {e},")
             }
             TopiaryConfigFetchingError::Io(error) => {
                 write!(f, "We encountered an io error: {error}")
             }
-            TopiaryConfigFetchingError::LibLoading(e) => write!(f, "Libloading error: {:?}", e),
+            TopiaryConfigFetchingError::LibLoading(e) => write!(f, "Libloading error: {e:?}"),
             TopiaryConfigFetchingError::GrammarFileNotFound(path) => write!(
                 f,
                 "Attempted to load grammar at `{}`, but no file found",

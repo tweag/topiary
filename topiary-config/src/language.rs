@@ -86,6 +86,7 @@ impl Language {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
+    #[allow(clippy::result_large_err)]
     pub fn find_query_file(&self) -> TopiaryConfigResult<PathBuf> {
         let basename = PathBuf::from(self.name.as_str()).with_extension("scm");
 
@@ -170,6 +171,7 @@ impl Language {
     }
 
     #[cfg(target_arch = "wasm32")]
+    #[allow(clippy::result_large_err)]
     pub async fn grammar(&self) -> TopiaryConfigResult<topiary_tree_sitter_facade::Language> {
         let language_name = self.name.as_str();
 
@@ -210,10 +212,7 @@ impl GitSource {
         name: &str,
         library_path: PathBuf,
     ) -> Result<(), TopiaryConfigFetchingError> {
-        log::info!(
-            "{}: Language Grammar not found, attempting to fetch and compile it",
-            name
-        );
+        log::info!("{name}: Language Grammar not found, attempting to fetch and compile it");
         // Create a temporary directory to clone the repository to. We could
         // cached the repositories, but the additional disk space is probably
         // not worth the benefits gained by caching. The tempdir is deleted
@@ -233,7 +232,7 @@ impl GitSource {
         tmp_dir: PathBuf,
     ) -> Result<(), TopiaryConfigFetchingError> {
         if !force && library_path.is_file() {
-            log::info!("{}: Built grammar already exists; nothing to do", name);
+            log::info!("{name}: Built grammar already exists; nothing to do");
             return Ok(());
         }
         let tmp_dir = tmp_dir.join(name);

@@ -53,6 +53,7 @@ impl Configuration {
     /// with the path that was not found.
     /// If the configuration file exists, but cannot be parsed, this function will return a
     /// `TopiaryConfigError` with the error that occurred.
+    #[allow(clippy::result_large_err)]
     pub fn fetch(merge: bool, file: &Option<PathBuf>) -> TopiaryConfigResult<(Self, RichTerm)> {
         // If we have an explicit file, fail if it doesn't exist
         if let Some(path) = file {
@@ -82,6 +83,7 @@ impl Configuration {
     ///
     /// If the provided language name cannot be found in the `Configuration`, this
     /// function returns a `TopiaryConfigError`
+    #[allow(clippy::result_large_err)]
     pub fn get_language<T>(&self, name: T) -> TopiaryConfigResult<&Language>
     where
         T: AsRef<str> + fmt::Display,
@@ -148,6 +150,7 @@ impl Configuration {
     ///
     /// If the language could not be found or the Grammar could not be build, a `TopiaryConfigError` is returned.
     #[cfg(not(target_arch = "wasm32"))]
+    #[allow(clippy::result_large_err)]
     pub fn prefetch_language<T>(&self, language: T, force: bool) -> TopiaryConfigResult<()>
     where
         T: AsRef<str> + fmt::Display,
@@ -166,6 +169,7 @@ impl Configuration {
     ///
     /// If any Grammar could not be build, a `TopiaryConfigError` is returned.
     #[cfg(not(target_arch = "wasm32"))]
+    #[allow(clippy::result_large_err)]
     pub fn prefetch_languages(&self, force: bool) -> TopiaryConfigResult<()> {
         let tmp_dir = tempdir()?;
         let tmp_dir_path = tmp_dir.path().to_owned();
@@ -200,6 +204,7 @@ impl Configuration {
     /// # Errors
     ///
     /// If the file extension is not supported, a `FormatterError` will be returned.
+    #[allow(clippy::result_large_err)]
     pub fn detect<P: AsRef<Path>>(&self, path: P) -> TopiaryConfigResult<&Language> {
         let pb = &path.as_ref().to_path_buf();
         if let Some(extension) = pb.extension().map(|ext| ext.to_string_lossy()) {
@@ -217,6 +222,7 @@ impl Configuration {
         Err(TopiaryConfigError::NoExtension(pb.clone()))
     }
 
+    #[allow(clippy::result_large_err)]
     fn parse_and_merge(sources: &[Source]) -> TopiaryConfigResult<(Self, RichTerm)> {
         let inputs = sources.iter().map(|s| s.clone().into());
 
@@ -230,6 +236,7 @@ impl Configuration {
         Ok((serde_config.into(), term))
     }
 
+    #[allow(clippy::result_large_err)]
     fn parse(source: Source) -> TopiaryConfigResult<(Self, RichTerm)> {
         let mut program = Program::<CacheImpl>::new_from_input(
             source.into(),

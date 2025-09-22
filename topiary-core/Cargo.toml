@@ -15,6 +15,7 @@ license.workspace = true
 [dependencies]
 itertools = { workspace = true }
 log = { workspace = true }
+miette = { workspace = true }
 pretty_assertions = { workspace = true }
 prettydiff = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
@@ -23,6 +24,8 @@ streaming-iterator = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt"] }
 topiary-tree-sitter-facade = { workspace = true }
 tree-sitter = { workspace = true }
+rayon = { workspace = true }
+thiserror = "2.0.16"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 futures = { workspace = true }

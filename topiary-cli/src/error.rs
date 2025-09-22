@@ -9,6 +9,7 @@ pub type CLIResult<T> = result::Result<T, TopiaryError>;
 /// library code. This acts as a supertype of `FormatterError`, with additional members to denote
 /// CLI-specific failures.
 #[derive(Debug)]
+#[allow(clippy::large_enum_variant)]
 pub enum TopiaryError {
     Lib(FormatterError),
     Bin(String, Option<CLIError>),
