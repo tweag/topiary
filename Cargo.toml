@@ -78,6 +78,8 @@ topiary-core = { version = "0.6.1", path = "./topiary-core" }
 topiary-config = { version = "0.6.2", path = "./topiary-config" }
 topiary-queries = { version = "0.6.3", path = "./topiary-queries" }
 miette = { version = "7.6.0", features = ["fancy"] }
+tabled = "0.20.0"
+thiserror = "2.0.16"
 
 [profile.dev.package.lalrpop]
 opt-level = 3

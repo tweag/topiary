@@ -85,15 +85,22 @@ impl Language {
         Self { name, config }
     }
 
+    pub fn indent(&self) -> Option<String> {
+        self.config.indent.clone()
+    }
+
     #[cfg(not(target_arch = "wasm32"))]
     #[allow(clippy::result_large_err)]
     pub fn find_query_file(&self) -> TopiaryConfigResult<PathBuf> {
+        use crate::source::Source;
+
         let basename = PathBuf::from(self.name.as_str()).with_extension("scm");
 
         #[rustfmt::skip]
-        let potentials: [Option<PathBuf>; 4] = [
+        let potentials: [Option<PathBuf>; 5] = [
             std::env::var("TOPIARY_LANGUAGE_DIR").map(PathBuf::from).ok(),
             option_env!("TOPIARY_LANGUAGE_DIR").map(PathBuf::from),
+            Source::fetch_one(&None).queries_dir(),
             Some(PathBuf::from("./topiary-queries/queries")),
             Some(PathBuf::from("../topiary-queries/queries")),
         ];

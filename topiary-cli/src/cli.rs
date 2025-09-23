@@ -150,7 +150,10 @@ pub enum Commands {
 
     /// Print the current configuration
     #[command(alias = "cfg", display_order = 3)]
-    Config,
+    Config {
+        #[command(subcommand)]
+        command: Option<ConfigCommand>,
+    },
 
     /// Prefetch languages in the configuration
     #[command(display_order = 4)]
@@ -176,6 +179,12 @@ pub enum Commands {
         /// Shell (omit to detect from the environment)
         shell: Option<Shell>,
     },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum ConfigCommand {
+    /// Display config sources that Topiary looks through
+    ShowSources,
 }
 
 /// Parse CLI arguments and normalise them for the caller

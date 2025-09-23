@@ -2,13 +2,14 @@ use std::{
     ffi::OsString,
     fmt::{self, Display},
     fs::File,
-    io::{self, Read, Result, Seek, Write},
+    io::{self, BufWriter, Read, Result, Seek, Write},
     path::PathBuf,
 };
 
+use nickel_lang_core::term::RichTerm;
 use tempfile::tempfile;
 use topiary_config::Configuration;
-use topiary_core::{Language, TopiaryQuery};
+use topiary_core::{formatter, Language, Operation, TopiaryQuery};
 
 use crate::{
     cli::{AtLeastOneInput, ExactlyOneInput, FromStdin},
@@ -45,6 +46,16 @@ impl Display for QuerySource {
             QuerySource::Path(p) => write!(f, "{}", p.to_string_lossy()),
             QuerySource::BuiltIn(_) => write!(f, "built-in query"),
         }
+    }
+}
+
+impl QuerySource {
+    async fn get_content(&self) -> CLIResult<String> {
+        let contents = match self {
+            Self::Path(query) => tokio::fs::read_to_string(query).await?,
+            Self::BuiltIn(contents) => contents.to_owned(),
+        };
+        Ok(contents)
     }
 }
 
@@ -120,17 +131,14 @@ impl InputFile<'_> {
     #[allow(clippy::result_large_err)]
     pub async fn to_language(&self) -> CLIResult<Language> {
         let grammar = self.language().grammar()?;
-        let contents = match &self.query {
-            QuerySource::Path(query) => tokio::fs::read_to_string(query).await?,
-            QuerySource::BuiltIn(contents) => contents.to_owned(),
-        };
-        let query = TopiaryQuery::new(&grammar, &contents)?;
+        let query_contents = self.query.get_content().await?;
+        let query = TopiaryQuery::new(&grammar, &query_contents)?;
 
         Ok(Language {
             name: self.language.name.clone(),
             query,
             grammar,
-            indent: self.language().config.indent.clone(),
+            indent: self.language().indent(),
         })
     }
 
@@ -148,6 +156,25 @@ impl InputFile<'_> {
     pub fn query(&self) -> &QuerySource {
         &self.query
     }
+}
+
+pub(crate) async fn to_language_from_config<T: AsRef<str>>(
+    config: &Configuration,
+    name: T,
+) -> CLIResult<Language> {
+    let config_language = config.get_language(name.as_ref())?;
+    let grammar = config_language.grammar()?;
+    let query_content = to_query_from_language(config_language)?
+        .get_content()
+        .await?;
+    let query = TopiaryQuery::new(&grammar, &query_content)?;
+
+    Ok(Language {
+        name: name.as_ref().to_string(),
+        query,
+        grammar,
+        indent: config_language.indent(),
+    })
 }
 
 /// Simple helper function to read the full content of an io Read stream
@@ -383,4 +410,24 @@ where
             Some(CLIError::UnsupportedLanguage(name.to_string())),
         )),
     }
+}
+
+// convenience function to bundle nickel config formatting errors in one return value
+pub(crate) async fn format_config(config: &Configuration, nickel_term: &RichTerm) -> CLIResult<()> {
+    let nickel_config = format!("{nickel_term}");
+    let mut formatted_config = BufWriter::new(OutputFile::Stdout);
+    // if errors are encountered in formatting, return
+    let language = to_language_from_config(config, "nickel").await?;
+
+    formatter(
+        &mut nickel_config.as_bytes(),
+        &mut formatted_config,
+        &language,
+        Operation::Format {
+            skip_idempotence: true,
+            tolerate_parsing_errors: false,
+        },
+    )?;
+
+    Ok(())
 }

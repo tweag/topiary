@@ -12,6 +12,8 @@ use std::{
 };
 
 use error::Benign;
+use tabled::{settings::Style, Table};
+use topiary_config::source::Source;
 use topiary_core::{check_query_coverage, formatter, Operation};
 
 use crate::{
@@ -38,10 +40,9 @@ async fn main() -> ExitCode {
 async fn run() -> CLIResult<()> {
     let args = cli::get_args()?;
 
-    let (config, nickel_config) = topiary_config::Configuration::fetch(
-        args.global.merge_configuration,
-        &args.global.configuration,
-    )?;
+    let file_config = &args.global.configuration;
+    let (config, nickel_config) =
+        topiary_config::Configuration::fetch(args.global.merge_configuration, file_config)?;
 
     // Delegate by subcommand
     match args.command {
@@ -159,9 +160,47 @@ async fn run() -> CLIResult<()> {
             .map_err(|e| e.with_location(format!("{}", buf_input.get_ref().source())))?;
         }
 
-        Commands::Config => {
-            // Output the collated nickel configuration
-            println!("{nickel_config}")
+        Commands::Config {
+            command: Some(cli::ConfigCommand::ShowSources),
+        } => {
+            let bool_emoji = |b: bool| {
+                match b {
+                    true => "\u{2705}",  // Check Mark
+                    false => "\u{274C}", // Cross Mark
+                }
+            };
+            let sources = Source::config_sources(file_config)
+                .map(|(hint, source)| {
+                    let languages_exists = bool_emoji(source.languages_exists());
+                    let queries_exists =
+                    // Should Source::Builtin always return true for queries?
+                        bool_emoji(source.queries_dir().map(|p| p.exists()).unwrap_or(true));
+                    (hint, format!("{source}"), languages_exists, queries_exists)
+                })
+                .collect::<Vec<_>>();
+
+            let mut table = Table::builder(sources);
+            table.remove_record(0);
+            table.insert_record(0, ["source", "path", "languages.ncl", "queries"]);
+            println!("{}", table.build().with(Style::modern_rounded()));
+        }
+
+        Commands::Config { command: None } => {
+            // Output the collated nickel configuration.
+            // Don't fail on error but merely log the event since the original `nickel_config` is
+            // already valid.
+            #[cfg(feature = "nickel")]
+            if io::format_config(&config, &nickel_config)
+                .await
+                .inspect_err(|e| {
+                    // nickel may not be present in user config so log as info
+                    log::info!("Config formatting error: {}", e);
+                })
+                .is_ok()
+            {
+                return Ok(());
+            }
+            println!("{nickel_config}");
         }
 
         Commands::Prefetch { force, language } => match language {

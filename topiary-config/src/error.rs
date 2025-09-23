@@ -14,7 +14,7 @@ pub enum TopiaryConfigError {
     Io(io::Error),
     Missing,
     TreeSitterFacade(topiary_tree_sitter_facade::LanguageError),
-    Nickel(nickel_lang_core::error::Error),
+    Nickel(Box<nickel_lang_core::error::Error>),
     NickelDeserialization(nickel_lang_core::deserialize::RustDeserializationError),
     #[cfg(not(target_arch = "wasm32"))]
     Fetching(TopiaryConfigFetchingError),
@@ -82,7 +82,7 @@ impl From<nickel_lang_core::deserialize::RustDeserializationError> for TopiaryCo
 
 impl From<nickel_lang_core::error::Error> for TopiaryConfigError {
     fn from(e: nickel_lang_core::error::Error) -> Self {
-        Self::Nickel(e)
+        Self::Nickel(e.into())
     }
 }
 

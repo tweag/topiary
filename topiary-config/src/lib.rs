@@ -22,10 +22,9 @@ use crate::error::TopiaryConfigFetchingError;
 #[cfg(not(target_arch = "wasm32"))]
 use tempfile::tempdir;
 
-use crate::{
-    error::{TopiaryConfigError, TopiaryConfigResult},
-    source::Source,
-};
+use crate::error::{TopiaryConfigError, TopiaryConfigResult};
+
+pub use source::Source;
 
 /// The configuration of the Topiary.
 ///
@@ -70,10 +69,10 @@ impl Configuration {
             Self::parse_and_merge(&sources)
         } else {
             // Get the available configuration with best priority
-            let source: Source = Source::fetch_one(file);
-
-            // And parse it with Nickel
-            Self::parse(source)
+            match Source::fetch_one(file) {
+                Source::Builtin => Self::parse(Source::Builtin),
+                source => Self::parse_and_merge(&[source, Source::Builtin]),
+            }
         }
     }
 

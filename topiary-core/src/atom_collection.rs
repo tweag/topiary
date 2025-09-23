@@ -208,7 +208,7 @@ impl AtomCollection {
         }
         if let Some(parent_id) = self.parent_leaf_nodes.get(&node.id()) {
             if *parent_id != node.id() {
-                log::warn!(
+                log::debug!(
                     "Skipping because the match occurred below a leaf node: {}",
                     node.display_one_based()
                 );
