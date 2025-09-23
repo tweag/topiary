@@ -69,10 +69,10 @@ impl Configuration {
             Self::parse_and_merge(&sources)
         } else {
             // Get the available configuration with best priority
-            let source: Source = Source::fetch_one(file);
-
-            // And parse it with Nickel
-            Self::parse(source)
+            match Source::fetch_one(file) {
+                Source::Builtin => Self::parse(Source::Builtin),
+                source => Self::parse_and_merge(&[source, Source::Builtin]),
+            }
         }
     }
 

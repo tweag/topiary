@@ -160,7 +160,9 @@ async fn run() -> CLIResult<()> {
             .map_err(|e| e.with_location(format!("{}", buf_input.get_ref().source())))?;
         }
 
-        Commands::Config { show_sources: true } => {
+        Commands::Config {
+            command: Some(cli::ConfigCommand::ShowSources),
+        } => {
             let bool_emoji = |b: bool| {
                 match b {
                     true => "\u{2705}",  // Check Mark
@@ -183,9 +185,7 @@ async fn run() -> CLIResult<()> {
             println!("{}", table.build().with(Style::modern_rounded()));
         }
 
-        Commands::Config {
-            show_sources: false,
-        } => {
+        Commands::Config { command: None } => {
             // Output the collated nickel configuration.
             // Don't fail on error but merely log the event since the original `nickel_config` is
             // already valid.
