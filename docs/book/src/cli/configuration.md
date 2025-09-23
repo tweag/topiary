@@ -53,13 +53,13 @@ $ topiary config show-sources
 ╭───────────┬──────────────────────────────────────────────────────┬───────────────┬─────────╮
 │ source    │ path                                                 │ languages.ncl │ queries │
 ├───────────┼──────────────────────────────────────────────────────┼───────────────┼─────────┤
-│ workspace │ /Users/mkatychev/Documents/rust/topiary/.topiary     │ ❌            │ ❌      │
+│ workspace │ /Users/mkatychev/Documents/rust/topiary/.topiary     │ ✗             │ ✗       │
 ├───────────┼──────────────────────────────────────────────────────┼───────────────┼─────────┤
-│ unix-home │ /Users/mkatychev/.config/topiary                     │ ✅            │ ✅      │
+│ unix-home │ /Users/mkatychev/.config/topiary                     │ ✓             │ ✓       │
 ├───────────┼──────────────────────────────────────────────────────┼───────────────┼─────────┤
-│ OS        │ /Users/mkatychev/Library/Application Support/topiary │ ❌            │ ❌      │
+│ OS        │ /Users/mkatychev/Library/Application Support/topiary │ ✗             │ ✗       │
 ├───────────┼──────────────────────────────────────────────────────┼───────────────┼─────────┤
-│ built-in  │ <built-in>                                           │ ✅            │ ✅      │
+│ built-in  │ <built-in>                                           │ ✓             │ ✓       │
 ╰───────────┴──────────────────────────────────────────────────────┴───────────────┴─────────╯
 ```
 
