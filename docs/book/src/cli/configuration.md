@@ -7,11 +7,11 @@ such a file.
 
 ## Configuration sources
 
-At build time the [`languages.ncl`](https://github.com/tweag/topiary/blob/main/topiary-config/languages.ncl)
-in the root of the Topiary repository is embedded into Topiary. This
-file is parsed at runtime. The purpose of this `languages.ncl` file is
-to provide sane defaults for users of Topiary (both the library and the
-CLI binary).
+At build time the
+[`languages.ncl`](https://github.com/tweag/topiary/blob/main/topiary-config/languages.ncl)
+in the root of the Topiary repository is embedded into Topiary. This file is
+parsed at runtime. The purpose of this `languages.ncl` file is to provide sane
+defaults for users of Topiary (both the library and the CLI binary).
 
 The next two are read by the Topiary binary at runtime and allow the
 user to configure Topiary to their needs. The first is intended to be
@@ -44,12 +44,35 @@ following order (highest to lowest):
 3. The user configuration file in the OS's configuration directory.
 4. The built-in configuration file.
 
+One can call `topiary config show-sources` to display configuration sources
+along with any detected `language.ncl` files or `queries` directories therein:
+
+```
+$ topiary config show-sources
+
+╭───────────┬──────────────────────────────────────────────────────┬───────────────┬─────────╮
+│ source    │ path                                                 │ languages.ncl │ queries │
+├───────────┼──────────────────────────────────────────────────────┼───────────────┼─────────┤
+│ workspace │ /Users/mkatychev/Documents/rust/topiary/.topiary     │ ❌            │ ❌      │
+├───────────┼──────────────────────────────────────────────────────┼───────────────┼─────────┤
+│ unix-home │ /Users/mkatychev/.config/topiary                     │ ✅            │ ✅      │
+├───────────┼──────────────────────────────────────────────────────┼───────────────┼─────────┤
+│ OS        │ /Users/mkatychev/Library/Application Support/topiary │ ❌            │ ❌      │
+├───────────┼──────────────────────────────────────────────────────┼───────────────┼─────────┤
+│ built-in  │ <built-in>                                           │ ✅            │ ✅      │
+╰───────────┴──────────────────────────────────────────────────────┴───────────────┴─────────╯
+```
+
+> **Note**\
+>  Only the highest priority `queries` directory will be used.
+
 ### Configuration merging
 
-By default, Topiary only considers the configuration file with the
-highest priority. However, if the `-M`/`--merge-configuration` option is
-provided to the CLI, then all available configurations are merged
-together, as per the [Nickel specification](https://nickel-lang.org/user-manual/merging).
+By default, Topiary only considers the configuration file with the highest
+priority and merges it with the built-in configuration. However, if the
+`-M`/`--merge-configuration` option is provided to the CLI, then all available
+configurations are merged together, as per the [Nickel
+specification](https://nickel-lang.org/user-manual/merging).
 
 In which case, if one of the sources listed above attempts to define a
 language configuration already present in the built-in configuration, or
