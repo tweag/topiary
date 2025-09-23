@@ -51,6 +51,7 @@ This name should be decided amongst the team before the release.
 - [#1070](https://github.com/tweag/topiary/pull/1070) Implemented parallelism for query coverage, thanks to @mkatychev
 - [#1072](https://github.com/tweag/topiary/pull/1072) Add source spans to query coverage results, thanks to @mkatychev
 - [#1077](https://github.com/tweag/topiary/pull/1077) Add handling for `~/.config` on non-linux systems, thanks to @mkatychev
+- [#1080](https://github.com/tweag/topiary/pull/1080) Allow formatting existing tree-sitter trees, thanks to @shadr
 
 ### Changed
 - [#1031](https://github.com/tweag/topiary/pull/1031) Removed the Bash rewrite rule for converting POSIX `[` to Bash's `[[`
