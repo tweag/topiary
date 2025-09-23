@@ -359,7 +359,7 @@ pub fn apply_query(
                 "".into()
             };
 
-            log::info!("Processing match{query_name_info}: {m} at location {pos}");
+            log::debug!("Processing match{query_name_info}: {m} at location {pos}");
         }
 
         // If any capture is a do_nothing, then do nothing.
@@ -408,15 +408,23 @@ impl NodeSpan {
         (self.range.start_byte() as usize..=self.range.end_byte() as usize).into()
     }
 
+    pub(crate) fn set_content(&mut self, content: String) {
+        self.content = Some(content);
+    }
+
     /// Adds source text to [`Self`] for adding context to display
     pub fn with_content(mut self, content: String) -> Self {
-        self.content = Some(content);
+        self.set_content(content);
         self
+    }
+
+    pub(crate) fn set_location(&mut self, location: String) {
+        self.location = Some(location);
     }
 
     /// Adds span origin name to [`Self`] for adding context to display
     pub fn with_location(mut self, location: String) -> Self {
-        self.location = Some(location);
+        self.set_location(location);
         self
     }
 }

@@ -245,7 +245,7 @@ pub fn formatter(
             tolerate_parsing_errors,
         } => {
             // All the work related to tree-sitter and the query is done here
-            log::info!("Apply Tree-sitter query");
+            log::debug!("Apply Tree-sitter query");
 
             let mut atoms = tree_sitter::apply_query(
                 &content,
@@ -258,7 +258,7 @@ pub fn formatter(
             atoms.post_process();
 
             // Pretty-print atoms
-            log::info!("Pretty-print output");
+            log::debug!("Pretty-print output");
             let rendered = pretty::render(
                 &atoms[..],
                 // Default to "  " if the language has no indentation specified
