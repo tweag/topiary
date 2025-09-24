@@ -57,60 +57,47 @@ async fn run() -> CLIResult<()> {
             let (_, mut results) = async_scoped::TokioScope::scope_and_block(|scope| {
                 for input in inputs {
                     scope.spawn(async {
-                        let result: CLIResult<()> = match input {
-                            Ok(input) => {
-                                let language = cache.fetch(&input).await?;
-                                let output = OutputFile::try_from(&input)?;
+                        // This happens when the input resolver cannot establish an input
+                        // source, language or query file.
+                        let input = input?;
+                        let language = cache.fetch(&input).await?;
+                        let output = OutputFile::try_from(&input)?;
 
-                                log::info!(
-                                    "Formatting {}, as {} using {}, to {}",
-                                    input.source(),
-                                    input.language().name,
-                                    input.query(),
-                                    output
-                                );
+                        log::info!(
+                            "Formatting {}, as {} using {}, to {}",
+                            input.source(),
+                            input.language().name,
+                            input.query(),
+                            output
+                        );
 
-                                let mut buf_output = BufWriter::new(output);
+                        let mut buf_output = BufWriter::new(output);
 
-                                {
-                                    // NOTE This newly opened scope is important! `buf_input` takes
-                                    // ownership of `input`, which -- upon reading -- contains an
-                                    // open file handle. We need to close this file, by dropping
-                                    // `buf_input`, before we attempt to persist our output.
-                                    // Otherwise, we get an exclusive lock problem on Windows.
-                                    let mut buf_input = BufReader::new(input);
+                        {
+                            // NOTE This newly opened scope is important! `buf_input` takes
+                            // ownership of `input`, which -- upon reading -- contains an
+                            // open file handle. We need to close this file, by dropping
+                            // `buf_input`, before we attempt to persist our output.
+                            // Otherwise, we get an exclusive lock problem on Windows.
+                            let mut buf_input = BufReader::new(input);
 
-                                    formatter(
-                                        &mut buf_input,
-                                        &mut buf_output,
-                                        &language,
-                                        Operation::Format {
-                                            skip_idempotence,
-                                            tolerate_parsing_errors,
-                                        },
-                                    )
-                                    .map_err(|e| {
-                                        e.with_location(format!("{}", buf_input.get_ref().source()))
-                                    })?;
-                                }
-
-                                buf_output.into_inner()?.persist()?;
-
-                                Ok(())
-                            }
-
-                            // This happens when the input resolver cannot establish an input
-                            // source, language or query file.
-                            Err(error) => Err(error),
-                        };
-
-                        if let Err(error) = &result {
-                            // By this point, we've lost any reference to the original
-                            // input; we trust that it is embedded into `error`.
-                            log::warn!("Skipping: {error}");
+                            formatter(
+                                &mut buf_input,
+                                &mut buf_output,
+                                &language,
+                                Operation::Format {
+                                    skip_idempotence,
+                                    tolerate_parsing_errors,
+                                },
+                            )
+                            .map_err(|e| {
+                                e.with_location(format!("{}", buf_input.get_ref().source()))
+                            })?;
                         }
 
-                        result
+                        buf_output.into_inner()?.persist()?;
+
+                        CLIResult::Ok(())
                     });
                 }
             });
@@ -120,6 +107,11 @@ async fn run() -> CLIResult<()> {
                 results.remove(0)??
             } else if results
                 .iter()
+                .inspect(|r| match r {
+                    Err(e) => print_error(&e),
+                    Ok(Err(e)) if !e.benign() => print_error(&e),
+                    _ => {}
+                })
                 .any(|result| matches!(result, Err(_) | Ok(Err(_))))
             {
                 // For multiple inputs, bail out if any failed with a "multiple errors" failure
