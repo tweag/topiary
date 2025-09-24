@@ -109,11 +109,7 @@ async fn run() -> CLIResult<()> {
                 .iter()
                 .inspect(|r| match r {
                     Err(e) => print_error(&e),
-                    Ok(Err(e)) => {
-                        if !e.benign() {
-                            print_error(&e)
-                        }
-                    }
+                    Ok(Err(e)) if !e.benign() => print_error(&e),
                     _ => {}
                 })
                 .any(|result| matches!(result, Err(_) | Ok(Err(_))))
