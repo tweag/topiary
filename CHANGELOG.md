@@ -97,7 +97,7 @@ This name should be decided amongst the team before the release.
 - [#953](https://github.com/tweag/topiary/pull/953) Coverage output when there are zero queries
 - [#974](https://github.com/tweag/topiary/pull/974) No longer remove trailing spaces after pretty-printing
 - [#992](https://github.com/tweag/topiary/pull/992) Fixed [openscad-LSP#48](https://github.com/Leathong/openscad-LSP/issues/48): unhandled newline separation for transform chains, thanks to @mkatychev
-- [#999](https://github.com/tweag/topiary/pull/999) Fixed [#997](https://github.com/tweag/topiary/issues/997): erroneous spacing of block comments in OpenSCAD, thanks to @pinkfish
+- [#999](https://github.com/tweag/topiary/pull/999) Fixed [#997](https://github.com/tweag/topiary/issues/997): erroneous spacing of block comments in OpenSCAD
 
 ## v0.6.0 - Gilded Ginkgo - 2025-01-30
 
