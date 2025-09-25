@@ -19,7 +19,8 @@ pub use crate::{
     error::{FormatterError, IoError},
     language::Language,
     tree_sitter::{
-        apply_query, check_query_coverage, CoverageData, SyntaxNode, TopiaryQuery, Visualisation,
+        apply_query, check_query_coverage, parse, CoverageData, SyntaxNode, TopiaryQuery,
+        Visualisation,
     },
 };
 

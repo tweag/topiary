@@ -18,8 +18,8 @@ use topiary_core::{check_query_coverage, formatter, Operation};
 
 use crate::{
     cli::Commands,
-    error::{CLIError, CLIResult, TopiaryError},
-    io::{read_input, Inputs, OutputFile},
+    error::{print_error, CLIError, CLIResult, TopiaryError},
+    io::{process_inputs, read_input, Inputs, OutputFile},
     language::LanguageDefinitionCache,
 };
 
@@ -52,74 +52,63 @@ async fn run() -> CLIResult<()> {
             inputs,
         } => {
             let inputs = Inputs::new(&config, &inputs);
-            let cache = LanguageDefinitionCache::new();
 
-            let (_, mut results) = async_scoped::TokioScope::scope_and_block(|scope| {
-                for input in inputs {
-                    scope.spawn(async {
-                        // This happens when the input resolver cannot establish an input
-                        // source, language or query file.
-                        let input = input?;
-                        let language = cache.fetch(&input).await?;
-                        let output = OutputFile::try_from(&input)?;
+            process_inputs(inputs, move |input, language| {
+                let output = OutputFile::try_from(&input)?;
 
-                        log::info!(
-                            "Formatting {}, as {} using {}, to {}",
-                            input.source(),
-                            input.language().name,
-                            input.query(),
-                            output
-                        );
+                log::info!(
+                    "Formatting {}, as {} using {}, to {}",
+                    input.source(),
+                    input.language().name,
+                    input.query(),
+                    output
+                );
 
-                        let mut buf_output = BufWriter::new(output);
+                let mut buf_output = BufWriter::new(output);
 
-                        {
-                            // NOTE This newly opened scope is important! `buf_input` takes
-                            // ownership of `input`, which -- upon reading -- contains an
-                            // open file handle. We need to close this file, by dropping
-                            // `buf_input`, before we attempt to persist our output.
-                            // Otherwise, we get an exclusive lock problem on Windows.
-                            let mut buf_input = BufReader::new(input);
+                {
+                    // NOTE This newly opened scope is important! `buf_input` takes
+                    // ownership of `input`, which -- upon reading -- contains an
+                    // open file handle. We need to close this file, by dropping
+                    // `buf_input`, before we attempt to persist our output.
+                    // Otherwise, we get an exclusive lock problem on Windows.
+                    let mut buf_input = BufReader::new(input);
 
-                            formatter(
-                                &mut buf_input,
-                                &mut buf_output,
-                                &language,
-                                Operation::Format {
-                                    skip_idempotence,
-                                    tolerate_parsing_errors,
-                                },
-                            )
-                            .map_err(|e| {
-                                e.with_location(format!("{}", buf_input.get_ref().source()))
-                            })?;
-                        }
-
-                        buf_output.into_inner()?.persist()?;
-
-                        CLIResult::Ok(())
-                    });
+                    formatter(
+                        &mut buf_input,
+                        &mut buf_output,
+                        &language,
+                        Operation::Format {
+                            skip_idempotence,
+                            tolerate_parsing_errors,
+                        },
+                    )
+                    .map_err(|e| e.with_location(format!("{}", buf_input.get_ref().source())))?;
                 }
-            });
 
-            if results.len() == 1 {
-                // If we just had one input, then handle errors as normal
-                results.remove(0)??
-            } else if results
-                .iter()
-                .inspect(|r| match r {
-                    Err(e) => print_error(&e),
-                    Ok(Err(e)) if !e.benign() => print_error(&e),
-                    _ => {}
-                })
-                .any(|result| matches!(result, Err(_) | Ok(Err(_))))
-            {
-                // For multiple inputs, bail out if any failed with a "multiple errors" failure
-                return Err(TopiaryError::Bin(
-                    "Processing of some inputs failed; see warning logs for details".into(),
-                    Some(CLIError::Multiple),
-                ));
-            }
+                buf_output.into_inner()?.persist()?;
+
+                CLIResult::Ok(())
+            })
+            .await?;
+        }
+
+        Commands::CheckGrammar { inputs } => {
+            let inputs = Inputs::new(&config, &inputs);
+
+            process_inputs(inputs, |mut input, language| {
+                let input_content = read_input(&mut input)?;
+                log::debug!(
+                    "Checking {}, as {} for grammar correctness",
+                    input.source(),
+                    input.language().name,
+                );
+
+                topiary_core::parse(&input_content, &language.grammar, false)?;
+
+                Ok(())
+            })
+            .await?;
         }
 
         Commands::Visualise { format, input } => {
@@ -241,11 +230,4 @@ async fn run() -> CLIResult<()> {
     }
 
     Ok(())
-}
-
-fn print_error(e: &dyn Error) {
-    log::error!("{e}");
-    if let Some(source) = e.source() {
-        log::error!("Cause: {source}");
-    }
 }

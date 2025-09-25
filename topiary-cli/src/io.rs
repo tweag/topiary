@@ -4,6 +4,7 @@ use std::{
     fs::File,
     io::{self, BufWriter, Read, Result, Seek, Write},
     path::PathBuf,
+    sync::Arc,
 };
 
 use nickel_lang_core::term::RichTerm;
@@ -13,7 +14,8 @@ use topiary_core::{formatter, Language, Operation, TopiaryQuery};
 
 use crate::{
     cli::{AtLeastOneInput, ExactlyOneInput, FromStdin},
-    error::{CLIError, CLIResult, TopiaryError},
+    error::{print_error, CLIError, CLIResult, TopiaryError},
+    language::LanguageDefinitionCache,
 };
 
 #[derive(Debug, Clone, Hash)]
@@ -105,14 +107,36 @@ impl From<&AtLeastOneInput> for InputFrom {
 #[derive(Debug)]
 pub enum InputSource {
     Stdin,
-    Disk(PathBuf, Option<File>),
+    Disk(Arc<PathBuf>, Option<File>),
+}
+
+impl InputSource {
+    pub fn location(&self) -> InputLocation {
+        match self {
+            InputSource::Stdin => InputLocation(None),
+            InputSource::Disk(path, _) => InputLocation(Some(path.clone())),
+        }
+    }
 }
 
 impl fmt::Display for InputSource {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Stdin => write!(f, "standard input"),
-            Self::Disk(path, _) => write!(f, "{}", path.to_string_lossy()),
+            Self::Disk(path, _) => write!(f, "{}", path.display()),
+        }
+    }
+}
+
+/// A location for a given [InputSource], `None` represents standard input
+#[derive(Debug)]
+pub struct InputLocation(Option<Arc<PathBuf>>);
+
+impl fmt::Display for InputLocation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.0 {
+            None => write!(f, "standard input"),
+            Some(ref path) => write!(f, "{}", path.display()),
         }
     }
 }
@@ -191,7 +215,7 @@ impl Read for InputFile<'_> {
 
             InputSource::Disk(path, fd) => {
                 if fd.is_none() {
-                    *fd = Some(File::open(path)?);
+                    *fd = Some(File::open(path.as_ref())?);
                 }
 
                 fd.as_mut().unwrap().read(buf)
@@ -236,7 +260,7 @@ impl<'cfg, 'i> Inputs<'cfg> {
                     let query: QuerySource = to_query_from_language(language)?;
 
                     Ok(InputFile {
-                        source: InputSource::Disk(path, None),
+                        source: InputSource::Disk(path.into(), None),
                         language,
                         query,
                     })
@@ -324,7 +348,7 @@ impl fmt::Display for OutputFile {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Stdout => write!(f, "standard output"),
-            Self::Disk { output, .. } => write!(f, "{}", output.to_string_lossy()),
+            Self::Disk { output, .. } => write!(f, "{}", output.display()),
         }
     }
 }
@@ -429,5 +453,52 @@ pub(crate) async fn format_config(config: &Configuration, nickel_term: &RichTerm
         },
     )?;
 
+    Ok(())
+}
+
+// meant to be used in scenarios where multiple inputs are possible
+pub(crate) async fn process_inputs<F>(inputs: Inputs<'_>, process_fn: F) -> CLIResult<()>
+where
+    F: Fn(InputFile, Arc<Language>) -> CLIResult<()> + Send + Sync + 'static,
+{
+    let cache = LanguageDefinitionCache::new();
+    let (_, mut results) = async_scoped::TokioScope::scope_and_block(|scope| {
+        for input in inputs {
+            scope.spawn(async {
+                // This happens when the input resolver cannot establish an input
+                // source, language or query file.
+                let input = input?;
+                let location = input.source().location();
+                let language = cache.fetch(&input).await?;
+                process_fn(input, language).map_err(|e| {
+                    let TopiaryError::Lib(fmt_err) = e else {
+                        return e;
+                    };
+                    fmt_err.with_location(location.to_string()).into()
+                })
+            });
+        }
+    });
+
+    if results.len() == 1 {
+        // If we just had one input, then handle errors as normal
+        return results.swap_remove(0)?;
+    }
+
+    if results
+        .into_iter()
+        .map(|r| {
+            r.map_err(TopiaryError::from)
+                .flatten()
+                .inspect_err(|e| print_error(&e))
+        })
+        .any(|r| r.is_err())
+    {
+        // For multiple inputs, bail out if any failed with a "multiple errors" failure
+        return Err(TopiaryError::Bin(
+            "Processing of some inputs failed; see warning logs for details".into(),
+            Some(CLIError::Multiple),
+        ));
+    }
     Ok(())
 }
