@@ -108,14 +108,12 @@ async fn run() -> CLIResult<()> {
             }
 
             let errs = results
-                .iter()
-                .inspect(|r| match r {
-                    Err(e) => print_error(&e),
-                    Ok(Err(e)) if !e.benign() => print_error(&e),
-                    _ => {}
-                })
-                .filter(|result| matches!(result, Err(_) | Ok(Err(_))))
+                .into_iter()
+                .map(|r| r.map_err(TopiaryError::from).and_then(|inner| inner))
+                .filter_map(|r| r.err())
+                .inspect(|e| print_error(&e))
                 .count();
+
             if errs > 0 {
                 // For multiple inputs, bail out if any failed with a "multiple errors" failure
                 return Err(TopiaryError::Bin(
