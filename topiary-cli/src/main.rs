@@ -12,14 +12,14 @@ use std::{
 };
 
 use error::Benign;
-use tabled::{settings::Style, Table};
+use tabled::{Table, settings::Style};
 use topiary_config::source::Source;
-use topiary_core::{check_query_coverage, formatter, Operation};
+use topiary_core::{Operation, check_query_coverage, formatter};
 
 use crate::{
     cli::Commands,
     error::{CLIError, CLIResult, TopiaryError},
-    io::{read_input, Inputs, OutputFile},
+    io::{Inputs, OutputFile, read_input},
     language::LanguageDefinitionCache,
 };
 
@@ -104,16 +104,19 @@ async fn run() -> CLIResult<()> {
 
             if results.len() == 1 {
                 // If we just had one input, then handle errors as normal
-                results.remove(0)??
-            } else if results
+                return results.swap_remove(0)?;
+            }
+
+            let errs = results
                 .iter()
                 .inspect(|r| match r {
                     Err(e) => print_error(&e),
                     Ok(Err(e)) if !e.benign() => print_error(&e),
                     _ => {}
                 })
-                .any(|result| matches!(result, Err(_) | Ok(Err(_))))
-            {
+                .filter(|result| matches!(result, Err(_) | Ok(Err(_))))
+                .count();
+            if errs > 0 {
                 // For multiple inputs, bail out if any failed with a "multiple errors" failure
                 return Err(TopiaryError::Bin(
                     "Processing of some inputs failed; see warning logs for details".into(),
