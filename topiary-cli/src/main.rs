@@ -107,10 +107,10 @@ async fn run() -> CLIResult<()> {
                 return results.swap_remove(0)?;
             }
 
+            // use `.count()` here to ensure eager evaluation of iterator
             let errs = results
                 .into_iter()
-                .map(|r| r.map_err(TopiaryError::from).and_then(|inner| inner))
-                .filter_map(|r| r.err())
+                .filter_map(|r| r.map_err(TopiaryError::from).and_then(|inner| inner).err())
                 .inspect(|e| print_error(&e))
                 .count();
 
