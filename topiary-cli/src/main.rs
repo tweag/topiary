@@ -6,7 +6,6 @@ mod language;
 mod visualisation;
 
 use std::{
-    error::Error,
     io::{BufReader, BufWriter, Write},
     process::ExitCode,
 };
@@ -18,9 +17,8 @@ use topiary_core::{check_query_coverage, formatter, Operation};
 
 use crate::{
     cli::Commands,
-    error::{print_error, CLIError, CLIResult, TopiaryError},
+    error::{print_error, CLIResult},
     io::{process_inputs, read_input, Inputs, OutputFile},
-    language::LanguageDefinitionCache,
 };
 
 use miette::{NamedSource, Report};
