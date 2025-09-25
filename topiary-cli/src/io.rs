@@ -485,15 +485,16 @@ where
         return results.swap_remove(0)?;
     }
 
-    if results
+    let errs = results
         .into_iter()
         .map(|r| {
             r.map_err(TopiaryError::from)
                 .flatten()
                 .inspect_err(|e| print_error(&e))
         })
-        .any(|r| r.is_err())
-    {
+        .filter(|r| r.is_err())
+        .count();
+    if errs > 0 {
         // For multiple inputs, bail out if any failed with a "multiple errors" failure
         return Err(TopiaryError::Bin(
             "Processing of some inputs failed; see warning logs for details".into(),
