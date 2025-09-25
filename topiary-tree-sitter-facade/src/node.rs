@@ -290,7 +290,7 @@ mod wasm {
     use crate::{input_edit::InputEdit, point::Point, range::Range, tree_cursor::TreeCursor};
     use std::borrow::Cow;
     use topiary_web_tree_sitter_sys::SyntaxNode;
-    use wasm_bindgen::{prelude::*, JsCast};
+    use wasm_bindgen::{JsCast, prelude::*};
 
     #[derive(Clone, Eq, Hash, PartialEq)]
     pub struct Node<'tree> {
