@@ -182,14 +182,9 @@ async fn run() -> CLIResult<()> {
             // Don't fail on error but merely log the event since the original `nickel_config` is
             // already valid.
             #[cfg(feature = "nickel")]
-            if io::format_config(&config, &nickel_config)
-                .await
-                .inspect_err(|e| {
-                    // nickel may not be present in user config so log as info
-                    log::info!("Config formatting error: {}", e);
-                })
-                .is_ok()
-            {
+            if let Err(e) = io::format_config(&config, &nickel_config).await {
+                log::error!("Config formatting error: {}", e);
+            } else {
                 return Ok(());
             }
             println!("{nickel_config}");
