@@ -12,14 +12,14 @@ use std::{
 };
 
 use error::Benign;
-use tabled::{Table, settings::Style};
+use tabled::{settings::Style, Table};
 use topiary_config::source::Source;
-use topiary_core::{Operation, check_query_coverage, formatter};
+use topiary_core::{check_query_coverage, formatter, Operation};
 
 use crate::{
     cli::Commands,
     error::{CLIError, CLIResult, TopiaryError},
-    io::{Inputs, OutputFile, read_input},
+    io::{read_input, Inputs, OutputFile},
     language::LanguageDefinitionCache,
 };
 
