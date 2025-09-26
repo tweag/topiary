@@ -38,7 +38,7 @@ See the respective chapter for usage documentation on each subcommand:
 - [`completion`](completion.md)
 - [`prefetch`](prefetch.md)
 - [`coverage`](coverage.md)
-- [`grammar-check`](check-grammar.md)
+- [`check-grammar`](check-grammar.md)
 
 ## Example
 
