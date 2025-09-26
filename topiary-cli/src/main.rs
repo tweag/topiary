@@ -11,14 +11,15 @@ use std::{
 };
 
 use error::Benign;
-use tabled::{settings::Style, Table};
+use tabled::{Table, settings::Style};
 use topiary_config::source::Source;
-use topiary_core::{check_query_coverage, formatter, Operation};
+use topiary_core::{Operation, check_query_coverage, formatter};
 
 use crate::{
     cli::Commands,
-    error::{print_error, CLIResult},
-    io::{process_inputs, read_input, Inputs, OutputFile},
+    error::{CLIError, CLIResult, TopiaryError, print_error},
+    io::{Inputs, OutputFile, process_inputs, read_input},
+    language::LanguageDefinitionCache,
 };
 
 use miette::{NamedSource, Report};

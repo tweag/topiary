@@ -14,9 +14,9 @@ use topiary_tree_sitter_facade::{
 use streaming_iterator::StreamingIterator;
 
 use crate::{
+    FormatterResult,
     atom_collection::{AtomCollection, QueryPredicates},
     error::FormatterError,
-    FormatterResult,
 };
 
 /// Supported visualisation formats

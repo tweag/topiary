@@ -1,7 +1,7 @@
 use std::{
     collections::{
-        hash_map::{DefaultHasher, Entry},
         HashMap,
+        hash_map::{DefaultHasher, Entry},
     },
     hash::{Hash, Hasher},
     sync::Arc,

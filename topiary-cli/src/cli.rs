@@ -260,7 +260,10 @@ pub fn get_args() -> CLIResult<Cli> {
             // Make sure our FILE is not a directory
             if file.is_dir() {
                 return Err(TopiaryError::Bin(
-                    format!("Cannot visualise directory \"{}\"; please provide a single file from disk or stdin.", file.to_string_lossy()),
+                    format!(
+                        "Cannot visualise directory \"{}\"; please provide a single file from disk or stdin.",
+                        file.to_string_lossy()
+                    ),
                     None,
                 ));
             }

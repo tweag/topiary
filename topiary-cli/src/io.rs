@@ -10,11 +10,11 @@ use std::{
 use nickel_lang_core::term::RichTerm;
 use tempfile::tempfile;
 use topiary_config::Configuration;
-use topiary_core::{formatter, Language, Operation, TopiaryQuery};
+use topiary_core::{Language, Operation, TopiaryQuery, formatter};
 
 use crate::{
     cli::{AtLeastOneInput, ExactlyOneInput, FromStdin},
-    error::{print_error, CLIError, CLIResult, TopiaryError},
+    error::{CLIError, CLIResult, TopiaryError, print_error},
     language::LanguageDefinitionCache,
 };
 
@@ -281,7 +281,9 @@ fn to_query_from_language(language: &topiary_config::language::Language) -> CLIR
         // builtin ones. Store the error, return that if we
         // fail to find anything, because the builtin error might be unexpected.
         Err(e) => {
-            log::warn!("No query files found in any of the expected locations. Falling back to compile-time included files.");
+            log::warn!(
+                "No query files found in any of the expected locations. Falling back to compile-time included files."
+            );
             to_query(&language.name).map_err(|_| e)?
         }
     };

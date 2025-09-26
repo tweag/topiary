@@ -29,7 +29,7 @@ let
     in
     fn final-args;
 
-  craneLib = crane.mkLib pkgs;
+  craneLib = crane.mkLib pkgs';
 
   topiaryUtils = callPackageNoOverrides ./utils {
     inherit callPackageNoOverrides;
