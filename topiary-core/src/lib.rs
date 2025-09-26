@@ -20,6 +20,7 @@ pub use crate::{
     language::Language,
     tree_sitter::{
         CoverageData, SyntaxNode, TopiaryQuery, Visualisation, apply_query, check_query_coverage,
+        parse,
     },
 };
 

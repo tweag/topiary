@@ -179,6 +179,13 @@ pub enum Commands {
         /// Shell (omit to detect from the environment)
         shell: Option<Shell>,
     },
+
+    /// Verifies if a given file is parseable by a given grammar
+    #[command(alias = "check", display_order = 6)]
+    CheckGrammar {
+        #[command(flatten)]
+        inputs: AtLeastOneInput,
+    },
 }
 
 #[derive(Subcommand, Debug)]
@@ -216,6 +223,15 @@ pub fn get_args() -> CLIResult<Cli> {
 
     match &mut args.command {
         Commands::Format {
+            inputs:
+                AtLeastOneInput {
+                    files,
+                    follow_symlinks,
+                    ..
+                },
+            ..
+        }
+        | Commands::CheckGrammar {
             inputs:
                 AtLeastOneInput {
                     files,

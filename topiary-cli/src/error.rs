@@ -184,3 +184,10 @@ impl Benign for TopiaryError {
         }
     }
 }
+
+pub(crate) fn print_error(e: &dyn error::Error) {
+    log::error!("{e}");
+    if let Some(source) = e.source() {
+        log::error!("Cause: {source}");
+    }
+}
