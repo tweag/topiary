@@ -12,13 +12,14 @@ CLI app for Topiary, the universal code formatter.
 Usage: topiary [OPTIONS] <COMMAND>
 
 Commands:
-  format      Format inputs
-  visualise   Visualise the input's Tree-sitter parse tree
-  config      Print the current configuration
-  prefetch    Prefetch languages in the configuration
-  coverage    Checks how much of the tree-sitter query is used
-  completion  Generate shell completion script
-  help        Print this message or the help of the given subcommand(s)
+  format         Format inputs
+  visualise      Visualise the input's Tree-sitter parse tree
+  config         Print the current configuration
+  prefetch       Prefetch languages in the configuration
+  coverage       Checks how much of the tree-sitter query is used
+  check-grammar  Verifies if a given file is parseable by a given grammar
+  completion     Generate shell completion script
+  help           Print this message or the help of the given subcommand(s)
 
 Options:
   -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]
@@ -37,6 +38,7 @@ See the respective chapter for usage documentation on each subcommand:
 - [`completion`](completion.md)
 - [`prefetch`](prefetch.md)
 - [`coverage`](coverage.md)
+- [`grammar-check`](check-grammar.md)
 
 ## Example
 
