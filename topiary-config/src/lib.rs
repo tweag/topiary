@@ -55,10 +55,10 @@ impl Configuration {
     #[allow(clippy::result_large_err)]
     pub fn fetch(merge: bool, file: &Option<PathBuf>) -> TopiaryConfigResult<(Self, RichTerm)> {
         // If we have an explicit file, fail if it doesn't exist
-        if let Some(path) = file {
-            if !path.exists() {
-                return Err(TopiaryConfigError::FileNotFound(path.to_path_buf()));
-            }
+        if let Some(path) = file
+            && !path.exists()
+        {
+            return Err(TopiaryConfigError::FileNotFound(path.to_path_buf()));
         }
 
         if merge {

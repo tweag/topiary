@@ -12,14 +12,14 @@ use std::{
 };
 
 use error::Benign;
-use tabled::{settings::Style, Table};
+use tabled::{Table, settings::Style};
 use topiary_config::source::Source;
-use topiary_core::{check_query_coverage, formatter, Operation};
+use topiary_core::{Operation, check_query_coverage, formatter};
 
 use crate::{
     cli::Commands,
     error::{CLIError, CLIResult, TopiaryError},
-    io::{read_input, Inputs, OutputFile},
+    io::{Inputs, OutputFile, read_input},
     language::LanguageDefinitionCache,
 };
 
@@ -187,7 +187,7 @@ async fn run() -> CLIResult<()> {
                 .await
                 .inspect_err(|e| {
                     // nickel may not be present in user config so log as info
-                    log::info!("Config formatting error: {}", e);
+                    log::info!("Config formatting error: {e}");
                 })
                 .is_ok()
             {

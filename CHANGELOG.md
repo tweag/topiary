@@ -55,6 +55,7 @@ This name should be decided amongst the team before the release.
 
 ### Changed
 - [#1031](https://github.com/tweag/topiary/pull/1031) Removed the Bash rewrite rule for converting POSIX `[` to Bash's `[[`
+- [#1095](https://github.com/tweag/topiary/pull/1095) Update to Rust 2024 edition
 
 ### Fixed
 - [#1092](https://github.com/tweag/topiary/pull/1092) Log early returns during formatting, thanks to @mkatychev
