@@ -80,8 +80,7 @@ async fn run() -> CLIResult<()> {
                             skip_idempotence,
                             tolerate_parsing_errors,
                         },
-                    )
-                    .map_err(|e| e.with_location(format!("{}", buf_input.get_ref().source())))?;
+                    )?;
                 }
 
                 buf_output.into_inner()?.persist()?;

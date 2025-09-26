@@ -489,12 +489,8 @@ where
 
     let errs = results
         .into_iter()
-        .map(|r| {
-            r.map_err(TopiaryError::from)
-                .flatten()
-                .inspect_err(|e| print_error(&e))
-        })
-        .filter(|r| r.is_err())
+        .filter_map(|r| r.map_err(TopiaryError::from).flatten().err())
+        .inspect(|e| print_error(&e))
         .count();
     if errs > 0 {
         // For multiple inputs, bail out if any failed with a "multiple errors" failure
