@@ -5,11 +5,11 @@
 use anyhow::anyhow;
 #[cfg(not(target_arch = "wasm32"))]
 use gix::{
+    ObjectId,
     interrupt::IS_INTERRUPTED,
     progress::Discard,
-    remote::{self, fetch, fetch::refmap, Direction},
+    remote::{self, Direction, fetch, fetch::refmap},
     worktree::state::checkout,
-    ObjectId,
 };
 use std::collections::HashSet;
 #[cfg(not(target_arch = "wasm32"))]
@@ -151,7 +151,7 @@ impl Language {
                 GrammarSource::Path(_) => {
                     return Err(TopiaryConfigFetchingError::GrammarFileNotFound(
                         library_path,
-                    ))
+                    ));
                 }
             }
         }

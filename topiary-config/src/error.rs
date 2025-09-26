@@ -36,16 +36,42 @@ pub enum TopiaryConfigFetchingError {
 impl fmt::Display for TopiaryConfigError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            TopiaryConfigError::FileNotFound(path) => write!(f, "We tried to find your configuration file at {}, but failed to do so. Make sure the file exists.", path.to_string_lossy()),
-            TopiaryConfigError::UnknownLanguage(lang) => write!(f, "You were looking for language \"{lang}\", but we do not know that language."),
-            TopiaryConfigError::UnknownExtension(ext) => write!(f, "You tried to format a file with extension: \"{ext}\", but we do not know that extension. Make sure the extension is in your configuration file!"),
-            TopiaryConfigError::NoExtension(path) => write!(f, "You tried to format {} without specifying a language, but we cannot automatically detect the language because we can't find the filetype extension.", path.to_string_lossy()),
+            TopiaryConfigError::FileNotFound(path) => write!(
+                f,
+                "We tried to find your configuration file at {}, but failed to do so. Make sure the file exists.",
+                path.to_string_lossy()
+            ),
+            TopiaryConfigError::UnknownLanguage(lang) => write!(
+                f,
+                "You were looking for language \"{lang}\", but we do not know that language."
+            ),
+            TopiaryConfigError::UnknownExtension(ext) => write!(
+                f,
+                "You tried to format a file with extension: \"{ext}\", but we do not know that extension. Make sure the extension is in your configuration file!"
+            ),
+            TopiaryConfigError::NoExtension(path) => write!(
+                f,
+                "You tried to format {} without specifying a language, but we cannot automatically detect the language because we can't find the filetype extension.",
+                path.to_string_lossy()
+            ),
             #[cfg(not(target_arch = "wasm32"))]
-            TopiaryConfigError::QueryFileNotFound(path) => write!(f, "We could not find the query file: \"{}\" anywhere. If you use the TOPIARY_LANGUAGE_DIR environment variable, make sure it set set correctly.", path.to_string_lossy()),
+            TopiaryConfigError::QueryFileNotFound(path) => write!(
+                f,
+                "We could not find the query file: \"{}\" anywhere. If you use the TOPIARY_LANGUAGE_DIR environment variable, make sure it set set correctly.",
+                path.to_string_lossy()
+            ),
             TopiaryConfigError::Io(error) => write!(f, "We encountered an io error: {error}"),
-            TopiaryConfigError::Missing => write!(f, "A configuration file is missing. If you passed a configuration file, make sure it exists."),
-            TopiaryConfigError::TreeSitterFacade(_) => write!(f, "We could not load the grammar for the given language"),
-            TopiaryConfigError::Nickel(e) => write!(f, "Nickel error: {e:#?}\n\nDid you forget to add a \"priority\" annotation in your config file?"),
+            TopiaryConfigError::Missing => write!(
+                f,
+                "A configuration file is missing. If you passed a configuration file, make sure it exists."
+            ),
+            TopiaryConfigError::TreeSitterFacade(_) => {
+                write!(f, "We could not load the grammar for the given language")
+            }
+            TopiaryConfigError::Nickel(e) => write!(
+                f,
+                "Nickel error: {e:#?}\n\nDid you forget to add a \"priority\" annotation in your config file?"
+            ),
             TopiaryConfigError::NickelDeserialization(e) => write!(f, "Nickel error: {e:#?}"),
             #[cfg(not(target_arch = "wasm32"))]
             TopiaryConfigError::Fetching(e) => write!(f, "Error Fetching Language: {e}"),

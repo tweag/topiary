@@ -2,7 +2,7 @@
 
 use core::cell::RefCell;
 use js_sys::{Array, Error, Function, JsString, Object, Promise, Reflect, Uint8Array};
-use wasm_bindgen::{prelude::*, JsCast};
+use wasm_bindgen::{JsCast, prelude::*};
 use wasm_bindgen_futures::JsFuture;
 
 trait JsValueExt {
@@ -803,7 +803,7 @@ extern "C" {
 
     #[wasm_bindgen(method, js_name = namedDescendantForPosition)]
     pub fn named_descendant_for_position(this: &SyntaxNode, position: &Point)
-        -> Option<SyntaxNode>;
+    -> Option<SyntaxNode>;
 
     #[wasm_bindgen(method, js_name = namedDescendantForPosition)]
     pub fn named_descendant_for_position_range(

@@ -19,7 +19,7 @@ pub use crate::{
     error::{FormatterError, IoError},
     language::Language,
     tree_sitter::{
-        apply_query, check_query_coverage, CoverageData, SyntaxNode, TopiaryQuery, Visualisation,
+        CoverageData, SyntaxNode, TopiaryQuery, Visualisation, apply_query, check_query_coverage,
     },
 };
 
@@ -383,8 +383,8 @@ mod tests {
     use test_log::test;
 
     use crate::{
-        error::FormatterError, formatter, test_utils::pretty_assert_eq, Language, Operation,
-        TopiaryQuery,
+        Language, Operation, TopiaryQuery, error::FormatterError, formatter,
+        test_utils::pretty_assert_eq,
     };
 
     /// Attempt to parse invalid json, expecting a failure
