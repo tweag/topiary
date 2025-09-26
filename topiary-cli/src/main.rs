@@ -17,9 +17,8 @@ use topiary_core::{Operation, check_query_coverage, formatter};
 
 use crate::{
     cli::Commands,
-    error::{CLIError, CLIResult, TopiaryError, print_error},
+    error::{CLIResult, print_error},
     io::{Inputs, OutputFile, process_inputs, read_input},
-    language::LanguageDefinitionCache,
 };
 
 use miette::{NamedSource, Report};
