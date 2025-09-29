@@ -113,7 +113,7 @@ impl Configuration {
                     language.name,
                     git_source.git,
                     git_source.rev,
-                    library_path.to_string_lossy()
+                    library_path.display()
                 );
 
                 git_source.fetch_and_compile_with_dir(
@@ -128,7 +128,7 @@ impl Configuration {
                 log::info!(
                     "Fetch \"{}\": Configured via filesystem ({}); nothing to do",
                     language.name,
-                    path.to_string_lossy(),
+                    path.display(),
                 );
 
                 if !path.exists() {
@@ -206,13 +206,9 @@ impl Configuration {
     #[allow(clippy::result_large_err)]
     pub fn detect<P: AsRef<Path>>(&self, path: P) -> TopiaryConfigResult<&Language> {
         let pb = &path.as_ref().to_path_buf();
-        if let Some(extension) = pb.extension().map(|ext| ext.to_string_lossy()) {
+        if let Some(extension) = pb.extension().and_then(|ext| ext.to_str()) {
             for lang in &self.languages {
-                if lang
-                    .config
-                    .extensions
-                    .contains::<String>(&extension.to_string())
-                {
+                if lang.config.extensions.contains(extension) {
                     return Ok(lang);
                 }
             }

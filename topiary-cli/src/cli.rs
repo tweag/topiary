@@ -262,7 +262,7 @@ pub fn get_args() -> CLIResult<Cli> {
                 return Err(TopiaryError::Bin(
                     format!(
                         "Cannot visualise directory \"{}\"; please provide a single file from disk or stdin.",
-                        file.to_string_lossy()
+                        file.display()
                     ),
                     None,
                 ));

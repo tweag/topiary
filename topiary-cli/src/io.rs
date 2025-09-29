@@ -45,7 +45,7 @@ impl From<&str> for QuerySource {
 impl Display for QuerySource {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            QuerySource::Path(p) => write!(f, "{}", p.to_string_lossy()),
+            QuerySource::Path(p) => write!(f, "{}", p.display()),
             QuerySource::BuiltIn(_) => write!(f, "built-in query"),
         }
     }
@@ -339,7 +339,7 @@ impl OutputFile {
             let mut writer = File::create(&output)?;
             let bytes = io::copy(&mut staged, &mut writer)?;
 
-            log::debug!("Wrote {bytes} bytes to {}", &output.to_string_lossy());
+            log::debug!("Wrote {bytes} bytes to {}", &output.display());
         }
 
         Ok(())

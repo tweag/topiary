@@ -104,7 +104,7 @@ impl Source {
                 let Self::File(path) = candidate else { return };
                 log::info!(
                     "Adding {hint}-specified configuration to merge: {}",
-                    path.to_string_lossy()
+                    path.display()
                 );
             })
             .map(|(_, s)| s)
