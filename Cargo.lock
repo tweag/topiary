@@ -4153,7 +4153,7 @@ version = "0.6.4"
 
 [[package]]
 name = "topiary-tree-sitter-facade"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "js-sys",
  "streaming-iterator",
