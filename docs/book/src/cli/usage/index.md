@@ -17,7 +17,7 @@ Commands:
   config         Print the current configuration
   prefetch       Prefetch languages in the configuration
   coverage       Checks how much of the tree-sitter query is used
-  check-grammar  Verifies if a given file is parseable by a given grammar
+  check-grammar  Check if an input parses to the respective Tree-sitter grammar
   completion     Generate shell completion script
   help           Print this message or the help of the given subcommand(s)
 

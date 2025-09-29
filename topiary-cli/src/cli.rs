@@ -180,7 +180,7 @@ pub enum Commands {
         shell: Option<Shell>,
     },
 
-    /// Verifies if a given file is parseable by a given grammar
+    /// Check if an input parses to the respective Tree-sitter grammar
     #[command(alias = "check", display_order = 6)]
     CheckGrammar {
         #[command(flatten)]

@@ -1,12 +1,11 @@
 # Grammar checking
 
-This subcomand checks that one or more inputs are parseable to a tree-sitter grammar,
-returning all locations where a parsing error occurred.
+Check if an input parses to the respective Tree-sitter grammar
 
 <!-- DO NOT REMOVE THE "usage:{start,end}" COMMENTS -->
 <!-- usage:start -->
 ```
-Verifies if a given file is parseable by a given grammar
+Check if an input parses to the respective Tree-sitter grammar
 
 Usage: topiary check-grammar [OPTIONS] <--language <LANGUAGE>|FILES>
 
