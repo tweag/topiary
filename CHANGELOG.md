@@ -61,17 +61,8 @@ This name should be decided amongst the team before the release.
 ### Fixed
 - [#1092](https://github.com/tweag/topiary/pull/1092) Log early returns during formatting
 
-<!--
-### Deprecated
-- <Soon-to-be removed features>
-
-### Removed
-- <Removed features>
-
-
-### Security
-- <Vulnerabilities>
--->
+### Fixed
+- [#1085](https://github.com/tweag/topiary/pull/1085) CSS formatting fixes
 
 ## v0.6.1 - Gilded Ginkgo - 2025-05-27
 

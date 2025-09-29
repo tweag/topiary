@@ -53,6 +53,32 @@
 ; Allow comments to have a blank line before them
 (comment) @allow_blank_line_before
 
+(
+  (_) @prepend_begin_scope
+  .
+  (comment) @append_end_scope
+
+  (#scope_id! "left_juxtaposed_comment")
+)
+
+(
+  (comment) @prepend_spaced_scoped_softline
+  (#scope_id! "left_juxtaposed_comment")
+)
+
+(
+  (comment) @prepend_begin_scope
+  .
+  (_) @append_end_scope
+
+  (#scope_id! "right_juxtaposed_comment")
+)
+
+(
+  (comment) @append_spaced_scoped_softline
+  (#scope_id! "right_juxtaposed_comment")
+)
+
 ; Allow blank lines before any declaration in a block except the first one
 (block . (declaration) (declaration) @allow_blank_line_before)
 
@@ -105,8 +131,12 @@
 )
 
 ; Appends hardline between declaration
-(declaration
-  ";" @append_hardline
+(
+  (declaration
+    ";" @append_hardline
+  )
+  .
+  (comment)? @do_nothing
 )
 
 ; Add space between values after a property name

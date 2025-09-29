@@ -13,8 +13,8 @@
       extensions = ["css"],
       grammar.source.git = {
         git = "https://github.com/tree-sitter/tree-sitter-css.git",
-        rev = "02b4ee757654b7d54fe35352fd8e53a8a4385d42",
-        nixHash = "sha256-IniaiBBx2pDD5nwJKfr5i9qvfvG+z8H21v14qk14M0g=",
+        rev = "6e327db434fec0ee90f006697782e43ec855adf5",
+        nixHash = "sha256-en379DlqzzvQNvKgE8CtiA00j7phUyipttqbnETGHKc=",
       },
     },
 
