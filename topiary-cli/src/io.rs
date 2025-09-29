@@ -487,6 +487,7 @@ where
         return results.swap_remove(0)?;
     }
 
+    // use `.count()` here to ensure eager evaluation of iterator
     let errs = results
         .into_iter()
         .filter_map(|r| r.map_err(TopiaryError::from).flatten().err())
