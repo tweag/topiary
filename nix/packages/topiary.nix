@@ -56,9 +56,6 @@ let
       with pkgs;
       [
         openssl.dev
-      ]
-      ++ optionals stdenv.isDarwin [
-        apple-sdk
       ];
   };
 

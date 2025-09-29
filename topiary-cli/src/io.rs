@@ -2,17 +2,20 @@ use std::{
     ffi::OsString,
     fmt::{self, Display},
     fs::File,
-    io::{self, Read, Result, Seek, Write},
+    io::{self, BufWriter, Read, Result, Seek, Write},
     path::PathBuf,
+    sync::Arc,
 };
 
+use nickel_lang_core::term::RichTerm;
 use tempfile::tempfile;
 use topiary_config::Configuration;
-use topiary_core::{Language, TopiaryQuery};
+use topiary_core::{Language, Operation, TopiaryQuery, formatter};
 
 use crate::{
     cli::{AtLeastOneInput, ExactlyOneInput, FromStdin},
-    error::{CLIError, CLIResult, TopiaryError},
+    error::{CLIError, CLIResult, TopiaryError, print_error},
+    language::LanguageDefinitionCache,
 };
 
 #[derive(Debug, Clone, Hash)]
@@ -42,9 +45,19 @@ impl From<&str> for QuerySource {
 impl Display for QuerySource {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            QuerySource::Path(p) => write!(f, "{}", p.to_string_lossy()),
+            QuerySource::Path(p) => write!(f, "{}", p.display()),
             QuerySource::BuiltIn(_) => write!(f, "built-in query"),
         }
+    }
+}
+
+impl QuerySource {
+    async fn get_content(&self) -> CLIResult<String> {
+        let contents = match self {
+            Self::Path(query) => tokio::fs::read_to_string(query).await?,
+            Self::BuiltIn(contents) => contents.to_owned(),
+        };
+        Ok(contents)
     }
 }
 
@@ -94,14 +107,36 @@ impl From<&AtLeastOneInput> for InputFrom {
 #[derive(Debug)]
 pub enum InputSource {
     Stdin,
-    Disk(PathBuf, Option<File>),
+    Disk(Arc<PathBuf>, Option<File>),
+}
+
+impl InputSource {
+    pub fn location(&self) -> InputLocation {
+        match self {
+            InputSource::Stdin => InputLocation(None),
+            InputSource::Disk(path, _) => InputLocation(Some(path.clone())),
+        }
+    }
 }
 
 impl fmt::Display for InputSource {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Stdin => write!(f, "standard input"),
-            Self::Disk(path, _) => write!(f, "{}", path.to_string_lossy()),
+            Self::Disk(path, _) => write!(f, "{}", path.display()),
+        }
+    }
+}
+
+/// A location for a given [InputSource], `None` represents standard input
+#[derive(Debug)]
+pub struct InputLocation(Option<Arc<PathBuf>>);
+
+impl fmt::Display for InputLocation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.0 {
+            None => write!(f, "standard input"),
+            Some(ref path) => write!(f, "{}", path.display()),
         }
     }
 }
@@ -120,17 +155,14 @@ impl InputFile<'_> {
     #[allow(clippy::result_large_err)]
     pub async fn to_language(&self) -> CLIResult<Language> {
         let grammar = self.language().grammar()?;
-        let contents = match &self.query {
-            QuerySource::Path(query) => tokio::fs::read_to_string(query).await?,
-            QuerySource::BuiltIn(contents) => contents.to_owned(),
-        };
-        let query = TopiaryQuery::new(&grammar, &contents)?;
+        let query_contents = self.query.get_content().await?;
+        let query = TopiaryQuery::new(&grammar, &query_contents)?;
 
         Ok(Language {
             name: self.language.name.clone(),
             query,
             grammar,
-            indent: self.language().config.indent.clone(),
+            indent: self.language().indent(),
         })
     }
 
@@ -150,6 +182,25 @@ impl InputFile<'_> {
     }
 }
 
+pub(crate) async fn to_language_from_config<T: AsRef<str>>(
+    config: &Configuration,
+    name: T,
+) -> CLIResult<Language> {
+    let config_language = config.get_language(name.as_ref())?;
+    let grammar = config_language.grammar()?;
+    let query_content = to_query_from_language(config_language)?
+        .get_content()
+        .await?;
+    let query = TopiaryQuery::new(&grammar, &query_content)?;
+
+    Ok(Language {
+        name: name.as_ref().to_string(),
+        query,
+        grammar,
+        indent: config_language.indent(),
+    })
+}
+
 /// Simple helper function to read the full content of an io Read stream
 pub(crate) fn read_input(input: &mut dyn io::Read) -> Result<String> {
     let mut content = String::new();
@@ -164,7 +215,7 @@ impl Read for InputFile<'_> {
 
             InputSource::Disk(path, fd) => {
                 if fd.is_none() {
-                    *fd = Some(File::open(path)?);
+                    *fd = Some(File::open(path.as_ref())?);
                 }
 
                 fd.as_mut().unwrap().read(buf)
@@ -209,7 +260,7 @@ impl<'cfg, 'i> Inputs<'cfg> {
                     let query: QuerySource = to_query_from_language(language)?;
 
                     Ok(InputFile {
-                        source: InputSource::Disk(path, None),
+                        source: InputSource::Disk(path.into(), None),
                         language,
                         query,
                     })
@@ -230,7 +281,9 @@ fn to_query_from_language(language: &topiary_config::language::Language) -> CLIR
         // builtin ones. Store the error, return that if we
         // fail to find anything, because the builtin error might be unexpected.
         Err(e) => {
-            log::warn!("No query files found in any of the expected locations. Falling back to compile-time included files.");
+            log::warn!(
+                "No query files found in any of the expected locations. Falling back to compile-time included files."
+            );
             to_query(&language.name).map_err(|_| e)?
         }
     };
@@ -286,7 +339,7 @@ impl OutputFile {
             let mut writer = File::create(&output)?;
             let bytes = io::copy(&mut staged, &mut writer)?;
 
-            log::debug!("Wrote {bytes} bytes to {}", &output.to_string_lossy());
+            log::debug!("Wrote {bytes} bytes to {}", &output.display());
         }
 
         Ok(())
@@ -297,7 +350,7 @@ impl fmt::Display for OutputFile {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Stdout => write!(f, "standard output"),
-            Self::Disk { output, .. } => write!(f, "{}", output.to_string_lossy()),
+            Self::Disk { output, .. } => write!(f, "{}", output.display()),
         }
     }
 }
@@ -383,4 +436,69 @@ where
             Some(CLIError::UnsupportedLanguage(name.to_string())),
         )),
     }
+}
+
+// convenience function to bundle nickel config formatting errors in one return value
+pub(crate) async fn format_config(config: &Configuration, nickel_term: &RichTerm) -> CLIResult<()> {
+    let nickel_config = format!("{nickel_term}");
+    let mut formatted_config = BufWriter::new(OutputFile::Stdout);
+    // if errors are encountered in formatting, return
+    let language = to_language_from_config(config, "nickel").await?;
+
+    formatter(
+        &mut nickel_config.as_bytes(),
+        &mut formatted_config,
+        &language,
+        Operation::Format {
+            skip_idempotence: true,
+            tolerate_parsing_errors: false,
+        },
+    )?;
+
+    Ok(())
+}
+
+// meant to be used in scenarios where multiple inputs are possible
+pub(crate) async fn process_inputs<F>(inputs: Inputs<'_>, process_fn: F) -> CLIResult<()>
+where
+    F: Fn(InputFile, Arc<Language>) -> CLIResult<()> + Send + Sync + 'static,
+{
+    let cache = LanguageDefinitionCache::new();
+    let (_, mut results) = async_scoped::TokioScope::scope_and_block(|scope| {
+        for input in inputs {
+            scope.spawn(async {
+                // This happens when the input resolver cannot establish an input
+                // source, language or query file.
+                let input = input?;
+                let location = input.source().location();
+                let language = cache.fetch(&input).await?;
+                process_fn(input, language).map_err(|e| {
+                    let TopiaryError::Lib(fmt_err) = e else {
+                        return e;
+                    };
+                    fmt_err.with_location(location.to_string()).into()
+                })
+            });
+        }
+    });
+
+    if results.len() == 1 {
+        // If we just had one input, then handle errors as normal
+        return results.swap_remove(0)?;
+    }
+
+    // use `.count()` here to ensure eager evaluation of iterator
+    let errs = results
+        .into_iter()
+        .filter_map(|r| r.map_err(TopiaryError::from).flatten().err())
+        .inspect(|e| print_error(&e))
+        .count();
+    if errs > 0 {
+        // For multiple inputs, bail out if any failed with a "multiple errors" failure
+        return Err(TopiaryError::Bin(
+            "Processing of some inputs failed; see warning logs for details".into(),
+            Some(CLIError::Multiple),
+        ));
+    }
+    Ok(())
 }

@@ -8,8 +8,8 @@ use std::{
 use topiary_tree_sitter_facade::Node;
 
 use crate::{
-    tree_sitter::NodeExt, Atom, Capitalisation, FormatterError, FormatterResult, ScopeCondition,
-    ScopeInformation,
+    Atom, Capitalisation, FormatterError, FormatterResult, ScopeCondition, ScopeInformation,
+    tree_sitter::NodeExt,
 };
 
 /// A struct that holds sets of node IDs that have line breaks before or after them.
@@ -206,14 +206,14 @@ impl AtomCollection {
             log::debug!("Skipping because context is single-line and #multi_line_only! is set");
             return Ok(());
         }
-        if let Some(parent_id) = self.parent_leaf_nodes.get(&node.id()) {
-            if *parent_id != node.id() {
-                log::warn!(
-                    "Skipping because the match occurred below a leaf node: {}",
-                    node.display_one_based()
-                );
-                return Ok(());
-            }
+        if let Some(parent_id) = self.parent_leaf_nodes.get(&node.id())
+            && *parent_id != node.id()
+        {
+            log::debug!(
+                "Skipping because the match occurred below a leaf node: {}",
+                node.display_one_based()
+            );
+            return Ok(());
         }
 
         match name {
@@ -404,10 +404,9 @@ impl AtomCollection {
                         single_line_no_indent,
                         ..
                     } = a
+                        && *id == node.id()
                     {
-                        if *id == node.id() {
-                            *single_line_no_indent = true;
-                        }
+                        *single_line_no_indent = true;
                     }
                 }
 
@@ -421,10 +420,9 @@ impl AtomCollection {
                         multi_line_indent_all,
                         ..
                     } = a
+                        && *id == node.id()
                     {
-                        if *id == node.id() {
-                            *multi_line_indent_all = true;
-                        }
+                        *multi_line_indent_all = true;
                     }
                 }
             }
@@ -433,7 +431,7 @@ impl AtomCollection {
                 return Err(FormatterError::Query(
                     format!("@{unknown} is not a valid capture name"),
                     None,
-                ))
+                ));
             }
         }
 
@@ -778,7 +776,9 @@ impl AtomCollection {
                                 Some(multi_line),
                             ));
                         } else {
-                            log::warn!("Found several measuring scopes in a single regular scope {scope_id:?}");
+                            log::warn!(
+                                "Found several measuring scopes in a single regular scope {scope_id:?}"
+                            );
                             force_apply_modifications = true;
                         }
                     } else {
@@ -974,7 +974,10 @@ impl AtomCollection {
                 // If two whitespace atoms follow each other, remove the non-dominant one.
                 (
                     moved_prev @ (Atom::Space | Atom::Hardline | Atom::Blankline),
-                    [head @ (Atom::Space | Atom::Hardline | Atom::Blankline), tail @ ..],
+                    [
+                        head @ (Atom::Space | Atom::Hardline | Atom::Blankline),
+                        tail @ ..,
+                    ],
                 ) => {
                     if head.dominates(moved_prev) {
                         *moved_prev = Atom::Empty;
@@ -1248,7 +1251,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use crate::{atom_collection::AtomCollection, Atom};
+    use crate::{Atom, atom_collection::AtomCollection};
     use test_log::test;
 
     #[test]

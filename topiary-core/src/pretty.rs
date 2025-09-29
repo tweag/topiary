@@ -92,7 +92,7 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                 return Err(FormatterError::Internal(
                     format!("Found atom that should have been removed before rendering: {other:?}",),
                     None,
-                ))
+                ));
             }
         };
     }
