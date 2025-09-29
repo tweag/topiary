@@ -157,7 +157,7 @@ impl Language {
         }
 
         assert!(library_path.is_file());
-        log::debug!("Loading grammar from {}", library_path.to_string_lossy());
+        log::debug!("Loading grammar from {}", library_path.display());
 
         use libloading::{Library, Symbol};
 

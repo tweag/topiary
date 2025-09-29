@@ -6,7 +6,6 @@ mod language;
 mod visualisation;
 
 use std::{
-    error::Error,
     io::{BufReader, BufWriter, Write},
     process::ExitCode,
 };
@@ -18,9 +17,8 @@ use topiary_core::{Operation, check_query_coverage, formatter};
 
 use crate::{
     cli::Commands,
-    error::{CLIError, CLIResult, TopiaryError},
-    io::{Inputs, OutputFile, read_input},
-    language::LanguageDefinitionCache,
+    error::{CLIResult, print_error},
+    io::{Inputs, OutputFile, process_inputs, read_input},
 };
 
 use miette::{NamedSource, Report};
@@ -52,75 +50,62 @@ async fn run() -> CLIResult<()> {
             inputs,
         } => {
             let inputs = Inputs::new(&config, &inputs);
-            let cache = LanguageDefinitionCache::new();
 
-            let (_, mut results) = async_scoped::TokioScope::scope_and_block(|scope| {
-                for input in inputs {
-                    scope.spawn(async {
-                        // This happens when the input resolver cannot establish an input
-                        // source, language or query file.
-                        let input = input?;
-                        let language = cache.fetch(&input).await?;
-                        let output = OutputFile::try_from(&input)?;
+            process_inputs(inputs, move |input, language| {
+                let output = OutputFile::try_from(&input)?;
 
-                        log::info!(
-                            "Formatting {}, as {} using {}, to {}",
-                            input.source(),
-                            input.language().name,
-                            input.query(),
-                            output
-                        );
+                log::info!(
+                    "Formatting {}, as {} using {}, to {}",
+                    input.source(),
+                    input.language().name,
+                    input.query(),
+                    output
+                );
 
-                        let mut buf_output = BufWriter::new(output);
+                let mut buf_output = BufWriter::new(output);
 
-                        {
-                            // NOTE This newly opened scope is important! `buf_input` takes
-                            // ownership of `input`, which -- upon reading -- contains an
-                            // open file handle. We need to close this file, by dropping
-                            // `buf_input`, before we attempt to persist our output.
-                            // Otherwise, we get an exclusive lock problem on Windows.
-                            let mut buf_input = BufReader::new(input);
+                {
+                    // NOTE This newly opened scope is important! `buf_input` takes
+                    // ownership of `input`, which -- upon reading -- contains an
+                    // open file handle. We need to close this file, by dropping
+                    // `buf_input`, before we attempt to persist our output.
+                    // Otherwise, we get an exclusive lock problem on Windows.
+                    let mut buf_input = BufReader::new(input);
 
-                            formatter(
-                                &mut buf_input,
-                                &mut buf_output,
-                                &language,
-                                Operation::Format {
-                                    skip_idempotence,
-                                    tolerate_parsing_errors,
-                                },
-                            )
-                            .map_err(|e| {
-                                e.with_location(format!("{}", buf_input.get_ref().source()))
-                            })?;
-                        }
-
-                        buf_output.into_inner()?.persist()?;
-
-                        CLIResult::Ok(())
-                    });
+                    formatter(
+                        &mut buf_input,
+                        &mut buf_output,
+                        &language,
+                        Operation::Format {
+                            skip_idempotence,
+                            tolerate_parsing_errors,
+                        },
+                    )?;
                 }
-            });
 
-            if results.len() == 1 {
-                // If we just had one input, then handle errors as normal
-                return results.swap_remove(0)?;
-            }
+                buf_output.into_inner()?.persist()?;
 
-            // use `.count()` here to ensure eager evaluation of iterator
-            let errs = results
-                .into_iter()
-                .filter_map(|r| r.map_err(TopiaryError::from).and_then(|inner| inner).err())
-                .inspect(|e| print_error(&e))
-                .count();
+                CLIResult::Ok(())
+            })
+            .await?;
+        }
 
-            if errs > 0 {
-                // For multiple inputs, bail out if any failed with a "multiple errors" failure
-                return Err(TopiaryError::Bin(
-                    "Processing of some inputs failed; see warning logs for details".into(),
-                    Some(CLIError::Multiple),
-                ));
-            }
+        Commands::CheckGrammar { inputs } => {
+            let inputs = Inputs::new(&config, &inputs);
+
+            process_inputs(inputs, |mut input, language| {
+                let input_content = read_input(&mut input)?;
+                log::debug!(
+                    "Checking {}, as {} for grammar correctness",
+                    input.source(),
+                    input.language().name,
+                );
+
+                topiary_core::parse(&input_content, &language.grammar, false)?;
+
+                Ok(())
+            })
+            .await?;
         }
 
         Commands::Visualise { format, input } => {
@@ -183,14 +168,9 @@ async fn run() -> CLIResult<()> {
             // Don't fail on error but merely log the event since the original `nickel_config` is
             // already valid.
             #[cfg(feature = "nickel")]
-            if io::format_config(&config, &nickel_config)
-                .await
-                .inspect_err(|e| {
-                    // nickel may not be present in user config so log as info
-                    log::info!("Config formatting error: {e}");
-                })
-                .is_ok()
-            {
+            if let Err(e) = io::format_config(&config, &nickel_config).await {
+                log::error!("Config formatting error: {}", e);
+            } else {
                 return Ok(());
             }
             println!("{nickel_config}");
@@ -247,11 +227,4 @@ async fn run() -> CLIResult<()> {
     }
 
     Ok(())
-}
-
-fn print_error(e: &dyn Error) {
-    log::error!("{e}");
-    if let Some(source) = e.source() {
-        log::error!("Cause: {source}");
-    }
 }

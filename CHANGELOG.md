@@ -46,19 +46,20 @@ This name should be decided amongst the team before the release.
 
 ### Added
 - [#1015](https://github.com/tweag/topiary/pull/1015) Add support for include expressions to Nickel formatting
-- [#1049](https://github.com/tweag/topiary/pull/1015) Add support for rich grammar parsing errors using miette, thanks to @mkatychev
-- [#1069](https://github.com/tweag/topiary/pull/1069) split CI nix dependent tests into separate jobs, thanks to @mkatychev
-- [#1070](https://github.com/tweag/topiary/pull/1070) Implemented parallelism for query coverage, thanks to @mkatychev
-- [#1072](https://github.com/tweag/topiary/pull/1072) Add source spans to query coverage results, thanks to @mkatychev
-- [#1077](https://github.com/tweag/topiary/pull/1077) Add handling for `~/.config` on non-linux systems, thanks to @mkatychev
+- [#1049](https://github.com/tweag/topiary/pull/1015) Add support for rich grammar parsing errors using miette
+- [#1069](https://github.com/tweag/topiary/pull/1069) split CI nix dependent tests into separate jobs
+- [#1070](https://github.com/tweag/topiary/pull/1070) Implemented parallelism for query coverage
+- [#1072](https://github.com/tweag/topiary/pull/1072) Add source spans to query coverage results
+- [#1077](https://github.com/tweag/topiary/pull/1077) Add handling for `~/.config` on non-linux systems
 - [#1080](https://github.com/tweag/topiary/pull/1080) Allow formatting existing tree-sitter trees, thanks to @shadr
+- [#1094](https://github.com/tweag/topiary/pull/1094) Added `topiary check-grammar` subcommand
 
 ### Changed
 - [#1031](https://github.com/tweag/topiary/pull/1031) Removed the Bash rewrite rule for converting POSIX `[` to Bash's `[[`
 - [#1095](https://github.com/tweag/topiary/pull/1095) Update to Rust 2024 edition
 
 ### Fixed
-- [#1092](https://github.com/tweag/topiary/pull/1092) Log early returns during formatting, thanks to @mkatychev
+- [#1092](https://github.com/tweag/topiary/pull/1092) Log early returns during formatting
 
 <!--
 ### Deprecated

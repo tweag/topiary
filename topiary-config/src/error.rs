@@ -39,7 +39,7 @@ impl fmt::Display for TopiaryConfigError {
             TopiaryConfigError::FileNotFound(path) => write!(
                 f,
                 "We tried to find your configuration file at {}, but failed to do so. Make sure the file exists.",
-                path.to_string_lossy()
+                path.display()
             ),
             TopiaryConfigError::UnknownLanguage(lang) => write!(
                 f,
@@ -52,13 +52,13 @@ impl fmt::Display for TopiaryConfigError {
             TopiaryConfigError::NoExtension(path) => write!(
                 f,
                 "You tried to format {} without specifying a language, but we cannot automatically detect the language because we can't find the filetype extension.",
-                path.to_string_lossy()
+                path.display()
             ),
             #[cfg(not(target_arch = "wasm32"))]
             TopiaryConfigError::QueryFileNotFound(path) => write!(
                 f,
                 "We could not find the query file: \"{}\" anywhere. If you use the TOPIARY_LANGUAGE_DIR environment variable, make sure it set set correctly.",
-                path.to_string_lossy()
+                path.display()
             ),
             TopiaryConfigError::Io(error) => write!(f, "We encountered an io error: {error}"),
             TopiaryConfigError::Missing => write!(
@@ -94,7 +94,7 @@ impl fmt::Display for TopiaryConfigFetchingError {
             TopiaryConfigFetchingError::GrammarFileNotFound(path) => write!(
                 f,
                 "Attempted to load grammar at `{}`, but no file found",
-                path.to_string_lossy()
+                path.display()
             ),
         }
     }
