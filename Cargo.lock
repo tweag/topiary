@@ -2668,9 +2668,9 @@ checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
 
 [[package]]
 name = "nickel-lang-core"
-version = "0.13.0"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d4be50b1f03dbdafd0f1bbcfdcc77ac956dc7a850ade51cdf4d8f90505b2b2a"
+checksum = "95990a892fab2e1749388dff1f00fb1fb467b8bc12971f582c8e047ee3a5a08a"
 dependencies = [
  "bumpalo",
  "codespan",
@@ -3390,9 +3390,9 @@ dependencies = [
 
 [[package]]
 name = "rustls-webpki"
-version = "0.103.6"
+version = "0.103.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8572f3c2cb9934231157b45499fc41e1f58c589fdfb81a844ba873265e80f8eb"
+checksum = "e10b3f4191e8a80e6b43eebabfac91e5dcecebb27a71f04e820c47ec41d314bf"
 dependencies = [
  "ring",
  "rustls-pki-types",
