@@ -52,7 +52,10 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                     // as a `Hardline` in the atom stream.
                     writeln!(buffer)?;
                 }
-                let content = content.trim_end_matches('\n');
+
+                // Don't trim line breaks if we only have line breaks
+                let trimmed = content.trim_end_matches('\n');
+                let content = if trimmed.is_empty() { content } else { trimmed };
 
                 let mut content = if *multi_line_indent_all {
                     let cursor = current_column(&buffer) as i32;
