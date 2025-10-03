@@ -76,14 +76,3 @@ indentation for the node that is matched.
 ; line number directives must be alone on their line, and can't be indented
 (line_number_directive) @single_line_no_indent
 ```
-
-## `@keep_whitespaces`
-
-To be used on leaf nodes. The matched node will keep its trailing `\n` characters.
-
-### Example
-
-```scheme
-; keep trailing newlines
-(raw_text) @keep_whitespaces
-```
