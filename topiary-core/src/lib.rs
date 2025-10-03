@@ -77,6 +77,8 @@ pub enum Atom {
         single_line_no_indent: bool,
         // if the leaf is multi-line, each line will be indented, not just the first
         multi_line_indent_all: bool,
+        // don't trim trailing newline characters if set to true
+        keep_whitespace: bool,
         capitalisation: Capitalisation,
     },
     /// Represents a literal string, such as a semicolon.

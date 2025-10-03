@@ -44,6 +44,7 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                 original_position,
                 single_line_no_indent,
                 multi_line_indent_all,
+                keep_whitespace,
                 capitalisation,
                 ..
             } => {
@@ -52,7 +53,11 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                     // as a `Hardline` in the atom stream.
                     writeln!(buffer)?;
                 }
-                let content = content.trim_end_matches('\n');
+                let content = if *keep_whitespace {
+                    content
+                } else {
+                    content.trim_end_matches('\n')
+                };
 
                 let mut content = if *multi_line_indent_all {
                     let cursor = current_column(&buffer) as i32;

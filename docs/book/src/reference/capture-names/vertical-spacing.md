@@ -383,3 +383,14 @@ input document, otherwise it is a space.
   [ "," ";" ]* @do_nothing
 )
 ```
+
+## `@keep_whitespace`
+
+To be used on leaf nodes. The matched node will keep its trailing `\n` characters.
+
+### Example
+
+```scheme
+; keep trailing newlines
+(raw_text) @keep_whitespace
+```
