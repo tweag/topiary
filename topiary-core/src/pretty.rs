@@ -44,7 +44,7 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                 original_position,
                 single_line_no_indent,
                 multi_line_indent_all,
-                keep_whitespaces,
+                keep_whitespace,
                 capitalisation,
                 ..
             } => {
@@ -53,7 +53,7 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                     // as a `Hardline` in the atom stream.
                     writeln!(buffer)?;
                 }
-                let content = if *keep_whitespaces {
+                let content = if *keep_whitespace {
                     content
                 } else {
                     content.trim_end_matches('\n')

@@ -427,16 +427,16 @@ impl AtomCollection {
                 }
             }
             // Mark a leaf to disable trimming
-            "keep_whitespaces" => {
+            "keep_whitespace" => {
                 for a in &mut self.atoms {
                     if let Atom::Leaf {
                         id,
-                        keep_whitespaces,
+                        keep_whitespace,
                         ..
                     } = a
                         && *id == node.id()
                     {
-                        *keep_whitespaces = true;
+                        *keep_whitespace = true;
                     }
                 }
             }
@@ -562,7 +562,7 @@ impl AtomCollection {
                 original_position: node.start_position().into(),
                 single_line_no_indent: false,
                 multi_line_indent_all: false,
-                keep_whitespaces: false,
+                keep_whitespace: false,
                 capitalisation: Capitalisation::Pass,
             });
             // Mark all sub-nodes as having this node as a "leaf parent"

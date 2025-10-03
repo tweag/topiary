@@ -384,7 +384,7 @@ input document, otherwise it is a space.
 )
 ```
 
-## `@keep_whitespaces`
+## `@keep_whitespace`
 
 To be used on leaf nodes. The matched node will keep its trailing `\n` characters.
 
@@ -392,5 +392,5 @@ To be used on leaf nodes. The matched node will keep its trailing `\n` character
 
 ```scheme
 ; keep trailing newlines
-(raw_text) @keep_whitespaces
+(raw_text) @keep_whitespace
 ```
