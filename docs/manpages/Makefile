@@ -4,7 +4,7 @@ NAME := topiary
 BUILD_DIR := man
 BUILD_PREFIX := $(BUILD_DIR)/$(NAME)
 
-MAN_DIR ?= /usr/share/man
+MAN_DIR ?= "${HOME}/.local/share/man"
 
 # NOTE We assume that mdbook-manmunge is available in the $PATH. This
 # Makefile does not build mdbook-manmunge from source.
@@ -24,8 +24,8 @@ install: $(MAN_DIR)/man1/$(NAME).1.gz
 
 $(MAN_DIR)/man1/$(NAME).1.gz: $(BUILD_PREFIX).1.gz $(MAN_DIR)/man1
 	install \
-	  --mode 0644 \
-	  --no-target-directory \
+	  -m 0644 \
+	  -S \
 	  "$<" \
 	  "$@"
 
