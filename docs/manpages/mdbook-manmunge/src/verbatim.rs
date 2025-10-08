@@ -18,11 +18,15 @@ impl Escape for String {
         let mut iter = self.char_indices();
         while let Some((idx, chr)) = iter.next() {
             if chr == '\\' {
+                // Push the string up to the first backslash into our buffer...
                 let mut buffer = String::with_capacity(self.len() * 2);
                 buffer.push_str(&self[..idx]);
 
+                // ...then iterate over what remains of the string (i.e., the current (idx, chr),
+                // where chr will be a backslash, and the remaining iterator)
                 let tail = iter::once((idx, chr)).chain(iter);
                 for (_, chr) in tail {
+                    // Every time we hit a backslash, add another to our buffer (i.e., escaping it)
                     if chr == '\\' {
                         buffer.push('\\');
                     }
