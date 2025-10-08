@@ -10,11 +10,11 @@ use pulldown_cmark::{CodeBlockKind, Event, Tag, TagEnd};
 /* Utilities *************************************************************************************/
 
 trait Escape {
-    fn escape_backslashes(&self) -> Cow<str>;
+    fn escape_backslashes(&self) -> Cow<'_, str>;
 }
 
 impl Escape for String {
-    fn escape_backslashes(&self) -> Cow<str> {
+    fn escape_backslashes(&self) -> Cow<'_, str> {
         let mut iter = self.char_indices();
         while let Some((idx, chr)) = iter.next() {
             if chr == '\\' {
