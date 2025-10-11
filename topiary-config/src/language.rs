@@ -142,7 +142,7 @@ impl Language {
     ) -> Result<topiary_tree_sitter_facade::Language, TopiaryConfigFetchingError> {
         let library_path = self.library_path()?;
 
-        // Ensure the comile exists
+        // Ensure the compile exists
         if !library_path.is_file() {
             match &self.config.grammar.source {
                 GrammarSource::Git(git_source) => {
