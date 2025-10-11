@@ -62,7 +62,7 @@ This name should be decided amongst the team before the release.
 
 ### Fixed
 - [#1092](https://github.com/tweag/topiary/pull/1092) Log early returns during formatting
-- [#1092](https://github.com/tweag/topiary/pull/1092) Log early returns during formatting
+- [#1092](https://github.com/tweag/topiary/pull/1113) Update `dist` to 0.30
 
 ### Fixed
 - [#1085](https://github.com/tweag/topiary/pull/1085) CSS formatting fixes
