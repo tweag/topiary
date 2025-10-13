@@ -58,14 +58,11 @@ This name should be decided amongst the team before the release.
 ### Changed
 - [#1031](https://github.com/tweag/topiary/pull/1031) Removed the Bash rewrite rule for converting POSIX `[` to Bash's `[[`
 - [#1095](https://github.com/tweag/topiary/pull/1095) Update to Rust 2024 edition
-- [#1095](https://github.com/tweag/topiary/pull/1095) Updated `dist` to 0.30
-
-### Fixed
-- [#1092](https://github.com/tweag/topiary/pull/1092) Log early returns during formatting
-- [#1092](https://github.com/tweag/topiary/pull/1113) Update `dist` to 0.30
 
 ### Fixed
 - [#1085](https://github.com/tweag/topiary/pull/1085) CSS formatting fixes
+- [#1092](https://github.com/tweag/topiary/pull/1092) Log early returns during formatting
+- [#1113](https://github.com/tweag/topiary/pull/1113) Update `dist` to 0.30
 
 ## v0.6.1 - Gilded Ginkgo - 2025-05-27
 
