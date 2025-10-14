@@ -137,8 +137,6 @@ pub enum Atom {
         condition: ScopeCondition,
         atom: Box<Atom>,
     },
-    InjectionContentBegin(String),
-    InjectionContentEnd,
 }
 
 impl Atom {
