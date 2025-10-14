@@ -132,7 +132,7 @@
     wit = {
       grammar = {
         source.git = {
-          git = "https://github.com/bytecode-alliance/tree-sitter-wit",
+          git = "https://github.com/bytecodealliance/tree-sitter-wit",
           rev = "230984dfaf803a0ff8f77da5034361a62c326577",
           nixHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
         },
