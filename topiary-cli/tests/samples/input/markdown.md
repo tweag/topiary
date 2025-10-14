@@ -1,0 +1,181 @@
+module sdml is
+; Sample module for Topiary formatter.
+
+    import [dc rdf skos  xsd]
+    import  dc:issued as issued
+    import  rdfs      as schema
+  import [
+magic]
+
+    @dc:description = "A sample SDML module"
+    @issued =  xsd:date( "2025-02-06" )
+
+    @magic:jpegFile= #[ff d8 ff e0]
+
+  @magic:map = {unique} [
+    0 -> "zero" 1 -> "one"
+    2 -> "two" ;; ...
+  ]
+
+  assert some_sequence_builder_silliness with
+  def map -> {ordered unique} (unsigned -> string) := [
+      0 -> "zero"
+      1 -> "one"
+      2 -> "two"
+      3 -> "three"
+    ]
+  def odd_names -> {} string :=
+    {
+      name
+      |
+      forall pair in map, right(pair) = pair.left.is_odd }
+      is
+      odd_names.length = 2
+    end
+
+  class Ordered is
+
+    def length -> unsigned
+
+    def drop(count → unsigned) → Self
+    def get(index → unsigned) → {0..1} Self
+
+    def reverse → Self
+
+    def slice(start → unsigned count → unsigned)
+      → Self := take(drop(start) count)
+  is @dc:description = "return a slice of this list" end
+
+    def take(count → unsigned) → Self is
+      assert count_subset is count <= self.length end end
+
+end
+
+  datatype Vin <-
+    opaque string
+  {      minLength = 12      maxLength = 16   }
+is @dc:description = "an example" end
+
+  datatype Money <- decimal {
+  fractionDigits = 3
+  totalDigits = 9
+  }
+
+  datatype Stars <- unsigned {
+    minInclusive =fixed  1
+    maxInclusive    =  fixed 5
+  }
+
+  datatype DateModified <- dateTime {
+    explicitTimezone = required }
+
+  datatype uuid <- string {
+    pattern = [
+      "^(?:[[:xdigit:]]{32})$"
+      "^(?:[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12})$"
+      "^(?:\\{[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12}\\})$"
+      "^(?:\\([[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12}\\))$"
+      "^(?:\\{0x[[:xdigit:]]{8},(?:0x[[:xdigit:]]{4},){2}\\{(?:0x[[:xdigit:]]{2},){7}0x[[:xdigit:]]{2}\\}\\})$"
+    ]
+  } is
+    @skos:prefLabel = "UUID"@en
+    @dc:description = "The string form of a UUID, conforming to one of 5 standard patterns."@en
+  end
+
+  dimension VehicleDimensions is
+    source Vehicle with [ vin
+    manufacturer
+    brand
+    model
+    modelYear
+    trim
+    color
+    tires
+    ]
+    seatingRows -> unsigned
+    seatingCapacity -> unsigned
+    safetyRating -> unsigned
+  end
+
+  entity Vehicle is
+  @skos:prefLabel = [
+    "Vehicle"@en
+    ""@fr
+  ]
+    identity vin -> Vin
+    manufacturer -> Manufacturer
+    manufacturedLocation -> Location is
+      assert a_constant with
+        def const -> unsigned := 10
+        is self /= const end
+  end
+    manufacturedDate -> xds:date
+    brand -> Brand is
+      assert manufacturer_brand is
+        self.brand.manufacturer = self.manufacturer
+      end
+    end
+    model -> Model
+  modelYear -> xsd:gYear is
+  assert model_year_bounds is
+  self.modelYear >= 1910 and self.modelYear < now.year.plus_1
+  end
+  end
+    trim -> string is
+    assert model_trim is
+    exists t in self.model.trims, self.trim = t end
+  end
+    color -> string
+    tires
+      -> {ordered nonunique 0..} Tire
+  end
+
+  entity VehicleTitle is
+    identity number -> Sequence
+    ref vehicle
+    registeredOwner -> LegalPerson
+    ownerSince -> xsd:dateTime is
+  assert owned_after_made is
+        not self.ownerSince < self.vehicle.manufacturedDate
+  end
+  end
+  end
+
+  enum T_Shirt of Small Medium Large end
+event VehicleTitleOwnerChanged is
+    source VehicleTitle with [ number vehicle registeredOwner ownerSince ]
+  end
+
+event Foo is source Bar with boo end
+
+property vehicle -> {1} Vehicle
+
+property maybeVehicle -> {0..1} Vehicle
+
+  rdf Thing
+  type schema:Class is
+    @dc:description = "?"
+  end
+
+  rdf Another
+  type [ schema:Class Thing ] is
+    @dc:description = "??"
+end
+
+  structure DateRange
+  is
+    assert
+    ends_after_starts
+    = "end_date > start_date"
+    start_date -> xsd:date
+    end_date -> xsd:date
+  end
+
+  union ThisOrThat
+  of
+    This
+    This as
+    That
+  end
+
+end

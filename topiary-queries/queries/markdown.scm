@@ -1,3 +1,12 @@
+(_
+  (fenced_code_block
+    (info_string
+      (language)
+    )
+    (code_fence_content)
+  )? @do_nothing
+) @leaf
+
 (fenced_code_block
   (info_string
     (language) @injection.language
