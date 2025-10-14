@@ -12,8 +12,8 @@ Generate shell completion script
 Usage: topiary completion [OPTIONS] [SHELL]
 
 Arguments:
-  [SHELL]  Shell (omit to detect from the environment) [possible values: bash, elvish, fish,
-           powershell, zsh]
+  [SHELL]  Shell (omit to detect from the environment) [possible values: bash, elvish,
+           fish, powershell, zsh]
 
 Options:
   -C, --configuration <CONFIGURATION>  Configuration file [env: TOPIARY_CONFIG_FILE]

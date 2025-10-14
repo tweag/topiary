@@ -6,20 +6,22 @@ mod language;
 mod visualisation;
 
 use std::{
-    error::Error,
-    io::{BufReader, BufWriter},
+    io::{BufReader, BufWriter, Write},
     process::ExitCode,
 };
 
 use error::Benign;
-use topiary_core::{coverage, formatter, Operation};
+use tabled::{Table, settings::Style};
+use topiary_config::source::Source;
+use topiary_core::{Operation, check_query_coverage, formatter};
 
 use crate::{
     cli::Commands,
-    error::{CLIError, CLIResult, TopiaryError},
-    io::{Inputs, OutputFile},
-    language::LanguageDefinitionCache,
+    error::{CLIResult, print_error},
+    io::{Inputs, OutputFile, process_inputs, read_input},
 };
+
+use miette::{NamedSource, Report};
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -36,10 +38,9 @@ async fn main() -> ExitCode {
 async fn run() -> CLIResult<()> {
     let args = cli::get_args()?;
 
-    let (config, nickel_config) = topiary_config::Configuration::fetch(
-        args.global.merge_configuration,
-        &args.global.configuration,
-    )?;
+    let file_config = &args.global.configuration;
+    let (config, nickel_config) =
+        topiary_config::Configuration::fetch(args.global.merge_configuration, file_config)?;
 
     // Delegate by subcommand
     match args.command {
@@ -49,79 +50,62 @@ async fn run() -> CLIResult<()> {
             inputs,
         } => {
             let inputs = Inputs::new(&config, &inputs);
-            let cache = LanguageDefinitionCache::new();
 
-            let (_, mut results) = async_scoped::TokioScope::scope_and_block(|scope| {
-                for input in inputs {
-                    scope.spawn(async {
-                        let result: CLIResult<()> = match input {
-                            Ok(input) => {
-                                let language = cache.fetch(&input).await?;
-                                let output = OutputFile::try_from(&input)?;
+            process_inputs(inputs, move |input, language| {
+                let output = OutputFile::try_from(&input)?;
 
-                                log::info!(
-                                    "Formatting {}, as {} using {}, to {}",
-                                    input.source(),
-                                    input.language().name,
-                                    input.query(),
-                                    output
-                                );
+                log::info!(
+                    "Formatting {}, as {} using {}, to {}",
+                    input.source(),
+                    input.language().name,
+                    input.query(),
+                    output
+                );
 
-                                let mut buf_output = BufWriter::new(output);
+                let mut buf_output = BufWriter::new(output);
 
-                                {
-                                    // NOTE This newly opened scope is important! `buf_input` takes
-                                    // ownership of `input`, which -- upon reading -- contains an
-                                    // open file handle. We need to close this file, by dropping
-                                    // `buf_input`, before we attempt to persist our output.
-                                    // Otherwise, we get an exclusive lock problem on Windows.
-                                    let mut buf_input = BufReader::new(input);
+                {
+                    // NOTE This newly opened scope is important! `buf_input` takes
+                    // ownership of `input`, which -- upon reading -- contains an
+                    // open file handle. We need to close this file, by dropping
+                    // `buf_input`, before we attempt to persist our output.
+                    // Otherwise, we get an exclusive lock problem on Windows.
+                    let mut buf_input = BufReader::new(input);
 
-                                    formatter(
-                                        &mut buf_input,
-                                        &mut buf_output,
-                                        &language,
-                                        Operation::Format {
-                                            skip_idempotence,
-                                            tolerate_parsing_errors,
-                                        },
-                                    )?;
-                                }
-
-                                buf_output.into_inner()?.persist()?;
-
-                                Ok(())
-                            }
-
-                            // This happens when the input resolver cannot establish an input
-                            // source, language or query file.
-                            Err(error) => Err(error),
-                        };
-
-                        if let Err(error) = &result {
-                            // By this point, we've lost any reference to the original
-                            // input; we trust that it is embedded into `error`.
-                            log::warn!("Skipping: {error}");
-                        }
-
-                        result
-                    });
+                    formatter(
+                        &mut buf_input,
+                        &mut buf_output,
+                        &language,
+                        Operation::Format {
+                            skip_idempotence,
+                            tolerate_parsing_errors,
+                        },
+                    )?;
                 }
-            });
 
-            if results.len() == 1 {
-                // If we just had one input, then handle errors as normal
-                results.remove(0)??
-            } else if results
-                .iter()
-                .any(|result| matches!(result, Err(_) | Ok(Err(_))))
-            {
-                // For multiple inputs, bail out if any failed with a "multiple errors" failure
-                return Err(TopiaryError::Bin(
-                    "Processing of some inputs failed; see warning logs for details".into(),
-                    Some(CLIError::Multiple),
-                ));
-            }
+                buf_output.into_inner()?.persist()?;
+
+                CLIResult::Ok(())
+            })
+            .await?;
+        }
+
+        Commands::CheckGrammar { inputs } => {
+            let inputs = Inputs::new(&config, &inputs);
+
+            process_inputs(inputs, |mut input, language| {
+                let input_content = read_input(&mut input)?;
+                log::debug!(
+                    "Checking {}, as {} for grammar correctness",
+                    input.source(),
+                    input.language().name,
+                );
+
+                topiary_core::parse(&input_content, &language.grammar, false)?;
+
+                Ok(())
+            })
+            .await?;
         }
 
         Commands::Visualise { format, input } => {
@@ -150,17 +134,52 @@ async fn run() -> CLIResult<()> {
                 Operation::Visualise {
                     output_format: format.into(),
                 },
-            )?;
+            )
+            .map_err(|e| e.with_location(format!("{}", buf_input.get_ref().source())))?;
         }
 
-        Commands::Config => {
-            // Output the collated nickel configuration
-            println!("{nickel_config}")
+        Commands::Config {
+            command: Some(cli::ConfigCommand::ShowSources),
+        } => {
+            let bool_emoji = |b: bool| {
+                match b {
+                    true => "\u{2705}",  // Check Mark
+                    false => "\u{274C}", // Cross Mark
+                }
+            };
+            let sources = Source::config_sources(file_config)
+                .map(|(hint, source)| {
+                    let languages_exists = bool_emoji(source.languages_exists());
+                    let queries_exists =
+                    // Should Source::Builtin always return true for queries?
+                        bool_emoji(source.queries_dir().map(|p| p.exists()).unwrap_or(true));
+                    (hint, format!("{source}"), languages_exists, queries_exists)
+                })
+                .collect::<Vec<_>>();
+
+            let mut table = Table::builder(sources);
+            table.remove_record(0);
+            table.insert_record(0, ["source", "path", "languages.ncl", "queries"]);
+            println!("{}", table.build().with(Style::modern_rounded()));
         }
 
-        Commands::Prefetch { force } => {
-            config.prefetch_languages(force)?;
+        Commands::Config { command: None } => {
+            // Output the collated nickel configuration.
+            // Don't fail on error but merely log the event since the original `nickel_config` is
+            // already valid.
+            #[cfg(feature = "nickel")]
+            if let Err(e) = io::format_config(&config, &nickel_config).await {
+                log::error!("Config formatting error: {}", e);
+            } else {
+                return Ok(());
+            }
+            println!("{nickel_config}");
         }
+
+        Commands::Prefetch { force, language } => match language {
+            Some(l) => config.prefetch_language(l, force)?,
+            _ => config.prefetch_languages(force)?,
+        },
 
         Commands::Coverage { input } => {
             // We are guaranteed (by clap) to have exactly one input, so it's safe to unwrap
@@ -180,7 +199,25 @@ async fn run() -> CLIResult<()> {
             let mut buf_input = BufReader::new(input);
             let mut buf_output = BufWriter::new(output);
 
-            coverage(&mut buf_input, &mut buf_output, &language)?
+            let input_content = read_input(&mut buf_input)?;
+
+            let coverage_data =
+                check_query_coverage(&input_content, &language.query, &language.grammar)
+                    .map_err(|e| e.with_location(buf_input.get_ref().source().to_string()))?;
+            let coverage_res = coverage_data.get_result();
+
+            let query_source = NamedSource::new(
+                buf_input.get_ref().query.to_string(),
+                language.query.query_content,
+            )
+            .with_language(&language.name);
+            write!(
+                &mut buf_output,
+                "{:?}",
+                Report::new(coverage_data).with_source_code(query_source)
+            )?;
+
+            coverage_res?;
         }
 
         Commands::Completion { shell } => {
@@ -190,11 +227,4 @@ async fn run() -> CLIResult<()> {
     }
 
     Ok(())
-}
-
-fn print_error(e: &dyn Error) {
-    log::error!("{e}");
-    if let Some(source) = e.source() {
-        log::error!("Cause: {source}");
-    }
 }

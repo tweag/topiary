@@ -39,7 +39,7 @@ mod native {
         }
 
         #[inline]
-        pub fn general_predicates(&self, index: usize) -> Vec<QueryPredicate> {
+        pub fn general_predicates(&self, index: usize) -> Vec<QueryPredicate<'_>> {
             self.inner
                 .general_predicates(index)
                 .iter()
@@ -60,6 +60,11 @@ mod native {
         #[inline]
         pub fn start_byte_for_pattern(&self, pattern_index: usize) -> usize {
             self.inner.start_byte_for_pattern(pattern_index)
+        }
+
+        #[inline]
+        pub fn end_byte_for_pattern(&self, pattern_index: usize) -> usize {
+            self.inner.end_byte_for_pattern(pattern_index)
         }
     }
 

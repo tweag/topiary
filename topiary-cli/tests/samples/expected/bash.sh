@@ -159,7 +159,7 @@ echo $( ( foo ); ( bar ) )
 
 # Rewrite testing
 echo $(date)
-[[ "foo" ]] && bar
+[ "foo" ] && bar
 echo $(( 1 + 2 ))
 foo() { :; }
 

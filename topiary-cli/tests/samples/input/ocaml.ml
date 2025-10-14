@@ -1438,3 +1438,14 @@ let _ =
     (fun {bar} ->
       bar
     )
+
+(* #971 Dangling behaviour issues, _and_ `function_application` scope errors *)
+let _ =
+  foo (
+    bar
+      [(qux)]
+  )
+
+let foo = [
+  [bar]; [baz];
+]

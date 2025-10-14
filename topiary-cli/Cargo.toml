@@ -41,10 +41,12 @@ topiary-core.workspace = true
 topiary-config.workspace = true
 topiary-queries.workspace = true
 topiary-tree-sitter-facade.workspace = true
+miette.workspace = true
+tabled = { workspace = true }
 
 [dev-dependencies]
 assert_cmd = { workspace = true }
-paste = { workspace = true }
+pastey = { workspace = true }
 predicates = { workspace = true }
 
 [features]

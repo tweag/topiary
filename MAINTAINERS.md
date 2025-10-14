@@ -1,6 +1,6 @@
 # Maintainers
 
-## Cutting a New Release
+## Cutting a new release
 
 > [!CAUTION]
 > Cutting a release, end-to-end, takes a reasonable amount of time --
@@ -15,6 +15,13 @@
 > point of no return, keep calm and _don't_ carry on: Better to revert
 > and try again the next day than having a broken release (and a
 > stressful evening)!
+
+> [!NOTE]
+> The following instructions are for cutting a full Topiary release,
+> with all its subcomponents in lock-step. The `topiary-config` and
+> `topiary-queries` subpackages can be updated and released with a
+> higher cadence: see [below](#releasing-new-configuration-and-queries)
+> for details.
 
 ### 1. Create a release preparation branch from `main`
 
@@ -54,6 +61,12 @@
 - Update the root level `Cargo.toml`.
   - Bump `workspace.package.version`.
   - Bump any workspace dependency versions, respectively.
+
+> [!IMPORTANT]
+> See [below](#releasing-new-configuration-and-queries) for details on
+> how to do interim releases of `topiary-config` or `topiary-queries`.
+> These subpackages are now versioned independently from Topiary (core,
+> etc.), so their versions will diverge.
 
 - Update lockfiles and the release workflow. Lockfiles should be kept up
   to date by the Renovate bot, but it's worth doing manually when
@@ -143,7 +156,37 @@
 - Share amongst other social networks (e.g., Reddit, Hacker News,
   Mastodon, etc.), under personal accounts, at your discretion.
 
-## Generating the PR List for the `CHANGELOG`
+## Releasing new configuration and queries
+
+The `topiary-config` and `topiary-queries` packages may be released
+outside of full releases, to be reactive to changes to supported
+grammars and formatting queries, respectively. The process is not
+dissimilar from a usual release:
+
+1. Create a preparation branch from `main`. Unlike a full release,
+   there's no need to freeze the [`CHANGELOG`]. However, the versions of
+   `topiary-config` and/or `topiary-queries` will need to be updated in
+   the root and their respective `Cargo.toml` files.
+
+   The version of these subpackages should bump their respective patch
+   version (e.g., `0.6.1` would become `0.6.2`), but not the workspace
+   version. As these are no longer tied to the Topiary version, they
+   will gradually diverge.
+
+2. Do not tag the release, as this will trigger `dist` into cutting a
+   full release. However, importantly, the new version of the respective
+   subpackage(s) will need to be pushed to `crates.io`:
+
+   ```bash
+   # Delete as appropriate
+   cargo publish --package topiary-queries
+   cargo publish --package topiary-config
+   ```
+
+   As with a full release, publication to `crates.io` requires
+   appropriate access.
+
+## Generating the PR list for the `CHANGELOG`
 
 If the unreleased changes in the [`CHANGELOG`] have become stale, the
 list of merged PRs can be fetched from:

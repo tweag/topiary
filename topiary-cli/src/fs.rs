@@ -40,6 +40,7 @@ struct FileMeta {
 }
 
 impl FileMeta {
+    #[allow(clippy::result_large_err)]
     fn new<P: AsRef<Path>>(path: &P) -> CLIResult<Self> {
         // Stat a potential symlink
         let lmeta = fs::symlink_metadata(path)?;
@@ -101,6 +102,7 @@ impl FileMeta {
 /// Given a vector of paths, recursively expand those that identify as directories, in place.
 /// Follow symlinks, if specified, and skip over files with multiple links. Ultimately, we'll
 /// finish with a vector of canonical paths to real files with a single link.
+#[allow(clippy::result_large_err)]
 pub fn traverse(files: &mut Vec<PathBuf>, follow_symlinks: bool) -> CLIResult<()> {
     let mut expanded = vec![];
 
@@ -109,7 +111,7 @@ pub fn traverse(files: &mut Vec<PathBuf>, follow_symlinks: bool) -> CLIResult<()
         let meta = match FileMeta::new(file) {
             Ok(meta) => meta,
             Err(_) => {
-                log::error!("Skipping {}: Cannot access", file.to_string_lossy());
+                log::error!("Skipping {}: Cannot access", file.display());
                 continue;
             }
         };
@@ -117,7 +119,7 @@ pub fn traverse(files: &mut Vec<PathBuf>, follow_symlinks: bool) -> CLIResult<()
         // Skip over everything we don't care about
         if meta.ignore() {
             // This isn't such an important message, so only warn
-            log::warn!("Skipping {}: Not a regular file", file.to_string_lossy());
+            log::warn!("Skipping {}: Not a regular file", file.display());
             continue;
         }
 
@@ -137,7 +139,7 @@ pub fn traverse(files: &mut Vec<PathBuf>, follow_symlinks: bool) -> CLIResult<()
                 // This isn't such an important message, so only warn
                 log::warn!(
                     "Skipping {}: File is a symlink; use --follow-symlinks to follow",
-                    file.to_string_lossy()
+                    file.display()
                 );
                 continue;
             }
@@ -145,7 +147,7 @@ pub fn traverse(files: &mut Vec<PathBuf>, follow_symlinks: bool) -> CLIResult<()
             if meta.has_multiple_links() {
                 log::error!(
                     "Skipping {}: File has multiple links, which Topiary would break",
-                    file.to_string_lossy()
+                    file.display()
                 );
                 continue;
             }
@@ -156,7 +158,7 @@ pub fn traverse(files: &mut Vec<PathBuf>, follow_symlinks: bool) -> CLIResult<()
             } else {
                 log::error!(
                     "Skipping {}: File does not exist (e.g., broken symlink)",
-                    file.to_string_lossy()
+                    file.display()
                 );
             }
         }

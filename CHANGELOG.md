@@ -42,38 +42,55 @@ This name should be decided amongst the team before the release.
 
 ## Unreleased
 
-[Full list of changes](https://github.com/tweag/topiary/compare/v0.6.0...HEAD)
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.6.1...HEAD)
 
 ### Added
-<!-- - <New feature> -->
-- [#862](https://github.com/tweag/topiary/pull/862) Added support for the Simple Domain Modeling Language ([SDML](https://sdml.io)), thanks to @johnstonskj
-- [#884](https://github.com/tweag/topiary/pull/884) The Topiary Book
-- [#933](https://github.com/tweag/topiary/pull/933) Added support for WIT, thanks to @mkatychev
-- [#918](https://github.com/tweag/topiary/pull/918) Language prefetching utilities for Nix
+- [#1015](https://github.com/tweag/topiary/pull/1015) Add support for include expressions to Nickel formatting
+- [#1049](https://github.com/tweag/topiary/pull/1015) Add support for rich grammar parsing errors using miette
+- [#1069](https://github.com/tweag/topiary/pull/1069) split CI nix dependent tests into separate jobs
+- [#1070](https://github.com/tweag/topiary/pull/1070) Implemented parallelism for query coverage
+- [#1072](https://github.com/tweag/topiary/pull/1072) Add source spans to query coverage results
+- [#1077](https://github.com/tweag/topiary/pull/1077) Add handling for `~/.config` on non-linux systems
+- [#1080](https://github.com/tweag/topiary/pull/1080) Allow formatting existing tree-sitter trees, thanks to @shadr
+- [#1094](https://github.com/tweag/topiary/pull/1094) Added `topiary check-grammar` subcommand
+- [#1105](https://github.com/tweag/topiary/pull/1105) Add new `@keep_whitespace` capture for leaf node, thanks to @blindFS
 
 ### Changed
-<!-- - <Changes in existing functionality> -->
+- [#1031](https://github.com/tweag/topiary/pull/1031) Removed the Bash rewrite rule for converting POSIX `[` to Bash's `[[`
+- [#1095](https://github.com/tweag/topiary/pull/1095) Update to Rust 2024 edition
+
+### Fixed
+- [#1085](https://github.com/tweag/topiary/pull/1085) CSS formatting fixes
+- [#1092](https://github.com/tweag/topiary/pull/1092) Log early returns during formatting
+- [#1113](https://github.com/tweag/topiary/pull/1113) Update `dist` to 0.30
+
+## v0.6.1 - Gilded Ginkgo - 2025-05-27
+
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.6.0...v0.6.1)
+
+### Added
+- [#862](https://github.com/tweag/topiary/pull/862) Added support for the Simple Domain Modeling Language ([SDML](https://sdml.io)), thanks to @johnstonskj
+- [#884](https://github.com/tweag/topiary/pull/884) The Topiary Book
+- [#918](https://github.com/tweag/topiary/pull/918) Language prefetching utilities for Nix
+- [#933](https://github.com/tweag/topiary/pull/933) Added support for WIT, thanks to @mkatychev
+- [#987](https://github.com/tweag/topiary/pull/987) Support for prefetching a single language, thanks to @ErinvanderVeen
+
+### Changed
 - [#859](https://github.com/tweag/topiary/pull/859) Break up integration tests per language, thanks to @mkatychev
 - [#871](https://github.com/tweag/topiary/pull/871) Switch to `mold` linker for CI tests, thanks to @mkatychev
 - [#893](https://github.com/tweag/topiary/pull/893) Use `gix` lib instead of system `git`
 - [#896](https://github.com/tweag/topiary/pull/896) Use official grammar repo for OpenSCAD, thanks to @mkatychev
 - [#933](https://github.com/tweag/topiary/pull/933) Bump the `tree-sitter` dependency to 0.25, thanks to @mkatychev
 
-<!-- ### Deprecated -->
-<!-- - <Soon-to-be removed features> -->
-
-<!-- ### Removed -->
-<!-- - <Removed features> -->
-
 ### Fixed
-<!-- - <Bug fixes> -->
 - [#867](https://github.com/tweag/topiary/pull/867) Enable coverage check and add code samples for OpenSCAD
+- [#867](https://github.com/tweag/topiary/pull/972) Fixed [#969](https://github.com/tweag/topiary/issues/969): unhandled trailing comment in multiline list for OpenSCAD, thanks to @mkatychev
 - [#869](https://github.com/tweag/topiary/pull/869) Disable parallel grammar building on Windows
-- [#908](https://github.com/tweag/topiary/pull/908) [#907](https://github.com/tweag/topiary/pull/907) [#939](https://github.com/tweag/topiary/pull/939) [#955](https://github.com/tweag/topiary/pull/955) [#964](https://github.com/tweag/topiary/pull/964) [#967](https://github.com/tweag/topiary/pull/967) Various OCaml issues and improvements
+- [#908](https://github.com/tweag/topiary/pull/908) [#907](https://github.com/tweag/topiary/pull/907) [#939](https://github.com/tweag/topiary/pull/939) [#955](https://github.com/tweag/topiary/pull/955) [#964](https://github.com/tweag/topiary/pull/964) [#967](https://github.com/tweag/topiary/pull/967) [#975](https://github.com/tweag/topiary/pull/975) Various OCaml issues and improvements
 - [#953](https://github.com/tweag/topiary/pull/953) Coverage output when there are zero queries
-
-<!-- ### Security -->
-<!-- - <Vulnerabilities> -->
+- [#974](https://github.com/tweag/topiary/pull/974) No longer remove trailing spaces after pretty-printing
+- [#992](https://github.com/tweag/topiary/pull/992) Fixed [openscad-LSP#48](https://github.com/Leathong/openscad-LSP/issues/48): unhandled newline separation for transform chains, thanks to @mkatychev
+- [#999](https://github.com/tweag/topiary/pull/999) Fixed [#997](https://github.com/tweag/topiary/issues/997): erroneous spacing of block comments in OpenSCAD
 
 ## v0.6.0 - Gilded Ginkgo - 2025-01-30
 

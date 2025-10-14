@@ -11,8 +11,8 @@ get-cli-usage() {
   local subcommand="$1"
 
   case "${subcommand}" in
-    "index") nix run . -- --help;;
-    *)       nix run . -- "${subcommand}" --help;;
+    "index") nix run .#topiary-wrapped -- --help;;
+    *)       nix run .#topiary-wrapped -- "${subcommand}" --help;;
   esac
 }
 
@@ -36,6 +36,7 @@ diff-usage() {
 
   diff --text \
        --ignore-all-space \
+       --side-by-side \
        <(get-documented-usage "${subcommand}") \
        <(get-cli-usage "${subcommand}")
 }

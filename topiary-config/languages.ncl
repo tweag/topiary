@@ -13,8 +13,8 @@
       extensions = ["css"],
       grammar.source.git = {
         git = "https://github.com/tree-sitter/tree-sitter-css.git",
-        rev = "02b4ee757654b7d54fe35352fd8e53a8a4385d42",
-        nixHash = "sha256-IniaiBBx2pDD5nwJKfr5i9qvfvG+z8H21v14qk14M0g=",
+        rev = "6e327db434fec0ee90f006697782e43ec855adf5",
+        nixHash = "sha256-en379DlqzzvQNvKgE8CtiA00j7phUyipttqbnETGHKc=",
       },
     },
 
@@ -54,8 +54,8 @@
       extensions = ["ncl"],
       grammar.source.git = {
         git = "https://github.com/nickel-lang/tree-sitter-nickel",
-        rev = "88d836a24b3b11c8720874a1a9286b8ae838d30a",
-        nixHash = "sha256-IvlUwNO/wLLPuqCZf0NtSxMdDx+4ASYYOobklY/97aQ=",
+        rev = "488ee4e6af15e10dd4be527777c9ba18a817d407",
+        nixHash = "sha256-CMlf80y1te30HwjT9ykHeg6xvQc/lcCCHDMVGs7oVXQ=",
       },
     },
 

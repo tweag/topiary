@@ -1,4 +1,27 @@
 // ================================================================================
+// Regression examples
+// ================================================================================
+
+// Issue #997
+
+/*
+Here is a
+block comment
+*/
+
+module foo() {
+  /*
+  Here is another
+  block comment
+  */
+}
+
+// https://github.com/Leathong/openscad-LSP/issues/48
+echo(bisector_angle_offset=bisector_angle_offset);
+prev_angle = atan2((prev - point).y, (prev - point).x);
+echo(prev_angle=prev_angle);
+
+// ================================================================================
 // Variables/Imports
 // ================================================================================
 include <my_path/my_lib.scad>;
@@ -96,6 +119,20 @@ module my_cylinder() {
   cube();
 }
 
+list1 = [
+  1,
+  2 // comment
+];
+
+list2 = [
+  1, 2 /* block comment */ ];
+arguments1= foo(1,
+(point2[1] - point1[1]) / (point2[0] - point1[0]) // comment
+);
+arguments2= foo(1,
+2 // comment
+);
+
 // ================================================================================
 // Modifiers
 // ================================================================================
@@ -129,6 +166,7 @@ echo("this can precede an expression") true;
 fn = function(x) echo("this is x") x;
 echo(fn ? "truthy" : "falsey");
 echo(function(y) y ? "first" : "second");
+
 
 // ================================================================================
 // Lists/Ternaries
@@ -190,4 +228,3 @@ let_each = [for(i = [0:1]) let(a=90) each arc(angle=a)];
 let_for = [let (i=[0:1]) for(i = i) let(a=90) each arc(angle=a)];
 let_if = [for(i = [0:1]) let(a=360) if (is_def(isect)) isect];
 fn_list = [each function ()10];
-

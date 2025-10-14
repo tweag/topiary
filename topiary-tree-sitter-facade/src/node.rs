@@ -6,7 +6,7 @@ mod native {
     };
     use std::{borrow::Cow, convert::TryFrom};
 
-    #[derive(Clone, Eq, Hash, PartialEq)]
+    #[derive(Clone, Copy, Eq, Hash, PartialEq)]
     pub struct Node<'tree> {
         pub(crate) inner: tree_sitter::Node<'tree>,
     }
@@ -135,7 +135,7 @@ mod native {
         }
 
         #[inline]
-        pub fn kind(&self) -> Cow<str> {
+        pub fn kind(&self) -> Cow<'_, str> {
             self.inner.kind().into()
         }
 
@@ -147,6 +147,11 @@ mod native {
         #[inline]
         pub fn language(&self) -> LanguageRef<'_> {
             self.inner.language().into()
+        }
+
+        #[inline]
+        pub fn language_name(&self) -> Option<&'static str> {
+            self.inner.language().name()
         }
 
         #[inline]
@@ -223,7 +228,7 @@ mod native {
 
         #[inline]
         #[allow(clippy::wrong_self_convention)]
-        pub fn to_sexp(&self) -> Cow<str> {
+        pub fn to_sexp(&self) -> Cow<'_, str> {
             self.inner.to_sexp().into()
         }
 
@@ -285,7 +290,7 @@ mod wasm {
     use crate::{input_edit::InputEdit, point::Point, range::Range, tree_cursor::TreeCursor};
     use std::borrow::Cow;
     use topiary_web_tree_sitter_sys::SyntaxNode;
-    use wasm_bindgen::{prelude::*, JsCast};
+    use wasm_bindgen::{JsCast, prelude::*};
 
     #[derive(Clone, Eq, Hash, PartialEq)]
     pub struct Node<'tree> {

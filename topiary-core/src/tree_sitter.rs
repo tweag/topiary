@@ -4,18 +4,19 @@
 
 use std::{collections::HashSet, fmt::Display};
 
+use miette::{LabeledSpan, Severity, SourceSpan};
 use serde::Serialize;
 
 use topiary_tree_sitter_facade::{
-    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate, Tree,
+    Node, Parser, Point, Query, QueryCapture, QueryCursor, QueryMatch, QueryPredicate, Range, Tree,
 };
 
 use streaming_iterator::StreamingIterator;
 
 use crate::{
+    FormatterResult,
     atom_collection::{AtomCollection, QueryPredicates},
     error::FormatterError,
-    FormatterResult,
 };
 
 /// Supported visualisation formats
@@ -214,7 +215,56 @@ impl Display for LocalQueryMatch<'_> {
 // A struct to store the result of a query coverage check
 pub struct CoverageData {
     pub cover_percentage: f32,
-    pub missing_patterns: Vec<String>,
+    pub missing_patterns: Vec<LabeledSpan>,
+}
+
+impl CoverageData {
+    fn status_msg(&self) -> String {
+        match self.cover_percentage {
+            0.0 if self.missing_patterns.is_empty() => "No queries found".into(),
+            1.0 => "All queries are matched".into(),
+            _ => format!("Unmatched queries: {}", self.missing_patterns.len()),
+        }
+    }
+
+    fn full_coverage(&self) -> bool {
+        self.cover_percentage == 1.0
+    }
+
+    /// Returns an error if coverage is not 100%
+    pub fn get_result(&self) -> Result<(), FormatterError> {
+        if !self.full_coverage() {
+            return Err(FormatterError::PatternDoesNotMatch);
+        }
+        Ok(())
+    }
+}
+
+impl std::fmt::Display for CoverageData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.status_msg())
+    }
+}
+impl std::error::Error for CoverageData {}
+
+impl miette::Diagnostic for CoverageData {
+    fn severity(&self) -> Option<miette::Severity> {
+        match self.cover_percentage {
+            1.0 => Severity::Advice,
+            0.0 => Severity::Warning,
+            _ => Severity::Error,
+        }
+        .into()
+    }
+    fn labels(&self) -> Option<Box<dyn Iterator<Item = LabeledSpan> + '_>> {
+        Some(Box::new(self.missing_patterns.iter().cloned()))
+    }
+
+    fn help<'a>(&'a self) -> Option<Box<dyn Display + 'a>> {
+        let msg = format!("Query coverage: {:.2}%", self.cover_percentage * 100.0);
+
+        Some(Box::new(msg))
+    }
 }
 
 /// Applies a query to an input content and returns a collection of atoms.
@@ -234,6 +284,23 @@ pub fn apply_query(
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<AtomCollection> {
     let tree = parse(input_content, grammar, tolerate_parsing_errors)?;
+    apply_query_tree(tree, input_content, query)
+}
+
+/// Applies a query to a tree and returns a collection of atoms.
+///
+/// # Errors
+///
+/// This function can return an error if:
+/// - The query content cannot be parsed by the grammar.
+/// - The input exhaustivity check fails.
+/// - A found predicate could not be parsed or is malformed.
+/// - A unknown capture name was encountered in the query.
+pub fn apply_query_tree(
+    tree: Tree,
+    input_content: &str,
+    query: &TopiaryQuery,
+) -> FormatterResult<AtomCollection> {
     let root = tree.root_node();
     let source = input_content.as_bytes();
 
@@ -309,7 +376,7 @@ pub fn apply_query(
                 "".into()
             };
 
-            log::info!("Processing match{query_name_info}: {m} at location {pos}");
+            log::debug!("Processing match{query_name_info}: {m} at location {pos}");
         }
 
         // If any capture is a do_nothing, then do nothing.
@@ -332,6 +399,61 @@ pub fn apply_query(
     Ok(atoms)
 }
 
+/// Represents the code span for a given tree-sitter node
+#[derive(Debug)]
+pub struct NodeSpan {
+    pub(crate) range: Range,
+    // source code contents
+    pub content: Option<String>,
+    // source code location
+    pub location: Option<String>,
+    pub language: &'static str,
+}
+
+impl NodeSpan {
+    /// Creates a new [`Self`] without source text or language
+    pub fn new(node: &Node) -> Self {
+        Self {
+            range: node.range(),
+            content: None,
+            location: None,
+            language: node.language_name().unwrap_or_default(),
+        }
+    }
+    /// Creates a [`SourceSpan`] from the node's byte range
+    pub fn source_span(&self) -> SourceSpan {
+        (self.range.start_byte() as usize..=self.range.end_byte() as usize).into()
+    }
+
+    pub(crate) fn set_content(&mut self, content: String) {
+        self.content = Some(content);
+    }
+
+    /// Adds source text to [`Self`] for adding context to display
+    pub fn with_content(mut self, content: String) -> Self {
+        self.set_content(content);
+        self
+    }
+
+    pub(crate) fn set_location(&mut self, location: String) {
+        self.location = Some(location);
+    }
+
+    /// Adds span origin name to [`Self`] for adding context to display
+    pub fn with_location(mut self, location: String) -> Self {
+        self.set_location(location);
+        self
+    }
+}
+
+impl std::ops::Deref for NodeSpan {
+    type Target = Range;
+
+    fn deref(&self) -> &Self::Target {
+        &self.range
+    }
+}
+
 /// Parses some string into a syntax tree, given a tree-sitter grammar.
 pub fn parse(
     content: &str,
@@ -349,24 +471,17 @@ pub fn parse(
 
     // Fail parsing if we don't get a complete syntax tree.
     if !tolerate_parsing_errors {
-        check_for_error_nodes(&tree.root_node())?;
+        check_for_error_nodes(&tree.root_node())
+            .map_err(|e| e.with_content(content.to_string()))?;
     }
 
     Ok(tree)
 }
 
-fn check_for_error_nodes(node: &Node) -> FormatterResult<()> {
-    if node.kind() == "ERROR" {
-        let start = node.start_position();
-        let end = node.end_position();
-
-        // Report 1-based lines and columns.
-        return Err(FormatterError::Parsing {
-            start_line: start.row() + 1,
-            start_column: start.column() + 1,
-            end_line: end.row() + 1,
-            end_column: end.column() + 1,
-        });
+// returns first error node encountered
+fn check_for_error_nodes(node: &Node) -> Result<(), NodeSpan> {
+    if node.is_error() {
+        return Err(NodeSpan::new(node));
     }
 
     for child in node.children(&mut node.walk()) {
@@ -526,6 +641,9 @@ pub fn check_query_coverage(
     original_query: &TopiaryQuery,
     grammar: &topiary_tree_sitter_facade::Language,
 ) -> FormatterResult<CoverageData> {
+    use miette::LabeledSpan;
+    use rayon::iter::{IntoParallelIterator, ParallelIterator};
+
     let tree = parse(input_content, grammar, false)?;
     let root = tree.root_node();
     let source = input_content.as_bytes();
@@ -537,8 +655,10 @@ pub fn check_query_coverage(
         .query
         .matches(&root, source, &mut cursor)
         .count();
+
     let pattern_count = original_query.query.pattern_count();
     let query_content = &original_query.query_content;
+    let query = &original_query.query;
 
     // If there are no queries at all (e.g., when debugging) return early
     // rather than dividing by zero
@@ -555,7 +675,10 @@ pub fn check_query_coverage(
     if pattern_count == 1 {
         let mut cover_percentage = 1.0;
         if ref_match_count == 0 {
-            missing_patterns.push(query_content.into());
+            missing_patterns.push(LabeledSpan::new_with_span(
+                Some("empty query".into()),
+                SourceSpan::from(0..query_content.len()),
+            ));
             cover_percentage = 0.0
         }
         return Ok(CoverageData {
@@ -564,31 +687,48 @@ pub fn check_query_coverage(
         });
     }
 
-    let mut ok_patterns = 0.0;
-    for i in 0..pattern_count {
-        // We don't need to use TopiaryQuery in this test since we have no need
-        // for duplicate versions of the query_content string, instead we create the query
-        // manually.
-        let mut query = Query::new(grammar, query_content)
-            .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
-        query.disable_pattern(i);
-        let mut cursor = QueryCursor::new();
-        let match_count = query.matches(&root, source, &mut cursor).count();
-        if match_count == ref_match_count {
-            let index_start = query.start_byte_for_pattern(i);
-            let index_end = if i == pattern_count - 1 {
-                query_content.len()
-            } else {
-                query.start_byte_for_pattern(i + 1)
-            };
-            let pattern_content = &query_content[index_start..index_end];
-            missing_patterns.push(pattern_content.into());
-        } else {
-            ok_patterns += 1.0;
-        }
-    }
+    let missing_patterns: Vec<LabeledSpan> = (0..pattern_count)
+        .into_par_iter()
+        .filter_map(|i| {
+            // The TreeSitter API doesn't support splitting a query per pattern subqueries.
+            // We do so manually here by using the `query_content` and `query` fields for the same
+            // `TopiaryQuery` object.
 
-    let cover_percentage = ok_patterns / pattern_count as f32;
+            let start_idx = query.start_byte_for_pattern(i);
+            let end_idx = query.end_byte_for_pattern(i);
+            // SAFETY: the index range provided is returned directly from the inner `Query` object
+            let pattern_content = unsafe { query_content.get_unchecked(start_idx..end_idx) };
+            // All child patterns of a non-empty `Query` object created through `Query::new` are guaranteed
+            // to create their own valid `Query` by referencing their pattern byte range.
+            let pattern_query = Query::new(grammar, pattern_content)
+                .expect("unable to create subquery of valid query, this is a bug");
+
+            let mut cursor = QueryCursor::new();
+            let pattern_has_matches = pattern_query
+                .matches(&root, source, &mut cursor)
+                .next()
+                .is_some();
+            if !pattern_has_matches {
+                let trimmed_end_idx = pattern_content
+                    .rmatch_indices('\n')
+                    .map(|(i, _)| i)
+                    .find_map(|i| {
+                        let line = pattern_content[i..].trim_start();
+                        let is_pattern_line = !line.is_empty() && !line.starts_with(';');
+                        is_pattern_line.then_some(start_idx + i + 2)
+                    })
+                    .unwrap_or(pattern_content.len());
+                return Some(LabeledSpan::new_with_span(
+                    Some("unmatched".into()),
+                    SourceSpan::from(start_idx..trimmed_end_idx),
+                ));
+            }
+            None
+        })
+        .collect();
+
+    let ok_patterns = pattern_count - missing_patterns.len();
+    let cover_percentage = ok_patterns as f32 / pattern_count as f32;
     Ok(CoverageData {
         cover_percentage,
         missing_patterns,

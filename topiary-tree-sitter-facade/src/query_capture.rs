@@ -10,7 +10,7 @@ mod native {
 
     impl QueryCapture<'_> {
         #[inline]
-        pub fn node(&self) -> Node {
+        pub fn node(&self) -> Node<'_> {
             self.inner.node.into()
         }
 

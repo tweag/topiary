@@ -10,9 +10,16 @@ In particular, Topiary goes through the CST nodes and detects all that
 span more than one line. This is interpreted as an indication from the
 programmer who wrote the input that the node in question should be
 formatted as multi-line; while any other nodes will be formatted as
-single-line. Whenever a query match has inserted a softline, it will be
-expanded to a line break if the node is multi-line (otherwise it will be
-formatted depending on the capture name used). See:
+single-line.
+
+Whenever a query match inserts a softline, the softline will be expanded
+to a line break if the **immediate parent of the node marked with the
+softline capture** spans more than one line. Another way to look at this
+is that these capture names are a convenience over their
+[scoped](scopes.md) equivalent, with the scope implicitly set to the
+parent node.
+
+See:
 
 - [`@append_hardline` / `@prepend_hardline`](#append_hardline--prepend_hardline)
 - [`@append_empty_softline` / `@prepend_empty_softline`](#append_empty_softline--prepend_empty_softline)
@@ -283,6 +290,26 @@ removed.
 The matched nodes will have a line break appended (or, respectively,
 prepended) to them.
 
+> **Note**\
+> If you wish to insert empty lines -- that is, two line breaks --
+> between nodes, this can be emulated with [`@append_delimiter` /
+> `@prepend_delimiter`](insertion-and-deletion.md#append_delimiter--prepend_delimiter).
+> For example:
+>
+> ```scheme
+> (
+>   (block) @append_delimiter
+>   .
+>   (_)
+>
+>   (#delimiter! "\n\n")
+> )
+> ```
+>
+> However, bear in mind that Topiary's normal [post-processing](../formatting-pipeline.md#atom-processing)
+> that squashes runs of whitespace will not apply, so queries must be
+> written with care to avoid extra, unintended line breaks.
+
 ### Example
 
 ```scheme
@@ -355,4 +382,15 @@ input document, otherwise it is a space.
   .
   [ "," ";" ]* @do_nothing
 )
+```
+
+## `@keep_whitespace`
+
+To be used on leaf nodes. The matched node will keep its trailing `\n` characters.
+
+### Example
+
+```scheme
+; keep trailing newlines
+(raw_text) @keep_whitespace
 ```

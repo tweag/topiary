@@ -22,10 +22,9 @@ use crate::error::TopiaryConfigFetchingError;
 #[cfg(not(target_arch = "wasm32"))]
 use tempfile::tempdir;
 
-use crate::{
-    error::{TopiaryConfigError, TopiaryConfigResult},
-    source::Source,
-};
+use crate::error::{TopiaryConfigError, TopiaryConfigResult};
+
+pub use source::Source;
 
 /// The configuration of the Topiary.
 ///
@@ -53,12 +52,13 @@ impl Configuration {
     /// with the path that was not found.
     /// If the configuration file exists, but cannot be parsed, this function will return a
     /// `TopiaryConfigError` with the error that occurred.
+    #[allow(clippy::result_large_err)]
     pub fn fetch(merge: bool, file: &Option<PathBuf>) -> TopiaryConfigResult<(Self, RichTerm)> {
         // If we have an explicit file, fail if it doesn't exist
-        if let Some(path) = file {
-            if !path.exists() {
-                return Err(TopiaryConfigError::FileNotFound(path.to_path_buf()));
-            }
+        if let Some(path) = file
+            && !path.exists()
+        {
+            return Err(TopiaryConfigError::FileNotFound(path.to_path_buf()));
         }
 
         if merge {
@@ -69,10 +69,10 @@ impl Configuration {
             Self::parse_and_merge(&sources)
         } else {
             // Get the available configuration with best priority
-            let source: Source = Source::fetch_one(file);
-
-            // And parse it with Nickel
-            Self::parse(source)
+            match Source::fetch_one(file) {
+                Source::Builtin => Self::parse(Source::Builtin),
+                source => Self::parse_and_merge(&[source, Source::Builtin]),
+            }
         }
     }
 
@@ -82,6 +82,7 @@ impl Configuration {
     ///
     /// If the provided language name cannot be found in the `Configuration`, this
     /// function returns a `TopiaryConfigError`
+    #[allow(clippy::result_large_err)]
     pub fn get_language<T>(&self, name: T) -> TopiaryConfigResult<&Language>
     where
         T: AsRef<str> + fmt::Display,
@@ -130,7 +131,7 @@ impl Configuration {
                     language.name,
                     git_source.git,
                     git_source.rev,
-                    library_path.to_string_lossy()
+                    library_path.display()
                 );
 
                 git_source.fetch_and_compile_with_dir(
@@ -145,7 +146,7 @@ impl Configuration {
                 log::info!(
                     "Fetch \"{}\": Configured via filesystem ({}); nothing to do",
                     language.name,
-                    path.to_string_lossy(),
+                    path.display(),
                 );
 
                 if !path.exists() {
@@ -159,6 +160,25 @@ impl Configuration {
         }
     }
 
+    /// Prefetches and builds the desired language.
+    /// This can be beneficial to speed up future startup time.
+    ///
+    /// # Errors
+    ///
+    /// If the language could not be found or the Grammar could not be build, a `TopiaryConfigError` is returned.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[allow(clippy::result_large_err)]
+    pub fn prefetch_language<T>(&self, language: T, force: bool) -> TopiaryConfigResult<()>
+    where
+        T: AsRef<str> + fmt::Display,
+    {
+        let tmp_dir = tempdir()?;
+        let tmp_dir_path = tmp_dir.path().to_owned();
+        let l = self.get_language(language)?;
+        Configuration::fetch_language(l, force, &tmp_dir_path)?;
+        Ok(())
+    }
+
     /// Prefetches and builds all known languages.
     /// This can be beneficial to speed up future startup time.
     ///
@@ -166,6 +186,7 @@ impl Configuration {
     ///
     /// If any Grammar could not be build, a `TopiaryConfigError` is returned.
     #[cfg(not(target_arch = "wasm32"))]
+    #[allow(clippy::result_large_err)]
     pub fn prefetch_languages(&self, force: bool) -> TopiaryConfigResult<()> {
         let tmp_dir = tempdir()?;
         let tmp_dir_path = tmp_dir.path().to_owned();
@@ -200,14 +221,21 @@ impl Configuration {
     /// # Errors
     ///
     /// If the file extension is not supported, a `FormatterError` will be returned.
+    #[allow(clippy::result_large_err)]
     pub fn detect<P: AsRef<Path>>(&self, path: P) -> TopiaryConfigResult<&Language> {
         let pb = &path.as_ref().to_path_buf();
-        if let Some(extension) = pb.extension().map(|ext| ext.to_string_lossy()) {
-            return self.get_language_by_extension(&extension);
+        if let Some(extension) = pb.extension().and_then(|ext| ext.to_str()) {
+            for lang in &self.languages {
+                if lang.config.extensions.contains(extension) {
+                    return Ok(lang);
+                }
+            }
+            return Err(TopiaryConfigError::UnknownExtension(extension.to_string()));
         }
         Err(TopiaryConfigError::NoExtension(pb.clone()))
     }
 
+    #[allow(clippy::result_large_err)]
     fn parse_and_merge(sources: &[Source]) -> TopiaryConfigResult<(Self, RichTerm)> {
         let inputs = sources.iter().map(|s| s.clone().into());
 
@@ -221,6 +249,7 @@ impl Configuration {
         Ok((serde_config.into(), term))
     }
 
+    #[allow(clippy::result_large_err)]
     fn parse(source: Source) -> TopiaryConfigResult<(Self, RichTerm)> {
         let mut program = Program::<CacheImpl>::new_from_input(
             source.into(),
