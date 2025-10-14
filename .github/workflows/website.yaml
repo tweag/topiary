@@ -127,7 +127,7 @@ jobs:
           cp -r result/* website/book
 
       - name: Upload GitHub Pages artefact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: website
 
