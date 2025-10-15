@@ -127,7 +127,7 @@ interface types {
   // "package of named fields"
  record r {
    a:u32,
-   b:result<_,errno>,
+   b:result<_,errno>
  }
 
   // values of this type will be one of the specified cases
