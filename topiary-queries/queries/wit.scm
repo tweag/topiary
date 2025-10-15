@@ -106,10 +106,23 @@
   .
 )
 
-(enum_cases "," @append_hardline)
-(flags_items (body "," @append_hardline))
-(record_item (body "," @append_hardline))
-(variant_cases "," @append_hardline)
+(
+  [
+    (enum_case)
+    (record_field)
+    (variant_case)
+    (flags_field)
+  ]
+  .
+  "," @append_hardline
+  .
+  [
+    (block_comment)
+    (line_comment)
+  ]* @do_nothing
+  .
+  (_)
+)
 ; ==================
 ; Delimiters
 ; ==================
@@ -209,44 +222,49 @@
   .
   (#multi_line_only!)
 )
-(variant_cases
+
+(
   (#delimiter! ",")
-  (variant_case) @append_delimiter
+  [
+    (variant_case)
+    (enum_case)
+    (flags_field)
+    (record_field)
+  ] @append_delimiter
   .
   ","? @do_nothing
-  .
-  [(block_comment) (line_comment)]*
-  .
-  (#multi_line_only!)
-)
-(enum_cases
-  (#delimiter! ",")
-  (enum_case) @append_delimiter
-  .
-  ","? @do_nothing
-  .
-  [(block_comment) (line_comment)]*
-  .
-  (#multi_line_only!)
-)
-(flags_items
-  (body
-    (#delimiter! ",")
-    (id) @append_delimiter
-    .
-    ","? @do_nothing
-    .
-    [(block_comment) (line_comment)]*
-    .
-    "}"
-    .
-    (#multi_line_only!)
-  )
 )
 
+; (fields
+;     (#delimiter! ",")
+;     (_) @append_delimiter
+;     .
+;     ","? @do_nothing
+;     [(block_comment) (line_comment)]*
+;     .
+;     "}"
+;     .
+;     (#multi_line_only!)
+; )
+
+; (body
+;     (#delimiter! ",")
+;
+;     (id) @append_delimiter
+;     .
+;     ","? @do_nothing
+;     .
+;     [(block_comment) (line_comment)]*
+;     .
+;     "}"
+;     .
+;     (#multi_line_only!)
+; )
+
 ; Handle trailing comma comments for enum and flags
-(enum_cases "," @append_space . (line_comment))
-(flags_items (body "," @append_space . (line_comment)))
+; (cases "," @append_space . (line_comment))
+; (enum_cases "," @append_space . (line_comment))
+; (flags_items (body "," @append_space . (line_comment)))
 
 ; Handle inline comments after semicolons
 (";" . (line_comment) @prepend_space)
