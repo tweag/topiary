@@ -6,7 +6,6 @@
   (line_comment)
 ] @leaf
 
-(line_comment) @append_hardline
 (block_comment) @multi_line_indent_all
 ; Allow line break after block comments
 (
@@ -29,6 +28,7 @@
   (flags_items)
   (interface_item)
   (line_comment)
+  (block_comment)
   (package_decl)
   (record_item)
   (resource_item)
@@ -84,6 +84,10 @@
     (line_comment)
   ]* @do_nothing
 )
+
+
+(line_comment) @append_hardline
+
 [
   (since_gate)
   (deprecated_gate)
@@ -96,7 +100,7 @@
   _
   "}" @append_hardline @prepend_hardline @prepend_indent_end
   .
-)
+) @append_hardline
 (definitions
   .
   "{" @append_empty_softline @append_indent_start
