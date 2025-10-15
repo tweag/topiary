@@ -126,13 +126,13 @@ interface my-use-items {
 interface types {
   // "package of named fields"
  record r {
-   a:u32,
+   a:u32,// inline-comment-trailing-comma
    b:result<_,errno>
  }
 
   // values of this type will be one of the specified cases
 variant human {
-   baby,
+   baby, // inline-comment-trailing-comma
    child( u32),
    fixed-size(
    list<bool,1>) // inline-comment-trailing-comma
@@ -140,7 +140,7 @@ variant human {
 
   // similar to `variant`, but no type payloads
  enum errno {too-big,
- too-small,too-fast,too-slow  // inline-comment-trailing-comma
+ too-small,too-fast,/* block-comment-trailing-comma */too-slow  // inline-comment-trailing-comma
  }
 
   // a bitflags type
@@ -156,7 +156,7 @@ variant human {
  type t3=string;
  type t4=option<u32>; type t5=result<char,errno>; type t6=result<string>;
  type t7=option<result<_,list<string,2>>>;
- type t8=t7;
+ type t8=t7;// inline-comment-trailing-comma
 }
 
 // ==================
@@ -169,7 +169,7 @@ interface stream-async {
    is-closed:func()->bool;
    read:async func(num-bytes:u32)->result<list<u8>>;
    from-bytes:static func(bytes:list<u8>)->file;
-   from-stream:static async func(bytes:stream<u8>)->file;
+   from-stream:static async func(bytes:stream<u8>)->file;// inline-comment-trailing-comma
  }
 }
 
