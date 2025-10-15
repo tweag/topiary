@@ -22,10 +22,9 @@ use crate::error::TopiaryConfigFetchingError;
 #[cfg(not(target_arch = "wasm32"))]
 use tempfile::tempdir;
 
-use crate::{
-    error::{TopiaryConfigError, TopiaryConfigResult},
-    source::Source,
-};
+use crate::error::{TopiaryConfigError, TopiaryConfigResult};
+
+pub use source::Source;
 
 /// The configuration of the Topiary.
 ///
@@ -56,10 +55,10 @@ impl Configuration {
     #[allow(clippy::result_large_err)]
     pub fn fetch(merge: bool, file: &Option<PathBuf>) -> TopiaryConfigResult<(Self, RichTerm)> {
         // If we have an explicit file, fail if it doesn't exist
-        if let Some(path) = file {
-            if !path.exists() {
-                return Err(TopiaryConfigError::FileNotFound(path.to_path_buf()));
-            }
+        if let Some(path) = file
+            && !path.exists()
+        {
+            return Err(TopiaryConfigError::FileNotFound(path.to_path_buf()));
         }
 
         if merge {
@@ -70,10 +69,10 @@ impl Configuration {
             Self::parse_and_merge(&sources)
         } else {
             // Get the available configuration with best priority
-            let source: Source = Source::fetch_one(file);
-
-            // And parse it with Nickel
-            Self::parse(source)
+            match Source::fetch_one(file) {
+                Source::Builtin => Self::parse(Source::Builtin),
+                source => Self::parse_and_merge(&[source, Source::Builtin]),
+            }
         }
     }
 
@@ -114,7 +113,7 @@ impl Configuration {
                     language.name,
                     git_source.git,
                     git_source.rev,
-                    library_path.to_string_lossy()
+                    library_path.display()
                 );
 
                 git_source.fetch_and_compile_with_dir(
@@ -129,7 +128,7 @@ impl Configuration {
                 log::info!(
                     "Fetch \"{}\": Configured via filesystem ({}); nothing to do",
                     language.name,
-                    path.to_string_lossy(),
+                    path.display(),
                 );
 
                 if !path.exists() {
@@ -207,13 +206,9 @@ impl Configuration {
     #[allow(clippy::result_large_err)]
     pub fn detect<P: AsRef<Path>>(&self, path: P) -> TopiaryConfigResult<&Language> {
         let pb = &path.as_ref().to_path_buf();
-        if let Some(extension) = pb.extension().map(|ext| ext.to_string_lossy()) {
+        if let Some(extension) = pb.extension().and_then(|ext| ext.to_str()) {
             for lang in &self.languages {
-                if lang
-                    .config
-                    .extensions
-                    .contains::<String>(&extension.to_string())
-                {
+                if lang.config.extensions.contains(extension) {
                     return Ok(lang);
                 }
             }

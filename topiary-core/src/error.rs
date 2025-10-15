@@ -53,18 +53,23 @@ pub enum IoError {
 }
 
 impl FormatterError {
-    pub fn with_content(self, content: String) -> Self {
-        if let Self::Parsing(mut span) = self {
-            *span = span.with_content(content);
-            return Self::Parsing(span);
+    fn get_span(&mut self) -> Option<&mut NodeSpan> {
+        match self {
+            Self::Parsing(span) => Some(span),
+            Self::IdempotenceParsing(err) => err.get_span(),
+            _ => None,
+        }
+    }
+    pub fn with_content(mut self, content: String) -> Self {
+        if let Some(span) = self.get_span() {
+            span.set_content(content);
         }
         self
     }
 
-    pub fn with_location(self, location: String) -> Self {
-        if let Self::Parsing(mut span) = self {
-            *span = span.with_location(location);
-            return Self::Parsing(span);
+    pub fn with_location(mut self, location: String) -> Self {
+        if let Some(span) = self.get_span() {
+            span.set_location(location);
         }
         self
     }

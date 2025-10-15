@@ -28,7 +28,7 @@ fn get_file_extension(language: &str) -> &str {
 #[macro_export]
 macro_rules! lang_test {
     ($($lang:literal,)+ $test_fn:ident) => {
-        paste::paste! {$(
+        pastey::paste! {$(
             #[cfg(feature = $lang)]
             #[test]
             fn [<$test_fn _ $lang>]() {

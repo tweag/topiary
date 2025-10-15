@@ -50,7 +50,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-14  # TODO Revert to macos-latest; see #1043
+          - macos-latest
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code

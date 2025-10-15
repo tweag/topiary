@@ -150,7 +150,10 @@ pub enum Commands {
 
     /// Print the current configuration
     #[command(alias = "cfg", display_order = 3)]
-    Config,
+    Config {
+        #[command(subcommand)]
+        command: Option<ConfigCommand>,
+    },
 
     /// Prefetch languages in the configuration
     #[command(display_order = 4)]
@@ -176,6 +179,19 @@ pub enum Commands {
         /// Shell (omit to detect from the environment)
         shell: Option<Shell>,
     },
+
+    /// Check if an input parses to the respective Tree-sitter grammar
+    #[command(alias = "check", display_order = 6)]
+    CheckGrammar {
+        #[command(flatten)]
+        inputs: AtLeastOneInput,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum ConfigCommand {
+    /// Display config sources that Topiary looks through
+    ShowSources,
 }
 
 /// Parse CLI arguments and normalise them for the caller
@@ -214,6 +230,15 @@ pub fn get_args() -> CLIResult<Cli> {
                     ..
                 },
             ..
+        }
+        | Commands::CheckGrammar {
+            inputs:
+                AtLeastOneInput {
+                    files,
+                    follow_symlinks,
+                    ..
+                },
+            ..
         } => {
             // If we're given a list of FILES... then we assume them to all be on disk, even if "-"
             // is passed as an argument (i.e., interpret this as a valid filename, rather than as
@@ -235,7 +260,10 @@ pub fn get_args() -> CLIResult<Cli> {
             // Make sure our FILE is not a directory
             if file.is_dir() {
                 return Err(TopiaryError::Bin(
-                    format!("Cannot visualise directory \"{}\"; please provide a single file from disk or stdin.", file.to_string_lossy()),
+                    format!(
+                        "Cannot visualise directory \"{}\"; please provide a single file from disk or stdin.",
+                        file.display()
+                    ),
                     None,
                 ));
             }

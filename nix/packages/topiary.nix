@@ -57,9 +57,6 @@ let
       with pkgs;
       [
         openssl.dev
-      ]
-      ++ optionals stdenv.isDarwin [
-        darwin.apple_sdk.frameworks.Security
       ];
   };
 

@@ -19,7 +19,8 @@ pub use crate::{
     error::{FormatterError, IoError},
     language::Language,
     tree_sitter::{
-        apply_query, check_query_coverage, CoverageData, SyntaxNode, TopiaryQuery, Visualisation,
+        CoverageData, SyntaxNode, TopiaryQuery, Visualisation, apply_query, check_query_coverage,
+        parse,
     },
 };
 
@@ -76,6 +77,8 @@ pub enum Atom {
         single_line_no_indent: bool,
         // if the leaf is multi-line, each line will be indented, not just the first
         multi_line_indent_all: bool,
+        // don't trim trailing newline characters if set to true
+        keep_whitespace: bool,
         capitalisation: Capitalisation,
     },
     /// Represents a literal string, such as a semicolon.
@@ -286,7 +289,7 @@ pub fn formatter_tree(
             tolerate_parsing_errors,
         } => {
             // All the work related to tree-sitter and the query is done here
-            log::info!("Apply Tree-sitter query");
+            log::debug!("Apply Tree-sitter query");
 
             let mut atoms = tree_sitter::apply_query_tree(tree, input_content, &language.query)?;
 
@@ -294,7 +297,7 @@ pub fn formatter_tree(
             atoms.post_process();
 
             // Pretty-print atoms
-            log::info!("Pretty-print output");
+            log::debug!("Pretty-print output");
             let rendered = pretty::render(
                 &atoms[..],
                 // Default to "  " if the language has no indentation specified
@@ -383,8 +386,8 @@ mod tests {
     use test_log::test;
 
     use crate::{
-        error::FormatterError, formatter, test_utils::pretty_assert_eq, Language, Operation,
-        TopiaryQuery,
+        Language, Operation, TopiaryQuery, error::FormatterError, formatter,
+        test_utils::pretty_assert_eq,
     };
 
     /// Attempt to parse invalid json, expecting a failure
