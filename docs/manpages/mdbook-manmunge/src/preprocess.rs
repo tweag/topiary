@@ -1,8 +1,8 @@
 use std::io;
 
+use mdbook::BookItem;
 use mdbook::book::{Book, Chapter};
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor, PreprocessorContext};
-use mdbook::BookItem;
 use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 use semver::{Version, VersionReq};
 use url::{ParseError, Url};
