@@ -8,7 +8,7 @@ pub use wasm_mod::*;
 mod wasm_mod {
     use std::sync::Mutex;
     use topiary_config::Configuration;
-    use topiary_core::{formatter, FormatterResult, Language, Operation, TopiaryQuery};
+    use topiary_core::{FormatterResult, Language, Operation, TopiaryQuery, formatter};
     use topiary_tree_sitter_facade::TreeSitter;
     use wasm_bindgen::prelude::*;
 

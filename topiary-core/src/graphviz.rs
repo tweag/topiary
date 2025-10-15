@@ -2,11 +2,11 @@
 //! Named syntax nodes are elliptical; anonymous are rectangular.
 use std::{borrow::Cow, fmt, io};
 
-use crate::{tree_sitter::SyntaxNode, FormatterResult};
+use crate::{FormatterResult, tree_sitter::SyntaxNode};
 
 /// Doubly escapes whitespace (\n and \t) so it is
 /// rendered as the escaped value in the GraphViz output
-fn escape(input: &str) -> Cow<str> {
+fn escape(input: &str) -> Cow<'_, str> {
     // No allocation happens for an empty string
     let mut buffer = String::new();
 

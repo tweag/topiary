@@ -1,8 +1,8 @@
 use criterion::async_executor::FuturesExecutor;
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 use std::fs;
 use std::io;
-use topiary_core::{formatter, Language, Operation, TopiaryQuery};
+use topiary_core::{Language, Operation, TopiaryQuery, formatter};
 
 async fn format() {
     let input = fs::read_to_string("../topiary-cli/tests/samples/input/nickel.ncl").unwrap();

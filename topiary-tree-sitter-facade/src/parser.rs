@@ -28,17 +28,19 @@ mod native {
         #[inline]
         #[warn(deprecated)]
         pub unsafe fn cancellation_flag(&self) -> Option<&AtomicUsize> {
-            #[allow(deprecated)]
-            self.inner.cancellation_flag()
+            unsafe {
+                #[allow(deprecated)]
+                self.inner.cancellation_flag()
+            }
         }
 
         #[inline]
-        pub fn language(&self) -> Option<LanguageRef> {
+        pub fn language(&self) -> Option<LanguageRef<'_>> {
             self.inner.language().map(Into::into)
         }
 
         #[inline]
-        pub fn logger(&self) -> Option<LoggerReturn> {
+        pub fn logger(&self) -> Option<LoggerReturn<'_, '_>> {
             self.inner.logger().map(LoggerReturn::new)
         }
 
@@ -113,8 +115,10 @@ mod native {
         #[inline]
         #[warn(deprecated)]
         pub unsafe fn set_cancellation_flag(&mut self, flag: Option<&AtomicUsize>) {
-            #[allow(deprecated)]
-            self.inner.set_cancellation_flag(flag);
+            unsafe {
+                #[allow(deprecated)]
+                self.inner.set_cancellation_flag(flag);
+            }
         }
 
         #[inline]
@@ -184,7 +188,7 @@ mod wasm {
         tree::Tree,
     };
     use js_sys::{Function, JsString};
-    use wasm_bindgen::{prelude::*, JsCast};
+    use wasm_bindgen::{JsCast, prelude::*};
 
     pub struct Parser {
         inner: topiary_web_tree_sitter_sys::Parser,

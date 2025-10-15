@@ -10,6 +10,8 @@
   tree-sitter,
   diffutils,
   gnused,
+  nixdoc,
+  jq,
 }:
 
 let
@@ -30,6 +32,12 @@ let
 
   #   text = readFile ../../bin/generate-coverage.sh;
   # };
+
+  generate-nix-documentation = writeShellApplication {
+    name = "generate-nix-documentation";
+    runtimeInputs = [ nixdoc ];
+    text = readFile ../../bin/generate-nix-documentation.sh;
+  };
 
   playground = writeShellApplication {
     name = "playground";
@@ -74,6 +82,7 @@ let
 in
 {
   inherit
+    generate-nix-documentation
     playground
     update-wasm-app
     update-wasm-grammars

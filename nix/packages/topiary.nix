@@ -2,6 +2,7 @@
   pkgs,
   advisory-db,
   craneLib,
+  prefetchLanguagesFile,
 }:
 
 let
@@ -29,7 +30,6 @@ let
         ../../Cargo.toml
         ../../languages.ncl
         ../../examples
-        ../../prefetchLanguages.nix
         ../../topiary-core
         ../../topiary-cli
         ../../topiary-config
@@ -37,6 +37,7 @@ let
         ../../topiary-queries
         ../../topiary-tree-sitter-facade
         ../../topiary-web-tree-sitter-sys
+        ../../docs/manpages/mdbook-manmunge
         ../.
       ];
     };
@@ -56,9 +57,6 @@ let
       with pkgs;
       [
         openssl.dev
-      ]
-      ++ optionals stdenv.isDarwin [
-        darwin.apple_sdk.frameworks.Security
       ];
   };
 
@@ -137,9 +135,6 @@ let
         preConfigurePhases = optional prefetchGrammars "prepareTopiaryDefaultConfiguration";
 
         prepareTopiaryDefaultConfiguration = optional prefetchGrammars (
-          let
-            inherit (pkgs.callPackage ../../prefetchLanguages.nix { }) prefetchLanguagesFile;
-          in
           "cp ${prefetchLanguagesFile ../../topiary-config/languages.ncl} topiary-config/languages.ncl"
         );
 
@@ -209,17 +204,97 @@ let
     pname = "topiary-book";
     version = "1.0";
 
-    src = ../../docs/book;
+    src = fileset.toSource {
+      root = ../..;
+      fileset = fileset.unions [
+        ../../docs/book
+        ../.
+      ];
+    };
 
     nativeBuildInputs = [ pkgs.mdbook ];
 
     buildPhase = ''
+      cd docs/book
       mdbook build
     '';
 
     installPhase = ''
       mkdir -p $out
       cp -r book/* $out
+    '';
+  };
+
+  mdbook-manmunge =
+    let
+      crateInfo = craneLib.crateNameFromCargoToml {
+        cargoToml = ../../docs/manpages/mdbook-manmunge/Cargo.toml;
+      };
+    in
+    craneLib.buildPackage (
+      commonArgs
+      // {
+        inherit cargoArtifacts;
+        inherit (crateInfo) pname version;
+        cargoExtraArgs = "-p mdbook-manmunge";
+
+        meta = {
+          description = "mdBook pre- and post-processor to help munge (a subset of) the Topiary Book into manpages with mdbook-man";
+          mainProgram = "mdbook-manmunge";
+        };
+      }
+    );
+
+  topiary-manpages = pkgs.stdenv.mkDerivation {
+    pname = "topiary-manpages";
+    version = "1.0";
+
+    src = fileset.toSource {
+      root = ../..;
+      fileset = fileset.unions [
+        ../../docs/manpages
+        ../../docs/book/src/cli
+      ];
+    };
+
+    nativeBuildInputs = with pkgs; [
+      gzip
+      mdbook
+      mdbook-man
+      mdbook-manmunge
+    ];
+
+    buildPhase = ''
+      cd docs/manpages
+      make all
+    '';
+
+    installPhase = ''
+      MAN_DIR=$out/share/man \
+      make install
+    '';
+
+    meta = {
+      description = "Topiary manpages";
+    };
+  };
+
+  # More dragons be here ;)
+  # This runs the Topiary CLI in a controlled PTY for stable output
+  # while testing in CI (90 columns and no ANSI extensions)
+  topiary-wrapped = pkgs.writeShellApplication {
+    name = "topiary-wrapped";
+
+    runtimeInputs = [
+      topiary-cli
+      pkgs.expect
+    ];
+
+    text = ''
+      export COLUMNS=90
+      export NO_COLOR=1
+
+      unbuffer topiary "$@"
     '';
   };
 
@@ -238,6 +313,8 @@ in
     topiary-queries
     topiary-playground
     topiary-book
+    topiary-manpages
+    topiary-wrapped
     ;
 
   default = topiary-cli;

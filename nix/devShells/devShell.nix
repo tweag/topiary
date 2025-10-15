@@ -20,7 +20,11 @@ craneLib.devShell (
             cargo-dist
             cargo-flamegraph
             rust-analyzer
+
+            jq
+            nixdoc
             mdbook
+            mdbook-man
 
             pkg-config
             openssl.dev
@@ -28,6 +32,7 @@ craneLib.devShell (
             # Our own scripts
             # FIXME: Broken
             # generate-coverage
+            generate-nix-documentation
             update-wasm-app
             update-wasm-grammars
             verify-documented-usage
