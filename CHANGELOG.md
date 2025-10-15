@@ -59,6 +59,7 @@ This name should be decided amongst the team before the release.
 ### Changed
 - [#1031](https://github.com/tweag/topiary/pull/1031) Removed the Bash rewrite rule for converting POSIX `[` to Bash's `[[`
 - [#1095](https://github.com/tweag/topiary/pull/1095) Update to Rust 2024 edition
+- [#1111](https://github.com/tweag/topiary/pull/1111) Updated WIT grammar repository to track https://github.com/bytecodealliance/tree-sitter-wit
 
 ### Fixed
 - [#1085](https://github.com/tweag/topiary/pull/1085) CSS formatting fixes
