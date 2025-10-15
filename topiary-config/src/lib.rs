@@ -256,7 +256,7 @@ impl Default for Configuration {
                 .read()
                 .expect("Evaluating the builtin configuration should be safe")
                 .as_slice(),
-            "builtin",
+            "built-in",
             std::io::empty(),
             NullReporter {},
         )
