@@ -156,7 +156,7 @@
   [
     (block_comment)
     (line_comment)
-  ]* @do_nothing @prepend_empty_softline
+  ]* @do_nothing
 )
 [
   ">"
