@@ -37,6 +37,7 @@ let
         ../../topiary-queries
         ../../topiary-tree-sitter-facade
         ../../topiary-web-tree-sitter-sys
+        ../../docs/manpages/mdbook-manmunge
         ../.
       ];
     };
@@ -224,6 +225,60 @@ let
     '';
   };
 
+  mdbook-manmunge =
+    let
+      crateInfo = craneLib.crateNameFromCargoToml {
+        cargoToml = ../../docs/manpages/mdbook-manmunge/Cargo.toml;
+      };
+    in
+    craneLib.buildPackage (
+      commonArgs
+      // {
+        inherit cargoArtifacts;
+        inherit (crateInfo) pname version;
+        cargoExtraArgs = "-p mdbook-manmunge";
+
+        meta = {
+          description = "mdBook pre- and post-processor to help munge (a subset of) the Topiary Book into manpages with mdbook-man";
+          mainProgram = "mdbook-manmunge";
+        };
+      }
+    );
+
+  topiary-manpages = pkgs.stdenv.mkDerivation {
+    pname = "topiary-manpages";
+    version = "1.0";
+
+    src = fileset.toSource {
+      root = ../..;
+      fileset = fileset.unions [
+        ../../docs/manpages
+        ../../docs/book/src/cli
+      ];
+    };
+
+    nativeBuildInputs = with pkgs; [
+      gzip
+      mdbook
+      mdbook-man
+      mdbook-manmunge
+    ];
+
+    buildPhase = ''
+      cd docs/manpages
+      make all
+    '';
+
+    installPhase = ''
+      MAN_DIR=$out/share/man \
+      make install
+    '';
+
+    meta = {
+      description = "Topiary manpages";
+    };
+  };
+
   # More dragons be here ;)
   # This runs the Topiary CLI in a controlled PTY for stable output
   # while testing in CI (90 columns and no ANSI extensions)
@@ -258,6 +313,7 @@ in
     topiary-queries
     topiary-playground
     topiary-book
+    topiary-manpages
     topiary-wrapped
     ;
 
