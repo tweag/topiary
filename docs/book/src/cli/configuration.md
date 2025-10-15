@@ -198,9 +198,12 @@ nickel = {
 ```
 
 The simplest way to obtain the hash is to use `nix-prefetch-git` (and look for
-the `hash` field in its output). The second simplest way is to compile, which
-will show something like:
+the `hash` field in its output):
+```sh
+nix run nixpkgs#nix-prefetch-git -- https://github.com/bytecodealliance/tree-sitter-wit 230984dfaf803a0ff8f77da5034361a62c326577
+```
 
+The second simplest way is to compile, which will show something like:
 ```
 evaluation warning: Language `nickel`: no nixHash provided - using dummy value
 error: hash mismatch in fixed-output derivation '/nix/store/jgny7ll7plh7rfdnvdpgcb82kd51aiyx-tree-sitter-nickel-43433d8.drv':
