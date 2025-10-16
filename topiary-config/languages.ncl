@@ -130,14 +130,15 @@
     },
 
     wit = {
+      extensions = ["wit"],
+      indent = "    ", # 4 spaces
       grammar = {
         source.git = {
           git = "https://github.com/bytecodealliance/tree-sitter-wit",
-          rev = "230984dfaf803a0ff8f77da5034361a62c326577",
-          nixHash = "sha256-g5ufAL8w8xrp7ExDvJCyToHShmKV4hXg2J2Qp82L/0s=",
+          rev = "v1.2.0",
+          nixHash = "sha256-scye60ETUak1mXJXC+UY5sqbuqAcjxCsm4+AVJHhGws=",
         },
       },
-      extensions = ["wit"],
     },
   },
 }
