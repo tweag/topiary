@@ -49,8 +49,7 @@ js-sys = "0.3"
 libloading = "0.8.4"
 log = "0.4"
 mdbook = { version = "0.4.47", default-features = false }
-nickel-lang-core = { git = "https://github.com/tweag/nickel" }
-# nickel-lang-core = { version = "0.15.0", default-features = false }
+nickel-lang-core = { version = "0.15.1", default-features = false }
 pastey = "0.1.1"
 predicates = "3.0"
 pretty_assertions = "1.3"
