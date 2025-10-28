@@ -62,7 +62,6 @@ world imports {
 world world-one {
     import a: func();
 }
-
 world world-two {
     import a: func();
 }

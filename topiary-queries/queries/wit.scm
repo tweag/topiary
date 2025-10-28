@@ -88,6 +88,8 @@
   ]* @do_nothing
 )
 
+(world_item) @append_hardline
+
 (line_comment) @append_hardline
 
 [
