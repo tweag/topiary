@@ -18,6 +18,7 @@ package topiary:wit@1.0.0;
 package wasmi:io:hello;
 package wasmi :io:hello /
 epic@1.0.0;
+
 /// `stream` (no _s_) is a *type* that
 /// - can include a `<T>`
 /// - be a type in ofitself
@@ -49,11 +50,9 @@ world imports{
     import streams; export streams;
     // The component implements the `scan` function
    export scan:func()->list<u8 >;  // inline-comment
-
    import iface-name:interface {
        type some-name=u32;foo:func(p:string)->result<u32,aaa>;
    }
-
    export iface-name:interface {
        type some-name=u32;
        foo:func(p:string)->result<u32,aaa>;

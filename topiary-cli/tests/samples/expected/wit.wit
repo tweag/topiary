@@ -1,6 +1,7 @@
 // ==================
 // Packages and Comments
 // ==================
+
 // WIT grammar for tree-sitter
 //// WIT grammar for tree-sitter
 /** nested comments
@@ -185,6 +186,7 @@ interface stream-async {
 // ==================
 // Gates
 // ==================
+
 @since(version = 0.1.0)
 world imports {
     @since(version = 0.1.0)

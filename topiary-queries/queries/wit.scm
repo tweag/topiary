@@ -65,6 +65,7 @@
 ; formatting.
 (
   [
+    (deprecated_gate)
     (export_item)
     (func_item)
     (import_item)
@@ -72,12 +73,14 @@
     (interface_item)
     (package_decl)
     (resource_item)
-    (type_item)
     (resource_method)
     (since_gate)
-    (deprecated_gate)
+    (toplevel_use_item)
+    (type_item)
     (unstable_gate)
-  ] @append_spaced_softline
+    (use_item)
+    (world_item)
+  ] @append_hardline
   .
   [
     (block_comment)
@@ -85,22 +88,22 @@
   ]* @do_nothing
 )
 
-
 (line_comment) @append_hardline
 
 [
   (since_gate)
   (deprecated_gate)
   (unstable_gate)
-] @append_hardline
+] @append_spaced_softline
 
 (body
   .
   "{" @append_hardline @append_indent_start @prepend_space
   _
-  "}" @append_hardline @prepend_hardline @prepend_indent_end
+  "}" @prepend_hardline @prepend_indent_end
   .
-) @append_hardline
+)
+
 (definitions
   .
   "{" @append_empty_softline @append_indent_start
@@ -127,21 +130,6 @@
 ; ==================
 ; Delimiters
 ; ==================
-; Never put a space before a comma or semicolon
-(
-
- [
-    (toplevel_use_item)
-    (use_item)
-  (type_item)
-  ]
- @append_hardline
-  .
-  [
-    (block_comment)
-    (line_comment)
-  ]* @do_nothing
-)
 
 (param_list
   "," @append_spaced_softline
