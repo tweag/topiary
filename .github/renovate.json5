@@ -45,6 +45,13 @@
       groupName: "serde packages",
       matchPackageNames: ["serde", "serde_*"],
       matchManagers: ["cargo"]
-    }
+    },
+    {
+      // Disable automatic WASM toolchain updates
+      groupName: "WASM toolchain",
+      matchPackageNames: ["wasm-bindgen*"],
+      matchManagers: ["cargo"],
+      enabled: false
+    },
   ]
 }

@@ -49,7 +49,7 @@ js-sys = "0.3"
 libloading = "0.8.4"
 log = "0.4"
 mdbook = { version = "0.4.47", default-features = false }
-nickel-lang-core = { version = "0.15.0", default-features = false }
+nickel-lang-core = { version = "0.15.1", default-features = false }
 pastey = "0.1.1"
 predicates = "3.0"
 pretty_assertions = "1.3"
@@ -73,9 +73,9 @@ tree-sitter-language = "0.1"
 tree-sitter-nickel = "0.5"
 unescape = "0.1"
 url = "2.5.4"
-wasm-bindgen = "=0.2.104"
-wasm-bindgen-futures = "0.4"
-wasm-bindgen-test = "0.3"
+wasm-bindgen = "=0.2.100"
+wasm-bindgen-futures = "=0.4"
+wasm-bindgen-test = "=0.3"
 web-sys = "0.3"
 
 topiary-web-tree-sitter-sys = { version = "0.6.2", path = "./topiary-web-tree-sitter-sys" }
