@@ -224,8 +224,5 @@
   (#multi_line_only!)
 )
 
-; Handle inline comments after semicolons
-(";" . (line_comment) @prepend_space)
-
 ; Keep inline comments on same line as export/import statements
 ([(import_item) (export_item)] . (line_comment) @prepend_space)
