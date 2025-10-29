@@ -42,7 +42,31 @@ This name should be decided amongst the team before the release.
 
 ## Unreleased
 
-[Full list of changes](https://github.com/tweag/topiary/compare/v0.6.1...HEAD)
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.7.0...HEAD)
+
+<!--
+### Added
+- <New feature>
+
+### Changed
+- <Changes in existing functionality>
+
+### Deprecated
+- <Soon-to-be removed features>
+
+### Removed
+- <Removed features>
+
+### Fixed
+- <Bug fixes>
+
+### Security
+- <Vulnerabilities>
+-->
+
+## v0.7.0 - Heavenly Hemlock - 2025-10-29
+
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.6.1...v0.7.0)
 
 ### Added
 - [#921](https://github.com/tweag/topiary/pull/921) man pages for the Topiary CLI
