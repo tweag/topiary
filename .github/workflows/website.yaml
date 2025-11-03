@@ -51,7 +51,7 @@ jobs:
           cp -r result/* wasm-assets
 
       - name: Upload assets as build artefacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: playground-wasm-assets
           path: wasm-assets
@@ -82,7 +82,7 @@ jobs:
           mkdir -p web-playground/src/samples
 
       - name: Download playground WASM artefacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: playground-wasm-assets
           path: web-playground/src/wasm-app
