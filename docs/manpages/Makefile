@@ -25,7 +25,6 @@ install: $(MAN_DIR)/man1/$(NAME).1.gz
 $(MAN_DIR)/man1/$(NAME).1.gz: $(BUILD_PREFIX).1.gz $(MAN_DIR)/man1
 	install \
 	  -m 0644 \
-	  -S \
 	  "$<" \
 	  "$@"
 
