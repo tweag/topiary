@@ -1,5 +1,5 @@
 {
-  languages = {
+  languages | default = {
     bash = {
       extensions = ["sh", "bash"],
       grammar.source.git = {
