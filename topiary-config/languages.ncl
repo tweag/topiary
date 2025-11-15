@@ -1,6 +1,6 @@
 {
-  languages | default = {
-    bash = {
+  languages = {
+    bash | default = {
       extensions = ["sh", "bash"],
       grammar.source.git = {
         git = "https://github.com/tree-sitter/tree-sitter-bash.git",
@@ -9,7 +9,7 @@
       }
     },
 
-    css = {
+    css | default = {
       extensions = ["css"],
       grammar.source.git = {
         git = "https://github.com/tree-sitter/tree-sitter-css.git",
@@ -18,7 +18,7 @@
       },
     },
 
-    json = {
+    json | default = {
       extensions = [
         "json",
         "avsc",
@@ -42,7 +42,7 @@
       },
     },
 
-    nickel = {
+    nickel | default = {
       extensions = ["ncl"],
       grammar.source.git = {
         git = "https://github.com/nickel-lang/tree-sitter-nickel",
@@ -51,7 +51,7 @@
       },
     },
 
-    ocaml = {
+    ocaml | default = {
       extensions = ["ml"],
       grammar.source.git = {
         git = "https://github.com/tree-sitter/tree-sitter-ocaml.git",
@@ -61,7 +61,7 @@
       },
     },
 
-    ocaml_interface = {
+    ocaml_interface | default = {
       extensions = ["mli"],
       grammar.source.git = {
         git = "https://github.com/tree-sitter/tree-sitter-ocaml.git",
@@ -71,7 +71,7 @@
       },
     },
 
-    ocamllex = {
+    ocamllex | default = {
       extensions = ["mll"],
       grammar.source.git = {
         git = "https://github.com/314eter/tree-sitter-ocamllex.git",
@@ -89,7 +89,7 @@
       },
     },
 
-    rust = {
+    rust | default = {
       extensions = ["rs"],
       indent = "    ", # 4 spaces
       grammar.source.git = {
@@ -99,7 +99,7 @@
       },
     },
 
-    sdml = {
+    sdml | default = {
       extensions = ["sdm", "sdml"],
       grammar.source.git = {
         git = "https://github.com/sdm-lang/tree-sitter-sdml",
@@ -108,7 +108,7 @@
       },
     },
 
-    toml = {
+    toml | default = {
       extensions = ["toml"],
       grammar.source.git = {
         git = "https://github.com/tree-sitter/tree-sitter-toml.git",
@@ -117,7 +117,7 @@
       },
     },
 
-    tree_sitter_query = {
+    tree_sitter_query | default = {
       extensions = ["scm"],
       grammar = {
         source.git = {
@@ -129,7 +129,7 @@
       },
     },
 
-    wit = {
+    wit | default = {
       extensions = ["wit"],
       indent = "    ", # 4 spaces
       grammar = {
