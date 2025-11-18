@@ -42,7 +42,7 @@ This name should be decided amongst the team before the release.
 
 ## Unreleased
 
-[Full list of changes](https://github.com/tweag/topiary/compare/v0.7.0...HEAD)
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.7.1...HEAD)
 
 <!--
 ### Added
@@ -63,6 +63,10 @@ This name should be decided amongst the team before the release.
 ### Security
 - <Vulnerabilities>
 -->
+
+## v0.7.1 - Heavenly Hemlock - 2025-11-19
+
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.7.0...v0.7.1)
 
 ### Fixed
 - [#1126](https://github.com/tweag/topiary/pull/1126) Set built-in language configs with a priority of "default"

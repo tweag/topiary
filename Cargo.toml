@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.7.0"
+version = "0.7.1"
 edition = "2024"
 authors = ["Tweag"]
 homepage = "https://topiary.tweag.io"
@@ -49,6 +49,7 @@ js-sys = "0.3"
 libloading = "0.9.0"
 log = "0.4"
 mdbook = { version = "0.4.47", default-features = false }
+miette = { version = "7.6.0", features = ["fancy"] }
 nickel-lang-core = { version = "0.15.1", default-features = false }
 pastey = "0.1.1"
 predicates = "3.0"
@@ -61,13 +62,13 @@ semver = "1.0.26"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 streaming-iterator = "0.1.9"
+tabled = "0.20.0"
 tempfile = "3.12"
 test-log = "0.2"
+thiserror = "2.0.16"
 tokio = "1.32"
 tokio-test = "0.4"
 toml = "0.9"
-tree-sitter = "0.25"         # NOTE Update tree-sitter-loader to match
-tree-sitter-loader = "0.25"  # NOTE Align with tree-sitter
 tree-sitter-json = "0.24"
 tree-sitter-language = "0.1"
 tree-sitter-nickel = "0.5"
@@ -78,14 +79,16 @@ wasm-bindgen-futures = "=0.4"
 wasm-bindgen-test = "=0.3"
 web-sys = "0.3"
 
-topiary-web-tree-sitter-sys = { version = "0.7.0", path = "./topiary-web-tree-sitter-sys" }
-topiary-tree-sitter-facade = { version = "0.7.0", path = "./topiary-tree-sitter-facade" }
-topiary-core = { version = "0.7.0", path = "./topiary-core" }
-topiary-config = { version = "0.7.0", path = "./topiary-config" }
-topiary-queries = { version = "0.7.0", path = "./topiary-queries" }
-miette = { version = "7.6.0", features = ["fancy"] }
-tabled = "0.20.0"
-thiserror = "2.0.16"
+# NOTE Keep these versions aligned
+tree-sitter = "0.25"         # NOTE Update tree-sitter-loader to match
+tree-sitter-loader = "0.25"  # NOTE Align with tree-sitter
+
+# NOTE Update these appropriately
+topiary-web-tree-sitter-sys = { version = "0.7.1", path = "./topiary-web-tree-sitter-sys" }
+topiary-tree-sitter-facade = { version = "0.7.1", path = "./topiary-tree-sitter-facade" }
+topiary-core = { version = "0.7.1", path = "./topiary-core" }
+topiary-config = { version = "0.7.1", path = "./topiary-config" }
+topiary-queries = { version = "0.7.1", path = "./topiary-queries" }
 
 [profile.dev.package.lalrpop]
 opt-level = 3
