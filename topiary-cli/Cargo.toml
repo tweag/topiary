@@ -9,7 +9,7 @@ keywords = [
   "text",
   "tree-sitter",
 ]
-version = "0.7.1"
+version.workspace = true
 edition.workspace = true
 authors.workspace = true
 homepage.workspace = true
