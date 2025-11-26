@@ -42,7 +42,7 @@ This name should be decided amongst the team before the release.
 
 ## Unreleased
 
-[Full list of changes](https://github.com/tweag/topiary/compare/v0.7.1...HEAD)
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.7.2...HEAD)
 
 <!--
 ### Added
