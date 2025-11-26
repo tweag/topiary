@@ -45,6 +45,9 @@ jobs:
       - name: Verify that usage in README.md matches CLI output
         run: nix run .#verify-documented-usage
 
+      - name: Test against config regressions
+        run: nix run . -- config
+
   topiary-cli:
     strategy:
       matrix:
