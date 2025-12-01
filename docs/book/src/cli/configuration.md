@@ -24,6 +24,10 @@ the OS:
 | macOS   | `/Users/Alice/Library/Application Support/Topiary/languages.ncl` |
 | Windows | `C:\Users\Alice\AppData\Roaming\Topiary\config\languages.ncl`    |
 
+> **Note**\
+> On macOS, Topiary also looks in `~/.config/topiary`, as well as the
+> standard macOS configuration directory.
+
 This file is not automatically created by Topiary.
 
 The next source is intended to be a project-specific settings file for
