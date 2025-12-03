@@ -4,7 +4,7 @@
 
 use std::{collections::HashSet, fmt::Display};
 
-use miette::{LabeledSpan, Severity, SourceSpan};
+use miette::{LabeledSpan, NamedSource, Severity, SourceSpan};
 use serde::Serialize;
 
 use topiary_tree_sitter_facade::{
@@ -47,7 +47,7 @@ impl Display for Position {
 #[derive(Debug)]
 pub struct TopiaryQuery {
     pub query: Query,
-    pub query_content: String,
+    pub query_content: NamedSource<String>,
 }
 
 impl TopiaryQuery {
@@ -61,13 +61,18 @@ impl TopiaryQuery {
     pub fn new(
         grammar: &topiary_tree_sitter_facade::Language,
         query_content: &str,
+        location: Option<&str>,
     ) -> FormatterResult<TopiaryQuery> {
-        let query = Query::new(grammar, query_content)
+        let query_content = NamedSource::new(
+            location.unwrap_or("MISSING LOCATION"),
+            query_content.to_owned(),
+        );
+        let query = Query::new(grammar, query_content.inner())
             .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
 
         Ok(TopiaryQuery {
             query,
-            query_content: query_content.to_owned(),
+            query_content,
         })
     }
 
@@ -77,7 +82,7 @@ impl TopiaryQuery {
     pub fn pattern_position(&self, pattern_index: usize) -> Position {
         let byte_offset = self.query.start_byte_for_pattern(pattern_index);
         let (row, column) =
-            self.query_content[..byte_offset]
+            self.query_content.inner()[..byte_offset]
                 .chars()
                 .fold((0, 0), |(row, column), c| {
                     if c == '\n' {
@@ -410,6 +415,12 @@ pub struct NodeSpan {
     pub language: &'static str,
 }
 
+impl From<&Node<'_>> for NodeSpan {
+    fn from(value: &Node) -> Self {
+        Self::new(value)
+    }
+}
+
 impl NodeSpan {
     /// Creates a new [`Self`] without source text or language
     pub fn new(node: &Node) -> Self {
@@ -677,7 +688,7 @@ pub fn check_query_coverage(
         if ref_match_count == 0 {
             missing_patterns.push(LabeledSpan::new_with_span(
                 Some("empty query".into()),
-                SourceSpan::from(0..query_content.len()),
+                SourceSpan::from(0..query_content.inner().len()),
             ));
             cover_percentage = 0.0
         }
@@ -697,7 +708,8 @@ pub fn check_query_coverage(
             let start_idx = query.start_byte_for_pattern(i);
             let end_idx = query.end_byte_for_pattern(i);
             // SAFETY: the index range provided is returned directly from the inner `Query` object
-            let pattern_content = unsafe { query_content.get_unchecked(start_idx..end_idx) };
+            let pattern_content =
+                unsafe { query_content.inner().get_unchecked(start_idx..end_idx) };
             // All child patterns of a non-empty `Query` object created through `Query::new` are guaranteed
             // to create their own valid `Query` by referencing their pattern byte range.
             let pattern_query = Query::new(grammar, pattern_content)
