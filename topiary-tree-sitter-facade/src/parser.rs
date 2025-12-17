@@ -24,16 +24,6 @@ mod native {
             Ok(Self { inner })
         }
 
-        #[allow(clippy::missing_safety_doc)]
-        #[inline]
-        #[warn(deprecated)]
-        pub unsafe fn cancellation_flag(&self) -> Option<&AtomicUsize> {
-            unsafe {
-                #[allow(deprecated)]
-                self.inner.cancellation_flag()
-            }
-        }
-
         #[inline]
         pub fn language(&self) -> Option<LanguageRef<'_>> {
             self.inner.language().map(Into::into)
@@ -111,16 +101,6 @@ mod native {
             self.inner.reset()
         }
 
-        #[allow(clippy::missing_safety_doc)]
-        #[inline]
-        #[warn(deprecated)]
-        pub unsafe fn set_cancellation_flag(&mut self, flag: Option<&AtomicUsize>) {
-            unsafe {
-                #[allow(deprecated)]
-                self.inner.set_cancellation_flag(flag);
-            }
-        }
-
         #[inline]
         pub fn set_included_ranges(&mut self, ranges: &[Range]) -> Result<(), IncludedRangesError> {
             let ranges = ranges.iter().map(|range| range.inner).collect::<Vec<_>>();
@@ -138,23 +118,8 @@ mod native {
         }
 
         #[inline]
-        #[warn(deprecated)]
-        pub fn set_timeout_micros(&mut self, timeout_micros: f64) {
-            #[allow(deprecated)]
-            self.inner.set_timeout_micros(timeout_micros as u64)
-        }
-
-        #[inline]
         pub fn stop_printing_dot_graphs(&mut self) {
             self.inner.stop_printing_dot_graphs()
-        }
-
-        #[inline]
-        #[warn(deprecated)]
-        pub fn timeout_micros(&self) -> f64 {
-            #[allow(deprecated)]
-            let timeout = self.inner.timeout_micros();
-            timeout as f64
         }
     }
 
