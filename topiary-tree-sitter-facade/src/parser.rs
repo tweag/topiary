@@ -10,7 +10,6 @@ mod native {
         range::Range,
         tree::Tree,
     };
-    use core::sync::atomic::AtomicUsize;
     use std::convert::TryFrom;
 
     pub struct Parser {
@@ -170,11 +169,6 @@ mod wasm {
             Ok(Self { inner, options })
         }
 
-        // #[inline]
-        // pub unsafe fn cancellation_flag(&self) -> Option<&AtomicUsize> {
-        //     unimplemented!()
-        // }
-
         #[inline]
         pub fn language(&self) -> Option<Language> {
             self.inner.get_language().map(Into::into)
@@ -276,11 +270,6 @@ mod wasm {
         pub fn reset(&mut self) {
             self.inner.reset()
         }
-
-        // #[inline]
-        // pub unsafe fn set_cancellation_flag(&mut self, flag: Option<&AtomicUsize>) {
-        //     unimplemented!()
-        // }
 
         #[inline]
         pub fn set_included_ranges(&mut self, ranges: &[Range]) -> Result<(), IncludedRangesError> {
