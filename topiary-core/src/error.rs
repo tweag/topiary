@@ -4,7 +4,7 @@
 use std::{error::Error, fmt, io, ops::Deref, str, string};
 
 use miette::{Diagnostic, NamedSource, SourceSpan};
-use topiary_tree_sitter_facade::Range;
+use topiary_tree_sitter_facade::{Point, QueryError, Range};
 
 use crate::tree_sitter::NodeSpan;
 
@@ -31,7 +31,7 @@ pub enum FormatterError {
 
     /// There was an error in the query file. If this happened using our
     /// provided query files, it is a bug. Please log an issue.
-    Query(String, Option<topiary_tree_sitter_facade::QueryError>),
+    Query(String, Option<QueryError>),
 
     /// I/O-related errors
     Io(IoError),
@@ -127,6 +127,44 @@ impl Error for FormatterError {
             Self::Io(IoError::Generic(_, Some(source))) => Some(source.as_ref()),
             Self::IdempotenceParsing(source) => Some(source),
         }
+    }
+}
+
+// pub struct QueryError {
+//     pub row: usize,
+//     pub column: usize,
+//     pub offset: usize,
+//     pub message: String,
+//     pub kind: QueryErrorKind,
+// }
+//
+//#[derive(Debug)]
+// pub struct NodeSpan {
+//     pub(crate) range: Range,
+//     // source code contents
+//     pub content: Option<String>,
+//     // source code location
+//     pub location: Option<String>,
+//     pub language: &'static str,
+// }
+
+impl From<&tree_sitter::QueryError> for NodeSpan {
+    fn from(e: &tree_sitter::QueryError) -> Self {
+        let start_point = Point::new(e.row, e.column);
+        let end_point = Point::new(e.row + 1, 1);
+        let range = Range::new(e.offset, e.offset + 1, &start_point, &end_point);
+        Self {
+            range,
+            content: None,
+            location: None,
+            language: "tree_sitter_query",
+        }
+    }
+}
+
+impl From<QueryError> for FormatterError {
+    fn from(e: io::Error) -> Self {
+        IoError::from(e).into()
     }
 }
 

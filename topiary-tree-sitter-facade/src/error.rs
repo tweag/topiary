@@ -1,5 +1,9 @@
 #[cfg(not(target_arch = "wasm32"))]
 mod native {
+    use miette::{SourceOffset, SourceSpan};
+
+    use crate::Point;
+
     #[derive(Eq, PartialEq)]
     pub struct IncludedRangesError {
         pub(crate) inner: tree_sitter::IncludedRangesError,
@@ -32,7 +36,7 @@ mod native {
 
     #[derive(Eq, PartialEq)]
     pub struct QueryError {
-        pub(crate) inner: tree_sitter::QueryError,
+        pub inner: tree_sitter::QueryError,
     }
 
     impl std::fmt::Debug for QueryError {
@@ -53,6 +57,23 @@ mod native {
         #[inline]
         fn from(inner: tree_sitter::QueryError) -> Self {
             Self { inner }
+        }
+    }
+
+    impl QueryError {
+        pub fn span(&self, content: &str) -> SourceSpan {
+            let (row, col) = (self.inner.row, self.inner.column);
+            // [tree_sitter::QueryError] only provides the linewise start of
+            // the problematic query and thus we need the original content to find
+            // where the line ends
+            let offset = SourceOffset::from_location(content, row, col);
+            let to_end = &content[start_idx..];
+            let len = to_end.find('\n').map(|i| i).unwrap_or(to_end.len());
+            SourceSpan::new(start_idx.into(), span_len)
+        }
+
+        pub fn end_point(&self, content: &str) -> Point {
+            Point::new(self.inner.row, self.inner.column)
         }
     }
 
