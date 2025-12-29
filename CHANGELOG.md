@@ -42,7 +42,7 @@ This name should be decided amongst the team before the release.
 
 ## Unreleased
 
-[Full list of changes](https://github.com/tweag/topiary/compare/v0.7.2...HEAD)
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.7.3...HEAD)
 
 <!--
 ### Added
@@ -63,6 +63,13 @@ This name should be decided amongst the team before the release.
 ### Security
 - <Vulnerabilities>
 -->
+
+## v0.7.3 - Heavenly Hemlock - 2026-01-02
+
+[Full list of changes](https://github.com/tweag/topiary/compare/v0.7.2...v0.7.3)
+
+### Changed
+- [#1149](https://github.com/tweag/topiary/pull/1149) Updated to Tree-sitter v0.26
 
 ## v0.7.2 - Heavenly Hemlock - 2025-11-27
 
