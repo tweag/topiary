@@ -64,7 +64,7 @@ This name should be decided amongst the team before the release.
 - <Vulnerabilities>
 -->
 
-## v0.7.3 - Heavenly Hemlock - 2026-01-02
+## v0.7.3 - Heavenly Hemlock - 2023-12-30
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.7.2...v0.7.3)
 
