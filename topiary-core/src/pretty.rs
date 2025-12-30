@@ -28,10 +28,7 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
 
             Atom::IndentEnd => {
                 if indent_level == 0 {
-                    return Err(FormatterError::Query(
-                        "Trying to close an unopened indentation block".into(),
-                        None,
-                    ));
+                    return Err(FormatterError::Query("Trying to close an unopened indentation block".into()));
                 }
 
                 indent_level -= 1;
@@ -94,10 +91,7 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
 
             // All other atom kinds should have been post-processed at that point
             other => {
-                return Err(FormatterError::Internal(
-                    format!("Found atom that should have been removed before rendering: {other:?}",),
-                    None,
-                ));
+                return Err(FormatterError::Internal(format!("Found atom that should have been removed before rendering: {other:?}",)));
             }
         };
     }

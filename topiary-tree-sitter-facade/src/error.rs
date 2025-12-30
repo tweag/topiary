@@ -66,13 +66,12 @@ mod native {
             // [tree_sitter::QueryError] only provides the linewise start of
             // the problematic query and thus we need the original content to find
             // where the line ends
+            let row_len = content.lines().nth(row - 1).map(|l| l.len()).unwrap_or(1);
             let offset = SourceOffset::from_location(content, row, col);
-            let to_end = &content[start_idx..];
-            let len = to_end.find('\n').map(|i| i).unwrap_or(to_end.len());
-            SourceSpan::new(start_idx.into(), span_len)
+            SourceSpan::new(offset, row_len)
         }
 
-        pub fn end_point(&self, content: &str) -> Point {
+        pub fn end_point(&self) -> Point {
             Point::new(self.inner.row, self.inner.column)
         }
     }

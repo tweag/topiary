@@ -5,6 +5,7 @@
 use std::{collections::HashSet, fmt::Display};
 
 use miette::{LabeledSpan, NamedSource, Severity, SourceSpan};
+use rootcause::{IntoReport, prelude::ResultExt, report};
 use serde::Serialize;
 
 use topiary_tree_sitter_facade::{
@@ -47,7 +48,7 @@ impl Display for Position {
 #[derive(Debug)]
 pub struct TopiaryQuery {
     pub query: Query,
-    pub query_content: NamedSource<String>,
+    pub query_content: String,
 }
 
 impl TopiaryQuery {
@@ -61,18 +62,13 @@ impl TopiaryQuery {
     pub fn new(
         grammar: &topiary_tree_sitter_facade::Language,
         query_content: &str,
-        location: Option<&str>,
     ) -> FormatterResult<TopiaryQuery> {
-        let query_content = NamedSource::new(
-            location.unwrap_or("MISSING LOCATION"),
-            query_content.to_owned(),
-        );
-        let query = Query::new(grammar, query_content.inner())
+        let query = Query::new(grammar, query_content)
             .map_err(|e| FormatterError::Query("Error parsing query file".into(), Some(e)))?;
 
         Ok(TopiaryQuery {
             query,
-            query_content,
+            query_content: query_content.to_owned(),
         })
     }
 
@@ -82,7 +78,7 @@ impl TopiaryQuery {
     pub fn pattern_position(&self, pattern_index: usize) -> Position {
         let byte_offset = self.query.start_byte_for_pattern(pattern_index);
         let (row, column) =
-            self.query_content.inner()[..byte_offset]
+            self.query_content[..byte_offset]
                 .chars()
                 .fold((0, 0), |(row, column), c| {
                     if c == '\n' {
@@ -471,14 +467,17 @@ pub fn parse(
     grammar: &topiary_tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<Tree> {
-    let mut parser = Parser::new()?;
-    parser.set_language(grammar).map_err(|_| {
-        FormatterError::Internal("Could not apply Tree-sitter grammar".into(), None)
-    })?;
+    let mut parser = Parser::new().context_to()?;
+    parser
+        .set_language(grammar)
+        .context_to()
+        .attach("Could not apply Tree-sitter grammar")?;
 
-    let tree = parser
-        .parse(content, None)?
-        .ok_or_else(|| FormatterError::Internal("Could not parse input".into(), None))?;
+    let tree = parser.parse(content, None).context_to()?.ok_or_else(|| {
+        report!(FormatterError::Internal(
+            "Could not parse input".to_string()
+        ))
+    })?;
 
     // Fail parsing if we don't get a complete syntax tree.
     if !tolerate_parsing_errors {
@@ -542,19 +541,21 @@ fn handle_predicate(
 ) -> FormatterResult<QueryPredicates> {
     let operator = &*predicate.operator();
     if "delimiter!" == operator {
-        let arg =
-            predicate.args().into_iter().next().ok_or_else(|| {
-                FormatterError::Query(format!("{operator} needs an argument"), None)
-            })?;
+        let arg = predicate
+            .args()
+            .into_iter()
+            .next()
+            .ok_or_else(|| FormatterError::Query(format!("{operator} needs an argument")))?;
         Ok(QueryPredicates {
             delimiter: Some(arg),
             ..predicates.clone()
         })
     } else if "scope_id!" == operator {
-        let arg =
-            predicate.args().into_iter().next().ok_or_else(|| {
-                FormatterError::Query(format!("{operator} needs an argument"), None)
-            })?;
+        let arg = predicate
+            .args()
+            .into_iter()
+            .next()
+            .ok_or_else(|| FormatterError::Query(format!("{operator} needs an argument")))?;
         Ok(QueryPredicates {
             scope_id: Some(arg),
             ..predicates.clone()
@@ -570,37 +571,40 @@ fn handle_predicate(
             ..predicates.clone()
         })
     } else if "single_line_scope_only!" == operator {
-        let arg =
-            predicate.args().into_iter().next().ok_or_else(|| {
-                FormatterError::Query(format!("{operator} needs an argument"), None)
-            })?;
+        let arg = predicate
+            .args()
+            .into_iter()
+            .next()
+            .ok_or_else(|| FormatterError::Query(format!("{operator} needs an argument")))?;
         Ok(QueryPredicates {
             single_line_scope_only: Some(arg),
             ..predicates.clone()
         })
     } else if "multi_line_scope_only!" == operator {
-        let arg =
-            predicate.args().into_iter().next().ok_or_else(|| {
-                FormatterError::Query(format!("{operator} needs an argument"), None)
-            })?;
+        let arg = predicate
+            .args()
+            .into_iter()
+            .next()
+            .ok_or_else(|| FormatterError::Query(format!("{operator} needs an argument")))?;
         Ok(QueryPredicates {
             multi_line_scope_only: Some(arg),
             ..predicates.clone()
         })
     } else if "query_name!" == operator {
-        let arg =
-            predicate.args().into_iter().next().ok_or_else(|| {
-                FormatterError::Query(format!("{operator} needs an argument"), None)
-            })?;
+        let arg = predicate
+            .args()
+            .into_iter()
+            .next()
+            .ok_or_else(|| FormatterError::Query(format!("{operator} needs an argument")))?;
         Ok(QueryPredicates {
             query_name: Some(arg),
             ..predicates.clone()
         })
     } else {
-        Err(FormatterError::Query(
-            format!("{operator} is an unknown predicate. Maybe you forgot a \"!\"?"),
-            None,
-        ))
+        Err(FormatterError::Query(format!(
+            "{operator} is an unknown predicate. Maybe you forgot a \"!\"?"
+        )))
+        .into_report()
     }
 }
 
@@ -636,7 +640,6 @@ fn check_predicates(predicates: &QueryPredicates) -> FormatterResult<()> {
     if incompatible_predicates > 1 {
         Err(FormatterError::Query(
             "A query can contain at most one #single/multi_line[_scope]_only! predicate".into(),
-            None,
         ))
     } else {
         Ok(())
