@@ -19,6 +19,9 @@ documentation.workspace = true
 readme.workspace = true
 license.workspace = true
 
+# Don't publish this as part of a Topiary release
+publish = false
+
 [lib]
 crate-type = ["cdylib"]
 
