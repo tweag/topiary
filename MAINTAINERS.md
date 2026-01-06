@@ -123,18 +123,10 @@
 > git push --delete origin vX.Y.Z
 > ```
 
-- Update `crates.io`. As of writing, the workspace cannot be published
-  automatically, so each package in the workspace needs to be
-  individually published in topological order. That is, currently,
-  something like:
+- Update `crates.io`:
 
   ```bash
-  cargo publish --package topiary-web-tree-sitter-sys
-  cargo publish --package topiary-tree-sitter-facade
-  cargo publish --package topiary-core
-  cargo publish --package topiary-queries
-  cargo publish --package topiary-config
-  cargo publish --package topiary-cli
+  cargo publish --workspace
   ```
 
 > [!IMPORTANT]
