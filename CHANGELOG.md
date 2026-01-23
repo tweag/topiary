@@ -43,6 +43,13 @@ This name should be decided amongst the team before the release.
 ## Unreleased
 
 [Full list of changes](https://github.com/tweag/topiary/compare/v0.7.3...HEAD)
+### Added zsh support
+
+New formatter for zsh
+
+### Changed
+
+Support for more than one language with the same extension, and a language matcher mechanism to figure out which to apply - this is relevant for shell languages which often have .sh extensions but use the she-bang line to determine the exact type.
 
 <!--
 ### Added
