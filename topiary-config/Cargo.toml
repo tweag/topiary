@@ -57,6 +57,7 @@ sdml = []
 toml = []
 tree_sitter_query = []
 wit = []
+zsh = []
 
 # This a convenience for the sake of downstream applications which don't
 # wish to cherry-pick grammars (e.g., the playground)
@@ -74,4 +75,5 @@ all = [
   "toml",
   "tree_sitter_query",
   "wit",
+  "zsh",
 ]

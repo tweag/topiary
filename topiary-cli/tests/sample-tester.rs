@@ -20,6 +20,7 @@ fn get_file_extension(language: &str) -> &str {
         "toml" => "toml",
         "tree_sitter_query" => "scm",
         "wit" => "wit",
+        "zsh" => "zsh",
         _ => panic!("Invalid language input: {language}"),
     }
 }
@@ -93,6 +94,7 @@ mod test_fmt {
         "toml",
         "tree_sitter_query",
         "wit",
+        "zsh",
         fmt_input
     );
 
@@ -174,6 +176,7 @@ mod test_coverage {
         "toml",
         "tree_sitter_query",
         "wit",
+        "zsh",
         coverage_input
     );
 }

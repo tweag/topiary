@@ -3,6 +3,7 @@
 //! Additional configuration has to be provided by the user of the library.
 pub mod error;
 pub mod language;
+pub mod language_matcher;
 pub mod source;
 
 use std::{
@@ -198,22 +199,56 @@ impl Configuration {
         Ok(())
     }
 
-    /// Convenience alias to detect the Language from a Path-like value's extension.
+    /// Detects the language from a file path.
+    ///
+    /// First attempts to match by file extension. If multiple languages share the same
+    /// extension, uses language-specific matchers (e.g., shebang detection) to disambiguate.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The path to the file being analyzed
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(&Language)` if a language was successfully detected
+    /// * `Err(TopiaryConfigError)` if detection failed
     ///
     /// # Errors
     ///
-    /// If the file extension is not supported, a `FormatterError` will be returned.
+    /// Returns an error if:
+    /// - The file has no extension
+    /// - The extension is not associated with any configured language
     #[allow(clippy::result_large_err)]
     pub fn detect<P: AsRef<Path>>(&self, path: P) -> TopiaryConfigResult<&Language> {
         let pb = &path.as_ref().to_path_buf();
+
         if let Some(extension) = pb.extension().and_then(|ext| ext.to_str()) {
-            for lang in &self.languages {
-                if lang.config.extensions.contains(extension) {
-                    return Ok(lang);
+            // Collect all languages matching this extension
+            let matching_langs: Vec<&Language> = self
+                .languages
+                .iter()
+                .filter(|lang| lang.config.extensions.contains(extension))
+                .collect();
+
+            match matching_langs.len() {
+                0 => return Err(TopiaryConfigError::UnknownExtension(extension.to_string())),
+                1 => return Ok(matching_langs[0]),
+                _ => {
+                    // Multiple languages share this extension - try matchers
+                    for lang in &matching_langs {
+                        if let Some(matcher) = lang.matcher() {
+                            if let Some(true) = matcher.matches(pb) {
+                                return Ok(lang);
+                            }
+                        }
+                    }
+                    // No matcher provided a definitive match; return first language
+                    // This maintains backward compatibility
+                    return Ok(matching_langs[0]);
                 }
             }
-            return Err(TopiaryConfigError::UnknownExtension(extension.to_string()));
         }
+
         Err(TopiaryConfigError::NoExtension(pb.clone()))
     }
 

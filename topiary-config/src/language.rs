@@ -89,6 +89,24 @@ impl Language {
         self.config.indent.clone()
     }
 
+    /// Returns a language-specific matcher for disambiguating file types.
+    ///
+    /// This is used when multiple languages share the same file extension.
+    /// The matcher can inspect file contents (e.g., shebang lines) to determine
+    /// which language to use.
+    ///
+    /// # Returns
+    ///
+    /// * `Some(Box<dyn LanguageMatcher>)` if this language has a custom matcher
+    /// * `None` if this language relies solely on extension matching
+    pub fn matcher(&self) -> Option<Box<dyn crate::language_matcher::LanguageMatcher>> {
+        match self.name.as_str() {
+            "bash" => Some(Box::new(crate::language_matcher::BashMatcher)),
+            "zsh" => Some(Box::new(crate::language_matcher::ZshMatcher)),
+            _ => None,
+        }
+    }
+
     #[cfg(not(target_arch = "wasm32"))]
     #[allow(clippy::result_large_err)]
     pub fn find_query_file(&self) -> TopiaryConfigResult<PathBuf> {

@@ -76,3 +76,9 @@ pub fn tree_sitter_query() -> &'static str {
 pub fn wit() -> &'static str {
     include_str!("../queries/wit.scm")
 }
+
+/// Returns the Topiary-compatible query file for zsh.
+#[cfg(feature = "zsh")]
+pub fn zsh() -> &'static str {
+    include_str!("../queries/zsh.scm")
+}

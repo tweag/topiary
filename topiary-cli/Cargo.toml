@@ -72,7 +72,8 @@ contributed = [
 
 # Excluded by default
 experimental = [
-  "rust"
+  "rust",
+  "zsh",
 ]
 
 bash = ["topiary-config/bash", "topiary-queries/bash"]
@@ -88,3 +89,4 @@ sdml = ["topiary-config/sdml", "topiary-queries/sdml"]
 toml = ["topiary-config/toml", "topiary-queries/toml"]
 tree_sitter_query = ["topiary-config/tree_sitter_query", "topiary-queries/tree_sitter_query"]
 wit = ["topiary-config/wit", "topiary-queries/wit"]
+zsh = ["topiary-config/zsh", "topiary-queries/zsh"]

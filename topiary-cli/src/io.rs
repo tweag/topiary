@@ -431,6 +431,9 @@ where
         #[cfg(feature = "wit")]
         "wit" => Ok(topiary_queries::wit().into()),
 
+        #[cfg(feature = "zsh")]
+        "zsh" => Ok(topiary_queries::zsh().into()),
+
         name => Err(TopiaryError::Bin(
             format!("The specified language is unsupported: {name}"),
             Some(CLIError::UnsupportedLanguage(name.to_string())),
