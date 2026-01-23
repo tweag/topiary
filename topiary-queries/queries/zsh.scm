@@ -78,8 +78,9 @@
 )
 
 ; A run of "units of execution" (see Commands section, below; sans
-; variables which are special) should be interposed by a new line, after
-; a multi-line syntactic block or variable.
+; variables) should be interposed by new lines, when they follow certain
+; statements (sans variables). We combine these two assertions for
+; pragmatic reasons. (See also next comment block.)
 (
   [
     (c_style_for_statement)
@@ -97,7 +98,9 @@
   ]
   .
   ; Commands (sans variables)
-  [(command) (list) (pipeline) (subshell) (compound_statement) (redirected_statement)] @prepend_hardline
+  ; NOTE: redirected_statement removed - it causes redirects to break onto separate lines
+  [(command) (list) (pipeline) (subshell) (compound_statement)] @prepend_hardline
+  (#query_name! "units_of_execution_spacing")
 )
 
 ; A run of variable declarations and assignments should be interposed by
@@ -728,12 +731,15 @@
 ; Hence the queries for this are defined above. (My kingdom for a
 ; negative anchor!)
 
-; Declarations always end with a new line
-(
-  (declaration_command)
-  .
-  (_) @prepend_hardline
-)
+; Declarations end with a new line
+; DISABLED: This causes redirects to break incorrectly and variable-defined
+; checks won't work in a conditional.
+; TODO: Need to fix this to not apply when inside redirected_statement
+; (
+;   (declaration_command)
+;   .
+;   (_) @prepend_hardline
+; )
 
 ; All declaration arguments must be separated by whitespace
 (declaration_command
@@ -789,7 +795,7 @@
 ;   (simple_variable_name) @prepend_delimiter
 ;   (#not-match? @prepend_delimiter "[0-9]")
 ; )
-; 
+;
 ; (variable_ref
 ;   (#delimiter! "}")
 ;   "$"

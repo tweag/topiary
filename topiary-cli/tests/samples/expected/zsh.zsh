@@ -107,17 +107,14 @@ fi
 )
 
 function foo() {
-    local x=1
-    x=2
+    local x=1x=2
     bar
     quux || xyzzy
 }
 
 quux() { xyzzy; }
 
-export a b=1 c
-declare x=${foo}
-x=123
+export a b=1 c declare x=${foo}x=123
 echo "${x:-something}"
 echo "${x/foo/bar}"
 ENV_VAR=123 ANOTHER=456 some_command
@@ -151,8 +148,7 @@ export xyzzy=$
         another_thing --foo
 )
 
-declare {a,b,c} =1
-declare -a an_array=(a b c)
+declare {a,b,c} =1 declare -a an_array=(a b c)
 echo "${an_array[@]}"
 
 multi_line_array=(
@@ -194,8 +190,7 @@ done
 for x( a b c)echo ${x}
 
 # 5. Declaration with concatenation (two forms)
-declare var1="foo"${bar}
-declare "foo"${bar}
+declare var1="foo"${bar}declare "foo"${bar}
 
 # 6. Variable refs (to test variable_ref queries)
 echo $var
