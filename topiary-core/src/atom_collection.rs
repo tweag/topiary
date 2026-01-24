@@ -688,38 +688,6 @@ impl AtomCollection {
         self.append.entry(target_node.id()).or_default().push(atom);
     }
 
-    /// Append a literal string to the last leaf node in the subtree of a given node.
-    /// This is used for preserving source text from gaps between nodes,
-    /// such as bash line continuations.
-    ///
-    /// # Arguments
-    ///
-    /// * `node` - The node to which the literal is appended.
-    /// * `literal` - The literal string to append.
-    pub(crate) fn append_literal(&mut self, node: &Node, literal: String) {
-        let target_node = self.last_leaf(node);
-        let atom = Atom::Literal(literal);
-
-        log::debug!(
-            "Appending literal {atom:?} to node {}",
-            target_node.display_one_based()
-        );
-
-        self.append.entry(target_node.id()).or_default().push(atom);
-    }
-
-    pub(crate) fn prepend_literal(&mut self, node: &Node, literal: String) {
-        let target_node = self.last_leaf(node);
-        let atom = Atom::Literal(literal);
-
-        log::debug!(
-            "Prepending literal {atom:?} to node {}",
-            target_node.display_one_based()
-        );
-
-        self.prepend.entry(target_node.id()).or_default().push(atom);
-    }
-
     /// Append multiple atoms to the last leaf node in the subtree of a given node.
     /// This is used when grammar extras processing returns multiple atoms (e.g., Hardline + IndentStart).
     ///
