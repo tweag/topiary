@@ -17,7 +17,9 @@ use tree_sitter::Position;
 
 pub use crate::{
     error::{FormatterError, IoError},
-    language::Language,
+    language::{
+        BashGrammarExtrasProcessor, GrammarExtrasDirection, GrammarExtrasProcessor, Language,
+    },
     tree_sitter::{
         CoverageData, SyntaxNode, TopiaryQuery, Visualisation, apply_query, check_query_coverage,
         parse,
@@ -27,7 +29,7 @@ pub use crate::{
 mod atom_collection;
 mod error;
 mod graphviz;
-mod language;
+pub mod language;
 mod pretty;
 mod tree_sitter;
 
@@ -214,6 +216,7 @@ pub enum Operation {
 ///     query: TopiaryQuery::new(&json.clone().into(), &query_content).unwrap(),
 ///     grammar: json.into(),
 ///     indent: None,
+///     grammar_extras_processor: None,
 /// };
 ///
 /// match formatter(&mut input, &mut output, &language, Operation::Format{ skip_idempotence: false, tolerate_parsing_errors: false }) {
@@ -291,7 +294,16 @@ pub fn formatter_tree(
             // All the work related to tree-sitter and the query is done here
             log::debug!("Apply Tree-sitter query");
 
-            let mut atoms = tree_sitter::apply_query_tree(tree, input_content, &language.query)?;
+            let mut atoms = tree_sitter::apply_query_tree(
+                tree,
+                input_content,
+                &language.query,
+                language
+                    .grammar_extras_processor
+                    .as_ref()
+                    .map(|b| b.as_ref()),
+                language.indent.as_deref().unwrap_or("  "),
+            )?;
 
             // Various post-processing of whitespace
             atoms.post_process();
@@ -402,6 +414,7 @@ mod tests {
             query: TopiaryQuery::new(&grammar, query_content).unwrap(),
             grammar,
             indent: None,
+            grammar_extras_processor: None,
         };
 
         match formatter(
@@ -436,6 +449,7 @@ mod tests {
             query: TopiaryQuery::new(&grammar, &query_content).unwrap(),
             grammar,
             indent: None,
+            grammar_extras_processor: None,
         };
 
         formatter(

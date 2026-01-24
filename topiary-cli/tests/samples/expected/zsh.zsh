@@ -204,4 +204,18 @@ echo $0 $@ $?
 # 7. Backticks (to ensure they're preserved)
 echo `date`
 result=`ls -la`
+
+# Line continuation tests (Issue #172)
+# Extra spaces without continuation should be normalized
+echo one two three
+
+# Line continuation should be preserved
+echo foo \
+    bar
+
+# Multiple line continuations should be preserved
+setopt extended_glob \
+    null_glob \
+    no_match
+
 foo # bar

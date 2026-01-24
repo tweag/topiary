@@ -9,8 +9,23 @@ use topiary_tree_sitter_facade::Node;
 
 use crate::{
     Atom, Capitalisation, FormatterError, FormatterResult, ScopeCondition, ScopeInformation,
-    tree_sitter::NodeExt,
+    language::GrammarExtrasProcessor, tree_sitter::NodeExt,
 };
+
+/// Context information needed for processing captures that require inter-node content.
+/// This is used for captures like @append_grammar_extras that need to look at the
+/// gap between the current node and the next node.
+#[derive(Debug)]
+pub struct CaptureContext<'a> {
+    /// The raw source bytes of the entire input
+    pub source: &'a [u8],
+    /// The next node in the capture sequence (if any)
+    pub next_node: Option<&'a Node<'a>>,
+    /// Optional processor for handling grammar extras (inter-node content)
+    pub grammar_extras_processor: Option<&'a dyn GrammarExtrasProcessor>,
+    /// The indent string for this language (e.g., "  " or "\t")
+    pub indent: &'a str,
+}
 
 /// A struct that holds sets of node IDs that have line breaks before or after them.
 ///
@@ -146,6 +161,7 @@ impl AtomCollection {
     /// * `name` - The name of the capture, starting with `@`.
     /// * `node` - The node that matches the capture in the syntax tree.
     /// * `predicates` - The query predicates that modify the formatting behavior for the capture.
+    /// * `context` - Optional context for inter-node processing (needed for @append_grammar_extras)
     ///
     /// # Errors
     ///
@@ -162,6 +178,7 @@ impl AtomCollection {
         name: &str,
         node: &Node,
         predicates: &QueryPredicates,
+        context: Option<&CaptureContext>,
     ) -> FormatterResult<()> {
         log::debug!("Resolving {name}");
 
@@ -247,6 +264,30 @@ impl AtomCollection {
             "append_spaced_softline" => {
                 self.append(Atom::Softline { spaced: true }, node, predicates);
             }
+            "append_grammar_extras" => {
+                // Handle inter-node content with language-specific processing
+                if let Some(ctx) = context {
+                    if let Some(next) = ctx.next_node {
+                        let gap_start = node.end_byte() as usize;
+                        let gap_end = next.start_byte() as usize;
+                        let gap_content = &ctx.source[gap_start..gap_end];
+
+                        if let Some(processor) = ctx.grammar_extras_processor {
+                            if let Some(processed) = processor.process_gap(
+                                gap_content,
+                                crate::language::GrammarExtrasDirection::Append,
+                                ctx.indent,
+                            ) {
+                                // Processor returned custom content - use it
+                                self.append_literal(node, processed);
+                                return Ok(());
+                            }
+                        }
+                    }
+                }
+                // Fall back to default spacing
+                self.append(Atom::Space, node, predicates);
+            }
             "prepend_delimiter" => self.prepend(
                 Atom::Literal(requires_delimiter()?.to_string()),
                 node,
@@ -271,6 +312,30 @@ impl AtomCollection {
             "prepend_antispace" => self.prepend(Atom::Antispace, node, predicates),
             "prepend_spaced_softline" => {
                 self.prepend(Atom::Softline { spaced: true }, node, predicates);
+            }
+            "prepend_grammar_extras" => {
+                // Handle inter-node content with language-specific processing
+                if let Some(ctx) = context {
+                    if let Some(next) = ctx.next_node {
+                        let gap_start = node.end_byte() as usize;
+                        let gap_end = next.start_byte() as usize;
+                        let gap_content = &ctx.source[gap_start..gap_end];
+
+                        if let Some(processor) = ctx.grammar_extras_processor {
+                            if let Some(processed) = processor.process_gap(
+                                gap_content,
+                                crate::language::GrammarExtrasDirection::Prepend,
+                                ctx.indent,
+                            ) {
+                                // Processor returned custom content - use it
+                                self.prepend_literal(node, processed);
+                                return Ok(());
+                            }
+                        }
+                    }
+                }
+                // Fall back to default spacing
+                self.prepend(Atom::Space, node, predicates);
             }
             // Skip over leaves
             "leaf" => {
@@ -615,6 +680,38 @@ impl AtomCollection {
         );
 
         self.append.entry(target_node.id()).or_default().push(atom);
+    }
+
+    /// Append a literal string to the last leaf node in the subtree of a given node.
+    /// This is used for preserving source text from gaps between nodes,
+    /// such as bash line continuations.
+    ///
+    /// # Arguments
+    ///
+    /// * `node` - The node to which the literal is appended.
+    /// * `literal` - The literal string to append.
+    pub(crate) fn append_literal(&mut self, node: &Node, literal: String) {
+        let target_node = self.last_leaf(node);
+        let atom = Atom::Literal(literal);
+
+        log::debug!(
+            "Appending literal {atom:?} to node {}",
+            target_node.display_one_based()
+        );
+
+        self.append.entry(target_node.id()).or_default().push(atom);
+    }
+
+    pub(crate) fn prepend_literal(&mut self, node: &Node, literal: String) {
+        let target_node = self.last_leaf(node);
+        let atom = Atom::Literal(literal);
+
+        log::debug!(
+            "Prepending literal {atom:?} to node {}",
+            target_node.display_one_based()
+        );
+
+        self.prepend.entry(target_node.id()).or_default().push(atom);
     }
 
     /// Expands a softline atom to a hardline, space or empty atom depending on

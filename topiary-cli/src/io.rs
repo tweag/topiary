@@ -10,13 +10,24 @@ use std::{
 use nickel_lang_core::term::RichTerm;
 use tempfile::tempfile;
 use topiary_config::Configuration;
-use topiary_core::{Language, Operation, TopiaryQuery, formatter};
+use topiary_core::{
+    Language, Operation, TopiaryQuery, formatter,
+    language::{BashGrammarExtrasProcessor, GrammarExtrasProcessor},
+};
 
 use crate::{
     cli::{AtLeastOneInput, ExactlyOneInput, FromStdin},
     error::{CLIError, CLIResult, TopiaryError, print_error},
     language::LanguageDefinitionCache,
 };
+
+/// Get the grammar extras processor for a language, if one is defined.
+fn get_grammar_extras_processor(language_name: &str) -> Option<Box<dyn GrammarExtrasProcessor>> {
+    match language_name {
+        "bash" | "zsh" => Some(Box::new(BashGrammarExtrasProcessor)),
+        _ => None,
+    }
+}
 
 #[derive(Debug, Clone, Hash)]
 pub enum QuerySource {
@@ -163,6 +174,7 @@ impl InputFile<'_> {
             query,
             grammar,
             indent: self.language().indent(),
+            grammar_extras_processor: get_grammar_extras_processor(&self.language.name),
         })
     }
 
@@ -198,6 +210,7 @@ pub(crate) async fn to_language_from_config<T: AsRef<str>>(
         query,
         grammar,
         indent: config_language.indent(),
+        grammar_extras_processor: get_grammar_extras_processor(name.as_ref()),
     })
 }
 

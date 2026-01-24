@@ -163,5 +163,28 @@ echo $(date)
 echo $(( 1 + 2 ))
 foo() { :; }
 
+# Line continuation tests (Issue #172)
+# Extra spaces without continuation should be normalized
+echo one two three
+
+# Line continuation should be preserved
+echo foo \
+  bar
+
+# Multiple line continuations should be preserved
+echo alpha \
+  beta \
+  gamma
+
+# Line continuation with extra spaces before backslash
+echo test \
+  value
+
+# Complex command with line continuations
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"key": "value"}' \
+  https://example.com/api
+
 # NOTE This MUST be on the last line of this file
 foo # bar
