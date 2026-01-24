@@ -115,8 +115,18 @@ impl GrammarExtrasProcessor for BashGrammarExtrasProcessor {
                         crate::Atom::Literal(context.indent.to_string()),
                     ])
                 } else {
-                    // No line continuation or newline, use default spacing
-                    None
+                    // No line continuation or newline
+                    // Check if gap is empty or only whitespace
+                    if gap_content.is_empty() {
+                        // Empty gap - return empty vec to prevent adding space
+                        Some(vec![])
+                    } else if gap_content.iter().all(|&b| b.is_ascii_whitespace()) {
+                        // Only whitespace - preserve as single space
+                        Some(vec![crate::Atom::Space])
+                    } else {
+                        // Has other content (comments, etc), use default spacing
+                        None
+                    }
                 }
             }
             GrammarExtrasDirection::Prepend => {
@@ -138,8 +148,18 @@ impl GrammarExtrasProcessor for BashGrammarExtrasProcessor {
                         crate::Atom::Literal(context.indent.to_string()),
                     ])
                 } else {
-                    // No line continuation or newline, use default spacing
-                    None
+                    // No line continuation or newline
+                    // Check if gap is empty or only whitespace
+                    if gap_content.is_empty() {
+                        // Empty gap - return empty vec to prevent adding space
+                        Some(vec![])
+                    } else if gap_content.iter().all(|&b| b.is_ascii_whitespace()) {
+                        // Only whitespace - preserve as single space
+                        Some(vec![crate::Atom::Space])
+                    } else {
+                        // Has other content (comments, etc), use default spacing
+                        None
+                    }
                 }
             }
         }
