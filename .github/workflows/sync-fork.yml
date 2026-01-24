@@ -12,5 +12,6 @@ jobs:
             target-branch: 'main'
             source-branch: 'main'
             use-rebase: true
+            upstream-repo: "git@github.com:tweag/topiary.git"
         secrets:
             gh-token: ${{ secrets.GITHUB_TOKEN }}
