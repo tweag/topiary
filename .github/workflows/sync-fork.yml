@@ -11,5 +11,6 @@ jobs:
         with:
             target-branch: 'main'
             source-branch: 'main'
+            use-rebase: true
         secrets:
             gh-token: ${{ secrets.GITHUB_TOKEN }}
