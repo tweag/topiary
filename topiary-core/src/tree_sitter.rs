@@ -402,9 +402,21 @@ pub fn apply_query_tree(
             }
 
             // Create context for inter-node processing (needed for @append_grammar_extras and similar)
-            let next_node = captures.get(i + 1).map(|next_c| next_c.node());
+            let prev_node = if i > 0 {
+                captures.get(i - 1).map(|prev_c| prev_c.node())
+            } else {
+                None
+            };
+            let next_node = if i + 1 < captures.len() {
+                captures.get(i + 1).map(|next_c| next_c.node())
+            } else {
+                None
+            };
+
             let context = crate::atom_collection::CaptureContext {
                 source,
+                current_node: &c.node(),
+                prev_node: prev_node.as_ref(),
                 next_node: next_node.as_ref(),
                 grammar_extras_processor,
                 indent,

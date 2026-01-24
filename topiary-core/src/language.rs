@@ -20,19 +20,19 @@ pub trait GrammarExtrasProcessor: fmt::Debug + Send + Sync {
     /// # Arguments
     /// * `gap_content` - The raw bytes between two tree-sitter nodes
     /// * `direction` - Whether this gap will be appended or prepended
-    /// * `indent` - The indent string configured for this language (e.g., "  " or "\t")
+    /// * `context` - The full capture context with indent info and other state
     ///
     /// # Returns
-    /// * `Some(String)` - Use this processed string instead of default spacing
-    ///   - Empty string ("") means strip all grammar extras in the gap
-    ///   - Non-empty string is the exact content to insert (including any indent)
+    /// * `Some(Vec<Atom>)` - Use these atoms instead of default spacing
+    ///   - Empty vec means strip all grammar extras in the gap
+    ///   - Non-empty vec contains atoms to insert (e.g., Hardline, IndentStart, etc.)
     /// * `None` - Fall back to default spacing behavior
     fn process_gap(
         &self,
         gap_content: &[u8],
         direction: GrammarExtrasDirection,
-        indent: &str,
-    ) -> Option<String>;
+        context: &crate::atom_collection::CaptureContext,
+    ) -> Option<Vec<crate::Atom>>;
 }
 
 /// Default processor that doesn't modify grammar extras.
@@ -45,8 +45,8 @@ impl GrammarExtrasProcessor for DefaultGrammarExtrasProcessor {
         &self,
         _gap_content: &[u8],
         _direction: GrammarExtrasDirection,
-        _indent: &str,
-    ) -> Option<String> {
+        _context: &crate::atom_collection::CaptureContext,
+    ) -> Option<Vec<crate::Atom>> {
         None // Always use default spacing
     }
 }
@@ -84,7 +84,7 @@ impl fmt::Display for Language {
 /// Handles backslash-newline sequences by:
 /// - Normalizing whitespace before the backslash to a single space
 /// - Preserving the backslash-newline sequence
-/// - Adding configured indentation after the newline
+/// - Adding one level of indentation after the newline for continuation lines
 #[derive(Debug)]
 pub struct BashGrammarExtrasProcessor;
 
@@ -92,17 +92,56 @@ impl GrammarExtrasProcessor for BashGrammarExtrasProcessor {
     fn process_gap(
         &self,
         gap_content: &[u8],
-        _direction: GrammarExtrasDirection,
-        indent: &str,
-    ) -> Option<String> {
-        // Look for backslash-newline sequence
-        if gap_content.windows(2).any(|w| w == b"\\\n") {
-            // Found a line continuation
-            // Return: space + backslash + newline + configured indent
-            Some(format!(" \\\n{}", indent))
-        } else {
-            // No line continuation, use default spacing
-            None
+        direction: GrammarExtrasDirection,
+        context: &crate::atom_collection::CaptureContext,
+    ) -> Option<Vec<crate::Atom>> {
+        match direction {
+            GrammarExtrasDirection::Append => {
+                // For append: processing content after the current node (before next node)
+                // Look for backslash-newline sequence
+                if gap_content.windows(2).any(|w| w == b"\\\n") {
+                    // Found a line continuation
+                    // Return: space + backslash, then hardline (inherits current indent) + extra indent
+                    Some(vec![
+                        crate::Atom::Literal(" \\".to_string()),
+                        crate::Atom::Hardline,
+                        crate::Atom::Literal(context.indent.to_string()),
+                    ])
+                } else if gap_content.contains(&b'\n') {
+                    // Found a regular newline (no backslash continuation)
+                    // Preserve it as a hard line break with extra indent
+                    Some(vec![
+                        crate::Atom::Hardline,
+                        crate::Atom::Literal(context.indent.to_string()),
+                    ])
+                } else {
+                    // No line continuation or newline, use default spacing
+                    None
+                }
+            }
+            GrammarExtrasDirection::Prepend => {
+                // For prepend: processing content before the current node (after prev node)
+                // Look for backslash-newline sequence
+                if gap_content.windows(2).any(|w| w == b"\\\n") {
+                    // Found a line continuation before this node
+                    // Return: space + backslash, then hardline (inherits current indent) + extra indent
+                    Some(vec![
+                        crate::Atom::Literal(" \\".to_string()),
+                        crate::Atom::Hardline,
+                        crate::Atom::Literal(context.indent.to_string()),
+                    ])
+                } else if gap_content.contains(&b'\n') {
+                    // Found a regular newline
+                    // Preserve it with extra indent
+                    Some(vec![
+                        crate::Atom::Hardline,
+                        crate::Atom::Literal(context.indent.to_string()),
+                    ])
+                } else {
+                    // No line continuation or newline, use default spacing
+                    None
+                }
+            }
         }
     }
 }

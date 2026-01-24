@@ -19,7 +19,11 @@ use crate::{
 pub struct CaptureContext<'a> {
     /// The raw source bytes of the entire input
     pub source: &'a [u8],
-    /// The next node in the capture sequence (if any)
+    /// The current node being processed
+    pub current_node: &'a Node<'a>,
+    /// The previous node in the capture sequence (if any) - used for prepend
+    pub prev_node: Option<&'a Node<'a>>,
+    /// The next node in the capture sequence (if any) - used for append
     pub next_node: Option<&'a Node<'a>>,
     /// Optional processor for handling grammar extras (inter-node content)
     pub grammar_extras_processor: Option<&'a dyn GrammarExtrasProcessor>,
@@ -266,20 +270,21 @@ impl AtomCollection {
             }
             "append_grammar_extras" => {
                 // Handle inter-node content with language-specific processing
+                // For append, we look at the gap between current node and next node
                 if let Some(ctx) = context {
                     if let Some(next) = ctx.next_node {
-                        let gap_start = node.end_byte() as usize;
+                        let gap_start = ctx.current_node.end_byte() as usize;
                         let gap_end = next.start_byte() as usize;
                         let gap_content = &ctx.source[gap_start..gap_end];
 
                         if let Some(processor) = ctx.grammar_extras_processor {
-                            if let Some(processed) = processor.process_gap(
+                            if let Some(atoms) = processor.process_gap(
                                 gap_content,
                                 crate::language::GrammarExtrasDirection::Append,
-                                ctx.indent,
+                                ctx,
                             ) {
-                                // Processor returned custom content - use it
-                                self.append_literal(node, processed);
+                                // Processor returned custom atoms - use them
+                                self.append_atoms(node, atoms);
                                 return Ok(());
                             }
                         }
@@ -315,20 +320,21 @@ impl AtomCollection {
             }
             "prepend_grammar_extras" => {
                 // Handle inter-node content with language-specific processing
+                // For prepend, we look at the gap between previous node and current node
                 if let Some(ctx) = context {
-                    if let Some(next) = ctx.next_node {
-                        let gap_start = node.end_byte() as usize;
-                        let gap_end = next.start_byte() as usize;
+                    if let Some(prev) = ctx.prev_node {
+                        let gap_start = prev.end_byte() as usize;
+                        let gap_end = ctx.current_node.start_byte() as usize;
                         let gap_content = &ctx.source[gap_start..gap_end];
 
                         if let Some(processor) = ctx.grammar_extras_processor {
-                            if let Some(processed) = processor.process_gap(
+                            if let Some(atoms) = processor.process_gap(
                                 gap_content,
                                 crate::language::GrammarExtrasDirection::Prepend,
-                                ctx.indent,
+                                ctx,
                             ) {
-                                // Processor returned custom content - use it
-                                self.prepend_literal(node, processed);
+                                // Processor returned custom atoms - use them
+                                self.prepend_atoms(node, atoms);
                                 return Ok(());
                             }
                         }
@@ -712,6 +718,50 @@ impl AtomCollection {
         );
 
         self.prepend.entry(target_node.id()).or_default().push(atom);
+    }
+
+    /// Append multiple atoms to the last leaf node in the subtree of a given node.
+    /// This is used when grammar extras processing returns multiple atoms (e.g., Hardline + IndentStart).
+    ///
+    /// # Arguments
+    ///
+    /// * `node` - The node to which the atoms are appended.
+    /// * `atoms` - The vector of atoms to append.
+    pub(crate) fn append_atoms(&mut self, node: &Node, atoms: Vec<Atom>) {
+        let target_node = self.last_leaf(node);
+
+        log::debug!(
+            "Appending {} atoms to node {}",
+            atoms.len(),
+            target_node.display_one_based()
+        );
+
+        self.append
+            .entry(target_node.id())
+            .or_default()
+            .extend(atoms);
+    }
+
+    /// Prepend multiple atoms to the last leaf node in the subtree of a given node.
+    /// This is used when grammar extras processing returns multiple atoms (e.g., Hardline + IndentStart).
+    ///
+    /// # Arguments
+    ///
+    /// * `node` - The node to which the atoms are prepended.
+    /// * `atoms` - The vector of atoms to prepend.
+    pub(crate) fn prepend_atoms(&mut self, node: &Node, atoms: Vec<Atom>) {
+        let target_node = self.last_leaf(node);
+
+        log::debug!(
+            "Prepending {} atoms to node {}",
+            atoms.len(),
+            target_node.display_one_based()
+        );
+
+        self.prepend
+            .entry(target_node.id())
+            .or_default()
+            .extend(atoms);
     }
 
     /// Expands a softline atom to a hardline, space or empty atom depending on
