@@ -732,14 +732,15 @@
 ; negative anchor!)
 
 ; Declarations end with a new line
-; DISABLED: This causes redirects to break incorrectly and variable-defined
-; checks won't work in a conditional.
-; TODO: Need to fix this to not apply when inside redirected_statement
-; (
-;   (declaration_command)
-;   .
-;   (_) @prepend_hardline
-; )
+; Only apply when there's an actual assignment (variable_assignment child)
+; This prevents breaking constructs like: if declare -f foo >/dev/null; then
+(
+  (declaration_command
+    (variable_assignment)
+  )
+  .
+  (_) @prepend_hardline
+)
 
 ; All declaration arguments must be separated by whitespace
 (declaration_command
