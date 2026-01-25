@@ -169,5 +169,16 @@
         },
       },
     },
+
+    zsh = {
+      extensions | default = ["zsh"],
+      grammar.source | default = {
+        git = {
+          git = "https://github.com/georgeharker/tree-sitter-zsh.git",
+          rev = "56b7b06650eadc454881cb5622f0b84ee6621d34",
+        }
+      },
+      indent | default = "    ",  # 4 spaces
+    },
   }
 }
