@@ -19,18 +19,18 @@ else
   do_something_else
 fi
 
-if [[ -e "/some/file" ]] || true; then
+if [[ -e "/some/file" ]]|| true; then
   foo
 elif ! (( 1 == 0 )); then
   bar
   baz
 else
-  baz && quux || xyzzy &
+  baz \
+    && quux || xyzzy &
 fi
 
-multi |
-  line |&
-  pipeline
+multi \
+  | line |& pipeline
 
 for thing in foo bar quux; do
   echo ${thing}
@@ -135,7 +135,7 @@ EOF
 }
 
 readonly a="$(foo | bar || baz --quux 2>&1)"
-foo <(bar || baz --something) | tee >(quux)
+foo <(bar||baz --something) | tee >(quux)
 
 export xyzzy=$(
   something

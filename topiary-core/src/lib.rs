@@ -17,7 +17,7 @@ use tree_sitter::Position;
 
 pub use crate::{
     error::{FormatterError, IoError},
-    language::Language,
+    language::{GrammarExtrasProcessor, Language, ShellGrammarExtrasProcessor},
     tree_sitter::{
         CoverageData, SyntaxNode, TopiaryQuery, Visualisation, apply_query, check_query_coverage,
         parse,
@@ -214,6 +214,7 @@ pub enum Operation {
 ///     query: TopiaryQuery::new(&json.clone().into(), &query_content).unwrap(),
 ///     grammar: json.into(),
 ///     indent: None,
+///     grammar_extras_processor: None,
 /// };
 ///
 /// match formatter(&mut input, &mut output, &language, Operation::Format{ skip_idempotence: false, tolerate_parsing_errors: false }) {
@@ -341,6 +342,11 @@ pub fn formatter_tree_with_injection(
                 tree,
                 input_content,
                 &language.query,
+                language
+                    .grammar_extras_processor
+                    .as_ref()
+                    .map(|p| p.as_ref()),
+                &language.indent.clone().unwrap_or_else(|| "  ".to_string()),
                 language_loader,
             )?;
 
@@ -449,10 +455,11 @@ mod tests {
         let query_content = "(#language! json)";
         let grammar = topiary_tree_sitter_facade::Language::from(tree_sitter_json::LANGUAGE);
         let language = Language {
-            name: "json".to_owned(),
-            query: TopiaryQuery::new(&grammar, query_content).unwrap(),
+            name: "test".to_owned(),
+            query: TopiaryQuery::new(&grammar, "").unwrap(),
             grammar,
-            indent: None,
+            indent: Some("  ".to_owned()),
+            grammar_extras_processor: None,
         };
 
         match formatter(
@@ -487,6 +494,7 @@ mod tests {
             query: TopiaryQuery::new(&grammar, &query_content).unwrap(),
             grammar,
             indent: None,
+            grammar_extras_processor: None,
         };
 
         formatter(

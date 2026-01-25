@@ -406,22 +406,25 @@
 )
 
 ; Spaces between named nodes and command list/pipeline delimiters
+; Use @prepend/append_grammar_extras to preserve line continuations (backslashes)
 (list
-  [(_) "&&" "||"] @append_space
+  (_) @_anchor
   .
-  _
+  ["&&" "||"] @prepend_grammar_extras @append_grammar_extras
+  .
+  (_) @_anchor
 )
 
 (pipeline
-  ["|" "|&"] @prepend_space @append_spaced_softline
+  (_) @_anchor
+  .
+  ["|" "|&"] @prepend_grammar_extras @append_grammar_extras
+  .
+  (_) @_anchor
 )
 
-(pipeline
-  .
-  (_)
-  .
-  ["|" "|&"] @append_indent_start
-) @append_indent_end
+; Pipeline indentation is handled by @append_grammar_extras above
+; which preserves backslash continuations and adds appropriate indentation
 
 ; Prepend the asynchronous operator with a space
 ; NOTE This can interpose two "commands", but it's rare to see it in the
@@ -433,14 +436,11 @@
 )
 
 ; Spaces between command and its arguments
-; NOTE If we treat (command) as a leaf node, then commands are formatted
-; as is and the below will be ignored. On balance, I think keeping this
-; rule, rather than deferring to the input, is the better choice
-; (although it's not without its problems; e.g., see Issue #172).
+; Use @append_grammar_extras to process inter-node content (preserves line continuations)
 (command
-  (_) @append_space
+  (_) @append_grammar_extras
   .
-  (_)
+  (_) @_anchor
 )
 
 ; Ensure the negation operator is surrounded by spaces

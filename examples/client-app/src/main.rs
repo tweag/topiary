@@ -28,6 +28,7 @@ async fn main() {
         query: TopiaryQuery::new(&grammar, query).unwrap(),
         grammar,
         indent: None,
+        grammar_extras_processor: None,
     };
 
     // Format the input JSON using the language configuration

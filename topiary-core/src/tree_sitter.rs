@@ -282,9 +282,18 @@ pub fn apply_query(
     query: &TopiaryQuery,
     grammar: &topiary_tree_sitter_facade::Language,
     tolerate_parsing_errors: bool,
+    grammar_extras_processor: Option<&dyn crate::language::GrammarExtrasProcessor>,
+    indent: &str,
 ) -> FormatterResult<AtomCollection> {
     let tree = parse(input_content, grammar, tolerate_parsing_errors)?;
-    apply_query_tree(tree, input_content, query, None)
+    apply_query_tree(
+        tree,
+        input_content,
+        query,
+        grammar_extras_processor,
+        indent,
+        None,
+    )
 }
 
 /// Applies a query to a tree and returns a collection of atoms.
@@ -300,6 +309,8 @@ pub fn apply_query_tree(
     tree: Tree,
     input_content: &str,
     query: &TopiaryQuery,
+    grammar_extras_processor: Option<&dyn crate::language::GrammarExtrasProcessor>,
+    indent: &str,
     language_loader: Option<&dyn Fn(&str) -> FormatterResult<crate::Language>>,
 ) -> FormatterResult<AtomCollection> {
     let root = tree.root_node();
@@ -388,16 +399,39 @@ pub fn apply_query_tree(
             continue;
         }
 
-        // Build CaptureContext if we have a language_loader
-        let capture_context =
-            language_loader.map(|loader| crate::atom_collection::CaptureContext {
-                source,
-                language_loader: Some(loader),
-            });
-
-        for c in m.captures {
+        // Process captures
+        let captures = &m.captures;
+        for (i, c) in captures.iter().enumerate() {
             let name = c.name(capture_names.as_slice());
-            atoms.resolve_capture(&name, &c.node(), &predicates, capture_context.as_ref())?;
+
+            // Skip captures starting with underscore (internal/anchor captures)
+            if name.starts_with('_') {
+                continue;
+            }
+
+            // Create context for inter-node processing (needed for @append_grammar_extras and similar)
+            let prev_node = if i > 0 {
+                captures.get(i - 1).map(|prev_c| prev_c.node())
+            } else {
+                None
+            };
+            let next_node = if i + 1 < captures.len() {
+                captures.get(i + 1).map(|next_c| next_c.node())
+            } else {
+                None
+            };
+
+            let context = crate::atom_collection::CaptureContext {
+                source,
+                current_node: &c.node(),
+                prev_node: prev_node.as_ref(),
+                next_node: next_node.as_ref(),
+                grammar_extras_processor,
+                indent,
+                language_loader,
+            };
+
+            atoms.resolve_capture(&name, &c.node(), &predicates, Some(&context))?;
         }
     }
 

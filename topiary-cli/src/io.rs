@@ -158,11 +158,18 @@ impl InputFile<'_> {
         let query_contents = self.query.get_content().await?;
         let query = TopiaryQuery::new(&grammar, &query_contents)?;
 
+        let grammar_extras_processor = match self.language().name.as_str() {
+            "bash" | "zsh" => Some(Box::new(topiary_core::ShellGrammarExtrasProcessor)
+                as Box<dyn topiary_core::GrammarExtrasProcessor>),
+            _ => None,
+        };
+
         Ok(Language {
-            name: self.language.name.clone(),
+            name: self.language().name.to_owned(),
             query,
             grammar,
             indent: self.language().indent(),
+            grammar_extras_processor,
         })
     }
 
@@ -193,11 +200,18 @@ pub(crate) async fn to_language_from_config<T: AsRef<str>>(
         .await?;
     let query = TopiaryQuery::new(&grammar, &query_content)?;
 
+    let grammar_extras_processor = match name.as_ref() {
+        "bash" | "zsh" => Some(Box::new(topiary_core::ShellGrammarExtrasProcessor)
+            as Box<dyn topiary_core::GrammarExtrasProcessor>),
+        _ => None,
+    };
+
     Ok(Language {
         name: name.as_ref().to_string(),
         query,
         grammar,
         indent: config_language.indent(),
+        grammar_extras_processor,
     })
 }
 
