@@ -3,7 +3,6 @@
 //! Additional configuration has to be provided by the user of the library.
 pub mod error;
 pub mod language;
-pub mod language_matcher;
 pub mod source;
 
 use std::{
@@ -202,7 +201,8 @@ impl Configuration {
     /// Detects the language from a file path.
     ///
     /// First attempts to match by file extension. If multiple languages share the same
-    /// extension, uses language-specific matchers (e.g., shebang detection) to disambiguate.
+    /// extension, uses the tree-sitter-shebang grammar to parse the first line and
+    /// disambiguate based on the interpreter.
     ///
     /// # Arguments
     ///
@@ -234,22 +234,86 @@ impl Configuration {
                 0 => return Err(TopiaryConfigError::UnknownExtension(extension.to_string())),
                 1 => return Ok(matching_langs[0]),
                 _ => {
-                    // Multiple languages share this extension - try matchers
+                    // Multiple languages share this extension - try shebang-based detection
+                    // Try to read the file
+                    let source = match std::fs::read(pb) {
+                        Ok(content) => content,
+                        Err(_) => {
+                            // If we can't read the file, fall back to first candidate
+                            return Ok(matching_langs[0]);
+                        }
+                    };
+
+                    // Try each candidate language
                     for lang in &matching_langs {
-                        if let Some(matcher) = lang.matcher() {
-                            if let Some(true) = matcher.matches(pb) {
-                                return Ok(lang);
-                            }
+                        if self.matches_language(&source, lang)? {
+                            return Ok(lang);
                         }
                     }
-                    // No matcher provided a definitive match; return first language
-                    // This maintains backward compatibility
+
+                    // No match found; return first candidate as fallback
                     return Ok(matching_langs[0]);
                 }
             }
         }
 
         Err(TopiaryConfigError::NoExtension(pb.clone()))
+    }
+
+    /// Checks if a source file matches a specific language using shebang detection.
+    ///
+    /// Uses find_injections to detect what language a shebang indicates.
+    ///
+    /// # Arguments
+    ///
+    /// * `source` - The file content as bytes
+    /// * `lang` - The language to check against
+    ///
+    /// # Returns
+    ///
+    /// Returns `true` if the shebang indicates this language, `false` otherwise.
+    #[allow(clippy::result_large_err)]
+    fn matches_language(&self, source: &[u8], lang: &Language) -> TopiaryConfigResult<bool> {
+        // Check if filetype detection is enabled for this language
+        if !lang
+            .config
+            .filetype_detection
+            .as_ref()
+            .map(|d| d.enabled)
+            .unwrap_or(false)
+        {
+            return Ok(false);
+        }
+
+        // Parse the file with the shell-shebang grammar
+        let shebang_grammar = topiary_tree_sitter_shell_shebang::language();
+        let shebang_grammar = topiary_tree_sitter_facade::Language::from(shebang_grammar);
+        let mut parser = topiary_tree_sitter_facade::Parser::new()?;
+        parser.set_language(&shebang_grammar)?;
+
+        let tree = match parser.parse(source, None)? {
+            Some(t) => t,
+            None => return Ok(false),
+        };
+
+        // Load the injections query
+        let query_source =
+            include_str!("../../topiary-tree-sitter-shell-shebang/queries/injections.scm");
+        let query = match topiary_tree_sitter_facade::Query::new(&shebang_grammar, query_source) {
+            Ok(q) => q,
+            Err(_) => return Ok(false),
+        };
+
+        // Use the injection system to detect the language
+        let injections = topiary_core::find_injections(&tree, source, &query).map_err(|e| {
+            TopiaryConfigError::Io(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                e.to_string(),
+            ))
+        })?;
+
+        // Check if any injection matches this language
+        Ok(injections.iter().any(|inj| inj.language == lang.name))
     }
 
     #[allow(clippy::result_large_err)]
@@ -330,11 +394,16 @@ impl PartialEq for Configuration {
 
 impl From<SerdeConfiguration> for Configuration {
     fn from(value: SerdeConfiguration) -> Self {
-        let languages = value
+        let mut languages: Vec<_> = value
             .languages
             .into_iter()
             .map(|(name, config)| Language::new(name, config))
             .collect();
+
+        // Sort languages alphabetically by name for deterministic ordering.
+        // This ensures consistent fallback behavior when multiple languages
+        // share the same extension (e.g., bash comes before zsh for .sh files).
+        languages.sort_by(|a, b| a.name.cmp(&b.name));
 
         Self { languages }
     }

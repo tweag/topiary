@@ -33,6 +33,9 @@ pub enum FormatterError {
     /// provided query files, it is a bug. Please log an issue.
     Query(String, Option<topiary_tree_sitter_facade::QueryError>),
 
+    /// Error processing language injections
+    Injection(String, Option<Box<dyn Error>>),
+
     /// I/O-related errors
     Io(IoError),
 }
@@ -107,6 +110,7 @@ impl fmt::Display for FormatterError {
 
             Self::Internal(message, _)
             | Self::Query(message, _)
+            | Self::Injection(message, _)
             | Self::Io(IoError::Filesystem(message, _) | IoError::Generic(message, _)) => {
                 write!(f, "{message}")
             }
@@ -121,7 +125,9 @@ impl Error for FormatterError {
             | Self::Parsing(_)
             | Self::PatternDoesNotMatch
             | Self::Io(IoError::Generic(_, None)) => None,
-            Self::Internal(_, source) => source.as_ref().map(Deref::deref),
+            Self::Internal(_, source) | Self::Injection(_, source) => {
+                source.as_ref().map(Deref::deref)
+            }
             Self::Query(_, source) => source.as_ref().map(|e| e as &dyn Error),
             Self::Io(IoError::Filesystem(_, source)) => Some(source),
             Self::Io(IoError::Generic(_, Some(source))) => Some(source.as_ref()),

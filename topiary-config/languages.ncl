@@ -9,6 +9,10 @@
           nixHash = "sha256-XiiEI7/6b2pCZatO8Z8fBgooKD8Z+SFQJNdR/sGGkgE=",
         }
       },
+      filetype_detection | default = {
+        enabled = true,
+        max_lines = 1,
+      },
     },
 
     css = {
@@ -174,6 +178,10 @@
         }
       },
       indent | default = "    ",  # 4 spaces
+      filetype_detection | default = {
+        enabled = true,
+        max_lines = 1,
+      },
     },
   }
 }

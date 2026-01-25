@@ -14,6 +14,7 @@ pub enum TopiaryConfigError {
     Io(io::Error),
     Missing,
     TreeSitterFacade(topiary_tree_sitter_facade::LanguageError),
+    TreeSitterParser(topiary_tree_sitter_facade::ParserError),
     Nickel(Box<nickel_lang_core::error::Error>),
     NickelDeserialization(nickel_lang_core::deserialize::RustDeserializationError),
     #[cfg(not(target_arch = "wasm32"))]
@@ -67,6 +68,9 @@ impl fmt::Display for TopiaryConfigError {
             ),
             TopiaryConfigError::TreeSitterFacade(_) => {
                 write!(f, "We could not load the grammar for the given language")
+            }
+            TopiaryConfigError::TreeSitterParser(_) => {
+                write!(f, "We could not create a parser for the given language")
             }
             TopiaryConfigError::Nickel(e) => write!(
                 f,
@@ -135,6 +139,12 @@ impl From<io::Error> for TopiaryConfigFetchingError {
 impl From<topiary_tree_sitter_facade::LanguageError> for TopiaryConfigError {
     fn from(e: topiary_tree_sitter_facade::LanguageError) -> Self {
         Self::TreeSitterFacade(e)
+    }
+}
+
+impl From<topiary_tree_sitter_facade::ParserError> for TopiaryConfigError {
+    fn from(e: topiary_tree_sitter_facade::ParserError) -> Self {
+        Self::TreeSitterParser(e)
     }
 }
 

@@ -38,6 +38,7 @@ test-log = { workspace = true }
 tokio-test = { workspace = true }
 tree-sitter-json.workspace = true
 tree-sitter-nickel.workspace = true
+topiary-tree-sitter-shell-shebang = { path = "../topiary-tree-sitter-shell-shebang" }
 
 [[bench]]
 name = "benchmark"

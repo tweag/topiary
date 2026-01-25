@@ -24,12 +24,15 @@ log.workspace = true
 nickel-lang-core.workspace = true
 rayon = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"] }
+streaming-iterator.workspace = true
 tempfile.workspace = true
 toml.workspace = true
 tree-sitter.workspace = true
 tree-sitter-language.workspace = true
 
+topiary-core.workspace = true
 topiary-tree-sitter-facade.workspace = true
+topiary-tree-sitter-shell-shebang = { path = "../topiary-tree-sitter-shell-shebang" }
 topiary-web-tree-sitter-sys.workspace = true
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]

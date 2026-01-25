@@ -17,6 +17,7 @@ members = [
   "topiary-config",
   "topiary-web-tree-sitter-sys",
   "topiary-tree-sitter-facade",
+  "topiary-tree-sitter-shell-shebang",
   "docs/manpages/mdbook-manmunge",
   "examples/*",
 ]

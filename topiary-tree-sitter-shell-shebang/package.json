@@ -1,0 +1,26 @@
+{
+  "name": "tree-sitter-shebang",
+  "version": "0.1.0",
+  "description": "Tree-sitter grammar for parsing shebang lines",
+  "main": "bindings/node",
+  "keywords": [
+    "tree-sitter",
+    "parser",
+    "shebang"
+  ],
+  "author": "Topiary Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "nan": "^2.17.0"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "^0.20.8"
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.shebang",
+      "file-types": [],
+      "injection-regex": "shebang"
+    }
+  ]
+}

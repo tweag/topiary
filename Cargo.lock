@@ -4580,9 +4580,12 @@ dependencies = [
  "nickel-lang-core",
  "rayon",
  "serde",
+ "streaming-iterator",
  "tempfile",
  "toml 0.9.11+spec-1.1.0",
+ "topiary-core",
  "topiary-tree-sitter-facade",
+ "topiary-tree-sitter-shell-shebang",
  "topiary-web-tree-sitter-sys",
  "tree-sitter",
  "tree-sitter-language",
@@ -4610,6 +4613,7 @@ dependencies = [
  "tokio",
  "tokio-test",
  "topiary-tree-sitter-facade",
+ "topiary-tree-sitter-shell-shebang",
  "topiary-web-tree-sitter-sys",
  "tree-sitter",
  "tree-sitter-json",
@@ -4645,6 +4649,14 @@ dependencies = [
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
  "web-sys",
+]
+
+[[package]]
+name = "topiary-tree-sitter-shell-shebang"
+version = "0.1.0"
+dependencies = [
+ "cc",
+ "tree-sitter",
 ]
 
 [[package]]

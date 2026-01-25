@@ -17,6 +17,7 @@ use tree_sitter::Position;
 
 pub use crate::{
     error::{FormatterError, IoError},
+    injection::{Injection, find_injections},
     language::{
         BashGrammarExtrasProcessor, GrammarExtrasDirection, GrammarExtrasProcessor, Language,
     },
@@ -29,6 +30,7 @@ pub use crate::{
 mod atom_collection;
 mod error;
 mod graphviz;
+mod injection;
 pub mod language;
 mod pretty;
 mod tree_sitter;

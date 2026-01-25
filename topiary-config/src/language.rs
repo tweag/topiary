@@ -47,6 +47,27 @@ pub struct LanguageConfiguration {
 
     /// The tree-sitter source of the language, contains all that is needed to pull and compile the tree-sitter grammar
     pub grammar: Grammar,
+
+    /// Configuration for filetype detection when multiple languages share the same extension.
+    /// If not specified, the language relies solely on extension matching.
+    pub filetype_detection: Option<FiletypeDetection>,
+}
+
+#[derive(Debug, serde::Deserialize, PartialEq, serde::Serialize, Clone)]
+pub struct FiletypeDetection {
+    /// Maximum number of lines to parse for filetype detection.
+    /// Defaults to 1 (just the shebang line).
+    #[serde(default = "default_max_lines")]
+    pub max_lines: usize,
+
+    /// Whether filetype detection via query captures is enabled.
+    /// Defaults to false.
+    #[serde(default)]
+    pub enabled: bool,
+}
+
+fn default_max_lines() -> usize {
+    1
 }
 
 #[derive(Debug, serde::Deserialize, PartialEq, serde::Serialize, Clone)]
@@ -87,24 +108,6 @@ impl Language {
 
     pub fn indent(&self) -> Option<String> {
         self.config.indent.clone()
-    }
-
-    /// Returns a language-specific matcher for disambiguating file types.
-    ///
-    /// This is used when multiple languages share the same file extension.
-    /// The matcher can inspect file contents (e.g., shebang lines) to determine
-    /// which language to use.
-    ///
-    /// # Returns
-    ///
-    /// * `Some(Box<dyn LanguageMatcher>)` if this language has a custom matcher
-    /// * `None` if this language relies solely on extension matching
-    pub fn matcher(&self) -> Option<Box<dyn crate::language_matcher::LanguageMatcher>> {
-        match self.name.as_str() {
-            "bash" => Some(Box::new(crate::language_matcher::BashMatcher)),
-            "zsh" => Some(Box::new(crate::language_matcher::ZshMatcher)),
-            _ => None,
-        }
     }
 
     #[cfg(not(target_arch = "wasm32"))]
