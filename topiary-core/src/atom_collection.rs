@@ -12,6 +12,14 @@ use crate::{
     tree_sitter::NodeExt,
 };
 
+/// Context information passed to capture resolution for advanced processing
+pub struct CaptureContext<'a> {
+    /// The source code being formatted
+    pub source: &'a [u8],
+    /// Optional language loader to support injections
+    pub language_loader: Option<&'a dyn Fn(&str) -> FormatterResult<crate::Language>>,
+}
+
 /// A struct that holds sets of node IDs that have line breaks before or after them.
 ///
 /// This struct is used by the `detect_line_breaks` function to return the node IDs that
@@ -61,6 +69,9 @@ pub struct AtomCollection {
     line_break_after: HashSet<usize>,
     /// Used to generate unique IDs
     counter: usize,
+    /// Temporary state for tracking injection language across captures within a match
+    /// Set by @injection.language, consumed by @injection.content
+    injection_state: Option<String>,
 }
 
 impl AtomCollection {
@@ -80,6 +91,7 @@ impl AtomCollection {
             line_break_before: HashSet::new(),
             line_break_after: HashSet::new(),
             counter: 0,
+            injection_state: None,
         }
     }
 
@@ -108,6 +120,7 @@ impl AtomCollection {
             line_break_before: line_break_nodes.before,
             line_break_after: line_break_nodes.after,
             counter: 0,
+            injection_state: None,
         };
 
         atoms.collect_leaves_inner(root, source, &Vec::new(), 0)?;
@@ -146,6 +159,7 @@ impl AtomCollection {
     /// * `name` - The name of the capture, starting with `@`.
     /// * `node` - The node that matches the capture in the syntax tree.
     /// * `predicates` - The query predicates that modify the formatting behavior for the capture.
+    /// * `context` - Optional context information for advanced capture processing (e.g., injections).
     ///
     /// # Errors
     ///
@@ -162,6 +176,7 @@ impl AtomCollection {
         name: &str,
         node: &Node,
         predicates: &QueryPredicates,
+        context: Option<&CaptureContext>,
     ) -> FormatterResult<()> {
         log::debug!("Resolving {name}");
 
@@ -438,6 +453,82 @@ impl AtomCollection {
                     {
                         *keep_whitespace = true;
                     }
+                }
+            }
+            // Language injection support
+            "injection.language" => {
+                // Store the language name from the captured node's text
+                if let Some(ctx) = context {
+                    let lang_name = node.utf8_text(ctx.source)?.to_string();
+                    self.injection_state = Some(lang_name.clone());
+                    log::debug!("Set injection language: {}", lang_name);
+                } else {
+                    log::warn!("@injection.language capture without context");
+                }
+            }
+            "injection.content" => {
+                // Format the injected content with the previously captured language
+                if let Some(lang_name) = &self.injection_state {
+                    if let Some(ctx) = context {
+                        if let Some(language_loader) = ctx.language_loader {
+                            let content = node.utf8_text(ctx.source)?;
+                            log::debug!(
+                                "Formatting injection content with language: {}",
+                                lang_name
+                            );
+
+                            // Load the language for the injection
+                            let injected_language = language_loader(lang_name)?;
+
+                            // Recursively format the injected content
+                            let mut output = Vec::new();
+                            crate::formatter_str_with_injection(
+                                &content,
+                                &mut output,
+                                &injected_language,
+                                crate::Operation::Format {
+                                    skip_idempotence: true,
+                                    tolerate_parsing_errors: true,
+                                },
+                                Some(language_loader), // Pass the loader through for nested injections
+                            )?;
+
+                            let mut formatted = String::from_utf8(output).map_err(|e| {
+                                crate::FormatterError::Io(crate::IoError::Filesystem(
+                                    format!(
+                                        "Failed to convert formatted injection to UTF-8: {}",
+                                        e
+                                    ),
+                                    std::io::Error::new(std::io::ErrorKind::InvalidData, e),
+                                ))
+                            })?;
+
+                            // Add a leading newline to separate injected content from shebang
+                            formatted.insert(0, '\n');
+
+                            // Replace the leaf atom for this node with formatted literal
+                            for atom in &mut self.atoms {
+                                if let Atom::Leaf {
+                                    id,
+                                    content: _leaf_content,
+                                    ..
+                                } = atom
+                                {
+                                    if *id == node.id() {
+                                        *atom = Atom::Literal(formatted);
+                                        log::debug!("Replaced injection content atom");
+                                        break;
+                                    }
+                                }
+                            }
+                        } else {
+                            log::warn!("@injection.content without language_loader");
+                        }
+                    } else {
+                        log::warn!("@injection.content without context");
+                    }
+                } else {
+                    log::warn!("@injection.content without preceding @injection.language");
                 }
             }
             // Return a query parsing error on unknown capture names

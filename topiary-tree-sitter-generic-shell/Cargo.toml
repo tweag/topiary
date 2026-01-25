@@ -1,0 +1,17 @@
+[package]
+name = "topiary-tree-sitter-generic-shell"
+version = "0.1.0"
+edition = "2021"
+authors = ["Topiary Contributors"]
+license = "MIT"
+description = "Tree-sitter grammar for parsing generic shell files to detect bash vs zsh via shebang"
+repository = "https://github.com/tweag/topiary"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+tree-sitter.workspace = true
+
+[build-dependencies]
+cc = "1.0"

@@ -284,7 +284,7 @@ pub fn apply_query(
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<AtomCollection> {
     let tree = parse(input_content, grammar, tolerate_parsing_errors)?;
-    apply_query_tree(tree, input_content, query)
+    apply_query_tree(tree, input_content, query, None)
 }
 
 /// Applies a query to a tree and returns a collection of atoms.
@@ -300,6 +300,7 @@ pub fn apply_query_tree(
     tree: Tree,
     input_content: &str,
     query: &TopiaryQuery,
+    language_loader: Option<&dyn Fn(&str) -> FormatterResult<crate::Language>>,
 ) -> FormatterResult<AtomCollection> {
     let root = tree.root_node();
     let source = input_content.as_bytes();
@@ -387,9 +388,16 @@ pub fn apply_query_tree(
             continue;
         }
 
+        // Build CaptureContext if we have a language_loader
+        let capture_context =
+            language_loader.map(|loader| crate::atom_collection::CaptureContext {
+                source,
+                language_loader: Some(loader),
+            });
+
         for c in m.captures {
             let name = c.name(capture_names.as_slice());
-            atoms.resolve_capture(&name, &c.node(), &predicates)?;
+            atoms.resolve_capture(&name, &c.node(), &predicates, capture_context.as_ref())?;
         }
     }
 

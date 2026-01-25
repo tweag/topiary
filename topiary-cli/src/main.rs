@@ -8,12 +8,13 @@ mod visualisation;
 use std::{
     io::{BufReader, BufWriter, Write},
     process::ExitCode,
+    sync::Arc,
 };
 
 use error::Benign;
 use tabled::{Table, settings::Style};
 use topiary_config::source::Source;
-use topiary_core::{Operation, check_query_coverage, formatter};
+use topiary_core::{Operation, check_query_coverage, formatter, formatter_with_injection};
 
 use crate::{
     cli::Commands,
@@ -42,6 +43,9 @@ async fn run() -> CLIResult<()> {
     let (config, nickel_config) =
         topiary_config::Configuration::fetch(args.global.merge_configuration, file_config)?;
 
+    // Wrap config in Arc for sharing across threads
+    let config = Arc::new(config);
+
     // Delegate by subcommand
     match args.command {
         Commands::Format {
@@ -50,6 +54,7 @@ async fn run() -> CLIResult<()> {
             inputs,
         } => {
             let inputs = Inputs::new(&config, &inputs);
+            let config_for_loader = Arc::clone(&config);
 
             process_inputs(inputs, move |input, language| {
                 let output = OutputFile::try_from(&input)?;
@@ -72,7 +77,25 @@ async fn run() -> CLIResult<()> {
                     // Otherwise, we get an exclusive lock problem on Windows.
                     let mut buf_input = BufReader::new(input);
 
-                    formatter(
+                    // Create language loader for injection support
+                    let config_clone = Arc::clone(&config_for_loader);
+                    let language_loader = move |lang_name: &str| -> topiary_core::FormatterResult<
+                        topiary_core::Language,
+                    > {
+                        tokio::task::block_in_place(|| {
+                            tokio::runtime::Handle::current().block_on(async {
+                                io::to_language_from_config(&config_clone, lang_name).await
+                            })
+                        })
+                        .map_err(|e| {
+                            topiary_core::FormatterError::Injection(
+                                format!("Failed to load injection language '{}': {}", lang_name, e),
+                                None,
+                            )
+                        })
+                    };
+
+                    formatter_with_injection(
                         &mut buf_input,
                         &mut buf_output,
                         &language,
@@ -80,6 +103,7 @@ async fn run() -> CLIResult<()> {
                             skip_idempotence,
                             tolerate_parsing_errors,
                         },
+                        Some(&language_loader),
                     )?;
                 }
 

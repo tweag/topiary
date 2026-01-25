@@ -66,6 +66,19 @@ mod native {
         pub fn end_byte_for_pattern(&self, pattern_index: usize) -> usize {
             self.inner.end_byte_for_pattern(pattern_index)
         }
+
+        /// Get property settings for a pattern (e.g., from #set! predicates)
+        /// Returns iterator of (key, value) pairs set for the given pattern
+        #[inline]
+        pub fn property_settings(
+            &self,
+            pattern_index: usize,
+        ) -> impl Iterator<Item = (&str, Option<&str>)> + '_ {
+            self.inner
+                .property_settings(pattern_index)
+                .iter()
+                .map(|prop| (prop.key.as_ref(), prop.value.as_ref().map(|s| s.as_ref())))
+        }
     }
 
     impl std::fmt::Debug for Query {

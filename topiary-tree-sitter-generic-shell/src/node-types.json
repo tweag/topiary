@@ -1,0 +1,118 @@
+[
+  {
+    "type": "direct_interpreter",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "interpreter_name",
+          "named": true
+        },
+        {
+          "type": "interpreter_path",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "env_interpreter",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "interpreter_name",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "shebang_line",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "args",
+          "named": true
+        },
+        {
+          "type": "direct_interpreter",
+          "named": true
+        },
+        {
+          "type": "env_flags",
+          "named": true
+        },
+        {
+          "type": "env_interpreter",
+          "named": true
+        },
+        {
+          "type": "env_path",
+          "named": true
+        },
+        {
+          "type": "whitespace",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "source_file",
+    "named": true,
+    "root": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "script_content",
+          "named": true
+        },
+        {
+          "type": "shebang_line",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "\n",
+    "named": false
+  },
+  {
+    "type": "#!",
+    "named": false
+  },
+  {
+    "type": "args",
+    "named": true
+  },
+  {
+    "type": "env_flags",
+    "named": true
+  },
+  {
+    "type": "env_path",
+    "named": true
+  },
+  {
+    "type": "interpreter_path",
+    "named": true
+  },
+  {
+    "type": "script_content",
+    "named": true
+  },
+  {
+    "type": "whitespace",
+    "named": true
+  }
+]

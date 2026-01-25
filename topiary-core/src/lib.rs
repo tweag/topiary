@@ -235,6 +235,21 @@ pub fn formatter(
     language: &Language,
     operation: Operation,
 ) -> FormatterResult<()> {
+    formatter_with_injection(input, output, language, operation, None)
+}
+
+/// Format with support for language injection
+///
+/// # Errors
+///
+/// If formatting fails for any reason, a `FormatterError` will be returned.
+pub fn formatter_with_injection(
+    input: &mut impl io::Read,
+    output: &mut impl io::Write,
+    language: &Language,
+    operation: Operation,
+    language_loader: Option<&dyn Fn(&str) -> FormatterResult<Language>>,
+) -> FormatterResult<()> {
     let content = read_input(input).map_err(|e| {
         FormatterError::Io(IoError::Filesystem(
             "Failed to read input contents".into(),
@@ -242,7 +257,7 @@ pub fn formatter(
         ))
     })?;
 
-    formatter_str(&content, output, language, operation)
+    formatter_str_with_injection(&content, output, language, operation, language_loader)
 }
 
 /// The function that takes a string slice and formats, or visualises an output.
@@ -256,6 +271,21 @@ pub fn formatter_str(
     language: &Language,
     operation: Operation,
 ) -> FormatterResult<()> {
+    formatter_str_with_injection(input, output, language, operation, None)
+}
+
+/// Format string with support for language injection
+///
+/// # Errors
+///
+/// If formatting fails for any reason, a `FormatterError` will be returned.
+pub fn formatter_str_with_injection(
+    input: &str,
+    output: &mut impl io::Write,
+    language: &Language,
+    operation: Operation,
+    language_loader: Option<&dyn Fn(&str) -> FormatterResult<Language>>,
+) -> FormatterResult<()> {
     let tolerate_parsing_errors = match operation {
         Operation::Format {
             tolerate_parsing_errors,
@@ -266,7 +296,7 @@ pub fn formatter_str(
 
     let tree = tree_sitter::parse(input, &language.grammar, tolerate_parsing_errors)?;
 
-    formatter_tree(tree, input, output, language, operation)?;
+    formatter_tree_with_injection(tree, input, output, language, operation, language_loader)?;
 
     Ok(())
 }
@@ -283,6 +313,22 @@ pub fn formatter_tree(
     language: &Language,
     operation: Operation,
 ) -> FormatterResult<()> {
+    formatter_tree_with_injection(tree, input_content, output, language, operation, None)
+}
+
+/// Format tree with support for language injection
+///
+/// # Errors
+///
+/// If formatting fails for any reason, a `FormatterError` will be returned.
+pub fn formatter_tree_with_injection(
+    tree: topiary_tree_sitter_facade::Tree,
+    input_content: &str,
+    output: &mut impl io::Write,
+    language: &Language,
+    operation: Operation,
+    language_loader: Option<&dyn Fn(&str) -> FormatterResult<Language>>,
+) -> FormatterResult<()> {
     match operation {
         Operation::Format {
             skip_idempotence,
@@ -291,7 +337,12 @@ pub fn formatter_tree(
             // All the work related to tree-sitter and the query is done here
             log::debug!("Apply Tree-sitter query");
 
-            let mut atoms = tree_sitter::apply_query_tree(tree, input_content, &language.query)?;
+            let mut atoms = tree_sitter::apply_query_tree(
+                tree,
+                input_content,
+                &language.query,
+                language_loader,
+            )?;
 
             // Various post-processing of whitespace
             atoms.post_process();

@@ -139,6 +139,14 @@ impl Configuration {
                     Ok(())
                 }
             }
+
+            language::GrammarSource::Builtin => {
+                log::info!(
+                    "Fetch \"{}\": Configured as builtin grammar; nothing to do",
+                    language.name,
+                );
+                Ok(())
+            }
         }
     }
 
@@ -198,22 +206,55 @@ impl Configuration {
         Ok(())
     }
 
-    /// Convenience alias to detect the Language from a Path-like value's extension.
+    /// Detects the language from a file path based on extension.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The path to the file being analyzed
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(&Language)` if a language was successfully detected
+    /// * `Err(TopiaryConfigError)` if detection failed
     ///
     /// # Errors
     ///
-    /// If the file extension is not supported, a `FormatterError` will be returned.
+    /// Returns an error if:
+    /// - The file has no extension
+    /// - The extension is not associated with any configured language
+    /// - Multiple languages share the same extension (ambiguous)
     #[allow(clippy::result_large_err)]
     pub fn detect<P: AsRef<Path>>(&self, path: P) -> TopiaryConfigResult<&Language> {
         let pb = &path.as_ref().to_path_buf();
+
         if let Some(extension) = pb.extension().and_then(|ext| ext.to_str()) {
-            for lang in &self.languages {
-                if lang.config.extensions.contains(extension) {
-                    return Ok(lang);
+            // Collect all languages matching this extension
+            let matching_langs: Vec<&Language> = self
+                .languages
+                .iter()
+                .filter(|lang| lang.config.extensions.contains(extension))
+                .collect();
+
+            match matching_langs.len() {
+                0 => return Err(TopiaryConfigError::UnknownExtension(extension.to_string())),
+                1 => return Ok(matching_langs[0]),
+                _ => {
+                    // Multiple languages share this extension
+                    let lang_names: Vec<&str> =
+                        matching_langs.iter().map(|l| l.name.as_str()).collect();
+                    log::warn!(
+                        "Multiple languages match extension '{}': [{}]. Using '{}' (first match). \
+                         Consider using the injection system or specifying the language explicitly.",
+                        extension,
+                        lang_names.join(", "),
+                        matching_langs[0].name
+                    );
+                    // Return the first match as fallback
+                    return Ok(matching_langs[0]);
                 }
             }
-            return Err(TopiaryConfigError::UnknownExtension(extension.to_string()));
         }
+
         Err(TopiaryConfigError::NoExtension(pb.clone()))
     }
 
@@ -295,11 +336,16 @@ impl PartialEq for Configuration {
 
 impl From<SerdeConfiguration> for Configuration {
     fn from(value: SerdeConfiguration) -> Self {
-        let languages = value
+        let mut languages: Vec<_> = value
             .languages
             .into_iter()
             .map(|(name, config)| Language::new(name, config))
             .collect();
+
+        // Sort languages alphabetically by name for deterministic ordering.
+        // This ensures consistent fallback behavior when multiple languages
+        // share the same extension (e.g., bash comes before zsh for .sh files).
+        languages.sort_by(|a, b| a.name.cmp(&b.name));
 
         Self { languages }
     }

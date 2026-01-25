@@ -1,7 +1,7 @@
 {
   languages = {
     bash = {
-      extensions | default = ["sh", "bash"],
+      extensions | default = ["bash"],
       grammar.source | default = {
         git = {
           git = "https://github.com/tree-sitter/tree-sitter-bash.git",
@@ -151,6 +151,11 @@
         },
         symbol = "tree_sitter_query",
       },
+    },
+
+    generic_shell = {
+      extensions | default = ["sh"],
+      grammar.source.builtin | default = null,
     },
 
     wit = {

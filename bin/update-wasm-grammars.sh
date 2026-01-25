@@ -28,158 +28,183 @@ readonly CONFIG
 echo -e "${BLUE}Updating all Topiary grammars. This process can take a few minutes."
 
 ref_for_language() {
-  echo "$CONFIG" | jq -r ".languages.$1.grammar.rev"
+    echo "$CONFIG" | jq -r ".languages.$1.grammar.rev"
 }
 
 repo_for_language() {
-  echo "$CONFIG" | jq -r ".languages.$1.grammar.git"
+    echo "$CONFIG" | jq -r ".languages.$1.grammar.git"
 }
 
 json() {
-  echo -e "${BLUE}JSON: Fetching${NC}"
-  REPO=$(repo_for_language "json")
-  git clone "${REPO}" "${WORKDIR}/tree-sitter-json" &> /dev/null
-  REV=$(ref_for_language "json")
-  pushd "${WORKDIR}/tree-sitter-json" &> /dev/null
-    git checkout "$REV" &> /dev/null
-  popd &> /dev/null
-  echo -e "${ORANGE}JSON: Building${NC}"
-  tree-sitter build --wasm "${WORKDIR}/tree-sitter-json"
-  echo -e "${GREEN}JSON: Done${NC}"
+    echo -e "${BLUE}JSON: Fetching${NC}"
+    REPO=$(repo_for_language "json")
+    git clone "${REPO}" "${WORKDIR}/tree-sitter-json" &>/dev/null
+    REV=$(ref_for_language "json")
+    pushd "${WORKDIR}/tree-sitter-json" &>/dev/null
+    git checkout "$REV" &>/dev/null
+    popd &>/dev/null
+    echo -e "${ORANGE}JSON: Building${NC}"
+    tree-sitter build --wasm "${WORKDIR}/tree-sitter-json"
+    echo -e "${GREEN}JSON: Done${NC}"
 }
 
 nickel() {
-  echo -e "${BLUE}Nickel: Fetching${NC}"
-  REPO=$(repo_for_language "nickel")
-  git clone "${REPO}" "${WORKDIR}/tree-sitter-nickel" &> /dev/null
-  REV=$(ref_for_language "nickel")
-  pushd "${WORKDIR}/tree-sitter-nickel" &> /dev/null
-    git checkout "$REV" &> /dev/null
-  popd &> /dev/null
-  echo -e "${ORANGE}Nickel: Building${NC}"
-  tree-sitter build --wasm "${WORKDIR}/tree-sitter-nickel"
-  echo -e "${GREEN}Nickel: Done${NC}"
+    echo -e "${BLUE}Nickel: Fetching${NC}"
+    REPO=$(repo_for_language "nickel")
+    git clone "${REPO}" "${WORKDIR}/tree-sitter-nickel" &>/dev/null
+    REV=$(ref_for_language "nickel")
+    pushd "${WORKDIR}/tree-sitter-nickel" &>/dev/null
+    git checkout "$REV" &>/dev/null
+    popd &>/dev/null
+    echo -e "${ORANGE}Nickel: Building${NC}"
+    tree-sitter build --wasm "${WORKDIR}/tree-sitter-nickel"
+    echo -e "${GREEN}Nickel: Done${NC}"
 }
 
 ocaml() {
-  echo -e "${BLUE}OCaml: Fetching${NC}"
-  REPO=$(repo_for_language "ocaml")
-  git clone "${REPO}" "${WORKDIR}/tree-sitter-ocaml" &> /dev/null
-  REV=$(ref_for_language "ocaml")
-  pushd "${WORKDIR}/tree-sitter-ocaml" &> /dev/null
-    git checkout "$REV" &> /dev/null
-  popd &> /dev/null
-  echo -e "${ORANGE}OCaml: Building${NC}"
-  tree-sitter build --wasm "${WORKDIR}/tree-sitter-ocaml/ocaml"
-  tree-sitter build --wasm "${WORKDIR}/tree-sitter-ocaml/interface/"
-  echo -e "${GREEN}OCaml: Done${NC}"
+    echo -e "${BLUE}OCaml: Fetching${NC}"
+    REPO=$(repo_for_language "ocaml")
+    git clone "${REPO}" "${WORKDIR}/tree-sitter-ocaml" &>/dev/null
+    REV=$(ref_for_language "ocaml")
+    pushd "${WORKDIR}/tree-sitter-ocaml" &>/dev/null
+    git checkout "$REV" &>/dev/null
+    popd &>/dev/null
+    echo -e "${ORANGE}OCaml: Building${NC}"
+    tree-sitter build --wasm "${WORKDIR}/tree-sitter-ocaml/ocaml"
+    tree-sitter build --wasm "${WORKDIR}/tree-sitter-ocaml/interface/"
+    echo -e "${GREEN}OCaml: Done${NC}"
 }
 
 ocamllex() {
-  echo -e "${BLUE}OCamllex: Fetching${NC}"
-  REPO=$(repo_for_language "ocamllex")
-  git clone "${REPO}" "${WORKDIR}/tree-sitter-ocamllex" &> /dev/null
-  REV=$(ref_for_language "ocamllex")
-  pushd "${WORKDIR}/tree-sitter-ocamllex" &> /dev/null
-    git checkout "$REV" &> /dev/null
-  popd &> /dev/null
-  echo -e "${ORANGE}OCamllex: Building${NC}"
-  tree-sitter build --wasm "${WORKDIR}/tree-sitter-ocamllex"
-  echo -e "${GREEN}Ocamllex: Done${NC}"
+    echo -e "${BLUE}OCamllex: Fetching${NC}"
+    REPO=$(repo_for_language "ocamllex")
+    git clone "${REPO}" "${WORKDIR}/tree-sitter-ocamllex" &>/dev/null
+    REV=$(ref_for_language "ocamllex")
+    pushd "${WORKDIR}/tree-sitter-ocamllex" &>/dev/null
+    git checkout "$REV" &>/dev/null
+    popd &>/dev/null
+    echo -e "${ORANGE}OCamllex: Building${NC}"
+    tree-sitter build --wasm "${WORKDIR}/tree-sitter-ocamllex"
+    echo -e "${GREEN}Ocamllex: Done${NC}"
 }
 
 bash() {
-  echo -e "${BLUE}Bash: Fetching${NC}"
-  REPO=$(repo_for_language "bash")
-  git clone "${REPO}" "${WORKDIR}/tree-sitter-bash" &> /dev/null
-  REV=$(ref_for_language "bash")
-  pushd "${WORKDIR}/tree-sitter-bash" &> /dev/null
-    git checkout "$REV" &> /dev/null
-  popd &> /dev/null
-  echo -e "${ORANGE}Bash: Building${NC}"
-  tree-sitter build --wasm "${WORKDIR}/tree-sitter-bash"
-  echo -e "${GREEN}Bash: Done${NC}"
+    echo -e "${BLUE}Bash: Fetching${NC}"
+    REPO=$(repo_for_language "bash")
+    git clone "${REPO}" "${WORKDIR}/tree-sitter-bash" &>/dev/null
+    REV=$(ref_for_language "bash")
+    pushd "${WORKDIR}/tree-sitter-bash" &>/dev/null
+    git checkout "$REV" &>/dev/null
+    popd &>/dev/null
+    echo -e "${ORANGE}Bash: Building${NC}"
+    tree-sitter build --wasm "${WORKDIR}/tree-sitter-bash"
+    echo -e "${GREEN}Bash: Done${NC}"
 }
 
 rust() {
-  echo -e "${BLUE}Rust: Fetching${NC}"
-  REPO=$(repo_for_language "rust")
-  git clone "${REPO}" "${WORKDIR}/tree-sitter-rust" &> /dev/null
-  REV=$(ref_for_language "rust")
-  pushd "${WORKDIR}/tree-sitter-rust" &> /dev/null
-    git checkout "$REV" &> /dev/null
-  popd &> /dev/null
-  echo -e "${ORANGE}Rust: Building${NC}"
-  tree-sitter build --wasm "${WORKDIR}/tree-sitter-rust"
-  echo -e "${GREEN}Rust: Done${NC}"
+    echo -e "${BLUE}Rust: Fetching${NC}"
+    REPO=$(repo_for_language "rust")
+    git clone "${REPO}" "${WORKDIR}/tree-sitter-rust" &>/dev/null
+    REV=$(ref_for_language "rust")
+    pushd "${WORKDIR}/tree-sitter-rust" &>/dev/null
+    git checkout "$REV" &>/dev/null
+    popd &>/dev/null
+    echo -e "${ORANGE}Rust: Building${NC}"
+    tree-sitter build --wasm "${WORKDIR}/tree-sitter-rust"
+    echo -e "${GREEN}Rust: Done${NC}"
 }
 
 toml() {
-  echo -e "${BLUE}TOML: Fetching${NC}"
-  REPO=$(repo_for_language "toml")
-  git clone "${REPO}" "${WORKDIR}/tree-sitter-toml" &> /dev/null
-  REV=$(ref_for_language "toml")
-  pushd "${WORKDIR}/tree-sitter-toml" &> /dev/null
-    git checkout "$REV" &> /dev/null
-  popd &> /dev/null
-  echo -e "${ORANGE}TOML: Building${NC}"
-  tree-sitter build --wasm "${WORKDIR}/tree-sitter-toml"
-  echo -e "${GREEN}TOML: Done${NC}"
+    echo -e "${BLUE}TOML: Fetching${NC}"
+    REPO=$(repo_for_language "toml")
+    git clone "${REPO}" "${WORKDIR}/tree-sitter-toml" &>/dev/null
+    REV=$(ref_for_language "toml")
+    pushd "${WORKDIR}/tree-sitter-toml" &>/dev/null
+    git checkout "$REV" &>/dev/null
+    popd &>/dev/null
+    echo -e "${ORANGE}TOML: Building${NC}"
+    tree-sitter build --wasm "${WORKDIR}/tree-sitter-toml"
+    echo -e "${GREEN}TOML: Done${NC}"
 }
 
 tree-sitter-query() {
-  echo -e "${BLUE}Query: Fetching${NC}"
-  REPO=$(repo_for_language "tree_sitter_query")
-  git clone "${REPO}" "${WORKDIR}/tree-sitter-query" &> /dev/null
-  REV=$(ref_for_language "tree_sitter_query")
-  pushd "${WORKDIR}/tree-sitter-query" &> /dev/null
-    git checkout "$REV" &> /dev/null
-  popd &> /dev/null
-  echo -e "${ORANGE}Query: Building${NC}"
-  tree-sitter build --wasm "${WORKDIR}/tree-sitter-query"
-  echo -e "${GREEN}Query: Done${NC}"
+    echo -e "${BLUE}Query: Fetching${NC}"
+    REPO=$(repo_for_language "tree_sitter_query")
+    git clone "${REPO}" "${WORKDIR}/tree-sitter-query" &>/dev/null
+    REV=$(ref_for_language "tree_sitter_query")
+    pushd "${WORKDIR}/tree-sitter-query" &>/dev/null
+    git checkout "$REV" &>/dev/null
+    popd &>/dev/null
+    echo -e "${ORANGE}Query: Building${NC}"
+    tree-sitter build --wasm "${WORKDIR}/tree-sitter-query"
+    echo -e "${GREEN}Query: Done${NC}"
 }
 
 css() {
-  echo -e "${BLUE}CSS: Fetching${NC}"
-  REPO=$(repo_for_language "css")
-  git clone "${REPO}" "${WORKDIR}/tree-sitter-css" &> /dev/null
-  REV=$(ref_for_language "css")
-  pushd "${WORKDIR}/tree-sitter-css" &> /dev/null
-    git checkout "$REV" &> /dev/null
-  popd &> /dev/null
-  echo -e "${ORANGE}CSS: Building${NC}"
-  tree-sitter build --wasm "${WORKDIR}/tree-sitter-css"
-  echo -e "${GREEN}CSS: Done${NC}"
+    echo -e "${BLUE}CSS: Fetching${NC}"
+    REPO=$(repo_for_language "css")
+    git clone "${REPO}" "${WORKDIR}/tree-sitter-css" &>/dev/null
+    REV=$(ref_for_language "css")
+    pushd "${WORKDIR}/tree-sitter-css" &>/dev/null
+    git checkout "$REV" &>/dev/null
+    popd &>/dev/null
+    echo -e "${ORANGE}CSS: Building${NC}"
+    tree-sitter build --wasm "${WORKDIR}/tree-sitter-css"
+    echo -e "${GREEN}CSS: Done${NC}"
 }
 
 openscad() {
-  echo -e "${BLUE}OpenSCAD: Fetching${NC}"
-  REPO=$(repo_for_language "openscad")
-  git clone "${REPO}" "${WORKDIR}/tree-sitter-openscad" &> /dev/null
-  REV=$(ref_for_language "openscad")
-  pushd "${WORKDIR}/tree-sitter-openscad" &> /dev/null
-    git checkout "$REV" &> /dev/null
-  popd &> /dev/null
-  echo -e "${ORANGE}OpenSCAD: Building${NC}"
-  tree-sitter build --wasm "${WORKDIR}/tree-sitter-openscad"
-  echo -e "${GREEN}OpenSCAD: Done${NC}"
+    echo -e "${BLUE}OpenSCAD: Fetching${NC}"
+    REPO=$(repo_for_language "openscad")
+    git clone "${REPO}" "${WORKDIR}/tree-sitter-openscad" &>/dev/null
+    REV=$(ref_for_language "openscad")
+    pushd "${WORKDIR}/tree-sitter-openscad" &>/dev/null
+    git checkout "$REV" &>/dev/null
+    popd &>/dev/null
+    echo -e "${ORANGE}OpenSCAD: Building${NC}"
+    tree-sitter build --wasm "${WORKDIR}/tree-sitter-openscad"
+    echo -e "${GREEN}OpenSCAD: Done${NC}"
 }
 
 wit() {
-  echo -e "${BLUE}WIT: Fetching${NC}"
-  REPO=$(repo_for_language "wit")
-  git clone "${REPO}" "${WORKDIR}/tree-sitter-wit" &> /dev/null
-  REV=$(ref_for_language "wit")
-  pushd "${WORKDIR}/tree-sitter-wit" &> /dev/null
-    git checkout "$REV" &> /dev/null
-  popd &> /dev/null
-  echo -e "${ORANGE}WIT: Building${NC}"
-  tree-sitter build --wasm "${WORKDIR}/tree-sitter-wit"
-  echo -e "${GREEN}WIT: Done${NC}"
+    echo -e "${BLUE}WIT: Fetching${NC}"
+    REPO=$(repo_for_language "wit")
+    git clone "${REPO}" "${WORKDIR}/tree-sitter-wit" &>/dev/null
+    REV=$(ref_for_language "wit")
+    pushd "${WORKDIR}/tree-sitter-wit" &>/dev/null
+    git checkout "$REV" &>/dev/null
+    popd &>/dev/null
+    echo -e "${ORANGE}WIT: Building${NC}"
+    tree-sitter build --wasm "${WORKDIR}/tree-sitter-wit"
+    echo -e "${GREEN}WIT: Done${NC}"
 }
 
+generic-shell() {
+    echo -e "${BLUE}Generic Shell: Building from local grammar${NC}"
+    # This is a builtin grammar, so we build from the local repo
+    GRAMMAR_DIR="$(git rev-parse --show-toplevel)/topiary-tree-sitter-generic-shell"
+    echo -e "${ORANGE}Generic Shell: Building${NC}"
+    tree-sitter build --wasm "${GRAMMAR_DIR}"
+    # Move the generated WASM file to the playground scripts directory
+    mv tree-sitter-generic_shell.wasm ./
+    echo -e "${GREEN}Generic Shell: Done${NC}"
+}
 
-(trap 'kill 0' SIGINT; json & nickel & ocaml & ocamllex & bash & rust & toml & tree-sitter-query & css & openscad & wit & wait)
+(
+    trap 'kill 0' SIGINT
+    json &
+    nickel &
+    ocaml &
+    ocamllex &
+    bash &
+    rust &
+    toml &
+    tree-sitter-query &
+    css &
+    openscad &
+    wit &
+    generic-shell &
+    wait
+)
 
 echo -e "${GREEN}Done! All grammars have been updated${NC}"

@@ -67,6 +67,8 @@ pub enum GrammarSource {
     Git(GitSource),
     #[serde(rename = "path")]
     Path(PathBuf),
+    #[serde(rename = "builtin")]
+    Builtin,
 }
 
 #[derive(Debug, serde::Deserialize, PartialEq, serde::Serialize, Clone)]
@@ -131,6 +133,14 @@ impl Language {
             }
 
             GrammarSource::Path(path) => Ok(path.to_path_buf()),
+
+            GrammarSource::Builtin => {
+                // Builtin grammars don't have a library path - they're statically linked
+                Err(std::io::Error::new(
+                    std::io::ErrorKind::Unsupported,
+                    "Builtin grammars don't have a library path",
+                ))
+            }
         }
     }
 
@@ -140,6 +150,11 @@ impl Language {
     pub fn grammar(
         &self,
     ) -> Result<topiary_tree_sitter_facade::Language, TopiaryConfigFetchingError> {
+        // Handle builtin grammars separately - they're statically linked
+        if matches!(&self.config.grammar.source, GrammarSource::Builtin) {
+            return self.load_builtin_grammar();
+        }
+
         let library_path = self.library_path()?;
 
         // Ensure the compile exists
@@ -153,6 +168,7 @@ impl Language {
                         library_path,
                     ));
                 }
+                GrammarSource::Builtin => unreachable!("Handled above"),
             }
         }
 
@@ -177,11 +193,30 @@ impl Language {
         Ok(topiary_tree_sitter_facade::Language::from(language))
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
+    fn load_builtin_grammar(
+        &self,
+    ) -> Result<topiary_tree_sitter_facade::Language, TopiaryConfigFetchingError> {
+        log::debug!("Loading builtin grammar for {}", self.name);
+
+        // Match on language name to load the appropriate builtin grammar
+        match self.name.as_str() {
+            "generic_shell" => Ok(topiary_tree_sitter_facade::Language::from(
+                topiary_tree_sitter_generic_shell::language(),
+            )),
+            _ => Err(TopiaryConfigFetchingError::BuiltinGrammarNotFound(
+                self.name.clone(),
+            )),
+        }
+    }
+
     #[cfg(target_arch = "wasm32")]
     #[allow(clippy::result_large_err)]
     pub async fn grammar(&self) -> TopiaryConfigResult<topiary_tree_sitter_facade::Language> {
         let language_name = self.name.as_str();
 
+        // Build the path to the WASM file
+        // For builtin grammars, use the same path pattern as git-based grammars
         let grammar_path = if language_name == "tree_sitter_query" {
             "/playground/scripts/tree-sitter-query.wasm".to_string()
         } else {
