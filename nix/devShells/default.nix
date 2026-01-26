@@ -8,7 +8,12 @@
 
 {
   default = callPackage ./devShell.nix {
-    inherit craneLib binPkgs checks;
+    inherit
+      craneLib
+      binPkgs
+      checks
+      topiaryPkgs
+      ;
   };
 
   minimal = callPackage ./devShell.nix {
