@@ -77,7 +77,7 @@ impl FormatterError {
 
 impl fmt::Display for FormatterError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let please_log_message = "If this happened with the built-in query files, it is a bug. It would be\nhelpful if you logged this error at\nhttps://github.com/tweag/topiary/issues/new?assignees=&labels=type%3A+bug&template=bug_report.md";
+        let please_log_message = "If this happened with the built-in query files, it is a bug. It would be\nhelpful if you logged this error at\nhttps://github.com/topiary/topiary/issues/new?assignees=&labels=type%3A+bug&template=bug_report.md";
         match self {
             Self::Idempotence => {
                 write!(
