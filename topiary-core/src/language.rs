@@ -35,22 +35,6 @@ pub trait GrammarExtrasProcessor: fmt::Debug + Send + Sync {
     ) -> Option<Vec<crate::Atom>>;
 }
 
-/// Default processor that doesn't modify grammar extras.
-/// Always returns None to use default spacing rules.
-#[derive(Debug)]
-pub struct DefaultGrammarExtrasProcessor;
-
-impl GrammarExtrasProcessor for DefaultGrammarExtrasProcessor {
-    fn process_gap(
-        &self,
-        _gap_content: &[u8],
-        _direction: GrammarExtrasDirection,
-        _context: &crate::atom_collection::CaptureContext,
-    ) -> Option<Vec<crate::Atom>> {
-        None // Always use default spacing
-    }
-}
-
 /// A Language contains all the information Topiary requires to format that
 /// specific languages.
 #[derive(Debug)]
