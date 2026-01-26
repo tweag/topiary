@@ -460,14 +460,15 @@
 )
 
 ; Spaces between command and its arguments
+; Use @append_grammar_extras to process inter-node content (preserves line continuations)
 ; NOTE If we treat (command) as a leaf node, then commands are formatted
 ; as is and the below will be ignored. On balance, I think keeping this
 ; rule, rather than deferring to the input, is the better choice
 ; (although it's not without its problems; e.g., see Issue #172).
 (command
-  (_) @append_space
+  (_) @append_grammar_extras
   .
-  (_)
+  (_) @_anchor
 )
 
 ; Zsh coprocess statement formatting
