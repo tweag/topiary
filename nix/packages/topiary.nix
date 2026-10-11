@@ -14,6 +14,21 @@ let
     makeOverridable
     ;
 
+  # Allows other build profiles to be set when using `--impure`:
+  # `CARGO_PROFILE=debug nix flake check --impure`
+  cargoProfile =
+    let
+      fromEnv = builtins.getEnv "CARGO_PROFILE";
+    in
+    if fromEnv == "" then "release" else fromEnv;
+
+  # Inject `CARGO_PROFILE` into every derivation built on top of `mkCargoDerivation`
+  craneLib' = craneLib.overrideScope (
+    _final: prev: {
+      mkCargoDerivation = args: prev.mkCargoDerivation ({ CARGO_PROFILE = cargoProfile; } // args);
+    }
+  );
+
   commonArgs = {
     pname = "topiary";
 
@@ -54,9 +69,9 @@ let
     cp ${prefetchLanguagesNickelFile ../../topiary-config/languages.ncl} topiary-config/languages.ncl
   '';
 
-  cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+  cargoArtifacts = craneLib'.buildDepsOnly commonArgs;
 
-  workspace-tests = craneLib.cargoTest (
+  workspace-tests = craneLib'.cargoTest (
     commonArgs
     // {
       inherit cargoArtifacts;
@@ -67,7 +82,7 @@ let
     }
   );
 
-  clippy = craneLib.cargoClippy (
+  clippy = craneLib'.cargoClippy (
     commonArgs
     // {
       inherit cargoArtifacts;
@@ -75,9 +90,9 @@ let
     }
   );
 
-  fmt = craneLib.cargoFmt commonArgs;
+  fmt = craneLib'.cargoFmt commonArgs;
 
-  audit = craneLib.cargoAudit (
+  audit = craneLib'.cargoAudit (
     commonArgs
     // {
       inherit advisory-db;
@@ -95,17 +110,17 @@ let
     }
   );
 
-  benchmark = craneLib.buildPackage (
+  benchmark = craneLib'.buildPackage (
     commonArgs
     // {
       inherit cargoArtifacts;
-      cargoTestCommand = "cargo bench --profile release";
+      cargoTestCommand = "cargo bench --profile ${cargoProfile}";
       preConfigurePhases = [ "prepareTopiaryDefaultConfiguration" ];
       inherit prepareTopiaryDefaultConfiguration;
     }
   );
 
-  client-app = craneLib.buildPackage (
+  client-app = craneLib'.buildPackage (
     commonArgs
     // {
       inherit cargoArtifacts;
@@ -114,7 +129,7 @@ let
     }
   );
 
-  topiary-core = craneLib.buildPackage (
+  topiary-core = craneLib'.buildPackage (
     commonArgs
     // {
       inherit cargoArtifacts;
@@ -129,7 +144,7 @@ let
     {
       prefetchGrammars ? false,
     }:
-    craneLib.buildPackage (
+    craneLib'.buildPackage (
       commonArgs
       // {
         inherit cargoArtifacts;
@@ -160,7 +175,7 @@ let
     )
   ) { };
 
-  topiary-queries = craneLib.buildPackage (
+  topiary-queries = craneLib'.buildPackage (
     commonArgs
     // {
       pname = "topiary-queries";
@@ -181,13 +196,13 @@ let
         version = "0.4.47";
         hash = "sha256-ReayYpD6GIsc7B3+ekCU37tN4+knhei8P0BsJOZyz/U=";
       };
-      cargoArtifacts = craneLib.buildDepsOnly {
+      cargoArtifacts = craneLib'.buildDepsOnly {
         inherit src;
         pname = "mdbook";
         version = "0.4.47";
       };
     in
-    craneLib.buildPackage {
+    craneLib'.buildPackage {
       inherit src cargoArtifacts;
       pname = "mdbook";
       version = "0.4.47";
@@ -233,13 +248,13 @@ let
         version = "0.0.1";
         hash = "sha256-mrZTzzk9X71NC/nJME+FbQYM+epin5sByFA0RVhcvRw=";
       };
-      cargoArtifacts = craneLib.buildDepsOnly {
+      cargoArtifacts = craneLib'.buildDepsOnly {
         inherit src;
         pname = "mdbook-manmunge";
         version = "0.0.1";
       };
     in
-    craneLib.buildPackage {
+    craneLib'.buildPackage {
       inherit src cargoArtifacts;
       pname = "mdbook-manmunge";
       version = "0.0.1";

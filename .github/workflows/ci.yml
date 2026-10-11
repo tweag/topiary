@@ -17,6 +17,11 @@ jobs:
 
   nix-flake-check:
     runs-on: ubuntu-latest
+    env:
+      # Disable Nix garbage collection so that anything fetched in one step is
+      # not collected before a later step builds it.
+      GC_DONT_GC: 1
+      CARGO_PROFILE: "debug"
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -27,14 +32,19 @@ jobs:
           nix_path: nixpkgs=channel:nixpkgs-unstable
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
+      - name: Fetch flake inputs
+        run: nix -L flake check --no-build --impure
+
       - name: Clippy, test, and benchmark
-        env:
-          # Disable Nix garbage collection
-          GC_DONT_GC: 1
-        run: nix -L flake check
+        run: nix -L flake check --impure
 
   nix-client-app:
     runs-on: ubuntu-latest
+    env:
+      # Disable Nix garbage collection so that anything fetched in one step is
+      # not collected before a later step builds it.
+      GC_DONT_GC: 1
+      CARGO_PROFILE: "debug"
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -46,18 +56,18 @@ jobs:
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
       - name: Build executable
-        run: nix build . -L
+        run: nix build . -L --impure
 
       - name: Test executable
         run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- fmt -l json'
 
       - name: Build client-app example
-        run: nix build .#client-app -L
+        run: nix build .#client-app -L --impure
 
       - name: Test against config regressions
         run: |
-            nix run . -- config --merge --cfg ./topiary-config/tests/issue-1124.ncl
-            nix run . -- config --merge --cfg ./topiary-config/tests/issue-1131.ncl
+            nix run . --impure -- config --merge --cfg ./topiary-config/tests/issue-1124.ncl
+            nix run . --impure -- config --merge --cfg ./topiary-config/tests/issue-1131.ncl
 
   topiary-cli:
     strategy:
@@ -66,6 +76,11 @@ jobs:
           - ubuntu-latest
           - macos-latest
     runs-on: ${{ matrix.os }}
+    env:
+      # Disable Nix garbage collection so that anything fetched in one step is
+      # not collected before a later step builds it.
+      GC_DONT_GC: 1
+      CARGO_PROFILE: "debug"
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -77,7 +92,7 @@ jobs:
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
       - name: Build the topiary-cli and test those tests that cannot be performed in Nix
-        run: nix develop --command bash -c "cargo test -p topiary-cli --features experimental"
+        run: nix develop --impure --command bash -c "cargo run --all-features -- prefetch && cargo test -p topiary-cli --features experimental"
 
   test-windows:
     # Note: GitHub's Windows runners have a Rust toolchain installed
