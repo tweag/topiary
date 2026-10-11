@@ -38,7 +38,7 @@ craneLib.devShell (
             generate-nix-documentation
             verify-documented-usage
           ]
-          ++ pkgs.lib.optionals (!stdenv.isDarwin) [
+          ++ pkgs.lib.optionals (!stdenv.hostPlatform.isDarwin) [
             playground
           ];
       }

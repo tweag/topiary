@@ -56,7 +56,7 @@ let
         wasm-bindgen-cli
         pkg-config
       ]
-      ++ optionals stdenv.isDarwin [
+      ++ optionals stdenv.hostPlatform.isDarwin [
         libiconv
       ];
 
