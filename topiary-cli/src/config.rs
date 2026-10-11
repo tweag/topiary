@@ -1,4 +1,5 @@
 use std::cell::{Cell, RefCell};
+#[cfg(feature = "fancy-config")]
 use std::io;
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -8,9 +9,10 @@ use std::{ops::Deref, path::Path};
 use nickel_lang_core::eval::value::NickelValue;
 use rootcause::prelude::ResultExt;
 use topiary_config::{Program, source::Source};
+#[cfg(feature = "fancy-config")]
+use topiary_core::{Operation, formatter};
 use topiary_core::{
-    FormatterError, FormatterResult, InjectionQuery, Language, Operation, SpanAttachment,
-    TopiaryQuery, formatter,
+    FormatterError, FormatterResult, InjectionQuery, Language, SpanAttachment, TopiaryQuery,
 };
 
 use crate::cli::SkipStage;
