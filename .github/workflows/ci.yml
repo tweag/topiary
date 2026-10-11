@@ -21,7 +21,7 @@ jobs:
       # Disable Nix garbage collection so that anything fetched in one step is
       # not collected before a later step builds it.
       GC_DONT_GC: 1
-      CARGO_PROFILE: "debug"
+      CARGO_PROFILE: "dev"
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -44,7 +44,7 @@ jobs:
       # Disable Nix garbage collection so that anything fetched in one step is
       # not collected before a later step builds it.
       GC_DONT_GC: 1
-      CARGO_PROFILE: "debug"
+      CARGO_PROFILE: "dev"
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -80,7 +80,7 @@ jobs:
       # Disable Nix garbage collection so that anything fetched in one step is
       # not collected before a later step builds it.
       GC_DONT_GC: 1
-      CARGO_PROFILE: "debug"
+      CARGO_PROFILE: "dev"
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
