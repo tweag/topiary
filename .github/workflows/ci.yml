@@ -69,7 +69,6 @@ jobs:
       # not collected before a later step builds it.
       GC_DONT_GC: 1
       CARGO_PROFILE: "dev"
-      ARCH: ${{ case(runner.os == 'Linux', 'x86_64-linux', 'aarch64-darwin') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
