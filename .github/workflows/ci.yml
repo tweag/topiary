@@ -81,7 +81,7 @@ jobs:
 
       - name: Build dev shell
         run: |
-            nix build .#devShells.$(nix eval --impure --raw --expr 'builtins.currentSystem').default \
+            nix build ".#devShells.$(nix eval --impure --raw --expr 'builtins.currentSystem').default" \
                 --out-link .nix-develop-cache --impure --accept-flake-config
 
       - name: Test topiary-core compiles without default features
@@ -89,7 +89,8 @@ jobs:
         run: cargo check -p topiary-core --no-default-features --profile test
 
       - name: Build the topiary-cli and test those tests that cannot be performed in Nix
-        run: cargo run --all-features -- prefetch && cargo test -p topiary-cli --features experimental
+        shell: 'nix develop --profile .nix-develop-cache --impure --accept-flake-config --command bash -e {0}'
+        run: cargo test -p topiary-cli --features experimental
 
 
   test-windows:
