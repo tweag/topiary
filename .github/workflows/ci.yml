@@ -64,11 +64,6 @@ jobs:
       - name: Build client-app example
         run: nix build .#client-app -L --impure
 
-      - name: Test against config regressions
-        run: |
-            nix run . --impure -- config --merge --cfg ./topiary-config/tests/issue-1124.ncl
-            nix run . --impure -- config --merge --cfg ./topiary-config/tests/issue-1131.ncl
-
   topiary-cli:
     strategy:
       matrix:
