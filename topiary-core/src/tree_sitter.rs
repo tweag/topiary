@@ -522,6 +522,7 @@ pub(crate) fn apply_query_tree_with_forced_leaves(
     crate::trace!("List of atoms before formatting: {atoms:?}");
 
     // Memoization of the pattern positions
+    #[cfg(feature = "log")]
     let mut pattern_positions: Vec<Option<Position>> = Vec::new();
 
     // The web bindings for tree-sitter do not have support for pattern_count, so instead we will resize as needed
