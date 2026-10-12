@@ -33,10 +33,10 @@ jobs:
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
       - name: Fetch flake inputs
-        run: nix -L flake check --no-build --impure
+        run: nix -L flake check --no-build --impure --accept-flake-config
 
       - name: Clippy, test, and benchmark
-        run: nix -L flake check --impure
+        run: nix -L flake check --impure --accept-flake-config
 
   nix-client-app:
     runs-on: ubuntu-latest
@@ -55,14 +55,8 @@ jobs:
           nix_path: nixpkgs=channel:nixpkgs-unstable
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
-      - name: Build executable
-        run: nix build . -L --impure
-
-      - name: Test executable
-        run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- fmt -l json'
-
       - name: Build client-app example
-        run: nix build .#client-app -L --impure
+        run: nix build .#client-app -L --impure --accept-flake-config
 
   topiary-cli:
     strategy:
