@@ -30,6 +30,8 @@ let
   craneLib' = craneLib.overrideScope (
     _final: prev: {
       mkCargoDerivation = args: prev.mkCargoDerivation ({ CARGO_PROFILE = cargoProfile; } // args);
+      stdenvSelector =
+        p: if p.stdenv.hostPlatform.isLinux then p.stdenvAdapters.useMoldLinker p.stdenv else p.stdenv;
     }
   );
 

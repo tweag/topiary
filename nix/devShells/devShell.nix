@@ -7,7 +7,20 @@
   includeExtraPackages ? true,
 }:
 
-craneLib.devShell (
+let
+  # mold linker not supported on darwin.
+  # https://github.com/ipetkov/crane/blob/master/docs/API.md#cranelibdevshell
+  devShell =
+    if pkgs.stdenv.hostPlatform.isLinux then
+      craneLib.devShell.override {
+        mkShell = pkgs.mkShell.override {
+          stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.stdenv;
+        };
+      }
+    else
+      craneLib.devShell;
+in
+devShell (
   {
     inherit checks;
   }

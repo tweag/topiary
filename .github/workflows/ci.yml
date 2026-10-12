@@ -22,7 +22,7 @@ jobs:
       # not collected before a later step builds it.
       GC_DONT_GC: 1
       CARGO_PROFILE: "dev"
-      # Skip the benchmark on PRs
+      # Skip `cargo benchmark` on PRs
       TOPIARY_SKIP_BENCHMARK: ${{ github.event_name == 'pull_request' && '1' || '' }}
     steps:
       - name: Checkout code
@@ -69,6 +69,7 @@ jobs:
       # not collected before a later step builds it.
       GC_DONT_GC: 1
       CARGO_PROFILE: "dev"
+      ARCH: ${{ case(runner.os == 'Linux', 'x86_64-linux', 'aarch64-darwin') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -79,11 +80,18 @@ jobs:
           nix_path: nixpkgs=channel:nixpkgs-unstable
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
-      - name: Build the topiary-cli and test those tests that cannot be performed in Nix
-        run: nix develop --impure --command bash -c "cargo run --all-features -- prefetch && cargo test -p topiary-cli --features experimental"
+      - name: Build dev shell
+        run: |
+            nix build .#devShells.$(nix eval --impure --raw --expr 'builtins.currentSystem').default \
+                --out-link .nix-develop-cache --impure --accept-flake-config
 
       - name: Test topiary-core compiles without default features
-        run: nix develop --command bash -c "cargo test -p topiary-core --no-default-features"
+        shell: 'nix develop --profile .nix-develop-cache --impure --accept-flake-config --command bash -e {0}'
+        run: cargo check -p topiary-core --no-default-features --profile test
+
+      - name: Build the topiary-cli and test those tests that cannot be performed in Nix
+        run: cargo run --all-features -- prefetch && cargo test -p topiary-cli --features experimental
+
 
   test-windows:
     # Note: GitHub's Windows runners have a Rust toolchain installed
