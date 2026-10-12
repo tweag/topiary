@@ -23,7 +23,7 @@ jobs:
       GC_DONT_GC: 1
       CARGO_PROFILE: "dev"
       # Skip `cargo benchmark` on PRs
-      TOPIARY_SKIP_BENCHMARK: ${{ github.event_name == 'pull_request' && '1' || '' }}
+      TOPIARY_SKIP_BENCHMARK: ${{ case(github.event_name == 'pull_request', '1', '') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
