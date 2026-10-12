@@ -9,11 +9,11 @@ use std::{ops::Deref, path::Path};
 use nickel_lang_core::eval::value::NickelValue;
 use rootcause::prelude::ResultExt;
 use topiary_config::{Program, source::Source};
-#[cfg(feature = "fancy-config")]
-use topiary_core::{Operation, formatter};
 use topiary_core::{
     FormatterError, FormatterResult, InjectionQuery, Language, SpanAttachment, TopiaryQuery,
 };
+#[cfg(feature = "fancy-config")]
+use topiary_core::{Operation, formatter};
 
 use crate::cli::SkipStage;
 use crate::error::{CLIResult, ResultPreformat, TopiaryError};
