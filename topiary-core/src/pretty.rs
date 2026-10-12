@@ -2,9 +2,9 @@
 //! module is responsible for rendering the slice of Atoms back into a displayable
 //! format.
 
-use std::fmt::Write;
 #[cfg(feature = "log")]
 use std::cmp::Ordering;
+use std::fmt::Write;
 
 use rootcause::prelude::ResultExt;
 
@@ -186,8 +186,7 @@ fn render_multi_line_string(
     content_original: &str,
     indent_level: usize,
     indent: &str,
-    #[cfg_attr(not(feature = "log"), allow(unused_variables))]
-    start_position: &Position,
+    #[cfg_attr(not(feature = "log"), allow(unused_variables))] start_position: &Position,
 ) -> String {
     let multi_line_indent::EnforceIndentation {
         start,

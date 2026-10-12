@@ -25,13 +25,6 @@ impl<T> JsValueExt for Result<T, JsValue> {
 }
 
 #[cfg(feature = "node")]
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_name = "global")]
-    static GLOBAL: Object;
-}
-
-#[cfg(feature = "node")]
 #[wasm_bindgen(module = "web-tree-sitter-wasm-bindgen")]
 extern "C" {
     fn initialize_tree_sitter() -> Promise;

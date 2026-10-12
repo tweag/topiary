@@ -22,6 +22,10 @@ let
     in
     if fromEnv == "" then "release" else fromEnv;
 
+  # Allows skipping the benchmark check:
+  # `TOPIARY_SKIP_BENCHMARK=1 nix flake check --impure`
+  skipBenchmark = builtins.getEnv "TOPIARY_SKIP_BENCHMARK" == "1";
+
   # Inject `CARGO_PROFILE` into every derivation built on top of `mkCargoDerivation`
   craneLib' = craneLib.overrideScope (
     _final: prev: {
@@ -110,15 +114,19 @@ let
     }
   );
 
-  benchmark = craneLib'.buildPackage (
-    commonArgs
-    // {
-      inherit cargoArtifacts;
-      cargoTestCommand = "cargo bench --profile ${cargoProfile}";
-      preConfigurePhases = [ "prepareTopiaryDefaultConfiguration" ];
-      inherit prepareTopiaryDefaultConfiguration;
-    }
-  );
+  benchmark =
+    if skipBenchmark then
+      pkgs.runCommand "topiary-benchmark-skipped" { } "touch $out"
+    else
+      craneLib'.buildPackage (
+        commonArgs
+        // {
+          inherit cargoArtifacts;
+          cargoTestCommand = "cargo bench --profile ${cargoProfile}";
+          preConfigurePhases = [ "prepareTopiaryDefaultConfiguration" ];
+          inherit prepareTopiaryDefaultConfiguration;
+        }
+      );
 
   client-app = craneLib'.buildPackage (
     commonArgs

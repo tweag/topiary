@@ -22,6 +22,8 @@ jobs:
       # not collected before a later step builds it.
       GC_DONT_GC: 1
       CARGO_PROFILE: "dev"
+      # Skip the benchmark on PRs
+      TOPIARY_SKIP_BENCHMARK: ${{ github.event_name == 'pull_request' && '1' || '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
