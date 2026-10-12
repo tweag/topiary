@@ -32,9 +32,6 @@ jobs:
           nix_path: nixpkgs=channel:nixpkgs-unstable
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
-      - name: Fetch flake inputs
-        run: nix -L flake check --no-build --impure --accept-flake-config
-
       - name: Clippy, test, and benchmark
         run: nix -L flake check --impure --accept-flake-config
 
