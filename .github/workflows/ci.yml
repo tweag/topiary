@@ -81,7 +81,7 @@ jobs:
 
       - name: Build the topiary-cli and test those tests that cannot be performed in Nix
         shell: 'nix develop --profile .nix-develop-cache --impure --accept-flake-config --command bash -e {0}'
-        run: cargo test -p topiary-cli --features experimental
+        run: cargo nextest run -p topiary-cli --features experimental
 
 
   test-windows:
@@ -95,8 +95,11 @@ jobs:
       - name: Init rust-cache
         uses: Swatinem/rust-cache@v2
 
+      - name: Install cargo-nextest
+        run: winget install nextest.cargo-nextest
+
       - name: Prefetch grammars
         run: cargo run --all-features -- prefetch
 
       - name: Run test suite
-        run: cargo test --all-features
+        run: cargo nextest run --all-features

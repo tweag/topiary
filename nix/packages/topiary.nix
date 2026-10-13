@@ -77,12 +77,25 @@ let
 
   cargoArtifacts = craneLib'.buildDepsOnly commonArgs;
 
-  workspace-tests = craneLib'.cargoTest (
+  workspace-tests = craneLib'.cargoNextest (
     commonArgs
     // {
       inherit cargoArtifacts;
       pname = "topiary-workspace-tests";
-      cargoTestExtraArgs = "--workspace --all-features";
+      cargoExtraArgs = "--locked";
+      cargoNextestExtraArgs = "--workspace --all-features";
+      preConfigurePhases = [ "prepareTopiaryDefaultConfiguration" ];
+      inherit prepareTopiaryDefaultConfiguration;
+    }
+  );
+
+  # `cargo nextest` does not run doctests
+  workspace-doctests = craneLib'.cargoDocTest (
+    commonArgs
+    // {
+      inherit cargoArtifacts;
+      pname = "topiary-workspace-doctests";
+      cargoExtraArgs = "--workspace --all-features --locked";
       preConfigurePhases = [ "prepareTopiaryDefaultConfiguration" ];
       inherit prepareTopiaryDefaultConfiguration;
     }
@@ -160,7 +173,9 @@ let
         inherit cargoArtifacts;
         pname = "topiary";
         cargoExtraArgs = "-p topiary-cli";
-        cargoTestExtraArgs = "--no-default-features";
+
+        checkPhaseCargoCommand = "cargo nextest run -p topiary-cli --no-default-features --cargo-profile ${cargoProfile}";
+        nativeBuildInputs = commonArgs.nativeBuildInputs ++ [ pkgs.cargo-nextest ];
 
         preConfigurePhases = optional prefetchGrammars "prepareTopiaryDefaultConfiguration";
         inherit prepareTopiaryDefaultConfiguration;
@@ -340,6 +355,7 @@ in
     audit
     benchmark
     workspace-tests
+    workspace-doctests
     client-app
     topiary-core
     topiary-cli

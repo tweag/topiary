@@ -33,6 +33,7 @@ devShell (
           [
             cargo-dist
             cargo-flamegraph
+            cargo-nextest
             rust-analyzer
 
             jq
