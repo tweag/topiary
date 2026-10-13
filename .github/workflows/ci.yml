@@ -95,11 +95,8 @@ jobs:
       - name: Init rust-cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Install cargo-nextest
-        run: winget install nextest.cargo-nextest --silent --accept-package-agreements --accept-source-agreements
-
       - name: Prefetch grammars
         run: cargo run --all-features -- prefetch
 
       - name: Run test suite
-        run: cargo nextest run --all-features
+        run: cargo test --all-features
