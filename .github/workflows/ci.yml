@@ -96,7 +96,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Install cargo-nextest
-        run: winget install nextest.cargo-nextest --silent --accept-package-agreements
+        run: winget install nextest.cargo-nextest --silent --accept-package-agreements --accept-source-agreements
 
       - name: Prefetch grammars
         run: cargo run --all-features -- prefetch
