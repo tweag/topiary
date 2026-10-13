@@ -16,7 +16,7 @@ use topiary_tree_sitter_facade::{
 use streaming_iterator::StreamingIterator;
 
 use crate::{
-    FormatterResult,
+    FormatterResult, MultiLineIndent,
     atom_collection::{AtomCollection, QueryPredicates},
     error::{FormatterError, SpanAttachment, query_error_report},
 };
@@ -162,6 +162,14 @@ pub struct InjectionSpan<'a> {
     /// touching root language content.
     /// See [`crate::splice_formatted_injections`] for more details.
     pub byte_range: std::ops::Range<usize>,
+    /// Preserve the injected content's trailing whitespace (set by the
+    /// `@keep_whitespace` capture on `@injection.content`).
+    pub keep_whitespace: bool,
+    /// How the injected content should be indented (set by the
+    /// `@multi_line_indent_all` capture on `@injection.content`).
+    pub multi_line_indent: MultiLineIndent,
+    /// The original start position of the captured content node.
+    pub position: Position,
 }
 
 /// Run an [`InjectionQuery`] against a parsed `tree`, returning every
@@ -242,6 +250,15 @@ pub fn collect_injections<'a>(
             if node.start_byte() == node.end_byte() {
                 continue;
             }
+
+            // The `@keep_whitespace` / `@multi_line_indent_all` directives apply
+            // when they are captured on the same node as `@injection.content`.
+            let has_capture = |name: &str| {
+                query_match
+                    .captures()
+                    .any(|c| c.name(&capture_names) == name && c.node().id() == node.id())
+            };
+
             spans.push(InjectionSpan {
                 content: input_content
                     .get(byte_range.clone())
@@ -249,6 +266,13 @@ pub fn collect_injections<'a>(
                 language: language_name.clone(),
                 node_id: node.id(),
                 byte_range,
+                keep_whitespace: has_capture("keep_whitespace"),
+                multi_line_indent: if has_capture("multi_line_indent_all") {
+                    MultiLineIndent::MaintainOffset
+                } else {
+                    MultiLineIndent::None
+                },
+                position: node.start_position().into(),
             });
         }
     }

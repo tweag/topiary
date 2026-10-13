@@ -474,7 +474,12 @@ fn rewrite_injected_leaves(
             .trim_end_matches('\n')
             .to_owned();
 
-        if !atoms.rewrite_injected_leaf_content(span.node_id, formatted_inner) {
+        if !atoms.rewrite_injected_leaf_content(
+            span.node_id,
+            formatted_inner,
+            span.keep_whitespace,
+            span.multi_line_indent,
+        ) {
             return Err(report!(FormatterError::Internal(format!(
                 "Could not find leaf for injected {} span",
                 span.language
@@ -517,11 +522,54 @@ fn splice_formatted_injections(
             continue;
         };
 
-        out.push_str(&input_content[cursor..span.byte_range.start]);
+        // Anchor the injected content to its line's indentation. Tree-sitter
+        // content nodes (e.g. Markdown fenced code blocks nested in a list item)
+        // can start partway through the leading indentation, which would
+        // otherwise throw off the column used by `@multi_line_indent_all`.
+        let bytes = input_content.as_bytes();
+
+        // Move the span start right over the content's leading whitespace, but
+        // only when the span begins inside its line's indentation, so that
+        // inline spacing is left untouched. The prefix then carries the full
+        // indentation.
+        let mut start = span.byte_range.start;
+        let mut line_start = start;
+        while line_start > cursor && bytes[line_start - 1] != b'\n' {
+            line_start -= 1;
+        }
+        if bytes[line_start..start]
+            .iter()
+            .all(|b| matches!(b, b' ' | b'\t'))
+        {
+            while start < span.byte_range.end && matches!(bytes[start], b' ' | b'\t') {
+                start += 1;
+            }
+        }
+
+        // Extend the span end over the following indentation when the content
+        // ends on a whitespace-only line (the closing delimiter's indentation),
+        // so the closing line is re-indented as part of the injected content
+        // rather than left at the raw suffix's indentation.
+        let mut end = span.byte_range.end;
+        let ends_on_blank_line = span.content.contains('\n')
+            && span
+                .content
+                .rsplit('\n')
+                .next()
+                .unwrap_or("")
+                .chars()
+                .all(|c| c == ' ' || c == '\t');
+        if ends_on_blank_line {
+            while end < bytes.len() && matches!(bytes[end], b' ' | b'\t') {
+                end += 1;
+            }
+        }
+
+        out.push_str(&input_content[cursor..start]);
 
         let mut formatted_inner = Vec::new();
         formatter_str(
-            span.content,
+            &input_content[start..end],
             &mut formatted_inner,
             &inner_language,
             Operation::Format {
@@ -531,18 +579,28 @@ fn splice_formatted_injections(
             },
             resolve,
         )?;
-        let formatted_inner = String::from_utf8(formatted_inner)
-            .context_to()?
-            .trim_end_matches('\n')
-            .to_owned();
+        let formatted_inner = String::from_utf8(formatted_inner).context_to()?;
 
-        let has_trailing_newline = span.content.ends_with('\n');
-        out.push_str(&formatted_inner);
-        // preserve at most ONE trailing newline
-        if has_trailing_newline {
-            out.push('\n');
-        }
-        cursor = span.byte_range.end;
+        // Reuse the host leaf rendering for the injected content's indentation
+        // and trailing whitespace: `@multi_line_indent_all` (`MaintainOffset`)
+        // shifts every line to the column at which the content is placed, and
+        // `@keep_whitespace` preserves the formatter's trailing newline. Injected
+        // formatters return column-zero text, so the original column is 1
+        // (matching `AtomCollection::rewrite_injected_leaf_content`).
+        out.push_str(&pretty::render_leaf_content(
+            &formatted_inner,
+            span.keep_whitespace,
+            &span.multi_line_indent,
+            &Position {
+                row: span.position.row,
+                column: 1,
+            },
+            pretty::current_column(&out),
+            0,
+            "",
+        ));
+
+        cursor = end;
     }
 
     out.push_str(&input_content[cursor..]);
@@ -652,8 +710,8 @@ mod tests {
     use test_log::test;
 
     use crate::{
-        FormatterError, InjectionQuery, Language, LanguageResolver, Operation, SpanAttachment,
-        TopiaryQuery, formatter, formatter_str, parse, splice_formatted_injections,
+        FormatterError, InjectionQuery, Language, LanguageResolver, MultiLineIndent, Operation,
+        SpanAttachment, TopiaryQuery, formatter, formatter_str, parse, splice_formatted_injections,
         test_utils::pretty_assert_eq,
     };
 
@@ -826,21 +884,41 @@ mod tests {
             splice_formatted_injections(input, spans, json_injection_resolver(), false).unwrap()
         };
 
-        // no trailing newline
+        // `@keep_whitespace` preserves the single trailing newline emitted by the
+        // inner formatter, so the closing fence always ends up on its own line,
+        // regardless of how the input was laid out.
         pretty_assert_eq(
             &splice_fn("```json\n[true, false]```\n"),
-            "```json\n[ true, false ]```\n",
+            "```json\n[ true, false ]\n```\n",
         );
-        // single trailing newline
         pretty_assert_eq(
             &splice_fn("```json\n[true, false]\n```\n"),
             "```json\n[ true, false ]\n```\n",
         );
-        // two or more trailing newlines collapse to one
+        // Extra trailing newlines are not duplicated.
         pretty_assert_eq(
             &splice_fn("```json\n[true, false]\n\n```\n"),
             "```json\n[ true, false ]\n```\n",
         );
+
+        // indented content (e.g. a fenced block inside a list item) keeps its
+        // indentation on every line, including the closing fence
+        pretty_assert_eq(
+            &splice_fn("1. Step:\n\n    ```json\n    [1,2]\n    ```\n"),
+            "1. Step:\n\n    ```json\n    [ 1, 2 ]\n    ```\n",
+        );
+    }
+
+    #[test]
+    fn collect_injections_captures_leaf_directives() {
+        let language = markdown_language();
+        let input = "```json\n[true, false]\n```\n";
+        let tree = parse(input, &language.grammar, false).unwrap();
+        let spans = language.collect_injections(&tree, input);
+
+        assert_eq!(spans.len(), 1);
+        assert!(spans[0].keep_whitespace);
+        assert_eq!(spans[0].multi_line_indent, MultiLineIndent::MaintainOffset);
     }
 
     #[test]

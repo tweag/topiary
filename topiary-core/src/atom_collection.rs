@@ -132,17 +132,34 @@ impl AtomCollection {
     /// Used by the injection flow to splice formatted inner-language text
     /// into a host leaf atom after the host's atom collection has been
     /// built but before rendering.
-    pub fn rewrite_injected_leaf_content(&mut self, node_id: usize, new_content: String) -> bool {
+    pub fn rewrite_injected_leaf_content(
+        &mut self,
+        node_id: usize,
+        new_content: String,
+        keep_whitespace: bool,
+        multi_line_indent: MultiLineIndent,
+    ) -> bool {
         for atom in &mut self.atoms {
             if let Atom::Leaf {
                 id,
                 content,
                 original_position,
+                keep_whitespace: leaf_keep_whitespace,
+                multi_line_indent: leaf_multi_line_indent,
                 ..
             } = atom
                 && *id == node_id
             {
                 *content = new_content;
+                // The injection query may additionally declare
+                // `@keep_whitespace` / `@multi_line_indent_all` on the injected
+                // content node; merge them onto the host leaf (which may already
+                // carry the same directives from the formatting query) so that
+                // rendering applies them.
+                *leaf_keep_whitespace |= keep_whitespace;
+                if multi_line_indent != MultiLineIndent::None {
+                    *leaf_multi_line_indent = multi_line_indent;
+                }
                 // Injected formatters return column-zero text; let the host
                 // leaf indentation account for the current render column.
                 original_position.column = 1;
