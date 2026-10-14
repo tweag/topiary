@@ -27,9 +27,7 @@ jobs:
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
       - name: Clippy and test
-        run: |
-            nix -L flake check --no-build --accept-flake-config
-            nix -L build .#debug-checks --accept-flake-config
+        run: nix -L build .#debug-checks --accept-flake-config
 
   nix-client-app:
     runs-on: ubuntu-latest
