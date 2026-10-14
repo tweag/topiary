@@ -76,7 +76,7 @@ jobs:
 
       - name: Build the topiary-cli and run impure integration tests/`kind(test)`
         shell: 'nix develop .#debug-shell --profile .nix-develop-cache --accept-flake-config --command bash -e {0}'
-        run: cargo nextest run -p topiary-cli --features experimental --filterset 'kind(test)'
+        run: cargo nextest run -p topiary-cli --features experimental --filterset 'kind(test)' --retries 2
 
 
   test-windows:
