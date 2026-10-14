@@ -75,10 +75,7 @@ let
       inherit cargoArtifacts;
       pname = "topiary-workspace-tests";
       cargoExtraArgs = "--locked";
-      # nextest uses `kind(lib)` for unit tests and `kind(test)` for integration tests
-      # https://nexte.st/docs/filtersets/reference/#binary-kinds
-      # Integration tests are impure (network fetch and compile at runtime) and are exercised in `nix develop`
-      cargoNextestExtraArgs = "--workspace --all-features --filterset 'not kind(test)'";
+      cargoNextestExtraArgs = "--workspace --all-features";
       preConfigurePhases = [ "prepareTopiaryDefaultConfiguration" ];
       inherit prepareTopiaryDefaultConfiguration;
     }
