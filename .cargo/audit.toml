@@ -7,3 +7,7 @@ ignore = [
   # values.
   "RUSTSEC-2026-0292",
 ]
+# Does not work in a sandboxed derivation
+[yanked]
+enabled = false
+update_index = false

@@ -5,6 +5,7 @@ use topiary_core::test_utils::pretty_assert_eq;
 
 use tempfile::TempDir;
 
+#[allow(dead_code)]
 fn get_file_extension(language: &str) -> &str {
     match language {
         "bash" => "sh",
@@ -26,7 +27,6 @@ fn get_file_extension(language: &str) -> &str {
     }
 }
 
-#[cfg(test)]
 #[macro_export]
 macro_rules! lang_test {
     ($($lang:literal,)+ $test_fn:ident) => {
@@ -40,10 +40,10 @@ macro_rules! lang_test {
     };
 }
 
-#[cfg(test)]
 mod test_fmt {
     use super::*;
 
+    #[allow(dead_code)]
     fn fmt_input(lang: &str) {
         let file = format!("{lang}.{}", get_file_extension(lang));
         let input = PathBuf::from(format!("tests/samples/input/{file}"));
@@ -140,10 +140,10 @@ mod test_fmt {
     }
 }
 
-#[cfg(test)]
 mod test_check {
     use super::*;
 
+    #[allow(dead_code)]
     fn check_input(lang: &str) {
         let file = format!("{lang}.{}", get_file_extension(lang));
         let input = PathBuf::from(format!("tests/samples/input/{file}"));
@@ -193,10 +193,10 @@ mod test_check {
     );
 }
 
-#[cfg(test)]
 mod test_coverage {
     use super::*;
 
+    #[allow(dead_code)]
     fn coverage_input(lang: &str) {
         let file = format!("{lang}.{}", get_file_extension(lang));
         let input = PathBuf::from(format!("tests/samples/input/{file}"));

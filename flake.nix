@@ -24,29 +24,41 @@
   };
 
   outputs =
-    { nixpkgs, ... }@inputs:
+    inputs:
     let
+      nixpkgs = inputs.nixpkgs;
       forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
 
-      # NOTE: This flake is only a wrapper providing dependencies lock and
-      # interface. All the logic lives in the `nix` directory. We import it here
-      # bundled for all systems as a `topiaryNix`.
-      topiaryNix = forAllSystems (
+      # Default outputs: `release` Cargo profile, benchmark included.
+      release = import ./nix/flake-outputs.nix { inherit inputs; };
+
+      # dev/debug Cargo profile, benchmark skipped
+      debug = import ./nix/flake-outputs.nix {
+        inherit inputs;
+        cargoProfile = "dev";
+        runBenchmark = false;
+      };
+    in
+    release
+    // {
+      packages = forAllSystems (
         system:
-        let
-          pkgs = import nixpkgs { inherit system; };
-        in
-        import ./nix {
-          inherit pkgs;
-          inherit (inputs) advisory-db crane rust-overlay;
+        release.packages.${system}
+        // {
+          debug-checks = nixpkgs.legacyPackages.${system}.linkFarmFromDrvs "topiary-ci-checks" (
+            builtins.attrValues debug.checks.${system}
+          );
+
+          debug-client-app = debug.packages.${system}.client-app;
         }
       );
 
-    in
-    {
-      packages = forAllSystems (system: topiaryNix.${system}.packages);
-      lib = forAllSystems (system: topiaryNix.${system}.lib);
-      checks = forAllSystems (system: topiaryNix.${system}.checks);
-      devShells = forAllSystems (system: topiaryNix.${system}.devShells);
+      devShells = forAllSystems (
+        system:
+        release.devShells.${system}
+        // {
+          debug-shell = debug.devShells.${system}.default;
+        }
+      );
     };
 }
