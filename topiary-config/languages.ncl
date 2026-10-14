@@ -100,10 +100,21 @@ let rec
         (`topiary config show-sources`)  and the
         built-in fallbacks.
       "%,
+  },
+  Cache = {
+    path
+      | String
+      | optional
+      | doc m%"
+        An absolute path or one relative to the config file that contains files created by `topiary prefetch`.
+      "%,
   }
 in
 
 {
+  cache
+    | Cache
+    | default = {},
   languages | { _ : LanguageConfig } = {
     bash = {
       extensions | default = ["sh", "bash"],

@@ -209,6 +209,32 @@ file it was written in. The exception is a `path` accompanied by a `git`
 source, which names a file inside the checkout; see [Specifying
 queries](#specifying-queries) below.
 
+### Specifying the cache directory
+
+By default, `topiary prefetch` stores the grammars and queries it fetches
+in the platform-specific cache directory (see
+[above](#specifying-the-grammar)). The top-level `cache.path` field
+overrides that location:
+
+```nickel
+{
+  cache.path | force = "/path/to/topiary-cache",
+  languages = { /* ... */ },
+}
+```
+
+Like the grammar and query paths above, a relative `cache.path` is
+resolved against the directory of the configuration file that defined it,
+rather than against the working directory:
+
+```nickel
+# ~/project/languages.ncl
+{ cache.path = "./.topiary-cache" } # ~/project/.topiary-cache
+```
+
+Fetched artifacts are stored below that directory as
+`<cache.path>/<language>/<git-revision>`.
+
 ### Specifying queries
 
 By default, Topiary looks for a language's query files (`formatting.scm`
