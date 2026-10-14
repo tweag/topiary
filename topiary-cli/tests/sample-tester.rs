@@ -27,7 +27,6 @@ fn get_file_extension(language: &str) -> &str {
     }
 }
 
-#[cfg(test)]
 #[macro_export]
 macro_rules! lang_test {
     ($($lang:literal,)+ $test_fn:ident) => {
@@ -41,7 +40,6 @@ macro_rules! lang_test {
     };
 }
 
-#[cfg(test)]
 mod test_fmt {
     use super::*;
 
@@ -142,7 +140,6 @@ mod test_fmt {
     }
 }
 
-#[cfg(test)]
 mod test_check {
     use super::*;
 
@@ -196,7 +193,6 @@ mod test_check {
     );
 }
 
-#[cfg(test)]
 mod test_coverage {
     use super::*;
 
