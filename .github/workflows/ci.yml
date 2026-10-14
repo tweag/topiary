@@ -27,7 +27,9 @@ jobs:
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
       - name: Clippy and test
-        run: nix -L flake check --accept-flake-config ./nix/ci
+        run: |
+            nix -L flake check --no-build --accept-flake-config
+            nix -L build .#debug-checks --accept-flake-config
 
   nix-client-app:
     runs-on: ubuntu-latest
@@ -46,7 +48,7 @@ jobs:
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
       - name: Build client-app example
-        run: nix build ./nix/ci#client-app -L --accept-flake-config
+        run: nix build .#debug-client-app -L --accept-flake-config
 
   topiary-cli:
     strategy:
@@ -71,11 +73,11 @@ jobs:
 
       - name: Build dev shell
         run: |
-            nix build "./nix/ci#devShells.$(nix eval --impure --raw --expr 'builtins.currentSystem').default" \
+            nix build ".#devShells.$(nix eval --impure --raw --expr 'builtins.currentSystem').debug-shell" \
                 --out-link .nix-develop-cache --impure --accept-flake-config
 
       - name: Build the topiary-cli and test those tests that cannot be performed in Nix
-        shell: 'nix develop ./nix/ci --profile .nix-develop-cache --impure --accept-flake-config --command bash -e {0}'
+        shell: 'nix develop .#debug-shell --profile .nix-develop-cache --impure --accept-flake-config --command bash -e {0}'
         run: cargo nextest run -p topiary-cli --features experimental
 
 
