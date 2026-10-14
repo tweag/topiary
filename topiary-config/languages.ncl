@@ -104,7 +104,6 @@ let rec
   Cache = {
     path
       | String
-      | optional
       | doc m%"
         An absolute path or one relative to the config file that contains files created by `topiary prefetch`.
       "%,
@@ -114,7 +113,7 @@ in
 {
   cache
     | Cache
-    | default = {},
+    | optional,
   languages | { _ : LanguageConfig } = {
     bash = {
       extensions | default = ["sh", "bash"],
