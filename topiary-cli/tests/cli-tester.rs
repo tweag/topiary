@@ -554,6 +554,24 @@ fn test_cfg() {
         .stdout(IsToml);
 }
 
+/// Configuration regressions: these files previously failed to evaluate when merged on top of
+/// the built-in configuration (see issues #1124 and #1131). Merging them must now succeed.
+#[test]
+fn test_config_merge_regressions() {
+    for config in [
+        "example-configs/issue-1124.ncl",
+        "example-configs/issue-1131.ncl",
+    ] {
+        cargo_bin_cmd!("topiary")
+            .arg("--configuration")
+            .arg(config)
+            .arg("--merge")
+            .arg("config")
+            .assert()
+            .success();
+    }
+}
+
 struct IsToml;
 
 impl predicates::Predicate<str> for IsToml {

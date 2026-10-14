@@ -7,7 +7,20 @@
   includeExtraPackages ? true,
 }:
 
-craneLib.devShell (
+let
+  # mold linker not supported on darwin.
+  # https://github.com/ipetkov/crane/blob/master/docs/API.md#cranelibdevshell
+  devShell =
+    if pkgs.stdenv.hostPlatform.isLinux then
+      craneLib.devShell.override {
+        mkShell = pkgs.mkShell.override {
+          stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.stdenv;
+        };
+      }
+    else
+      craneLib.devShell;
+in
+devShell (
   {
     inherit checks;
   }
@@ -20,6 +33,7 @@ craneLib.devShell (
           [
             cargo-dist
             cargo-flamegraph
+            cargo-nextest
             rust-analyzer
 
             jq
@@ -38,7 +52,7 @@ craneLib.devShell (
             generate-nix-documentation
             verify-documented-usage
           ]
-          ++ pkgs.lib.optionals (!stdenv.isDarwin) [
+          ++ pkgs.lib.optionals (!stdenv.hostPlatform.isDarwin) [
             playground
           ];
       }

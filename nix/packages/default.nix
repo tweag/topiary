@@ -4,6 +4,8 @@
   craneLib,
   prefetchLanguagesFile,
   prefetchLanguagesNickelFile,
+  cargoProfile ? "release",
+  runBenchmark ? true,
 }:
 
 let
@@ -15,6 +17,8 @@ let
       craneLib
       prefetchLanguagesFile
       prefetchLanguagesNickelFile
+      cargoProfile
+      runBenchmark
       ;
   };
 in

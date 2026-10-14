@@ -2,7 +2,9 @@
 //! module is responsible for rendering the slice of Atoms back into a displayable
 //! format.
 
-use std::{cmp::Ordering, fmt::Write};
+#[cfg(feature = "log")]
+use std::cmp::Ordering;
+use std::fmt::Write;
 
 use rootcause::prelude::ResultExt;
 
@@ -205,7 +207,7 @@ fn render_multi_line_string(
     content_original: &str,
     indent_level: usize,
     indent: &str,
-    start_position: &Position,
+    #[cfg_attr(not(feature = "log"), allow(unused_variables))] start_position: &Position,
 ) -> String {
     let multi_line_indent::EnforceIndentation {
         start,
@@ -294,6 +296,7 @@ fn render_multi_line_string(
     }
 
     // length of the longest prefix-comparable whitespace prefix both in characters and utf 8 bytes
+    #[cfg(feature = "log")]
     let mut prefixcomparable_whitespace_prefix_len: usize = 0;
     let mut prefixcomparable_whitespace_prefix_len_utf8 = 0;
     let mut content_collected: Vec<_> = content.clone().map(str::chars).collect();
@@ -303,7 +306,10 @@ fn render_multi_line_string(
             && is_insignificant_whitespace(first)
             && nexts.all(|c| c == first)
         {
-            prefixcomparable_whitespace_prefix_len += 1;
+            #[cfg(feature = "log")]
+            {
+                prefixcomparable_whitespace_prefix_len += 1;
+            }
             prefixcomparable_whitespace_prefix_len_utf8 += first.len_utf8();
         } else {
             break;

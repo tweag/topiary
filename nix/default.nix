@@ -1,6 +1,14 @@
 {
   pkgs ? import <nixpkgs> { },
 
+  # The Cargo build profile to use for the packages/checks. Defaults to
+  # `release`; the CI overlay flake passes `dev`.
+  cargoProfile ? "release",
+
+  # Whether to build the (expensive) benchmark check. Defaults to `true`; the
+  # CI overlay flake disables it.
+  runBenchmark ? true,
+
   # The following dependencies are hard to provide without using flakes, making
   # our “you don't have to use flakes” claim deceptive. We keep it like this for
   # now, and if someone complains we can find another solution. Context in
@@ -41,6 +49,8 @@ let
         advisory-db
         craneLib
         callPackageNoOverrides
+        cargoProfile
+        runBenchmark
         ;
       inherit (topiaryUtils) prefetchLanguagesFile prefetchLanguagesNickelFile;
     })

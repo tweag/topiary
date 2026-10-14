@@ -2,6 +2,7 @@ node_modules
 target
 /result
 /.direnv
+/.nix-develop-cache*
 *.profraw
 /.vscode
 .envrc

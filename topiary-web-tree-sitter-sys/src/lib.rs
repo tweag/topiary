@@ -27,6 +27,7 @@ impl<T> JsValueExt for Result<T, JsValue> {
 #[cfg(feature = "node")]
 #[wasm_bindgen]
 extern "C" {
+    #[expect(deprecated)]
     #[wasm_bindgen(js_name = "global")]
     static GLOBAL: Object;
 }

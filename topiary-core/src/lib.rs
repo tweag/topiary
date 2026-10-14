@@ -12,6 +12,7 @@
 
 use std::{io, sync::Arc};
 
+#[cfg(feature = "log")]
 use pretty_assertions::StrComparison;
 use rootcause::{prelude::ResultExt, report};
 use tree_sitter::Position;
