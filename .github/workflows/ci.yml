@@ -26,7 +26,13 @@ jobs:
           nix_path: nixpkgs=channel:nixpkgs-unstable
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
+      - name: Run full flake checks on merge to main
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          nix -L flake check --accept-flake-config
+
       - name: Evaluate release checks
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           nix eval --accept-flake-config ".#checks.$(nix eval --impure --raw --expr 'builtins.currentSystem')" \
             --apply 'builtins.mapAttrs (_: d: d.drvPath)'
@@ -34,6 +40,7 @@ jobs:
       # Evaluating the flake requires building the grammar-prefetch JSON first;
       # --no-build forbids that, so evaluation fails.
       - name: Clippy and test
+        if: ${{ github.event_name == 'pull_request' }}
         run: nix -L build .#debug-checks --accept-flake-config
 
   nix-client-app:
