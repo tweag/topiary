@@ -9,11 +9,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-
 jobs:
-
   nix-flake-check:
     runs-on: ubuntu-latest
+    env:
+      # Disable Nix garbage collection so that anything fetched in one step is
+      # not collected before a later step builds it.
+      GC_DONT_GC: 1
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -24,14 +26,29 @@ jobs:
           nix_path: nixpkgs=channel:nixpkgs-unstable
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
-      - name: Clippy, test, and benchmark
-        env:
-          # Disable Nix garbage collection
-          GC_DONT_GC: 1
-        run: nix -L flake check
+      - name: Run full flake checks on merge to main
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          nix -L flake check --accept-flake-config
+
+      - name: Evaluate release checks
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          nix eval --accept-flake-config ".#checks.$(nix eval --impure --raw --expr 'builtins.currentSystem')" \
+            --apply 'builtins.mapAttrs (_: d: d.drvPath)'
+
+      # Evaluating the flake requires building the grammar-prefetch JSON first;
+      # --no-build forbids that, so evaluation fails.
+      - name: Clippy and test
+        if: ${{ github.event_name == 'pull_request' }}
+        run: nix -L build .#debug-checks --accept-flake-config
 
   nix-client-app:
     runs-on: ubuntu-latest
+    env:
+      # Disable Nix garbage collection so that anything fetched in one step is
+      # not collected before a later step builds it.
+      GC_DONT_GC: 1
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -42,19 +59,8 @@ jobs:
           nix_path: nixpkgs=channel:nixpkgs-unstable
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
-      - name: Build executable
-        run: nix build . -L
-
-      - name: Test executable
-        run: 'echo \{ \"foo\": \"bar\" \} | nix run . -- fmt -l json'
-
       - name: Build client-app example
-        run: nix build .#client-app -L
-
-      - name: Test against config regressions
-        run: |
-            nix run . -- config --merge --cfg ./topiary-config/tests/issue-1124.ncl
-            nix run . -- config --merge --cfg ./topiary-config/tests/issue-1131.ncl
+        run: nix build .#debug-client-app -L --accept-flake-config
 
   topiary-cli:
     strategy:
@@ -63,6 +69,10 @@ jobs:
           - ubuntu-latest
           - macos-latest
     runs-on: ${{ matrix.os }}
+    env:
+      # Disable Nix garbage collection so that anything fetched in one step is
+      # not collected before a later step builds it.
+      GC_DONT_GC: 1
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -73,11 +83,15 @@ jobs:
           nix_path: nixpkgs=channel:nixpkgs-unstable
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
-      - name: Build the topiary-cli and test those tests that cannot be performed in Nix
-        run: nix develop --command bash -c "cargo test -p topiary-cli --features experimental"
+      - name: Build dev shell
+        run: |
+            nix build ".#devShells.$(nix eval --impure --raw --expr 'builtins.currentSystem').debug-shell" \
+                --out-link .nix-develop-cache --accept-flake-config
 
-      - name: Test topiary-core compiles without default features
-        run: nix develop --command bash -c "cargo test -p topiary-core --no-default-features"
+      - name: Build the topiary-cli and run impure integration tests/`kind(test)`
+        shell: 'nix develop .#debug-shell --profile .nix-develop-cache --accept-flake-config --command bash -e {0}'
+        run: cargo nextest run -p topiary-cli --features experimental --filterset 'kind(test)' --retries 2
+
 
   test-windows:
     # Note: GitHub's Windows runners have a Rust toolchain installed

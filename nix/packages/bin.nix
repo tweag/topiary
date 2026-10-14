@@ -42,7 +42,7 @@ let
   playground = writeShellApplication {
     name = "playground";
 
-    runtimeInputs = lib.optionals (!stdenv.isDarwin) [
+    runtimeInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [
       inotify-tools
     ];
 

@@ -18,6 +18,7 @@ in
     audit
     benchmark
     workspace-tests
+    workspace-doctests
     topiary-cli
     ;
 
