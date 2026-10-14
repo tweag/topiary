@@ -74,11 +74,11 @@ jobs:
       - name: Build dev shell
         run: |
             nix build ".#devShells.$(nix eval --impure --raw --expr 'builtins.currentSystem').debug-shell" \
-                --out-link .nix-develop-cache --impure --accept-flake-config
+                --out-link .nix-develop-cache --accept-flake-config
 
-      - name: Build the topiary-cli and test those tests that cannot be performed in Nix
-        shell: 'nix develop .#debug-shell --profile .nix-develop-cache --impure --accept-flake-config --command bash -e {0}'
-        run: cargo nextest run -p topiary-cli --features experimental
+      - name: Build the topiary-cli and run impure integration tests/`kind(test)`
+        shell: 'nix develop .#debug-shell --profile .nix-develop-cache --accept-flake-config --command bash -e {0}'
+        run: cargo nextest run -p topiary-cli --features experimental --filterset 'kind(test)'
 
 
   test-windows:
