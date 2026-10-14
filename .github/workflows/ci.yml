@@ -26,6 +26,13 @@ jobs:
           nix_path: nixpkgs=channel:nixpkgs-unstable
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
+      - name: Evaluate release checks
+        run: |
+          nix eval --accept-flake-config ".#checks.$(nix eval --impure --raw --expr 'builtins.currentSystem')" \
+            --apply 'builtins.mapAttrs (_: d: d.drvPath)'
+
+      # Evaluating the flake requires building the grammar-prefetch JSON first;
+      # --no-build forbids that, so evaluation fails.
       - name: Clippy and test
         run: nix -L build .#debug-checks --accept-flake-config
 
