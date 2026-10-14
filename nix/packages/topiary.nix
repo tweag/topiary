@@ -4,6 +4,9 @@
   craneLib,
   prefetchLanguagesFile,
   prefetchLanguagesNickelFile,
+
+  cargoProfile ? "release",
+  runBenchmark ? true,
 }:
 
 let
@@ -13,18 +16,6 @@ let
     optionals
     makeOverridable
     ;
-
-  # Allows other build profiles to be set when using `--impure`:
-  # `CARGO_PROFILE=debug nix flake check --impure`
-  cargoProfile =
-    let
-      fromEnv = builtins.getEnv "CARGO_PROFILE";
-    in
-    if fromEnv == "" then "release" else fromEnv;
-
-  # Allows skipping the benchmark check:
-  # `TOPIARY_SKIP_BENCHMARK=1 nix flake check --impure`
-  skipBenchmark = builtins.getEnv "TOPIARY_SKIP_BENCHMARK" == "1";
 
   # Inject `CARGO_PROFILE` into every derivation built on top of `mkCargoDerivation`
   craneLib' = craneLib.overrideScope (
@@ -130,9 +121,7 @@ let
   );
 
   benchmark =
-    if skipBenchmark then
-      pkgs.runCommand "topiary-benchmark-skipped" { } "touch $out"
-    else
+    if runBenchmark then
       craneLib'.buildPackage (
         commonArgs
         // {
@@ -141,7 +130,9 @@ let
           preConfigurePhases = [ "prepareTopiaryDefaultConfiguration" ];
           inherit prepareTopiaryDefaultConfiguration;
         }
-      );
+      )
+    else
+      pkgs.runCommand "topiary-benchmark-skipped" { } "touch $out";
 
   client-app = craneLib'.buildPackage (
     commonArgs

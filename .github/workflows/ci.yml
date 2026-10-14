@@ -16,9 +16,6 @@ jobs:
       # Disable Nix garbage collection so that anything fetched in one step is
       # not collected before a later step builds it.
       GC_DONT_GC: 1
-      CARGO_PROFILE: "dev"
-      # Skip `cargo benchmark` on PRs
-      TOPIARY_SKIP_BENCHMARK: ${{ case(github.event_name == 'pull_request', '1', '') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -29,8 +26,8 @@ jobs:
           nix_path: nixpkgs=channel:nixpkgs-unstable
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
-      - name: Clippy, test, and benchmark
-        run: nix -L flake check --impure --accept-flake-config
+      - name: Clippy and test
+        run: nix -L flake check --accept-flake-config ./nix/ci
 
   nix-client-app:
     runs-on: ubuntu-latest
@@ -38,7 +35,6 @@ jobs:
       # Disable Nix garbage collection so that anything fetched in one step is
       # not collected before a later step builds it.
       GC_DONT_GC: 1
-      CARGO_PROFILE: "dev"
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -50,7 +46,7 @@ jobs:
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
       - name: Build client-app example
-        run: nix build .#client-app -L --impure --accept-flake-config
+        run: nix build ./nix/ci#client-app -L --accept-flake-config
 
   topiary-cli:
     strategy:
@@ -63,7 +59,6 @@ jobs:
       # Disable Nix garbage collection so that anything fetched in one step is
       # not collected before a later step builds it.
       GC_DONT_GC: 1
-      CARGO_PROFILE: "dev"
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -76,11 +71,11 @@ jobs:
 
       - name: Build dev shell
         run: |
-            nix build ".#devShells.$(nix eval --impure --raw --expr 'builtins.currentSystem').default" \
+            nix build "./nix/ci#devShells.$(nix eval --impure --raw --expr 'builtins.currentSystem').default" \
                 --out-link .nix-develop-cache --impure --accept-flake-config
 
       - name: Build the topiary-cli and test those tests that cannot be performed in Nix
-        shell: 'nix develop --profile .nix-develop-cache --impure --accept-flake-config --command bash -e {0}'
+        shell: 'nix develop ./nix/ci --profile .nix-develop-cache --impure --accept-flake-config --command bash -e {0}'
         run: cargo nextest run -p topiary-cli --features experimental
 
 
