@@ -23,7 +23,8 @@
     };
   };
 
-  outputs = inputs:
+  outputs =
+    inputs:
     let
       nixpkgs = inputs.nixpkgs;
       forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
@@ -38,7 +39,8 @@
         runBenchmark = false;
       };
     in
-    release // {
+    release
+    // {
       packages = forAllSystems (
         system:
         release.packages.${system}
