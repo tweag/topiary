@@ -132,6 +132,16 @@ impl Configuration {
         self.cache.path()
     }
 
+    /// Create the configured cache directory (and any missing parents), if one is set.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn ensure_cache_dir(&self) -> TopiaryConfigResult<()> {
+        if let Some(dir) = self.cache_dir() {
+            log::debug!("Creating cache directory: {}", dir.display());
+            std::fs::create_dir_all(dir)?;
+        }
+        Ok(())
+    }
+
     /// Prefetch a language's grammar and queries per its configuration.
     ///
     /// # Errors
@@ -209,6 +219,7 @@ impl Configuration {
         T: AsRef<str> + fmt::Display,
     {
         let repos = LocalRepos::new();
+        self.ensure_cache_dir()?;
         let l = self.get_language_cfg(language)?;
         Configuration::fetch_language(l, force, &repos, self.cache_dir())?;
         Ok(())
@@ -222,6 +233,7 @@ impl Configuration {
     /// If any Grammar could not be build, a `TopiaryConfigError` is returned.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn prefetch_languages(&self, force: bool) -> TopiaryConfigResult<()> {
+        self.ensure_cache_dir()?;
         let repos = LocalRepos::new();
         let starting_directory = self.cache_dir();
 
@@ -487,5 +499,20 @@ mod tests {
             config.get_language_cfg("definitely-not-a-language"),
             Err(TopiaryConfigError::UnknownLanguage(_))
         ));
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn ensure_cache_dir_creates_configured_directory() {
+        let tmp = tempfile::tempdir().unwrap();
+        let config_file = tmp.path().join("languages.ncl");
+        std::fs::write(&config_file, r#"{ cache.path = "./cache" }"#).unwrap();
+
+        let (config, _) = Configuration::fetch(false, Some(config_file.as_path())).unwrap();
+        let cache = tmp.path().join("cache");
+        assert!(!cache.exists());
+
+        config.ensure_cache_dir().unwrap();
+        assert!(cache.is_dir());
     }
 }
