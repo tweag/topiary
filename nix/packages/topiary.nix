@@ -32,17 +32,18 @@ let
     src = fileset.toSource {
       root = ../..;
       fileset = fileset.unions [
+        ../.
+        ../../.cargo
         ../../Cargo.lock
         ../../Cargo.toml
-        ../../languages.ncl
         ../../examples
-        ../../topiary-core
+        ../../languages.ncl
         ../../topiary-cli
         ../../topiary-config
+        ../../topiary-core
         ../../topiary-queries
         ../../topiary-tree-sitter-facade
         ../../topiary-web-tree-sitter-sys
-        ../.
       ];
     };
 
