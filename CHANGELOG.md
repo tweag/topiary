@@ -53,6 +53,7 @@ example: `bin/changelog.nu --no-cc-header --save --section Added`
 - [#1344](https://github.com/topiary/topiary/pull/1344) Automatic publishing of releases to crates.io
 - [#1351](https://github.com/topiary/topiary/pull/1351) Use file extension as language alias
 - [#1348](https://github.com/topiary/topiary/pull/1348) Added `topiary format --skip-language <LANGUAGE>` flag
+- [#1358](https://github.com/topiary/topiary/pull/1358) Expose setting cache directory
 
 ### Fixed
 - [#1348](https://github.com/topiary/topiary/pull/1348) injections now preserve trailing newlines
