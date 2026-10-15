@@ -113,6 +113,10 @@ As furthermore illustrated by this example above, you can add an optional `#mult
 To be used on comments, or other leaf nodes, to indicate that we should
 indent all its lines, not just the first.
 
+It may also be placed on `@injection.content` in an injection query, where it
+re-indents every line of the injected content to match the host line it is
+placed on; see [language injections](../language-injections.md#leaf-directives).
+
 ### Example
 
 ```scheme

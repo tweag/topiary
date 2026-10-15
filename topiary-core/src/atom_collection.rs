@@ -9,8 +9,9 @@ use rootcause::prelude::ResultExt;
 use topiary_tree_sitter_facade::Node;
 
 use crate::{
-    Atom, Capitalisation, FormatterError, FormatterResult, MultiLineIndent, ScopeCondition,
-    ScopeInformation, multi_line_indent, tree_sitter::NodeExt,
+    Atom, Capitalisation, FormatterError, FormatterResult, LeafDirectives, MultiLineIndent,
+    ScopeCondition, ScopeInformation, multi_line_indent,
+    tree_sitter::{NodeExt, Position},
 };
 
 /// A struct that holds sets of node IDs that have line breaks before or after them.
@@ -25,14 +26,12 @@ struct NodesWithLinebreaks {
     after: HashSet<usize>,
 }
 
-/// Mutable references to the three boolean "flag" fields of an [`Atom::Leaf`],
-/// exposed together so leaf-flag directives can flip a single flag without
-/// repeating the leaf-id search loop.
+/// Mutable fields of an [`Atom::Leaf`], handed to a leaf-mutating closure.
 struct LeafFlagsMut<'a> {
     content: &'a mut String,
+    original_position: &'a mut Position,
     single_line_no_indent: &'a mut bool,
-    multi_line_indent: &'a mut MultiLineIndent,
-    keep_whitespace: &'a mut bool,
+    directives: &'a mut LeafDirectives,
 }
 
 /// Contains Topiary's internal representation parsed document.
@@ -126,61 +125,53 @@ impl AtomCollection {
         Ok(atoms)
     }
 
-    /// Replace the `content` of the [`Atom::Leaf`] whose tree-sitter `id`
-    /// matches `node_id`. Returns whether a matching leaf was found.
-    ///
-    /// Used by the injection flow to splice formatted inner-language text
-    /// into a host leaf atom after the host's atom collection has been
-    /// built but before rendering.
-    pub fn rewrite_injected_leaf_content(&mut self, node_id: usize, new_content: String) -> bool {
-        for atom in &mut self.atoms {
-            if let Atom::Leaf {
-                id,
-                content,
-                original_position,
-                ..
-            } = atom
-                && *id == node_id
-            {
-                *content = new_content;
-                // Injected formatters return column-zero text; let the host
-                // leaf indentation account for the current render column.
-                original_position.column = 1;
-                return true;
-            }
-        }
-        false
+    /// Splice formatted inner-language text into the [`Atom::Leaf`] with
+    /// tree-sitter `id` `node_id`, merging `directives` onto the leaf's own.
+    /// Returns whether a matching leaf was found.
+    pub fn rewrite_injected_leaf_content(
+        &mut self,
+        node_id: usize,
+        mut new_content: String,
+        directives: &LeafDirectives,
+    ) -> FormatterResult<bool> {
+        self.mutate_leaf_flags(node_id, |flags| {
+            *flags.content = mem::take(&mut new_content);
+            flags.directives.merge(directives);
+            // Injected formatters emit column-zero text; render from column 1.
+            flags.original_position.column = 1;
+            Ok(())
+        })
     }
 
-    /// Apply `f` to the three boolean flags of every [`Atom::Leaf`] in
-    /// `self.atoms` whose tree-sitter `id` equals `node_id`. Used by the
-    /// leaf-flag directives (`@single_line_no_indent`,
-    /// `@multi_line_indent_all`, `@keep_whitespace`).
+    /// Apply `f` to every [`Atom::Leaf`] whose tree-sitter `id` equals
+    /// `node_id`, returning whether any such leaf was found.
     fn mutate_leaf_flags(
         &mut self,
         node_id: usize,
         mut f: impl FnMut(LeafFlagsMut<'_>) -> FormatterResult<()>,
-    ) -> FormatterResult<()> {
+    ) -> FormatterResult<bool> {
+        let mut found = false;
         for atom in &mut self.atoms {
             if let Atom::Leaf {
                 content,
                 id,
+                original_position,
                 single_line_no_indent,
-                multi_line_indent,
-                keep_whitespace,
+                directives,
                 ..
             } = atom
                 && *id == node_id
             {
                 f(LeafFlagsMut {
                     content,
+                    original_position,
                     single_line_no_indent,
-                    multi_line_indent,
-                    keep_whitespace,
+                    directives,
                 })?;
+                found = true;
             }
         }
-        Ok(())
+        Ok(found)
     }
     // wrap inside a conditional atom if #single/multi_line_scope_only! is set
     fn wrap(&mut self, atom: Atom, predicates: &QueryPredicates) -> Atom {
@@ -534,7 +525,7 @@ impl AtomCollection {
                             ))
                         })?
                         .to_owned();
-                    *flags.multi_line_indent = MultiLineIndent::EnforceIndentation(
+                    flags.directives.multi_line_indent = MultiLineIndent::EnforceIndentation(
                         multi_line_indent::EnforceIndentation {
                             start: start.clone(),
                             end: end.clone(),
@@ -548,17 +539,10 @@ impl AtomCollection {
                 Ok(())
                 })?;
             }
-            // Mark a leaf to have all its lines be indented
-            "multi_line_indent_all" => {
+            // Leaf directives: indent all lines, or disable trailing trim
+            directive if LeafDirectives::default().apply_capture(directive) => {
                 self.mutate_leaf_flags(node.id(), |flags| {
-                    *flags.multi_line_indent = MultiLineIndent::MaintainOffset;
-                    Ok(())
-                })?;
-            }
-            // Mark a leaf to disable trimming
-            "keep_whitespace" => {
-                self.mutate_leaf_flags(node.id(), |flags| {
-                    *flags.keep_whitespace = true;
+                    flags.directives.apply_capture(directive);
                     Ok(())
                 })?;
             }
@@ -679,8 +663,7 @@ impl AtomCollection {
                 id,
                 original_position: node.start_position().into(),
                 single_line_no_indent: false,
-                multi_line_indent: MultiLineIndent::None,
-                keep_whitespace: false,
+                directives: LeafDirectives::default(),
                 capitalisation: Capitalisation::Pass,
             });
             // Mark all sub-nodes as having this node as a "leaf parent"
