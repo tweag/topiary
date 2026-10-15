@@ -587,13 +587,11 @@ fn splice_formatted_injections(
 }
 
 /// Widen `span`'s byte range to its line's indentation, so
-/// `@multi_line_indent_all` sees the full column.
-///
-/// Content nodes (e.g. a Markdown fence nested in a list item) can begin partway
-/// through the leading indentation and end on a whitespace-only line. The start
-/// is moved only when the span begins inside its line's indentation (leaving
-/// inline spacing alone); the end only when the content ends on a blank line, so
-/// the closing delimiter is re-indented with the content rather than left raw.
+/// `@multi_line_indent_all` sees the full column. Content nodes (e.g. a Markdown
+/// fence nested in a list item) can begin partway through the leading
+/// indentation and end on a whitespace-only line; the start is skipped forward
+/// only inside its line's indentation (leaving inline spacing alone), and the
+/// end only over a trailing blank line (so the closing delimiter is re-indented).
 fn anchor_to_line_indentation(
     input_content: &str,
     cursor: usize,
