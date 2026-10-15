@@ -63,8 +63,9 @@ pub mod multi_line_indent {
         pub(crate) tab_significant: bool,
     }
 
-    #[derive(Clone, Debug, Eq, PartialEq)]
+    #[derive(Clone, Debug, Default, Eq, PartialEq)]
     pub enum MultiLineIndent {
+        #[default]
         None,
         MaintainOffset,
         EnforceIndentation(EnforceIndentation),
@@ -72,6 +73,39 @@ pub mod multi_line_indent {
 }
 
 use multi_line_indent::MultiLineIndent;
+
+/// Leaf directives that control how a leaf's content is rendered. They are set
+/// by the formatting query on any leaf, and may also be set by the injection
+/// query on `@injection.content`, in which case they apply to the injected
+/// content (see [`LeafDirectives::apply_capture`]).
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct LeafDirectives {
+    /// if the leaf is multi-line, each line will be indented, not just the first
+    pub multi_line_indent: MultiLineIndent,
+    /// don't trim trailing newline characters if set to true
+    pub keep_whitespace: bool,
+}
+
+impl LeafDirectives {
+    /// Apply the capture `name` (without the leading `@`) to these directives.
+    /// Returns `false` if `name` is not a leaf directive.
+    pub fn apply_capture(&mut self, name: &str) -> bool {
+        match name {
+            "multi_line_indent_all" => self.multi_line_indent = MultiLineIndent::MaintainOffset,
+            "keep_whitespace" => self.keep_whitespace = true,
+            _ => return false,
+        }
+        true
+    }
+
+    /// Overlay the directives set in `other` onto `self`.
+    pub fn merge(&mut self, other: &Self) {
+        if other.multi_line_indent != MultiLineIndent::None {
+            self.multi_line_indent = other.multi_line_indent.clone();
+        }
+        self.keep_whitespace |= other.keep_whitespace;
+    }
+}
 
 /// An atom represents a small piece of the output. We turn Tree-sitter nodes
 /// into atoms, and we add white-space atoms where appropriate. The final list
@@ -101,10 +135,7 @@ pub enum Atom {
         original_position: Position,
         // marks the leaf to be printed on a single line, with no indentation
         single_line_no_indent: bool,
-        // if the leaf is multi-line, each line will be indented, not just the first
-        multi_line_indent: MultiLineIndent,
-        // don't trim trailing newline characters if set to true
-        keep_whitespace: bool,
+        directives: LeafDirectives,
         capitalisation: Capitalisation,
     },
     /// Represents a literal string, such as a semicolon.
@@ -475,12 +506,7 @@ fn rewrite_injected_leaves(
             .trim_end_matches('\n')
             .to_owned();
 
-        if !atoms.rewrite_injected_leaf_content(
-            span.node_id,
-            formatted_inner,
-            span.keep_whitespace,
-            span.multi_line_indent,
-        ) {
+        if !atoms.rewrite_injected_leaf_content(span.node_id, formatted_inner, &span.directives)? {
             return Err(report!(FormatterError::Internal(format!(
                 "Could not find leaf for injected {} span",
                 span.language
@@ -500,7 +526,11 @@ fn splice_formatted_injections(
     resolve: Option<&LanguageResolver<'_>>,
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<String> {
-    let mut out = String::with_capacity(input_content.len());
+    // The host text between injections is emitted verbatim as `Atom::Literal`s,
+    // while each injection becomes an `Atom::Leaf` so that `pretty::render`
+    // applies the leaf directives (`@keep_whitespace`, `@multi_line_indent_all`)
+    // exactly as it does for the full formatting flow.
+    let mut atoms = Vec::new();
     let mut cursor = 0;
 
     // sort by span start so we can splice from left-to-right
@@ -523,54 +553,13 @@ fn splice_formatted_injections(
             continue;
         };
 
-        // Anchor the injected content to its line's indentation. Tree-sitter
-        // content nodes (e.g. Markdown fenced code blocks nested in a list item)
-        // can start partway through the leading indentation, which would
-        // otherwise throw off the column used by `@multi_line_indent_all`.
-        let bytes = input_content.as_bytes();
+        let range = anchor_to_line_indentation(input_content, cursor, &span);
 
-        // Move the span start right over the content's leading whitespace, but
-        // only when the span begins inside its line's indentation, so that
-        // inline spacing is left untouched. The prefix then carries the full
-        // indentation.
-        let mut start = span.byte_range.start;
-        let mut line_start = start;
-        while line_start > cursor && bytes[line_start - 1] != b'\n' {
-            line_start -= 1;
-        }
-        if bytes[line_start..start]
-            .iter()
-            .all(|b| matches!(b, b' ' | b'\t'))
-        {
-            while start < span.byte_range.end && matches!(bytes[start], b' ' | b'\t') {
-                start += 1;
-            }
-        }
-
-        // Extend the span end over the following indentation when the content
-        // ends on a whitespace-only line (the closing delimiter's indentation),
-        // so the closing line is re-indented as part of the injected content
-        // rather than left at the raw suffix's indentation.
-        let mut end = span.byte_range.end;
-        let ends_on_blank_line = span.content.contains('\n')
-            && span
-                .content
-                .rsplit('\n')
-                .next()
-                .unwrap_or("")
-                .chars()
-                .all(|c| c == ' ' || c == '\t');
-        if ends_on_blank_line {
-            while end < bytes.len() && matches!(bytes[end], b' ' | b'\t') {
-                end += 1;
-            }
-        }
-
-        out.push_str(&input_content[cursor..start]);
+        atoms.push(Atom::Literal(input_content[cursor..range.start].to_owned()));
 
         let mut formatted_inner = Vec::new();
         formatter_str(
-            &input_content[start..end],
+            &input_content[range.clone()],
             &mut formatted_inner,
             &inner_language,
             Operation::Format {
@@ -580,32 +569,69 @@ fn splice_formatted_injections(
             },
             resolve,
         )?;
-        let formatted_inner = String::from_utf8(formatted_inner).context_to()?;
 
-        // Reuse the host leaf rendering for the injected content's indentation
-        // and trailing whitespace: `@multi_line_indent_all` (`MaintainOffset`)
-        // shifts every line to the column at which the content is placed, and
-        // `@keep_whitespace` preserves the formatter's trailing newline. Injected
-        // formatters return column-zero text, so the original column is 1
-        // (matching `AtomCollection::rewrite_injected_leaf_content`).
-        out.push_str(&pretty::render_leaf_content(
-            &formatted_inner,
-            span.keep_whitespace,
-            &span.multi_line_indent,
-            &Position {
-                row: span.position.row,
+        atoms.push(Atom::Leaf {
+            content: String::from_utf8(formatted_inner).context_to()?,
+            id: span.node_id,
+            // Injected formatters return column-zero text; let the leaf
+            // indentation account for the current render column (matching
+            // `AtomCollection::rewrite_injected_leaf_content`).
+            original_position: Position {
                 column: 1,
+                ..span.position
             },
-            pretty::current_column(&out),
-            0,
-            "",
-        ));
+            single_line_no_indent: false,
+            directives: span.directives,
+            capitalisation: Capitalisation::Pass,
+        });
 
-        cursor = end;
+        cursor = range.end;
     }
 
-    out.push_str(&input_content[cursor..]);
-    Ok(out)
+    atoms.push(Atom::Literal(input_content[cursor..].to_owned()));
+    pretty::render(&atoms, "")
+}
+
+/// Widen `span`'s byte range to its line's indentation.
+///
+/// Tree-sitter content nodes (e.g. Markdown fenced code blocks nested in a list
+/// item) can start partway through the leading indentation, and end on a
+/// whitespace-only line carrying the closing delimiter's indentation, which
+/// would otherwise throw off the column used by `@multi_line_indent_all`. The
+/// start is only moved when the span begins inside its line's indentation, so
+/// inline spacing is left untouched; the end is only extended when the content
+/// ends on a blank line, so the closing delimiter is re-indented along with the
+/// injected content rather than left at the raw suffix's indentation.
+fn anchor_to_line_indentation(
+    input_content: &str,
+    cursor: usize,
+    span: &InjectionSpan,
+) -> std::ops::Range<usize> {
+    const INDENTATION: [char; 2] = [' ', '\t'];
+    let std::ops::Range { mut start, mut end } = span.byte_range.clone();
+
+    let line_start = input_content[cursor..start]
+        .rfind('\n')
+        .map_or(cursor, |i| cursor + i + 1);
+    if input_content[line_start..start]
+        .trim_start_matches(INDENTATION)
+        .is_empty()
+    {
+        start = end
+            - input_content[start..end]
+                .trim_start_matches(INDENTATION)
+                .len();
+    }
+
+    let ends_on_blank_line = span
+        .content
+        .rsplit_once('\n')
+        .is_some_and(|(_, last)| last.trim_start_matches(INDENTATION).is_empty());
+    if ends_on_blank_line {
+        end = input_content.len() - input_content[end..].trim_start_matches(INDENTATION).len();
+    }
+
+    start..end
 }
 
 /// Resolves a language string from an injection (e.g. "rust" in ```rust) into a `Language`
@@ -711,9 +737,9 @@ mod tests {
     use test_log::test;
 
     use crate::{
-        FormatterError, InjectionQuery, Language, LanguageResolver, MultiLineIndent, Operation,
-        SpanAttachment, TopiaryQuery, formatter, formatter_str, parse, splice_formatted_injections,
-        test_utils::pretty_assert_eq,
+        FormatterError, InjectionQuery, Language, LanguageResolver, LeafDirectives,
+        MultiLineIndent, Operation, SpanAttachment, TopiaryQuery, formatter, formatter_str, parse,
+        splice_formatted_injections, test_utils::pretty_assert_eq,
     };
 
     fn language(name: &str, formatting_query: &str, injection_query: Option<&str>) -> Language {
@@ -918,8 +944,13 @@ mod tests {
         let spans = language.collect_injections(&tree, input);
 
         assert_eq!(spans.len(), 1);
-        assert!(spans[0].keep_whitespace);
-        assert_eq!(spans[0].multi_line_indent, MultiLineIndent::MaintainOffset);
+        assert_eq!(
+            spans[0].directives,
+            LeafDirectives {
+                multi_line_indent: MultiLineIndent::MaintainOffset,
+                keep_whitespace: true,
+            }
+        );
     }
 
     #[test]

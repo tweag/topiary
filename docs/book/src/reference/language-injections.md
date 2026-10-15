@@ -77,7 +77,7 @@ than to a host leaf:
 
 Both are opt-in. Because tree-sitter content nodes can begin or end partway
 through the leading indentation, Topiary aligns the injected region to its
-line's indentation before formatting when these directives are present.
+line's indentation before formatting it.
 
 ## Formatting model
 

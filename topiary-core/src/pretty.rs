@@ -9,8 +9,8 @@ use std::fmt::Write;
 use rootcause::prelude::ResultExt;
 
 use crate::{
-    Atom, Capitalisation, FormatterError, FormatterResult, MultiLineIndent, multi_line_indent,
-    tree_sitter::Position,
+    Atom, Capitalisation, FormatterError, FormatterResult, LeafDirectives, MultiLineIndent,
+    multi_line_indent, tree_sitter::Position,
 };
 
 /// Renders a slice of [`Atom`]s into formatted source code.
@@ -58,8 +58,11 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                 content,
                 original_position,
                 single_line_no_indent,
-                multi_line_indent,
-                keep_whitespace,
+                directives:
+                    LeafDirectives {
+                        multi_line_indent,
+                        keep_whitespace,
+                    },
                 capitalisation,
                 ..
             } => {
@@ -68,16 +71,39 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
                     // as a `Hardline` in the atom stream.
                     writeln!(buffer).context_to()?;
                 }
+                let content = if *keep_whitespace {
+                    content
+                } else {
+                    content.trim_end_matches('\n')
+                };
 
-                let mut content = render_leaf_content(
-                    content,
-                    *keep_whitespace,
-                    multi_line_indent,
-                    original_position,
-                    current_column(&buffer),
-                    indent_level,
-                    indent,
-                );
+                let mut content = match multi_line_indent {
+                    MultiLineIndent::None => content.into(),
+                    MultiLineIndent::MaintainOffset => {
+                        let cursor = current_column(&buffer) as i32;
+
+                        // original_position is 1-based
+                        let original_column = original_position.column as i32 - 1;
+
+                        let indenting = cursor - original_column;
+
+                        // The following assumes spaces are used for indenting
+                        match indenting {
+                            ..0 => try_removing_spaces_after_newlines(content, -indenting),
+                            0 => content.into(),
+                            1.. => add_spaces_after_newlines(content, indenting),
+                        }
+                    }
+                    MultiLineIndent::EnforceIndentation(enforce_indentation) => {
+                        render_multi_line_string(
+                            enforce_indentation,
+                            content,
+                            indent_level,
+                            indent,
+                            original_position,
+                        )
+                    }
+                };
                 match capitalisation {
                     Capitalisation::UpperCase => {
                         content = content.to_uppercase();
@@ -106,52 +132,8 @@ pub fn render(atoms: &[Atom], indent: &str) -> FormatterResult<String> {
     Ok(buffer)
 }
 
-pub(crate) fn current_column(s: &str) -> usize {
+fn current_column(s: &str) -> usize {
     s.chars().rev().take_while(|c| *c != '\n').count()
-}
-
-/// Apply the leaf-content directives to `content`, shared between the host
-/// renderer and injection rendering.
-pub(crate) fn render_leaf_content(
-    content: &str,
-    keep_whitespace: bool,
-    multi_line_indent: &MultiLineIndent,
-    original_position: &Position,
-    current_column: usize,
-    indent_level: usize,
-    indent: &str,
-) -> String {
-    let content = if keep_whitespace {
-        content
-    } else {
-        content.trim_end_matches('\n')
-    };
-
-    match multi_line_indent {
-        MultiLineIndent::None => content.into(),
-        MultiLineIndent::MaintainOffset => {
-            let cursor = current_column as i32;
-
-            // original_position is 1-based
-            let original_column = original_position.column as i32 - 1;
-
-            let indenting = cursor - original_column;
-
-            // The following assumes spaces are used for indenting
-            match indenting {
-                ..0 => try_removing_spaces_after_newlines(content, -indenting),
-                0 => content.into(),
-                1.. => add_spaces_after_newlines(content, indenting),
-            }
-        }
-        MultiLineIndent::EnforceIndentation(enforce_indentation) => render_multi_line_string(
-            enforce_indentation,
-            content,
-            indent_level,
-            indent,
-            original_position,
-        ),
-    }
 }
 
 fn add_spaces_after_newlines(s: &str, n: i32) -> String {
