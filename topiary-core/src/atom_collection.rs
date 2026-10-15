@@ -26,9 +26,7 @@ struct NodesWithLinebreaks {
     after: HashSet<usize>,
 }
 
-/// Mutable references to the content and "flag" fields of an [`Atom::Leaf`],
-/// exposed together so leaf-flag directives can flip a single flag without
-/// repeating the leaf-id search loop.
+/// Mutable fields of an [`Atom::Leaf`], handed to a leaf-mutating closure.
 struct LeafFlagsMut<'a> {
     content: &'a mut String,
     original_position: &'a mut Position,
@@ -127,14 +125,9 @@ impl AtomCollection {
         Ok(atoms)
     }
 
-    /// Replace the `content` of the [`Atom::Leaf`] whose tree-sitter `id`
-    /// matches `node_id`, and merge the injection query's `directives` onto
-    /// those the host formatting query may already have set on the leaf.
+    /// Splice formatted inner-language text into the [`Atom::Leaf`] with
+    /// tree-sitter `id` `node_id`, merging `directives` onto the leaf's own.
     /// Returns whether a matching leaf was found.
-    ///
-    /// Used by the injection flow to splice formatted inner-language text
-    /// into a host leaf atom after the host's atom collection has been
-    /// built but before rendering.
     pub fn rewrite_injected_leaf_content(
         &mut self,
         node_id: usize,
@@ -144,17 +137,14 @@ impl AtomCollection {
         self.mutate_leaf_flags(node_id, |flags| {
             *flags.content = mem::take(&mut new_content);
             flags.directives.merge(directives);
-            // Injected formatters return column-zero text; let the host
-            // leaf indentation account for the current render column.
+            // Injected formatters emit column-zero text; render from column 1.
             flags.original_position.column = 1;
             Ok(())
         })
     }
 
-    /// Apply `f` to the content and flags of every [`Atom::Leaf`] in
-    /// `self.atoms` whose tree-sitter `id` equals `node_id`, returning whether
-    /// any such leaf was found. Used by the leaf-flag directives
-    /// (`@single_line_no_indent`, `@multi_line_indent_all`, `@keep_whitespace`).
+    /// Apply `f` to every [`Atom::Leaf`] whose tree-sitter `id` equals
+    /// `node_id`, returning whether any such leaf was found.
     fn mutate_leaf_flags(
         &mut self,
         node_id: usize,
@@ -549,8 +539,7 @@ impl AtomCollection {
                 Ok(())
                 })?;
             }
-            // Mark a leaf to have all its lines be indented (`multi_line_indent_all`),
-            // or to disable trimming (`keep_whitespace`)
+            // Leaf directives: indent all lines, or disable trailing trim
             directive if LeafDirectives::default().apply_capture(directive) => {
                 self.mutate_leaf_flags(node.id(), |flags| {
                     flags.directives.apply_capture(directive);

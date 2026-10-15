@@ -74,21 +74,19 @@ pub mod multi_line_indent {
 
 use multi_line_indent::MultiLineIndent;
 
-/// Leaf directives that control how a leaf's content is rendered. They are set
-/// by the formatting query on any leaf, and may also be set by the injection
-/// query on `@injection.content`, in which case they apply to the injected
-/// content (see [`LeafDirectives::apply_capture`]).
+/// Render directives a query can set on a leaf, either via the formatting query
+/// or via the injection query's `@injection.content` capture.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct LeafDirectives {
-    /// if the leaf is multi-line, each line will be indented, not just the first
+    /// indent every line, not just the first
     pub multi_line_indent: MultiLineIndent,
-    /// don't trim trailing newline characters if set to true
+    /// keep trailing newline characters
     pub keep_whitespace: bool,
 }
 
 impl LeafDirectives {
-    /// Apply the capture `name` (without the leading `@`) to these directives.
-    /// Returns `false` if `name` is not a leaf directive.
+    /// Apply the capture `name` (without `@`). Returns whether it is a leaf
+    /// directive.
     pub fn apply_capture(&mut self, name: &str) -> bool {
         match name {
             "multi_line_indent_all" => self.multi_line_indent = MultiLineIndent::MaintainOffset,
@@ -98,7 +96,7 @@ impl LeafDirectives {
         true
     }
 
-    /// Overlay the directives set in `other` onto `self`.
+    /// Overlay `other` onto `self`; unset fields leave `self` unchanged.
     pub fn merge(&mut self, other: &Self) {
         if other.multi_line_indent != MultiLineIndent::None {
             self.multi_line_indent = other.multi_line_indent.clone();
@@ -526,10 +524,8 @@ fn splice_formatted_injections(
     resolve: Option<&LanguageResolver<'_>>,
     tolerate_parsing_errors: bool,
 ) -> FormatterResult<String> {
-    // The host text between injections is emitted verbatim as `Atom::Literal`s,
-    // while each injection becomes an `Atom::Leaf` so that `pretty::render`
-    // applies the leaf directives (`@keep_whitespace`, `@multi_line_indent_all`)
-    // exactly as it does for the full formatting flow.
+    // Host text becomes `Literal`s and each injection a `Leaf`, so
+    // `pretty::render` applies the leaf directives exactly as in full formatting.
     let mut atoms = Vec::new();
     let mut cursor = 0;
 
@@ -573,9 +569,7 @@ fn splice_formatted_injections(
         atoms.push(Atom::Leaf {
             content: String::from_utf8(formatted_inner).context_to()?,
             id: span.node_id,
-            // Injected formatters return column-zero text; let the leaf
-            // indentation account for the current render column (matching
-            // `AtomCollection::rewrite_injected_leaf_content`).
+            // Injected formatters emit column-zero text; render from column 1.
             original_position: Position {
                 column: 1,
                 ..span.position
@@ -592,46 +586,42 @@ fn splice_formatted_injections(
     pretty::render(&atoms, "")
 }
 
-/// Widen `span`'s byte range to its line's indentation.
+/// Widen `span`'s byte range to its line's indentation, so
+/// `@multi_line_indent_all` sees the full column.
 ///
-/// Tree-sitter content nodes (e.g. Markdown fenced code blocks nested in a list
-/// item) can start partway through the leading indentation, and end on a
-/// whitespace-only line carrying the closing delimiter's indentation, which
-/// would otherwise throw off the column used by `@multi_line_indent_all`. The
-/// start is only moved when the span begins inside its line's indentation, so
-/// inline spacing is left untouched; the end is only extended when the content
-/// ends on a blank line, so the closing delimiter is re-indented along with the
-/// injected content rather than left at the raw suffix's indentation.
+/// Content nodes (e.g. a Markdown fence nested in a list item) can begin partway
+/// through the leading indentation and end on a whitespace-only line. The start
+/// is moved only when the span begins inside its line's indentation (leaving
+/// inline spacing alone); the end only when the content ends on a blank line, so
+/// the closing delimiter is re-indented with the content rather than left raw.
 fn anchor_to_line_indentation(
     input_content: &str,
     cursor: usize,
     span: &InjectionSpan,
 ) -> std::ops::Range<usize> {
-    const INDENTATION: [char; 2] = [' ', '\t'];
     let std::ops::Range { mut start, mut end } = span.byte_range.clone();
+    let is_blank = |s: &str| s.trim_start_matches([' ', '\t']).is_empty();
 
     let line_start = input_content[cursor..start]
         .rfind('\n')
         .map_or(cursor, |i| cursor + i + 1);
-    if input_content[line_start..start]
-        .trim_start_matches(INDENTATION)
-        .is_empty()
-    {
-        start = end
-            - input_content[start..end]
-                .trim_start_matches(INDENTATION)
-                .len();
+    if is_blank(&input_content[line_start..start]) {
+        start += indentation_len(&input_content[start..end]);
     }
-
-    let ends_on_blank_line = span
+    if span
         .content
         .rsplit_once('\n')
-        .is_some_and(|(_, last)| last.trim_start_matches(INDENTATION).is_empty());
-    if ends_on_blank_line {
-        end = input_content.len() - input_content[end..].trim_start_matches(INDENTATION).len();
+        .is_some_and(|(_, last)| is_blank(last))
+    {
+        end += indentation_len(&input_content[end..]);
     }
 
     start..end
+}
+
+/// Byte length of the leading spaces/tabs in `s`.
+fn indentation_len(s: &str) -> usize {
+    s.len() - s.trim_start_matches([' ', '\t']).len()
 }
 
 /// Resolves a language string from an injection (e.g. "rust" in ```rust) into a `Language`
@@ -911,9 +901,8 @@ mod tests {
             splice_formatted_injections(input, spans, json_injection_resolver(), false).unwrap()
         };
 
-        // `@keep_whitespace` preserves the single trailing newline emitted by the
-        // inner formatter, so the closing fence always ends up on its own line,
-        // regardless of how the input was laid out.
+        // `@keep_whitespace` keeps one trailing newline: the closing fence gets
+        // its own line regardless of input layout.
         pretty_assert_eq(
             &splice_fn("```json\n[true, false]```\n"),
             "```json\n[ true, false ]\n```\n",
@@ -928,8 +917,7 @@ mod tests {
             "```json\n[ true, false ]\n```\n",
         );
 
-        // indented content (e.g. a fenced block inside a list item) keeps its
-        // indentation on every line, including the closing fence
+        // indented content keeps its indentation, closing fence included
         pretty_assert_eq(
             &splice_fn("1. Step:\n\n    ```json\n    [1,2]\n    ```\n"),
             "1. Step:\n\n    ```json\n    [ 1, 2 ]\n    ```\n",

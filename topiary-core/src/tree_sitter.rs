@@ -162,11 +162,10 @@ pub struct InjectionSpan<'a> {
     /// touching root language content.
     /// See [`crate::splice_formatted_injections`] for more details.
     pub byte_range: std::ops::Range<usize>,
-    /// Leaf directives captured on the same node as `@injection.content`
-    /// (e.g. `@keep_whitespace`, `@multi_line_indent_all`), applied to the
-    /// injected content when it is rendered.
+    /// Leaf directives captured on `@injection.content` (`@keep_whitespace`,
+    /// `@multi_line_indent_all`).
     pub directives: LeafDirectives,
-    /// The original start position of the captured content node.
+    /// Start position of the captured content node.
     pub position: Position,
 }
 
