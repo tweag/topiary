@@ -184,8 +184,10 @@ nickel = {
 
 > **Note**\
 > If you want to link to a grammar file that has already been compiled
-> by Topiary itself, those look like `~/.cache/topiary/<LANGUAGE>/<GIT_HASH>.so`
-> (or the equivalent for your platform).
+> by Topiary itself, those look like
+> `~/.cache/topiary/<language>/<git-revision>/grammar.so` (or the equivalent
+> for your platform; see [Specifying the cache
+> directory](#specifying-the-cache-directory) for specifying the cache directory explicitly).
 
 ### Relative paths
 
@@ -233,7 +235,12 @@ rather than against the working directory:
 ```
 
 Fetched artifacts are stored below that directory as
-`<cache.path>/<language>/<git-revision>`.
+`<cache.path>/<language>/<git-revision>`, keyed by language and revision so
+that grammars for different languages or revisions coexist.
+
+Redirecting the cache is mainly useful for sharing it with other
+Tree-sitter tooling. Pointing `cache.path` at a known location lets tools
+such as [`ast-grep`](https://ast-grep.github.io/) load the fetched grammars.
 
 ### Specifying queries
 

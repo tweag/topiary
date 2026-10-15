@@ -106,6 +106,7 @@ let rec
       | String
       | doc m%"
         An absolute path or one relative to the config file that contains files created by `topiary prefetch`.
+        Redirecting it lets other Tree-sitter tools reuse the fetched grammars.
       "%,
   }
 in
