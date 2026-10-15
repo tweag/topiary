@@ -218,8 +218,8 @@ overrides that location:
 
 ```nickel
 {
-  cache.path | force = "/path/to/topiary-cache",
-  languages = { /* ... */ },
+  cache.path = "/path/to/topiary-cache",
+  languages,
 }
 ```
 

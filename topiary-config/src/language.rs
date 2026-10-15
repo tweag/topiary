@@ -698,9 +698,6 @@ mod tests {
         );
     }
 
-    /// The resolution path threads the configured cache directory through to
-    /// [`GitSource::cache_dir`]'s `starting_directory`, so a git-backed grammar lands beneath
-    /// the configured cache rather than the platform default.
     #[test]
     fn grammar_file_respects_starting_directory() {
         let language = Language::new(

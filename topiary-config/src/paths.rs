@@ -49,8 +49,7 @@ impl<'a> PathResolver<'a> {
         Self { table, files }
     }
 
-    /// Walk `cache.path` and `languages.<lang>` for the records that name a local file, and
-    /// resolve them.
+    /// Walk cache, query, and grammar `.path` fields and resolve them to absolute paths.
     pub(crate) fn resolve(&self, config: &mut NickelValue) {
         self.resolve_cache(config);
 
@@ -84,9 +83,7 @@ impl<'a> PathResolver<'a> {
         }
     }
 
-    /// Resolve the top-level `cache.path`, if configured, against the `.ncl` file that
-    /// defined it. Unlike grammar and query sources it is a bare `path` field, not a `source`
-    /// record, and there is no `git` sibling to consider.
+    // Resolve the top-level `cache.path`
     fn resolve_cache(&self, config: &mut NickelValue) {
         let Some(path) = config
             .field_mut(CACHE)
@@ -114,8 +111,7 @@ impl<'a> PathResolver<'a> {
         self.resolve_path(path);
     }
 
-    /// Rewrite a single `path` value so that, when relative, it is anchored at the `.ncl` file
-    /// that defined it rather than at the working directory.
+    // Rewrite a single `path` value so that it is resolved relative to the originating `.ncl` file
     fn resolve_path(&self, path: &mut NickelValue) {
         let Some(relative): Option<PathBuf> = path.as_string().map(|s| s.as_str().into()) else {
             return;

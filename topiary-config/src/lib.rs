@@ -123,11 +123,7 @@ impl Configuration {
             .ok_or_else(|| TopiaryConfigError::UnknownLanguage(name.to_string()))
     }
 
-    /// The configured cache directory that overrides the platform default, if any.
-    ///
-    /// `topiary prefetch` stores the grammars and queries it fetches beneath this
-    /// directory; when the configuration leaves `cache.path` unset, they go in the
-    /// platform-specific cache directory instead.
+    /// The configured cache directory that overrides the destination for configuration fetching.
     pub fn cache_dir(&self) -> Option<&Path> {
         self.cache.path()
     }
