@@ -97,7 +97,9 @@ let
     commonArgs
     // {
       inherit cargoArtifacts;
-      cargoClippyExtraArgs = "-- --deny warnings";
+
+      cargoExtraArgs = "--workspace --all-features --locked";
+      cargoClippyExtraArgs = "--all-targets -- --deny warnings";
     }
   );
 
