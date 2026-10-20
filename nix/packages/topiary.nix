@@ -73,6 +73,7 @@ let
     commonArgs
     // {
       inherit cargoArtifacts;
+      CARGO_PROFILE = "dev";
       pname = "topiary-workspace-tests";
       cargoExtraArgs = "--locked";
       cargoNextestExtraArgs = "--workspace --all-features";

@@ -27,7 +27,7 @@ jobs:
           auth_token: "${{ secrets.CACHIX_TWEAG_TOPIARY_AUTH_TOKEN }}"
 
       - name: Run full flake checks on merge to main
-        if: ${{ github.event_name != 'pull_request' }}
+        # if: ${{ github.event_name != 'pull_request' }}
         run: |
           nix -L flake check --accept-flake-config
 
