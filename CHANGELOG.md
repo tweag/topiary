@@ -61,6 +61,7 @@ example: `bin/changelog.nu --no-cc-header --save --section Added`
 - [#1344](https://github.com/topiary/topiary/pull/1344) Automatic publishing of releases to crates.io
 - [#1355](https://github.com/topiary/topiary/pull/1355) Fix compilation issue when using `topiary-core` without its default features.
 - [#1359](https://github.com/topiary/topiary/pull/1359) Check all targets for `nix build .#debug-checks`
+- [#1360](https://github.com/topiary/topiary/pull/1360) Run nextest in debug mode
 
 ### Changed
 - [#1356](https://github.com/topiary/topiary/pull/1356) Run ci tests with debug profile and skip benchmarks
